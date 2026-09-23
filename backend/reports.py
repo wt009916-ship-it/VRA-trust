@@ -63,7 +63,17 @@ def report_pdf(report):
     story.append(PageBreak())
     story.append(para("判断边界与补证动作", heading))
     section("02  决策状态")
-    rows([("当前建议", "不发布确定推荐"), ("候选方案", ", ".join(cert["candidate_schemes"])), ("目标", cert["objective"]), ("约束", "；".join(cert["constraints"])), ("稳定性", "未开展反例搜索，也未证明稳定"), ("成立条件", "；".join(cert["conditions"])), ("失效条件", "；".join(cert["invalidation_conditions"])), ("反例", "未搜索，不能解读为无反例"), ("未排除的不确定性", "；".join(cert["unresolved_uncertainties"])), ("建议补证", "；".join(cert["suggested_evidence_actions"])), ("工程师签署", cert["engineer_review"])])
+    rows([("当前建议", "不发布确定推荐"), ("候选方案", ", ".join(cert["candidate_schemes"])), ("目标", cert["objective"]), ("约束", "；".join(cert["constraints"])), ("稳定性", cert['stability_status']), ("成立条件", "；".join(cert["conditions"])), ("失效条件", "；".join(cert["invalidation_conditions"])), ("反例", "未搜索，不能解读为无反例" if cert['counterexamples'] is None else str(len(cert['counterexamples'])) + ' 个已记录；仅限本次搜索域和预算'), ("未排除的不确定性", "；".join(cert["unresolved_uncertainties"])), ("建议补证", "；".join(cert["suggested_evidence_actions"])), ("工程师签署", cert["engineer_review"])])
+    if report.get('robustness'):
+        study = report['robustness']
+        section('02.1  反例搜索范围与预算')
+        rows([('搜索 ID', study['search_id']), ('状态 / 目标', study['status'] + ' / ' + study['objective']),
+              ('调用数 / 预算', str(study['engine_calls']) + ' / ' + str(study['budget'])),
+              ('离散网格覆盖', str(study.get('coverage', '尚未完成'))), ('范围声明', study.get('limitation', study['domain_type']))])
+        for axis in study['axes']:
+            story.append(para(json.dumps(axis, ensure_ascii=False)))
+        for point in study['points']:
+            story.append(para(json.dumps({'parameters': point['parameters'], 'order': point['order'], 'flipped': point['flipped'], 'run_ids': [r['run_id'] for r in point['runs']]}, ensure_ascii=False)))
     section("03  舒适性及输出限制")
     for key, value in metrics.get("comfort_hours", {}).items():
         story.append(para(key + ": " + numeric(value) + " h"))
@@ -78,6 +88,10 @@ def report_pdf(report):
     story.append(para("计算版本与复核定位", heading))
     section("05  Result Provenance")
     rows(list((run["provenance"] or {"status": "无有效结果版本"}).items()))
+    if carbon.get('provenance'):
+        section('05.1  独立碳派生版本（不改写原仿真）')
+        for key in ['carbon_id', 'run_id', 'factor_hash', 'source_result_hash', 'calculator_version', 'timestamp', 'energyplus_calls']:
+            story.append(para(key + ': ' + str(carbon['provenance'].get(key))))
     section("06  SQL 来源定位")
     for key, locator in metrics.get("locators", {}).items():
         story.append(para(key + " : " + " / ".join(str(locator.get(k, "")) for k in ["table", "row", "column", "unit", "raw_value"])))

@@ -166,8 +166,6 @@ class Domain:
                 reasons.append("计算引擎或 IDD 版本变化")
         except (core.ValidationError, OSError) as exc:
             reasons.append(str(exc))
-        if core.hash_json(core.get_profile(job["factor_profile_id"])) != core.hash_json(job["factor_snapshot"]):
-            reasons.append("碳因子版本变化")
         return reasons
 
     def execute(self, job):
@@ -236,7 +234,8 @@ class Domain:
                 if reasons:
                     view["status"] = "stale"
                 else:
-                    view.update(metrics=result["metrics"], carbon=result["carbon"])
+                    from .trust import Trust
+                    view.update(metrics=result["metrics"], carbon=Trust(self).carbon_view(job, result["carbon"]))
         except (core.ValidationError, OSError, KeyError, ValueError) as exc:
             view.update(status="failed", metrics=None, carbon=None, error=job["error"] or str(exc))
         return view
@@ -244,7 +243,6 @@ class Domain:
     def claims(self, run_id, view=None):
         view = self.view(run_id) if view is None else view
         job = self.store.job(run_id)
-        state = "VALID" if view["status"] == "succeeded" else ("STALE" if view["status"] == "stale" else "UNKNOWN")
         nodes = []
         for ev in job["evidence_snapshot"].values():
             evidence_state = "STALE"
@@ -255,18 +253,18 @@ class Domain:
                     evidence_state = "ASSUMPTION" if ev["status"] == "ASSUMED" else "VALID"
             except (KeyError, OSError, core.ValidationError):
                 evidence_state = "MISSING"
-            nodes.append({"id": ev["evidence_id"], "kind": "Evidence", "label": ev["name"], "state": evidence_state,
+            nodes.append({"id": ev["evidence_id"] + ':v' + str(ev['revision']), "evidence_id": ev['evidence_id'], "kind": "Evidence", "label": ev["name"], "state": evidence_state,
                           "depends_on": [], "source_locator": ev["source_locator"], "revision": ev["revision"]})
-        nodes += [{"id": run_id, "kind": "Simulation", "label": "EnergyPlus", "state": state, "depends_on": [n["id"] for n in nodes]},
-                  {"id": run_id + ":energy", "kind": "Metric", "label": "全年场地能耗 / EUI", "state": state, "depends_on": [run_id]},
-                  {"id": run_id + ":decision", "kind": "Decision", "label": "确定推荐：证据不足", "state": "UNKNOWN", "depends_on": [run_id + ":energy"]}]
-        return {"run_id": run_id, "nodes": nodes, "scope": "Phase 1 explicit run dependency view; generalized DAG and selective recomputation pending"}
+        from .trust import Trust
+        return Trust(self).graph(run_id, view, nodes)
 
     def report(self, run_id):
         view = self.view(run_id)
         job = self.store.job(run_id)
         state = {"failed": "SIMULATION_FAILED", "stale": "STALE"}.get(view["status"], "EVIDENCE_INSUFFICIENT")
-        return {"schema_version": "vra.report.v1", "generated_at": core.now(), "project": job["project_snapshot"], "run": view,
+        if (view.get("carbon") or {}).get("node_state") == "STALE":
+            state = "PARTIALLY_STALE"
+        report = {"schema_version": "vra.report.v1", "generated_at": core.now(), "project": job["project_snapshot"], "run": view,
                 "evidence": list(job["evidence_snapshot"].values()), "claims": self.claims(run_id, view),
                 "certificate": {"status": state, "current_recommendation": None, "candidate_schemes": [job["scheme_id"]],
                     "objective": "比较全年场地能耗，后续综合费用/舒适性/工程约束", "constraints": ["全年范围、面积、单位核验", "关键模型/天气证据人工确认"],
@@ -275,6 +273,36 @@ class Domain:
                     "unresolved_uncertainties": ["未做模型校准", "未开展反例搜索", "未完成费用和舒适性工程验收"],
                     "suggested_evidence_actions": ["复核定容 Warning 和未满足设定点时间", "补充账单/运行时段并验证模型适用性"],
                     "simulation_version": view["provenance"], "engineer_review": "UNSIGNED", "document_stage": "DRAFT_NOT_A_DECISION_APPROVAL"}}
+        if hasattr(self, 'robustness') and job.get('project_id'):
+            studies = [s for s in self.store.list('search', job['project_id']) if run_id in s['run_ids']]
+            if studies:
+                study = self.robustness.view(job['project_id'], studies[0]['search_id'])
+                report['robustness'] = study
+                report['certificate']['stability_status'] = study['stability_status']
+                report['certificate']['counterexamples'] = [p for p in study['points'] if p['flipped']]
+                report['certificate']['conditions'].append('仅限记录中的离散搜索点及预算；不代表连续域稳定或综合工程最优')
+                report['certificate']['unresolved_uncertainties'] = ['未做模型校准', '搜索域外、未覆盖点和测量误差尚未排除', '未完成费用和舒适性工程验收']
+                plans = [p for p in self.store.list('actionplan', job['project_id']) if p['search_id'] == study['search_id'] and p['search_revision'] == study['revision']]
+                if plans and study['status'] == 'succeeded':
+                    report['evidence_action_plan'] = plans[0]
+                    report['certificate']['suggested_evidence_actions'] += [a['method'] + '；费用情景 CNY ' + str(a['cost_cny']) + '；可排除已观察反例 ' + str(a['excluded_observed_counterexamples']) + '（条件假设，非保证收益）' for a in plans[0]['actions']]
+        return report
+
+    def project_claims(self, project_id):
+        latest = {}
+        for job in self.store.jobs(project_id):
+            latest.setdefault(job['scheme_id'], job['run_id'])
+        graphs = [self.claims(rid) for rid in latest.values()]
+        nodes = {n['id']: n for graph in graphs for n in graph['nodes']}
+        energy = [rid + ':energy' for rid in latest.values()]
+        carbon = [rid + ':carbon' for rid in latest.values()]
+        for suffix, label, deps in [('energy-ranking', '能耗排序', energy), ('carbon-ranking', '运行碳排序', carbon)]:
+            statuses = {nodes[d]['state'] for d in deps}
+            status = 'STALE' if 'STALE' in statuses else 'VALID' if len(deps) >= 2 and statuses == {'VALID'} and 'baseline' in latest else 'UNKNOWN'
+            if suffix == 'carbon-ranking' and len({(self.view(r).get('carbon') or {}).get('profile_hash') for r in latest.values()}) != 1:
+                status = 'UNKNOWN'
+            nodes[project_id + ':' + suffix] = {'id': project_id + ':' + suffix, 'kind': 'Comparison', 'label': label, 'state': status, 'depends_on': deps}
+        return {'project_id': project_id, 'nodes': list(nodes.values()), 'selected_runs': latest}
 
     def compare(self, run_ids):
         views = [self.view(rid) for rid in run_ids]
@@ -285,7 +313,7 @@ class Domain:
         bases = [v for v in views if v["scheme_id"] == "baseline"]
         if len(bases) != 1:
             raise core.ValidationError("Exactly one baseline required")
-        for key in ["weather_hash", "engine_version", "code_version", "factor_version"]:
+        for key in ["weather_hash", "engine_version", "code_version"]:
             if len({v["provenance"][key] for v in views}) != 1:
                 raise core.ValidationError("Comparison context differs: " + key)
         base = bases[0]
@@ -295,7 +323,8 @@ class Domain:
             energy = base["metrics"]["annual_energy_kwh"]
             view["saving_rate_pct"] = (1 - view["metrics"]["annual_energy_kwh"] / energy) * 100 if energy else None
             a, b = base["carbon"]["operating_carbon_kg"], view["carbon"]["operating_carbon_kg"]
-            view["engineering_reduction_kg"] = a - b if a is not None and b is not None else None
+            same_factors = base['carbon'].get('profile_hash') == view['carbon'].get('profile_hash')
+            view["engineering_reduction_kg"] = a - b if a is not None and b is not None and same_factors else None
         return {"results": views, "energy_order": [v["scheme_id"] for v in sorted(views, key=lambda x: x["metrics"]["annual_energy_kwh"])],
                 "recommendation": None, "decision_status": "EVIDENCE_INSUFFICIENT", "note": "仅能耗排序。未评估反例、成本、校准和工程约束，不代表综合最优或可签发碳信用。"}
 

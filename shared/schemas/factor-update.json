@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "Factor": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "default": "kgCO2/kWh",
+          "title": "Unit",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 2000,
+          "minLength": 5,
+          "title": "Source",
+          "type": "string"
+        },
+        "factor_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Factor Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "source",
+        "factor_id"
+      ],
+      "title": "Factor",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "expected_revision": {
+      "minimum": 0,
+      "title": "Expected Revision",
+      "type": "integer"
+    },
+    "region": {
+      "maxLength": 40,
+      "minLength": 1,
+      "title": "Region",
+      "type": "string"
+    },
+    "scenario": {
+      "title": "Scenario",
+      "type": "boolean"
+    },
+    "factors": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Factor"
+      },
+      "maxProperties": 20,
+      "title": "Factors",
+      "type": "object"
+    }
+  },
+  "required": [
+    "expected_revision",
+    "region",
+    "scenario",
+    "factors"
+  ],
+  "title": "FactorUpdate",
+  "type": "object"
+}

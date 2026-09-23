@@ -1,0 +1,140 @@
+{
+  "$defs": {
+    "Wall": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9_-]{1,40}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "x1": {
+          "maximum": 1000,
+          "minimum": -1000,
+          "title": "X1",
+          "type": "number"
+        },
+        "z1": {
+          "maximum": 1000,
+          "minimum": -1000,
+          "title": "Z1",
+          "type": "number"
+        },
+        "x2": {
+          "maximum": 1000,
+          "minimum": -1000,
+          "title": "X2",
+          "type": "number"
+        },
+        "z2": {
+          "maximum": 1000,
+          "minimum": -1000,
+          "title": "Z2",
+          "type": "number"
+        },
+        "thickness_m": {
+          "exclusiveMinimum": 0,
+          "maximum": 2,
+          "title": "Thickness M",
+          "type": "number"
+        },
+        "evidence_id": {
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "source_locator": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Source Locator",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "CONFIRMED",
+            "AI_SUGGESTED",
+            "UNKNOWN"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "insulation": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Insulation"
+        }
+      },
+      "required": [
+        "id",
+        "x1",
+        "z1",
+        "x2",
+        "z2",
+        "thickness_m",
+        "evidence_id",
+        "source_locator",
+        "status"
+      ],
+      "title": "Wall",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "expected_revision": {
+      "minimum": 0,
+      "title": "Expected Revision",
+      "type": "integer"
+    },
+    "floor_height_m": {
+      "exclusiveMinimum": 0,
+      "maximum": 20,
+      "title": "Floor Height M",
+      "type": "number"
+    },
+    "floors": {
+      "maximum": 30,
+      "minimum": 1,
+      "title": "Floors",
+      "type": "integer"
+    },
+    "responsible_person": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Responsible Person",
+      "type": "string"
+    },
+    "review_note": {
+      "maxLength": 2000,
+      "minLength": 5,
+      "title": "Review Note",
+      "type": "string"
+    },
+    "walls": {
+      "items": {
+        "$ref": "#/$defs/Wall"
+      },
+      "maxItems": 300,
+      "minItems": 1,
+      "title": "Walls",
+      "type": "array"
+    }
+  },
+  "required": [
+    "expected_revision",
+    "floor_height_m",
+    "floors",
+    "responsible_person",
+    "review_note",
+    "walls"
+  ],
+  "title": "Reconstruction",
+  "type": "object"
+}
