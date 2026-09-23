@@ -15,7 +15,7 @@ def main():
     commands=[]
     if args.engine:
         commands += [('native_reference',[sys.executable,'-X','utf8','scripts/run_reference.py'],ROOT),('golden_path',[sys.executable,'-X','utf8','scripts/golden_path.py'],ROOT)]
-    commands += [('backend_tests',[sys.executable,'-m','pytest','-q'],ROOT),('backend_lint',[sys.executable,'-m','ruff','check','backend','tests/test_api.py','tests/test_parser_contract.py','scripts/golden_path.py','scripts/replay.py'],ROOT),('frontend_lint',[node,'scripts/check_frontend.mjs'],ROOT),('frontend_tests',[node,'--test','frontend/tests/truth.test.js','frontend/legacy/tests/adapter.test.js'],ROOT),('frontend_build',[node,'node_modules/vite/bin/vite.js','build'],ROOT/'frontend'),('contract_export',[sys.executable,'scripts/export_contract.py'],ROOT)]
+    commands += [('backend_tests',[sys.executable,'-m','pytest','-q'],ROOT),('backend_lint',[sys.executable,'-m','ruff','check','backend','tests/test_api.py','tests/test_auth.py','tests/test_parser_contract.py','scripts/golden_path.py','scripts/replay.py'],ROOT),('frontend_lint',[node,'scripts/check_frontend.mjs'],ROOT),('frontend_tests',[node,'--test','frontend/tests/truth.test.js','frontend/legacy/tests/adapter.test.js'],ROOT),('frontend_build',[node,'node_modules/vite/bin/vite.js','build'],ROOT/'frontend'),('contract_export',[sys.executable,'scripts/export_contract.py'],ROOT)]
     checks=[]
     for name,command,cwd in commands:
         cp=subprocess.run(command,cwd=cwd,capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=600)

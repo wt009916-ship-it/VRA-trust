@@ -4,6 +4,8 @@
 
 ## DONE
 
+最新增量 DONE：真实注册/登录/退出、HttpOnly 会话、CSRF、项目及下载授权；首个账号接管既有项目。Codex 风格侧栏、中央任务区、独立视图、右侧详情、搜索与明暗主题。最新验证为 70 后端测试、13 前端测试、34 项带认证真实流程；下方保留上一轮历史记录。详见 ACCOUNT_WORKSPACE_UPDATE.md。
+
 - 通读商业计划书文字/表格、原始交付与活动代码，输出 CURRENT_STATE_AUDIT.md、来源清单和模块去向。原文件未改。
 - 独立修订目录、本地 Git main/dev/feature 分支、AGENTS.md、Repo Skill、数据真实性规则与 OpenAPI/Pydantic 契约。
 - 历史静态结果隔离到 fixtures/demo；旧 Three.js、Agent、材料、优化与研究源码保留，未冒充活动服务。

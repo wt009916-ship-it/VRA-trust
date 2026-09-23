@@ -1,8 +1,10 @@
 import './style.css';
-import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent } from './api.js';
+import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
+
+import { appShell, homeView, projectView, authView, icon } from './layout.js';
 
 const root = document.querySelector('#app');
-const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [] };
+const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [], user: null, view: 'readiness' };
 let pollTimer;
 let selection = 0;
 const label = { queued: '排队中', running: '仿真中', succeeded: '核验通过', failed: '失败 · 结果不可用', stale: '已失效 · 需复核' };
@@ -19,14 +21,35 @@ async function action(fn, button) {
   finally { if (button?.isConnected) button.disabled = false; }
 }
 function shell() {
-  root.innerHTML = '<header><a class="brand" href="/"><span class="brandmark">V</span><strong>稀土智暖 <small>VRA-Trust</small></strong></a><div class="header-right"><span class="live-dot"></span>本地工程工作区 <span class="divider"></span><span id="engine-health">连接中</span></div></header><div id="workspace"></div><div id="toast" class="toast" role="status" hidden></div><dialog id="dialog"></dialog>';
+  root.innerHTML = appShell(state);
+  document.querySelector('#new-project').onclick = () => projectForm();
+  document.querySelector('#all-projects').onclick = () => { selection++; clearTimeout(pollTimer); state.project = null; home(); };
+  document.querySelector('#load-reference').onclick = e => loadReference(e.currentTarget);
+  document.querySelector('#search-projects').onclick = searchProjects;
+  document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
+  document.querySelector('#theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; localStorage.setItem('vra-theme', theme); };
+  document.querySelector('#logout').onclick = e => action(async () => { await post('/auth/logout', {}); clearSession(); authScreen(false); }, e.currentTarget);
+  bindProjectLinks();
+}
+function bindProjectLinks() {
+  document.querySelectorAll('[data-project]').forEach(b => { b.onclick = () => action(() => selectProject(b.dataset.project)); });
+}
+function loadReference(button) {
+  return action(async () => { const p = await post('/reference-projects', {}); await refreshProjects(); await selectProject(p.project_id); notice('已导入参考资料。请先复核文件，再运行仿真。'); }, button);
 }
 function home() {
-  document.querySelector('#workspace').innerHTML = '<main class="home"><p class="eyebrow">EVIDENCE-AWARE ENGINEERING DECISIONS</p><h1>让每个建筑节能决策<br>都有<span>证据。</span></h1><p class="intro">从不完整资料，到可复核的工程判断。<br>知道依据是什么，也知道什么时候还不能下结论。</p><div class="actions"><button class="primary" id="create-project">创建项目 <span>＋</span></button><button id="reference-project">导入官方参考模型</button></div><p class="subtle">参考输入将单独建档、人工确认并重新仿真，不加载历史结果。</p><section class="project-list"><div class="section-title"><h2>项目工作区</h2><span>' + state.projects.length + ' PROJECTS</span></div><div id="projects"></div></section><div class="principles"><span>01 可复核</span><span>02 可拒答</span><span>03 可补证</span><span>04 可重放</span></div></main>';
-  document.querySelector('#projects').innerHTML = state.projects.length ? state.projects.map(p => '<button class="project-row" data-project="' + p.project_id + '"><span><strong>' + esc(p.name) + '</strong><small>' + esc(p.building.location) + ' · ' + num(p.building.area_m2) + ' m² · ' + esc(p.project_id.slice(-6)) + '</small></span>' + badge(p.data_nature === 'engineering_reference' ? 'REFERENCE · 非实测' : '用户项目') + '<span>进入工作区 →</span></button>').join('') : '<div class="empty"><strong>从一份资料开始</strong><p>创建项目后，导入 IDF、天气及工程资料。系统会先检查是否具备计算条件。</p></div>';
+  shell();
+  document.querySelector('#workspace').innerHTML = homeView(state);
   document.querySelector('#create-project').onclick = () => projectForm();
-  document.querySelector('#reference-project').onclick = e => action(async () => { const p = await post('/reference-projects', {}); await refreshProjects(); await selectProject(p.project_id); notice('已导入 4 份参考输入，等待人工确认；尚未产生计算结果。'); }, e.currentTarget);
-  document.querySelectorAll('[data-project]').forEach(b => { b.onclick = () => action(() => selectProject(b.dataset.project)); });
+  document.querySelector('#reference-project').onclick = e => loadReference(e.currentTarget);
+  document.querySelector('#intake-composer').onsubmit = e => { e.preventDefault(); const name = document.querySelector('#project-intent').value.trim(); projectForm(); if (name) document.querySelector('[name="name"]').value = name; };
+  document.querySelector('#how-it-works').onclick = () => modal('从资料到可复核结果', '<ol class="workflow-steps"><li><strong>建立项目</strong><p>填写建筑用途、地点和面积。</p></li><li><strong>导入并确认资料</strong><p>上传 IDF、天气文件和工程依据，记录来源。</p></li><li><strong>运行并比较方案</strong><p>使用真实仿真结果，保留警告与不确定性。</p></li><li><strong>查看依据，导出报告</strong><p>每个结果绑定独立运行与证据版本。</p></li></ol>');
+  bindProjectLinks();
+}
+function searchProjects() {
+  const dialog = modal('搜索项目', '<input id="project-search" aria-label="搜索项目名称" placeholder="输入项目名称…" autocomplete="off"><div id="search-results"></div>');
+  const update = () => { const term = document.querySelector('#project-search').value.toLowerCase(); document.querySelector('#search-results').innerHTML = state.projects.filter(p => p.name.toLowerCase().includes(term)).map(p => '<button class="search-result" data-search-project="'+p.project_id+'">'+icon('folder')+esc(p.name)+'</button>').join('') || '<p class="empty">没有匹配的项目</p>'; document.querySelectorAll('[data-search-project]').forEach(b => { b.onclick = () => { dialog.close(); action(() => selectProject(b.dataset.searchProject)); }; }); };
+  document.querySelector('#project-search').oninput = update; update(); document.querySelector('#project-search').focus();
 }
 function modal(title, html) {
   const dialog = document.querySelector('#dialog');
@@ -53,15 +76,35 @@ async function selectProject(id) {
   const token = ++selection;
   const [p, ev, runs, gate] = await Promise.all([request('/projects/' + id), request('/projects/' + id + '/evidence'), request('/projects/' + id + '/runs'), request('/projects/' + id + '/gate')]);
   if (token !== selection) return;
-  Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [] });
+  const sameProject = state.project?.project_id === id;
+  Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [], view: sameProject ? state.view : 'readiness' });
   renderProject();
   schedulePoll();
 }
+function switchView(view) {
+  state.view = view;
+  document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
+  document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
+}
 function renderProject() {
-  const p = state.project, ready = state.gate.can_simulate;
-  document.querySelector('#workspace').innerHTML = '<div class="layout"><aside class="sidebar"><button class="back" id="all-projects">← 全部项目</button><p class="eyebrow">PROJECT</p><h2>' + esc(p.name) + '</h2>' + badge(p.data_nature === 'engineering_reference' ? 'REFERENCE · 非实测' : '用户项目') + '<nav><a href="#readiness">◉ 项目准入</a><a href="#evidence">▤ 证据清单 <small>' + state.evidence.length + '</small></a><a href="#simulation">↗ 仿真与结果</a><a href="#trace">◇ 依据追溯</a></nav><div class="sidebar-foot">PROJECT REVISION ' + p.revision + '<p>' + esc(p.building.location) + '<br>' + num(p.building.area_m2) + ' m²</p><button id="edit-building">修订建筑声明</button><p class="subtle">Agent、反例搜索与空间证据界面尚未接通。本页不生成推测结论。</p></div></aside><main class="project-main"><div class="breadcrumbs">工程工作区 / ' + esc(p.building.use) + '</div><section id="readiness"><div class="section-title"><div><p class="eyebrow">PROJECT READINESS</p><h1>现在，能下结论吗？</h1></div>' + badge('尚不能确定推荐', 'warning') + '</div><div class="readiness-banner"><span class="status-symbol">' + (ready ? '↗' : '!') + '</span><div><h2>' + (ready ? '资料已满足仿真准入' : '先补齐关键证据') + '</h2><p>' + (ready ? '可以进行真实计算。模型适用性、舒适性与决策稳定性仍需复核。' : '系统暂不发布能耗或方案推荐。以下缺口决定下一步工作。') + '</p></div></div><div class="readiness-grid"><div><small>关键输入</small><strong>' + (ready ? '已人工确认' : '待确认') + '</strong></div><div><small>仿真健康</small><strong id="simulation-health">' + (state.runs.length ? '见运行记录' : '未计算') + '</strong></div><div><small>决策稳定性</small><strong>未评估</strong></div><div><small>工程师签署</small><strong>未签署</strong></div></div><div id="gaps">' + (state.gate.blockers.map(b => '<div class="gap"><span class="warning-dot"></span><div><strong>' + esc(b.message) + '</strong><p>' + esc(b.action) + '</p></div>' + badge(b.field.toUpperCase()) + '</div>').join('') || '<p class="subtle">准入检查通过不意味着已证明模型准确。所有数值仍需计算及输出核验。</p>') + '</div></section><section id="evidence"><div class="section-title"><div><p class="eyebrow">EVIDENCE MANIFEST</p><h2>每一项输入，都有出处</h2></div><button id="add-evidence">＋ 导入资料</button></div><div id="evidence-table"></div><button id="review-pending" class="text-button">人工确认待审模型与天气 →</button></section><section id="simulation"><div class="section-title"><div><p class="eyebrow">PHYSICS TOOL LAYER</p><h2>真实计算，独立运行</h2></div><span class="subtle">EnergyPlus 9.0.1</span></div><div class="run-controls"><label>方案<select id="scheme"><option value="baseline">baseline · 基准</option><option value="R1">R1 · 候选方案</option><option value="R2">R2 · 候选方案</option></select></label><label>运行碳因子<select id="factor">' + Object.entries(state.profiles).map(([key]) => '<option value="' + esc(key) + '">' + esc(key === 'none' ? '不计算碳排（无适用因子）' : key === 'reference_scenario' ? '教学因子情景 · 非正式核算' : key) + '</option>').join('') + '</select></label><button id="run" class="primary">提交真实仿真 ↗</button><button id="compare">比较最近三方案</button></div><p class="subtle">每次提交保留独立输入快照和原始输出。计算失败后数值保持为空。</p><div id="runs"></div><div id="comparison"></div></section><section id="trace"><p class="eyebrow">WHY THIS RESULT?</p><h2>沿着证据，追到结果</h2><div id="trace-content" class="empty">选择运行记录中的“查看依据”，展开输入与计算依赖。</div><p class="subtle">当前为运行级依赖视图；完整 Claim DAG、选择性重算及稳定性证明仍待后续阶段。</p></section></main></div>';
-  document.querySelector('#all-projects').onclick = () => { selection++; clearTimeout(pollTimer); state.project = null; action(async () => { await refreshProjects(); home(); }); };
+  const p = state.project;
+  shell();
+  document.querySelector('#workspace').innerHTML = projectView(state);
+  document.querySelectorAll('[data-view]').forEach(b => { b.onclick = () => switchView(b.dataset.view); });
+  const inspector = document.querySelector('.inspector');
+  document.querySelector('#toggle-inspector').onclick = () => { inspector.hidden = !inspector.hidden; };
+  document.querySelector('#close-inspector').onclick = () => { inspector.hidden = true; };
   document.querySelector('#edit-building').onclick = () => projectForm(true);
+  document.querySelector('#task-import').onclick = evidenceForm;
+  document.querySelector('#composer-upload').onclick = evidenceForm;
+  document.querySelector('#task-next').onclick = () => switchView(state.gate.can_simulate ? 'simulation' : 'evidence');
+  document.querySelector('#task-command').onsubmit = e => { e.preventDefault(); const input = document.querySelector('#command'); const text = input.value.trim(); if (!text) return; action(async () => {
+    if (/导入|上传/.test(text)) { evidenceForm(); return; }
+    if (/仿真|计算|运行|比较/.test(text)) { switchView('simulation'); notice('请选择方案与因子，再提交计算或比较。'); return; }
+    if (/报告|依据|追溯/.test(text)) { switchView('trace'); return; }
+    if (/资料|证据|检查|缺/.test(text)) { state.gate = await request('/projects/'+state.project.project_id+'/gate'); document.querySelector('#task-response').innerHTML = '<div class="task-reply"><strong>资料检查完成</strong><p>'+esc(state.gate.can_simulate ? '已满足仿真准入。模型适用性和方案稳定性仍需复核。' : state.gate.blockers.map(b => b.message+'；'+b.action).join('。'))+'</p><button id="response-evidence">查看项目资料</button></div>'; document.querySelector('#response-evidence').onclick = () => switchView('evidence'); input.value = ''; return; }
+    notice('当前支持检查资料、导入资料、前往仿真和查看报告。自由对话尚未接通。');
+  }, e.submitter); };
   document.querySelector('#add-evidence').onclick = evidenceForm;
   document.querySelector('#review-pending').onclick = () => reviewForm(state.evidence.filter(e => ['idf', 'epw'].includes(e.type) && e.review_state === 'pending'));
   document.querySelector('#run').onclick = e => action(async () => { const run = await post('/runs', { project_id: p.project_id, scheme_id: document.querySelector('#scheme').value, factor_profile_id: document.querySelector('#factor').value }); notice('已排队：' + run.run_id); await refreshRuns(); schedulePoll(); }, e.currentTarget);
@@ -73,7 +116,7 @@ function renderProject() {
     state.comparedIds = latest.map(r => r.run_id);
     document.querySelector('#comparison').innerHTML = '<div class="comparison"><h3>当前能耗排序：' + data.energy_order.map(esc).join(' → ') + '</h3><p>' + esc(data.note) + '</p><table><thead><tr><th>方案</th><th>节能率</th><th>工程 CO₂ 差值</th><th>综合推荐</th></tr></thead><tbody>' + data.results.map(r => '<tr><td>' + esc(r.scheme_id) + '</td><td>' + num(r.saving_rate_pct) + '%</td><td>' + num(r.engineering_reduction_kg) + ' kg</td><td>证据不足</td></tr>').join('') + '</tbody></table></div>';
   }, e.currentTarget);
-  renderEvidence(); renderRuns();
+  renderEvidence(); renderRuns(); switchView(state.view);
 }
 function renderEvidence() {
   document.querySelector('#evidence-table').innerHTML = state.evidence.length ? '<div class="table-scroll"><table><thead><tr><th>来源 / 证据</th><th>性质</th><th>人工复核</th><th>版本</th><th></th></tr></thead><tbody>' + state.evidence.map(e => '<tr><td><button class="text-button" data-evidence="' + e.evidence_id + '">' + esc(e.name) + '</button><small>' + esc(e.type.toUpperCase()) + (e.scheme_id ? ' · ' + esc(e.scheme_id) : '') + '</small></td><td>' + badge(e.status) + '</td><td>' + badge({ pending: '待确认', confirmed: '已确认', rejected: '已拒绝' }[e.review_state], e.review_state === 'confirmed' ? 'success' : 'warning') + '</td><td>v' + e.revision + '</td><td><button data-evidence="' + e.evidence_id + '">查看 →</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">尚无证据。上传原文件并登记来源定位，保留每一版资料。</div>';
@@ -116,7 +159,7 @@ async function trace(id, scroll = true) {
   document.querySelector('#trace-content').className = 'trace-content';
   document.querySelector('#trace-content').innerHTML = '<div class="trace-heading"><strong class="mono">' + esc(id) + '</strong>' + badge(label[r.status]) + '</div><div class="graph">' + graphMarkup(report.claims.nodes) + '</div><div class="report-actions">' + link('/api/runs/' + id + '/report.json', '完整 JSON') + link('/api/runs/' + id + '/report.html', '证据报告') + link('/api/runs/' + id + '/report.pdf', '下载 PDF') + link('/api/runs/' + id + '/artifacts', '原始证据 ZIP') + '</div><div class="certificate"><p class="eyebrow">DECISION CERTIFICATE · DRAFT</p><h3>当前拒绝给出确定最优推荐</h3><p>状态：' + esc(report.certificate.status) + ' · 工程师未签署</p><p>成立条件：当前输入适用；失效条件：证据、模型、代码或引擎版本变化。</p><p>尚未排除：模型偏差、舒适性问题、方案翻转风险。建议先复核 Warning，再补充账单和运行时段。</p></div><details><summary>完整版本、SQL 来源定位及未满足设定点时间</summary><pre>' + esc(JSON.stringify({ provenance: r.provenance, metrics: r.metrics, evidence: report.evidence, limitations: r.limitations }, null, 2)) + '</pre></details>';
   document.querySelectorAll('[data-node]').forEach(b => { b.onclick = () => { const ev = report.evidence.find(e => e.evidence_id === b.dataset.node); if (ev) evidenceDetail(ev); else notice('该节点依赖与原始 SQL 定位见下方完整版本信息。'); }; });
-  if (scroll) document.querySelector('#trace').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (scroll) switchView('trace');
 }
 async function refreshRuns() {
   if (!state.project) return;
@@ -144,5 +187,31 @@ function schedulePoll() {
   if (!state.project) return;
   pollTimer = setTimeout(async () => { try { await refreshRuns(); schedulePoll(); } catch (err) { notice(err.message, true); } }, 3000);
 }
-shell();
-action(async () => { [state.health, state.profiles] = await Promise.all([request('/health'), request('/factor-profiles')]); document.querySelector('#engine-health').textContent = state.health.engine_available ? 'EnergyPlus 已连接' : 'EnergyPlus 未配置'; await refreshProjects(); home(); });
+function clearSession() {
+  selection++; clearTimeout(pollTimer); setCsrfToken('');
+  Object.assign(state, {user:null, projects:[], project:null, evidence:[], runs:[], selectedRun:null, comparedIds:[]});
+}
+async function enterWorkspace(session) {
+  state.user = session.user; setCsrfToken(session.csrf_token);
+  [state.health, state.profiles] = await Promise.all([request('/health'), request('/factor-profiles')]);
+  await refreshProjects(); home();
+}
+function authScreen(setup, register = false) {
+  root.innerHTML = authView({setup, register});
+  const toggle = document.querySelector('#switch-auth'); if (toggle) toggle.onclick = () => authScreen(false, !register);
+  document.querySelector('#show-password').onclick = e => { const password = document.querySelector('#password'); password.type = password.type === 'password' ? 'text' : 'password'; e.currentTarget.textContent = password.type === 'password' ? '显示' : '隐藏'; e.currentTarget.setAttribute('aria-label', password.type === 'password' ? '显示密码' : '隐藏密码'); };
+  document.querySelector('#auth-form').onsubmit = async e => {
+    e.preventDefault(); const button=e.submitter, error=document.querySelector('#auth-error');
+    button.disabled=true; error.hidden=true;
+    try { const body=Object.fromEntries(new FormData(e.currentTarget)); const session=await post('/auth/'+(setup||register?'register':'login'),body); await enterWorkspace(session); }
+    catch (err) { error.textContent=err.message; error.hidden=false; button.disabled=false; }
+  };
+}
+document.addEventListener('session-expired', () => { clearSession(); authScreen(false); });
+document.addEventListener('keydown', e => {
+  if (!state.user || document.querySelector('dialog[open]')) return;
+  if ((e.ctrlKey || e.metaKey) && ['k','n'].includes(e.key.toLowerCase())) { e.preventDefault(); if (e.key.toLowerCase()==='k') searchProjects(); else projectForm(); }
+});
+document.documentElement.dataset.theme = localStorage.getItem('vra-theme') || 'light';
+root.innerHTML = '<div class="boot-screen">稀土智暖 <span>正在打开工作区…</span></div>';
+(async () => { try { const status=await request('/auth/status'); if (status.setup_required) { authScreen(true); return; } try { await enterWorkspace(await request('/auth/me')); } catch(err) { if(err.status===401) authScreen(false); else throw err; } } catch(err) { root.innerHTML='<div class="boot-screen"><strong>暂时无法连接工作区</strong><p>'+esc(err.message)+'</p><button id="retry-connection">重试</button></div>'; document.querySelector('#retry-connection').onclick=()=>location.reload(); } })();

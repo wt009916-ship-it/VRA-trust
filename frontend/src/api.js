@@ -1,10 +1,15 @@
+let csrfToken = '';
+export function setCsrfToken(value) { csrfToken = value || ''; }
 export async function request(path, options = {}) {
   const headers = options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
-  const response = await fetch('/api' + path, { ...options, headers: { ...headers, ...options.headers }, cache: 'no-store' });
+  const response = await fetch('/api' + path, { ...options, credentials: 'same-origin', headers: { ...headers, ...(csrfToken ? {'X-CSRF-Token': csrfToken} : {}), ...options.headers }, cache: 'no-store' });
   const data = await response.json().catch(() => null);
   if (!response.ok) {
     const detail = data?.detail;
-    throw new Error(Array.isArray(detail) ? detail.map(x => x.loc.join('.') + ': ' + x.msg).join('; ') : detail || '请求失败 (' + response.status + ')');
+    const error = new Error(Array.isArray(detail) ? detail.map(x => x.loc.join('.') + ': ' + x.msg).join('; ') : detail || '请求失败 (' + response.status + ')');
+    error.status = response.status;
+    if (response.status === 401 && !path.startsWith('/auth/')) document.dispatchEvent(new Event('session-expired'));
+    throw error;
   }
   return data;
 }

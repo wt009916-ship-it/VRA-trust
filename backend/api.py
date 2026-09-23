@@ -1,12 +1,14 @@
-"""Local single-user Phase 1 API. Run exactly one uvicorn worker."""
+"""Authenticated local project API. Run exactly one uvicorn worker."""
 import io
 import json
 import os
+import hmac
 import zipfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, File, Request, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.openapi.utils import get_openapi
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +16,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import core
 from .domain import Domain
+from .auth import Auth, Credentials, Registration
 from .reports import report_html, report_pdf
 from .schema import (
     BuildingUpdate,
@@ -57,6 +60,7 @@ class BodyLimit:
 def create_app(data_dir=None, *, start_worker=True):
     root = Path(data_dir or os.environ.get("VRA_DATA_DIR", core.ROOT / "runtime")).resolve()
     domain = Domain(Store(root))
+    auth = Auth(domain.store)
     @asynccontextmanager
     async def lifespan(app):
         if start_worker:
@@ -68,6 +72,8 @@ def create_app(data_dir=None, *, start_worker=True):
 
     app = FastAPI(title="VRA-Trust Evidence API", version="1.0.0", lifespan=lifespan)
     app.state.domain = domain
+    app.state.auth = auth
+    public_api = {"/api/health", "/api/auth/status", "/api/auth/login", "/api/auth/register"}
     maximum = int(os.environ.get("VRA_MAX_UPLOAD_MB", "20")) * 1024 * 1024
     app.add_middleware(BodyLimit, limit=maximum + 65536)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
@@ -77,6 +83,24 @@ def create_app(data_dir=None, *, start_worker=True):
         origin = request.headers.get("origin")
         if origin and origin != str(request.base_url).rstrip("/"):
             return JSONResponse({"detail": "Cross-origin request rejected"}, status_code=403)
+        if request.headers.get("sec-fetch-site") == "cross-site":
+            return JSONResponse({"detail": "Cross-site request rejected"}, status_code=403)
+        path = request.url.path
+        if path.startswith("/api/") and path not in public_api:
+            user = auth.session(request.cookies.get(auth.cookie))
+            if not user:
+                return JSONResponse({"detail": "请先登录"}, status_code=401)
+            request.state.user = user
+            if request.method not in {"GET", "HEAD", "OPTIONS"} and not hmac.compare_digest(request.headers.get("x-csrf-token", ""), user["csrf"]):
+                return JSONResponse({"detail": "会话校验失败，请刷新后重试"}, status_code=403)
+            parts = path.strip("/").split("/")
+            try:
+                if len(parts) >= 3 and parts[1] == "projects":
+                    auth.require_project(parts[2], user["id"])
+                if len(parts) >= 3 and parts[1] == "runs":
+                    auth.require_run(parts[2], user["id"])
+            except (HTTPException, core.ValidationError):
+                return JSONResponse({"detail": "记录不存在或无访问权限"}, status_code=404)
         declared = request.headers.get("content-length")
         if declared and (not declared.isdigit() or int(declared) > maximum + 65536):
             return JSONResponse({"detail": "Request size limit exceeded"}, status_code=413)
@@ -108,20 +132,60 @@ def create_app(data_dir=None, *, start_worker=True):
         except core.ValidationError:
             available = False
         return {"status": "ok", "engine_available": available, "worker_alive": bool(domain.worker and domain.worker.is_alive()),
-                "demo_mode": os.environ.get("DEMO_MODE", "false").lower() == "true", "deployment": "local_single_user",
+                "demo_mode": os.environ.get("DEMO_MODE", "false").lower() == "true", "deployment": "local_authenticated",
                 "capabilities": {"project_intake": True, "evidence_gate": True, "real_energyplus": available, "llm_tools": False, "drawing_ai": False, "robustness": False}}
 
+    @app.get("/api/auth/status")
+    def auth_status():
+        return {"setup_required": auth.setup_required()}
+
+    def session_response(result, old_token=None):
+        token, user = result
+        if old_token:
+            auth.logout(old_token)
+        response = JSONResponse({"user": {k: v for k, v in user.items() if k != "csrf"}, "csrf_token": user["csrf"]})
+        response.set_cookie(auth.cookie, token, httponly=True, samesite="strict", max_age=auth.ttl,
+                            secure=os.environ.get("VRA_COOKIE_SECURE", "false").lower() == "true")
+        response.headers["Cache-Control"] = "no-store"
+        return response
+
+    @app.post("/api/auth/register")
+    def register(body: Registration, request: Request):
+        auth.throttle(body.username, request.client.host if request.client else "unknown")
+        return session_response(auth.register(body), request.cookies.get(auth.cookie))
+
+    @app.post("/api/auth/login")
+    def login(body: Credentials, request: Request):
+        auth.throttle(body.username, request.client.host if request.client else "unknown")
+        return session_response(auth.login(body), request.cookies.get(auth.cookie))
+
+    @app.get("/api/auth/me")
+    def me(request: Request):
+        user = request.state.user
+        return {"user": {k: v for k, v in user.items() if k != "csrf"}, "csrf_token": user["csrf"]}
+
+    @app.post("/api/auth/logout")
+    def logout(request: Request):
+        auth.logout(request.cookies[auth.cookie])
+        response = JSONResponse({"logged_out": True})
+        response.delete_cookie(auth.cookie)
+        return response
+
     @app.get("/api/projects", response_model=list[Project])
-    def projects():
-        return domain.store.list("project")
+    def projects(request: Request):
+        return [p for p in domain.store.list("project") if auth.allows(p["project_id"], request.state.user["id"])]
 
     @app.post("/api/projects", response_model=Project, status_code=201)
-    def create_project(body: ProjectCreate):
-        return domain.create_project(body)
+    def create_project(body: ProjectCreate, request: Request):
+        project = domain.create_project(body)
+        auth.own(project["project_id"], request.state.user["id"])
+        return project
 
     @app.post("/api/reference-projects", response_model=Project, status_code=201)
-    def reference_project():
-        return domain.create_reference()
+    def reference_project(request: Request):
+        project = domain.create_reference()
+        auth.own(project["project_id"], request.state.user["id"])
+        return project
 
     @app.get("/api/projects/{project_id}", response_model=Project)
     def project(project_id: str):
@@ -177,7 +241,8 @@ def create_app(data_dir=None, *, start_worker=True):
         return core.profiles()
 
     @app.post("/api/runs", response_model=RunView, status_code=202)
-    def create_run(body: RunCreate):
+    def create_run(body: RunCreate, request: Request):
+        auth.require_project(body.project_id, request.state.user["id"])
         return domain.submit(body)
 
     @app.get("/api/runs/{run_id}", response_model=RunView)
@@ -221,12 +286,35 @@ def create_app(data_dir=None, *, start_worker=True):
         return Response(report_pdf(domain.report(run_id)), media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="{run_id}.pdf"'})
 
     @app.post("/api/comparisons")
-    def compare(body: ComparisonRequest):
+    def compare(body: ComparisonRequest, request: Request):
+        for run_id in body.run_ids:
+            auth.require_run(run_id, request.state.user["id"])
         return domain.compare(body.run_ids)
 
     dist = core.ROOT / "frontend/dist"
     if dist.is_dir():
         app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")
+
+    def secured_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+        schema = get_openapi(title=app.title, version=app.version, routes=app.routes)
+        schema.setdefault("components", {})["securitySchemes"] = {
+            "sessionCookie": {"type": "apiKey", "in": "cookie", "name": auth.cookie},
+            "csrfHeader": {"type": "apiKey", "in": "header", "name": "X-CSRF-Token"},
+        }
+        for path, methods in schema["paths"].items():
+            if path.startswith("/api/") and path not in public_api:
+                for method, operation in methods.items():
+                    security = {"sessionCookie": []}
+                    if method not in {"get", "head", "options"}:
+                        security["csrfHeader"] = []
+                    operation["security"] = [security]
+                    operation["responses"].setdefault("401", {"description": "Authentication required"})
+                    operation["responses"].setdefault("403", {"description": "CSRF or origin rejected"})
+        app.openapi_schema = schema
+        return schema
+    app.openapi = secured_openapi
     return app
 
 

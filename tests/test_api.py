@@ -8,6 +8,8 @@ from backend.api import create_app
 def client(tmp_path):
     app = create_app(tmp_path / "data", start_worker=False)
     with TestClient(app) as client:
+        login = client.post('/api/auth/register', json={'username':'test_owner','display_name':'Test owner','password':'Test-only-long-pass-2026'}).json()
+        client.headers['X-CSRF-Token'] = login['csrf_token']
         yield client
 
 
@@ -177,6 +179,8 @@ def test_report_reuses_one_validation_snapshot(client, monkeypatch):
 def test_upload_size_limit(tmp_path, monkeypatch):
     monkeypatch.setenv("VRA_MAX_UPLOAD_MB", "1")
     with TestClient(create_app(tmp_path / "small", start_worker=False)) as client:
+        login = client.post('/api/auth/register', json={'username':'size_owner','display_name':'Test owner','password':'Test-only-long-pass-2026'}).json()
+        client.headers['X-CSRF-Token'] = login['csrf_token']
         p = create_project(client)
         url = f"/api/projects/{p['project_id']}/files"
         response = client.post(url, files={"file": ("large.csv", b"x" * (1024 * 1024 + 1))})

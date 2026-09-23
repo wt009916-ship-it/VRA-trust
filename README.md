@@ -6,6 +6,8 @@
 
 ## 启动
 
+最新增量：真实账号与项目隔离，以及项目侧栏、中央任务区、独立工作视图和右侧详情。见 docs/ACCOUNT_WORKSPACE_UPDATE.md。
+
 需要 Python 3.12、Node 22+ 和 EnergyPlus 9.0.1。
 
 ```powershell
@@ -20,6 +22,8 @@ $env:ENERGYPLUS_EXE = 'F:/EnergyPlusV9-0-1/energyplus.exe'
 ```
 
 访问 http://127.0.0.1:8766 。本机任务也支持已有的 ../.codex_work/vra-venv 开发环境。Start.ps1 仅监听本机，不自动安装依赖。
+
+首次访问自行创建账号（用户名 3–32 位，密码至少 10 个字符）。无默认密码；既有项目归入首个账号，其他账号只能访问自己的项目。账号数据库保存在 runtime，不得提交或公开。当前暂无邮件找回。
 
 1. 创建项目并填写建筑声明，或显式导入官方参考模型。
 2. 上传 IDF/EPW 和其他资料，登记出处、定位、授权、登记人；PDF/图片当前不自动 OCR。
@@ -77,4 +81,4 @@ runtime、runs、validation、密钥、依赖和私人建筑资料不提交。
 
 ## 发布状态
 
-本地单用户版本已验证；无公网认证/租户隔离。Docker Compose 为准备配置，未运行容器；阿里云未配置。GitHub app 写入返回 403 时，本地 Git/CI 文件已就绪不等于已远程发布。
+本地会话和项目授权已验证；团队共享、邮件找回和公网部署未完成。HTTPS 部署必须设置 VRA_COOKIE_SECURE=true，另行配置域名/TLS/代理。Docker Compose 为准备配置，未运行容器；阿里云未配置。GitHub app 写入返回 403 时，本地 Git/CI 文件已就绪不等于已远程发布。

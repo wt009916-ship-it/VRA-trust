@@ -5,6 +5,7 @@ The reference model is not a measured building. No fake provider or engine is us
 import json
 import sys
 import time
+import secrets
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -23,7 +24,10 @@ def check(condition, name):
         raise AssertionError(name)
 
 
-with TestClient(create_app(ROOT / "runtime")) as client:
+with TestClient(create_app(ROOT / "validation/authenticated-golden" / ("session_" + secrets.token_hex(8)))) as client:
+    auth = client.post('/api/auth/register', json={'username':'golden_owner','display_name':'自动验收账号','password':secrets.token_urlsafe(24)})
+    check(auth.status_code == 200, 'authenticated owner created in isolated validation database')
+    client.headers['X-CSRF-Token'] = auth.json()['csrf_token']
     response = client.post("/api/reference-projects")
     check(response.status_code == 201, "reference project created through API")
     p = response.json()

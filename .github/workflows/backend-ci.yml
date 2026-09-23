@@ -13,7 +13,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r backend/requirements-dev.txt
-      - run: python -m ruff check backend tests/test_api.py tests/test_parser_contract.py scripts/golden_path.py scripts/replay.py
+      - run: python -m ruff check backend tests/test_api.py tests/test_auth.py tests/test_parser_contract.py scripts/golden_path.py scripts/replay.py
       - run: python -m pytest -q
       - run: python scripts/export_contract.py
       - run: git diff --exit-code -- shared/schemas

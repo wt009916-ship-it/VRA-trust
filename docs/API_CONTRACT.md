@@ -1,5 +1,7 @@
 # Phase 1 contract v1.0
 
+账号增量：GET /api/auth/status、POST /api/auth/register、POST /api/auth/login 为公开入口；GET /api/auth/me、POST /api/auth/logout 需要会话。除 health 和三个公开账号入口外，所有业务 API 均须 vra_session Cookie；写请求另须 X-CSRF-Token。注册/登录/me 返回 csrf_token，前端只保存在内存。项目及 run/报告/文件下载按账号归属授权，无权限统一 404，未登录 401，CSRF/跨来源 403。OpenAPI 已标注 cookie 和 CSRF security schemes。
+
 权威定义：backend/schema.py；生成件 shared/schemas/openapi.json、building.json、evidence.json、run.json。执行 python scripts/export_contract.py；CI 检查 schema drift。
 
 - POST/GET /api/projects；GET /api/projects/{id}；PUT /api/projects/{id}/building。
