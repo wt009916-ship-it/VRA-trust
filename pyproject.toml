@@ -1,0 +1,17 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["engine: invokes an installed EnergyPlus executable"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 140
+exclude = ["legacy", "research", "fixtures", "frontend"]
+
+[tool.ruff.lint]
+select = ["E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/core.py" = ["F401"]
+"backend/service.py" = ["F401"]
+"scripts/*.py" = ["F401", "E402"]
+"tests/test_core.py" = ["F401"]

@@ -1,0 +1,388 @@
+{
+  "lib_name": "稀土智暖-围护结构构造库",
+  "version": "v4.0-FINAL",
+  "freeze_date": "2026-08-15",
+  "schema_note": "本周后不再修改字段名与数据格式;任何变更需开变更会并升级版本号",
+  "change_log": [
+    {
+      "version": "v1.0",
+      "date": "2026-07-20",
+      "change": "初版3种方案(基准/岩棉/稀土保温板)"
+    },
+    {
+      "version": "v2.0",
+      "date": "2026-07-24",
+      "change": "扩展至6种方案,新增稀土气凝胶/XPS/聚氨酯"
+    },
+    {
+      "version": "v3.0",
+      "date": "2026-07-31",
+      "change": "能动物理红线审核v3.0后冻结;稀土类材料参数启用PlanB文献占位并标注[待实测验证];U值按GB 50176热阻叠加法复算"
+    },
+    {
+      "version": "v4.0",
+      "date": "2026-08-15",
+      "change": "最终冻结:①新增综合单价字段(材料+施工+辅材+饰面)②稀土类材料保留PlanB文献标注③U值经54组合全厚度档复算核验④15组测试案例验证无Schema问题"
+    }
+  ],
+  "climate_zone": "夏热冬冷地区(南昌)",
+  "code_basis": [
+    "GB 55015-2021 建筑节能与可再生能源利用通用规范",
+    "GB 50176-2016 民用建筑热工设计规范",
+    "江西省公共建筑节能设计标准"
+  ],
+  "materials": {
+    "cement_mortar": {
+      "name": "水泥砂浆抹面层",
+      "lambda": 0.93,
+      "density": 1800,
+      "thickness_m": 0.02,
+      "fire": "A1",
+      "price_yuan_m2": 25,
+      "lifespan_a": 50,
+      "water_absorption": null,
+      "source": "GB 50176-2016 民用建筑热工设计规范",
+      "verified": true
+    },
+    "reinforced_concrete": {
+      "name": "钢筋混凝土基层",
+      "lambda": 1.74,
+      "density": 2500,
+      "thickness_m": 0.2,
+      "fire": "A1",
+      "price_yuan_m2": 0,
+      "lifespan_a": 50,
+      "water_absorption": null,
+      "source": "GB 50176-2016",
+      "verified": true
+    },
+    "rockwool": {
+      "name": "岩棉板",
+      "lambda": 0.04,
+      "density": 140,
+      "thickness_m": 0.08,
+      "fire": "A1",
+      "price_yuan_m2": 60,
+      "lifespan_a": 25,
+      "water_absorption": "≤1.0%",
+      "source": "GB/T 25975-2018 建筑外墙外保温用岩棉制品",
+      "verified": true
+    },
+    "rareearth_board": {
+      "name": "稀土复合保温板",
+      "lambda": 0.033,
+      "density": 350,
+      "thickness_m": 0.06,
+      "fire": "A1",
+      "price_yuan_m2": 150,
+      "lifespan_a": 30,
+      "water_absorption": "≤3%(文献值,待实测)",
+      "source": "文献占位:ZGT稀土保温材料企业标准Q/BYL01-2004(λ=0.0319-0.037);凝胶型稀土复合保温材料专利CN111777368A",
+      "verified": false,
+      "note": "赣州实测数据待补充-PlanB占位"
+    },
+    "rareearth_aerogel": {
+      "name": "稀土复合气凝胶毡",
+      "lambda": 0.02,
+      "density": 200,
+      "thickness_m": 0.04,
+      "fire": "A",
+      "price_yuan_m2": 400,
+      "lifespan_a": 25,
+      "water_absorption": "憎水(文献值,待实测)",
+      "source": "文献占位:包头稀土研究院&兰州大学柔性稀土纤维气凝胶(λ=0.012,实验室值);气凝胶复合保温材料工程值λ≈0.018-0.020",
+      "verified": false,
+      "note": "赣州实测数据待补充-PlanB占位"
+    },
+    "xps": {
+      "name": "挤塑聚苯板XPS",
+      "lambda": 0.03,
+      "density": 35,
+      "thickness_m": 0.07,
+      "fire": "B1",
+      "price_yuan_m2": 55,
+      "lifespan_a": 25,
+      "water_absorption": "≤1.5%",
+      "source": "GB/T 10801.2-2018 绝热用挤塑聚苯乙烯泡沫塑料",
+      "verified": true
+    },
+    "pu": {
+      "name": "硬泡聚氨酯",
+      "lambda": 0.024,
+      "density": 45,
+      "thickness_m": 0.06,
+      "fire": "B1",
+      "price_yuan_m2": 90,
+      "lifespan_a": 25,
+      "water_absorption": "≤3%",
+      "source": "GB/T 21558-2008 建筑绝热用硬质聚氨酯泡沫塑料",
+      "verified": true
+    }
+  },
+  "schemes": [
+    {
+      "scheme_id": "S0",
+      "scheme_name": "基准方案(无保温)",
+      "description": "既有建筑现状,外墙K值远超现行标准,作为对比基准",
+      "wall_u_value_W_m2K": 3.247,
+      "total_thickness_m": 0.24,
+      "insulation_material": null,
+      "insulation_lambda": null,
+      "insulation_thickness_mm": 0,
+      "fire_rating": "A1",
+      "insulation_price_yuan_m2": 0,
+      "layers": [
+        {
+          "layer_order": 1,
+          "material": "cement_mortar",
+          "role": "饰面层"
+        },
+        {
+          "layer_order": 2,
+          "material": "reinforced_concrete",
+          "role": "结构基层"
+        },
+        {
+          "layer_order": 4,
+          "material": "cement_mortar",
+          "role": "内抹灰"
+        }
+      ],
+      "layer_names": [
+        "水泥砂浆抹面层",
+        "钢筋混凝土基层",
+        "水泥砂浆抹面层"
+      ],
+      "data_verified": true,
+      "data_source": "既有建筑调研",
+      "composite_price_yuan_m2": 0.0
+    },
+    {
+      "scheme_id": "S1",
+      "scheme_name": "传统岩棉板80mm",
+      "description": "市场主流无机方案,A1防火",
+      "wall_u_value_W_m2K": 0.433,
+      "total_thickness_m": 0.32,
+      "insulation_material": "岩棉板",
+      "insulation_lambda": 0.04,
+      "insulation_thickness_mm": 80,
+      "fire_rating": "A1",
+      "insulation_price_yuan_m2": 60,
+      "layers": [
+        {
+          "layer_order": 1,
+          "material": "cement_mortar",
+          "role": "饰面层"
+        },
+        {
+          "layer_order": 2,
+          "material": "reinforced_concrete",
+          "role": "结构基层"
+        },
+        {
+          "layer_order": 3,
+          "material": "rockwool",
+          "role": "保温层",
+          "thickness_m": 0.08
+        },
+        {
+          "layer_order": 4,
+          "material": "cement_mortar",
+          "role": "内抹灰"
+        }
+      ],
+      "layer_names": [
+        "水泥砂浆抹面层",
+        "钢筋混凝土基层",
+        "岩棉板",
+        "水泥砂浆抹面层"
+      ],
+      "data_verified": true,
+      "data_source": "GB/T 25975-2018 建筑外墙外保温用岩棉制品",
+      "composite_price_yuan_m2": 188.0
+    },
+    {
+      "scheme_id": "S2",
+      "scheme_name": "稀土复合保温板60mm",
+      "description": "核心方案:赣州稀土尾渣协同利用方向[待实测验证]",
+      "wall_u_value_W_m2K": 0.47,
+      "total_thickness_m": 0.3,
+      "insulation_material": "稀土复合保温板",
+      "insulation_lambda": 0.033,
+      "insulation_thickness_mm": 60,
+      "fire_rating": "A1",
+      "insulation_price_yuan_m2": 150,
+      "layers": [
+        {
+          "layer_order": 1,
+          "material": "cement_mortar",
+          "role": "饰面层"
+        },
+        {
+          "layer_order": 2,
+          "material": "reinforced_concrete",
+          "role": "结构基层"
+        },
+        {
+          "layer_order": 3,
+          "material": "rareearth_board",
+          "role": "保温层",
+          "thickness_m": 0.06
+        },
+        {
+          "layer_order": 4,
+          "material": "cement_mortar",
+          "role": "内抹灰"
+        }
+      ],
+      "layer_names": [
+        "水泥砂浆抹面层",
+        "钢筋混凝土基层",
+        "稀土复合保温板",
+        "水泥砂浆抹面层"
+      ],
+      "data_verified": false,
+      "data_source": "文献占位:ZGT稀土保温材料企业标准Q/BYL01-2004(λ=0.0319-0.037);凝胶型稀土复合保温材料专利CN111777368A",
+      "composite_price_yuan_m2": 283.0
+    },
+    {
+      "scheme_id": "S3",
+      "scheme_name": "稀土复合气凝胶40mm",
+      "description": "高性能方案:超薄厚度实现同等热阻[待实测验证]",
+      "wall_u_value_W_m2K": 0.433,
+      "total_thickness_m": 0.28,
+      "insulation_material": "稀土复合气凝胶毡",
+      "insulation_lambda": 0.02,
+      "insulation_thickness_mm": 40,
+      "fire_rating": "A",
+      "insulation_price_yuan_m2": 400,
+      "layers": [
+        {
+          "layer_order": 1,
+          "material": "cement_mortar",
+          "role": "饰面层"
+        },
+        {
+          "layer_order": 2,
+          "material": "reinforced_concrete",
+          "role": "结构基层"
+        },
+        {
+          "layer_order": 3,
+          "material": "rareearth_aerogel",
+          "role": "保温层",
+          "thickness_m": 0.04
+        },
+        {
+          "layer_order": 4,
+          "material": "cement_mortar",
+          "role": "内抹灰"
+        }
+      ],
+      "layer_names": [
+        "水泥砂浆抹面层",
+        "钢筋混凝土基层",
+        "稀土复合气凝胶毡",
+        "水泥砂浆抹面层"
+      ],
+      "data_verified": false,
+      "data_source": "文献占位:包头稀土研究院&兰州大学柔性稀土纤维气凝胶(λ=0.012,实验室值);气凝胶复合保温材料工程值λ≈0.018-0.020",
+      "composite_price_yuan_m2": 538.0
+    },
+    {
+      "scheme_id": "S4",
+      "scheme_name": "XPS挤塑板70mm",
+      "description": "低价有机方案,导热低但防火B1",
+      "wall_u_value_W_m2K": 0.379,
+      "total_thickness_m": 0.31,
+      "insulation_material": "挤塑聚苯板XPS",
+      "insulation_lambda": 0.03,
+      "insulation_thickness_mm": 70,
+      "fire_rating": "B1",
+      "insulation_price_yuan_m2": 55,
+      "layers": [
+        {
+          "layer_order": 1,
+          "material": "cement_mortar",
+          "role": "饰面层"
+        },
+        {
+          "layer_order": 2,
+          "material": "reinforced_concrete",
+          "role": "结构基层"
+        },
+        {
+          "layer_order": 3,
+          "material": "xps",
+          "role": "保温层",
+          "thickness_m": 0.07
+        },
+        {
+          "layer_order": 4,
+          "material": "cement_mortar",
+          "role": "内抹灰"
+        }
+      ],
+      "layer_names": [
+        "水泥砂浆抹面层",
+        "钢筋混凝土基层",
+        "挤塑聚苯板XPS",
+        "水泥砂浆抹面层"
+      ],
+      "data_verified": true,
+      "data_source": "GB/T 10801.2-2018 绝热用挤塑聚苯乙烯泡沫塑料",
+      "composite_price_yuan_m2": 178.0
+    },
+    {
+      "scheme_id": "S5",
+      "scheme_name": "硬泡聚氨酯60mm",
+      "description": "有机高性能方案,导热最低梯队",
+      "wall_u_value_W_m2K": 0.356,
+      "total_thickness_m": 0.3,
+      "insulation_material": "硬泡聚氨酯",
+      "insulation_lambda": 0.024,
+      "insulation_thickness_mm": 60,
+      "fire_rating": "B1",
+      "insulation_price_yuan_m2": 90,
+      "layers": [
+        {
+          "layer_order": 1,
+          "material": "cement_mortar",
+          "role": "饰面层"
+        },
+        {
+          "layer_order": 2,
+          "material": "reinforced_concrete",
+          "role": "结构基层"
+        },
+        {
+          "layer_order": 3,
+          "material": "pu",
+          "role": "保温层",
+          "thickness_m": 0.06
+        },
+        {
+          "layer_order": 4,
+          "material": "cement_mortar",
+          "role": "内抹灰"
+        }
+      ],
+      "layer_names": [
+        "水泥砂浆抹面层",
+        "钢筋混凝土基层",
+        "硬泡聚氨酯",
+        "水泥砂浆抹面层"
+      ],
+      "data_verified": true,
+      "data_source": "GB/T 21558-2008 建筑绝热用硬质聚氨酯泡沫塑料",
+      "composite_price_yuan_m2": 218.0
+    }
+  ],
+  "signoff": {
+    "软工A_龚希苗": "待签字(最终冻结)",
+    "软工B_熊思月": "待签字(最终冻结)",
+    "能动": "已审(v4.0红线终审通过)",
+    "智建_郭峰辉": "已确认",
+    "冻结纪律": "2026-08-15 23:59后任何修改需开变更会并升版本号"
+  }
+}

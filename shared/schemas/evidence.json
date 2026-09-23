@@ -1,0 +1,208 @@
+{
+  "$defs": {
+    "EvidenceStatus": {
+      "enum": [
+        "MEASURED",
+        "DOCUMENTED",
+        "IMPORTED",
+        "ASSUMED",
+        "AI_INFERRED",
+        "MISSING"
+      ],
+      "title": "EvidenceStatus",
+      "type": "string"
+    },
+    "JsonValue": {}
+  },
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": [
+        "drawing",
+        "bill",
+        "equipment_table",
+        "bim",
+        "idf",
+        "epw",
+        "sensor",
+        "manual_input",
+        "literature",
+        "assumption",
+        "ai_inference"
+      ],
+      "title": "Type",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "source_file": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source File"
+    },
+    "source_locator": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Source Locator",
+      "type": "string"
+    },
+    "value": {
+      "$ref": "#/$defs/JsonValue",
+      "default": null
+    },
+    "unit": {
+      "anyOf": [
+        {
+          "maxLength": 80,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unit"
+    },
+    "authority": {
+      "maxLength": 300,
+      "minLength": 1,
+      "title": "Authority",
+      "type": "string"
+    },
+    "permission": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Permission",
+      "type": "string"
+    },
+    "uncertainty": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Uncertainty"
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confidence"
+    },
+    "acquisition_method": {
+      "maxLength": 300,
+      "minLength": 1,
+      "title": "Acquisition Method",
+      "type": "string"
+    },
+    "responsible_person": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Responsible Person",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/EvidenceStatus",
+      "default": "IMPORTED"
+    },
+    "scheme_id": {
+      "anyOf": [
+        {
+          "enum": [
+            "baseline",
+            "R1",
+            "R2"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scheme Id"
+    },
+    "evidence_id": {
+      "title": "Evidence Id",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "revision": {
+      "title": "Revision",
+      "type": "integer"
+    },
+    "timestamp": {
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "hash": {
+      "title": "Hash",
+      "type": "string"
+    },
+    "review_state": {
+      "default": "pending",
+      "enum": [
+        "pending",
+        "confirmed",
+        "rejected"
+      ],
+      "title": "Review State",
+      "type": "string"
+    },
+    "review_note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Review Note"
+    }
+  },
+  "required": [
+    "type",
+    "name",
+    "source_locator",
+    "authority",
+    "permission",
+    "acquisition_method",
+    "responsible_person",
+    "evidence_id",
+    "project_id",
+    "revision",
+    "timestamp",
+    "hash"
+  ],
+  "title": "Evidence",
+  "type": "object"
+}

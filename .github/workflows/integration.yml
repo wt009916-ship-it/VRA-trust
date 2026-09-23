@@ -1,0 +1,16 @@
+name: Integration contract
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  api-parser-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r backend/requirements-dev.txt
+      - run: python -m pytest tests/test_api.py tests/test_parser_contract.py -q
+      # These tests use a clearly labeled projection of native reference SQL.
+      # Actual EnergyPlus acceptance remains scripts/golden_path.py on a matching engine host.

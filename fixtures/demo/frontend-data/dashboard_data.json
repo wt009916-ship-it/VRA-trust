@@ -1,0 +1,471 @@
+{
+  "schema_version": "dashboard_v1.0",
+  "generated": "2026-08-15",
+  "building": {
+    "building_id": "office",
+    "name": "办公楼",
+    "city": "南昌",
+    "area_m2": 5000,
+    "floors": 5,
+    "geometry_ref": "geometry_office_v2.json",
+    "lib_ref": "construction_lib_final.json"
+  },
+  "plans": [
+    {
+      "scheme_id": "S1",
+      "scheme_name": "岩棉板100mm",
+      "material_key": "rockwool",
+      "thickness_mm": 100,
+      "u_value": 0.356,
+      "lambda": 0.04,
+      "fire_rating": "A1",
+      "energy": {
+        "annual_cooling_kWh": 89043,
+        "annual_heating_kWh": 76290,
+        "intensity_kWh_m2a": 33.1,
+        "saving_rate_pct": 29.0
+      },
+      "cost": {
+        "unit_price_yuan_m2": 203.0,
+        "initial_investment_wanyuan": 33.3
+      },
+      "carbon_stages_tCO2": {
+        "production": 179.2,
+        "transport": 7.0,
+        "construction": 3.58,
+        "operation": 4714.5,
+        "demolition": 8.96
+      },
+      "carbon": {
+        "annual_operation_tCO2": 94.3,
+        "lca_total_tCO2": 4913.2
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 38.5,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 2500,
+        "total_10y_yuan": 24998
+      },
+      "feasibility_score_40": 40,
+      "plan_label": "A",
+      "recommend_tag": "成本最优"
+    },
+    {
+      "scheme_id": "S2",
+      "scheme_name": "稀土复合保温板60mm",
+      "material_key": "rareearth_board",
+      "thickness_mm": 60,
+      "u_value": 0.47,
+      "lambda": 0.033,
+      "fire_rating": "A1",
+      "energy": {
+        "annual_cooling_kWh": 89372,
+        "annual_heating_kWh": 78624,
+        "intensity_kWh_m2a": 33.6,
+        "saving_rate_pct": 27.8
+      },
+      "cost": {
+        "unit_price_yuan_m2": 283.0,
+        "initial_investment_wanyuan": 46.4
+      },
+      "carbon_stages_tCO2": {
+        "production": 262.5,
+        "transport": 8.8,
+        "construction": 5.25,
+        "operation": 4790.4,
+        "demolition": 13.12
+      },
+      "carbon": {
+        "annual_operation_tCO2": 95.8,
+        "lca_total_tCO2": 5080.0
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 36.9,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 2401,
+        "total_10y_yuan": 24011
+      },
+      "feasibility_score_40": 40,
+      "plan_label": "B",
+      "recommend_tag": "均衡主推·稀土"
+    },
+    {
+      "scheme_id": "S3",
+      "scheme_name": "稀土复合气凝胶100mm",
+      "material_key": "rareearth_aerogel",
+      "thickness_mm": 100,
+      "u_value": 0.188,
+      "lambda": 0.02,
+      "fire_rating": "A",
+      "energy": {
+        "annual_cooling_kWh": 88560,
+        "annual_heating_kWh": 72861,
+        "intensity_kWh_m2a": 32.3,
+        "saving_rate_pct": 30.7
+      },
+      "cost": {
+        "unit_price_yuan_m2": 1138.0,
+        "initial_investment_wanyuan": 186.4
+      },
+      "carbon_stages_tCO2": {
+        "production": 600.0,
+        "transport": 10.0,
+        "construction": 12.0,
+        "operation": 4602.9,
+        "demolition": 30.0
+      },
+      "carbon": {
+        "annual_operation_tCO2": 92.1,
+        "lca_total_tCO2": 5254.9
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 40.7,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 2645,
+        "total_10y_yuan": 26448
+      },
+      "feasibility_score_40": 40,
+      "plan_label": "C",
+      "recommend_tag": "节能最优·稀土"
+    }
+  ],
+  "charts": {
+    "radar": {
+      "dimensions": [
+        "节能率%",
+        "初投资(万元,反转)",
+        "年碳排(tCO₂,反转)",
+        "CCER年价值(元)",
+        "施工可行性"
+      ],
+      "note": "成本/碳排为越小越好,前端做反转归一化后再画",
+      "series": [
+        {
+          "plan": "A",
+          "values": [
+            29.0,
+            33.3,
+            94.3,
+            2500,
+            40
+          ]
+        },
+        {
+          "plan": "B",
+          "values": [
+            27.8,
+            46.4,
+            95.8,
+            2401,
+            40
+          ]
+        },
+        {
+          "plan": "C",
+          "values": [
+            30.7,
+            186.4,
+            92.1,
+            2645,
+            40
+          ]
+        }
+      ]
+    },
+    "waterfall": {
+      "stages": [
+        "建材生产",
+        "运输",
+        "施工",
+        "运行(50年)",
+        "拆除"
+      ],
+      "note": "点击方案卡片切换series,单位tCO₂",
+      "series": [
+        {
+          "plan": "A",
+          "values": [
+            179.2,
+            7.0,
+            3.58,
+            4714.5,
+            8.96
+          ]
+        },
+        {
+          "plan": "B",
+          "values": [
+            262.5,
+            8.8,
+            5.25,
+            4790.4,
+            13.12
+          ]
+        },
+        {
+          "plan": "C",
+          "values": [
+            600.0,
+            10.0,
+            12.0,
+            4602.9,
+            30.0
+          ]
+        }
+      ]
+    },
+    "compare_cards": [
+      {
+        "plan": "A",
+        "tag": "成本最优",
+        "scheme_name": "岩棉板100mm",
+        "saving": 29.0,
+        "invest": 33.3,
+        "annual_carbon": 94.3,
+        "ccer": 2500
+      },
+      {
+        "plan": "B",
+        "tag": "均衡主推·稀土",
+        "scheme_name": "稀土复合保温板60mm",
+        "saving": 27.8,
+        "invest": 46.4,
+        "annual_carbon": 95.8,
+        "ccer": 2401
+      },
+      {
+        "plan": "C",
+        "tag": "节能最优·稀土",
+        "scheme_name": "稀土复合气凝胶100mm",
+        "saving": 30.7,
+        "invest": 186.4,
+        "annual_carbon": 92.1,
+        "ccer": 2645
+      }
+    ]
+  },
+  "all_schemes_for_switching": [
+    {
+      "scheme_id": "S0",
+      "scheme_name": "基准方案(无保温)",
+      "material_key": null,
+      "thickness_mm": 0,
+      "u_value": 3.247,
+      "lambda": null,
+      "fire_rating": "A1",
+      "energy": {
+        "annual_cooling_kWh": 97378,
+        "annual_heating_kWh": 135390,
+        "intensity_kWh_m2a": 46.6,
+        "saving_rate_pct": 0.0
+      },
+      "cost": {
+        "unit_price_yuan_m2": 0,
+        "initial_investment_wanyuan": 0.0
+      },
+      "carbon_stages_tCO2": {
+        "production": 0.0,
+        "transport": 0.0,
+        "construction": 0.0,
+        "operation": 6637.4,
+        "demolition": 0.0
+      },
+      "carbon": {
+        "annual_operation_tCO2": 132.7,
+        "lca_total_tCO2": 6637.4
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 0.0,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 0,
+        "total_10y_yuan": 0
+      },
+      "feasibility_score_40": 0
+    },
+    {
+      "scheme_id": "S1",
+      "scheme_name": "岩棉板80mm",
+      "material_key": "rockwool",
+      "thickness_mm": 80,
+      "u_value": 0.433,
+      "lambda": 0.04,
+      "fire_rating": "A1",
+      "energy": {
+        "annual_cooling_kWh": 89266,
+        "annual_heating_kWh": 77867,
+        "intensity_kWh_m2a": 33.4,
+        "saving_rate_pct": 28.2
+      },
+      "cost": {
+        "unit_price_yuan_m2": 188.0,
+        "initial_investment_wanyuan": 30.8
+      },
+      "carbon_stages_tCO2": {
+        "production": 143.4,
+        "transport": 5.6,
+        "construction": 2.87,
+        "operation": 4765.8,
+        "demolition": 7.17
+      },
+      "carbon": {
+        "annual_operation_tCO2": 95.3,
+        "lca_total_tCO2": 4924.8
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 37.4,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 2433,
+        "total_10y_yuan": 24331
+      },
+      "feasibility_score_40": 40
+    },
+    {
+      "scheme_id": "S2",
+      "scheme_name": "稀土复合保温板60mm",
+      "material_key": "rareearth_board",
+      "thickness_mm": 60,
+      "u_value": 0.47,
+      "lambda": 0.033,
+      "fire_rating": "A1",
+      "energy": {
+        "annual_cooling_kWh": 89372,
+        "annual_heating_kWh": 78624,
+        "intensity_kWh_m2a": 33.6,
+        "saving_rate_pct": 27.8
+      },
+      "cost": {
+        "unit_price_yuan_m2": 283.0,
+        "initial_investment_wanyuan": 46.4
+      },
+      "carbon_stages_tCO2": {
+        "production": 262.5,
+        "transport": 8.8,
+        "construction": 5.25,
+        "operation": 4790.4,
+        "demolition": 13.12
+      },
+      "carbon": {
+        "annual_operation_tCO2": 95.8,
+        "lca_total_tCO2": 5080.0
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 36.9,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 2401,
+        "total_10y_yuan": 24011
+      },
+      "feasibility_score_40": 40
+    },
+    {
+      "scheme_id": "S3",
+      "scheme_name": "稀土复合气凝胶40mm",
+      "material_key": "rareearth_aerogel",
+      "thickness_mm": 40,
+      "u_value": 0.433,
+      "lambda": 0.02,
+      "fire_rating": "A",
+      "energy": {
+        "annual_cooling_kWh": 89266,
+        "annual_heating_kWh": 77867,
+        "intensity_kWh_m2a": 33.4,
+        "saving_rate_pct": 28.2
+      },
+      "cost": {
+        "unit_price_yuan_m2": 538.0,
+        "initial_investment_wanyuan": 88.1
+      },
+      "carbon_stages_tCO2": {
+        "production": 240.0,
+        "transport": 4.0,
+        "construction": 4.8,
+        "operation": 4765.8,
+        "demolition": 12.0
+      },
+      "carbon": {
+        "annual_operation_tCO2": 95.3,
+        "lca_total_tCO2": 5026.6
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 37.4,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 2433,
+        "total_10y_yuan": 24331
+      },
+      "feasibility_score_40": 40
+    },
+    {
+      "scheme_id": "S4",
+      "scheme_name": "XPS挤塑板70mm",
+      "material_key": "xps",
+      "thickness_mm": 70,
+      "u_value": 0.379,
+      "lambda": 0.03,
+      "fire_rating": "B1",
+      "energy": {
+        "annual_cooling_kWh": 89108,
+        "annual_heating_kWh": 76749,
+        "intensity_kWh_m2a": 33.2,
+        "saving_rate_pct": 28.7
+      },
+      "cost": {
+        "unit_price_yuan_m2": 178.0,
+        "initial_investment_wanyuan": 29.2
+      },
+      "carbon_stages_tCO2": {
+        "production": 83.3,
+        "transport": 1.2,
+        "construction": 1.67,
+        "operation": 4729.4,
+        "demolition": 4.17
+      },
+      "carbon": {
+        "annual_operation_tCO2": 94.6,
+        "lca_total_tCO2": 4819.8
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 38.2,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 2480,
+        "total_10y_yuan": 24804
+      },
+      "feasibility_score_40": 36
+    },
+    {
+      "scheme_id": "S5",
+      "scheme_name": "硬泡聚氨酯60mm",
+      "material_key": "pu",
+      "thickness_mm": 60,
+      "u_value": 0.356,
+      "lambda": 0.024,
+      "fire_rating": "B1",
+      "energy": {
+        "annual_cooling_kWh": 89043,
+        "annual_heating_kWh": 76290,
+        "intensity_kWh_m2a": 33.1,
+        "saving_rate_pct": 29.0
+      },
+      "cost": {
+        "unit_price_yuan_m2": 218.0,
+        "initial_investment_wanyuan": 35.7
+      },
+      "carbon_stages_tCO2": {
+        "production": 94.5,
+        "transport": 1.4,
+        "construction": 1.89,
+        "operation": 4714.5,
+        "demolition": 4.73
+      },
+      "carbon": {
+        "annual_operation_tCO2": 94.3,
+        "lca_total_tCO2": 4816.9
+      },
+      "ccer": {
+        "annual_reduction_tCO2": 38.5,
+        "price_yuan_t": 65,
+        "annual_value_yuan": 2500,
+        "total_10y_yuan": 24998
+      },
+      "feasibility_score_40": 36
+    }
+  ]
+}

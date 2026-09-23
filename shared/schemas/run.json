@@ -1,0 +1,214 @@
+{
+  "$defs": {
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "case_id": {
+          "title": "Case Id",
+          "type": "string"
+        },
+        "scheme_id": {
+          "title": "Scheme Id",
+          "type": "string"
+        },
+        "model_hash": {
+          "title": "Model Hash",
+          "type": "string"
+        },
+        "weather_hash": {
+          "title": "Weather Hash",
+          "type": "string"
+        },
+        "engine_version": {
+          "title": "Engine Version",
+          "type": "string"
+        },
+        "code_version": {
+          "title": "Code Version",
+          "type": "string"
+        },
+        "parser_version": {
+          "title": "Parser Version",
+          "type": "string"
+        },
+        "factor_version": {
+          "title": "Factor Version",
+          "type": "string"
+        },
+        "timestamp": {
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "project_id",
+        "case_id",
+        "scheme_id",
+        "model_hash",
+        "weather_hash",
+        "engine_version",
+        "code_version",
+        "parser_version",
+        "factor_version",
+        "timestamp"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "scheme_id": {
+      "title": "Scheme Id",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "stale"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "data_nature": {
+      "title": "Data Nature",
+      "type": "string"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Finished At"
+    },
+    "metrics": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Metrics"
+    },
+    "carbon": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Carbon"
+    },
+    "provenance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Provenance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    },
+    "stale_reasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Stale Reasons",
+      "type": "array"
+    },
+    "warnings_count": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Warnings Count"
+    },
+    "review_status": {
+      "default": "pending_engineer_review",
+      "title": "Review Status",
+      "type": "string"
+    },
+    "engine_calls_executed": {
+      "default": 0,
+      "title": "Engine Calls Executed",
+      "type": "integer"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "run_id",
+    "project_id",
+    "case_id",
+    "scheme_id",
+    "status",
+    "data_nature",
+    "created_at"
+  ],
+  "title": "RunView",
+  "type": "object"
+}

@@ -1,0 +1,131 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "use": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Use",
+      "type": "string"
+    },
+    "location": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Location",
+      "type": "string"
+    },
+    "region": {
+      "maxLength": 40,
+      "minLength": 1,
+      "title": "Region",
+      "type": "string"
+    },
+    "area_m2": {
+      "exclusiveMinimum": 0,
+      "maximum": 10000000,
+      "title": "Area M2",
+      "type": "number"
+    },
+    "floors": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 300,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Floors"
+    },
+    "floor_height_m": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 50,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Floor Height M"
+    },
+    "window_wall_ratio": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Window Wall Ratio"
+    },
+    "envelope": {
+      "anyOf": [
+        {
+          "maxLength": 4000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Envelope"
+    },
+    "hvac": {
+      "anyOf": [
+        {
+          "maxLength": 4000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hvac"
+    },
+    "schedules": {
+      "anyOf": [
+        {
+          "maxLength": 4000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Schedules"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "maxLength": 4000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "use",
+    "location",
+    "region",
+    "area_m2"
+  ],
+  "title": "Building",
+  "type": "object"
+}
