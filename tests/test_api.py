@@ -4,15 +4,6 @@ from backend import core
 from backend.api import create_app
 
 
-@pytest.fixture
-def client(tmp_path):
-    app = create_app(tmp_path / "data", start_worker=False)
-    with TestClient(app) as client:
-        login = client.post('/api/auth/register', json={'username':'test_owner','display_name':'Test owner','password':'Test-only-long-pass-2026'}).json()
-        client.headers['X-CSRF-Token'] = login['csrf_token']
-        yield client
-
-
 def create_project(client, **changes):
     data = {"name": "Test project", "building": {"use": "office", "location": "Golden", "region": "US-CO", "area_m2": 927.2}}
     data.update(changes)
@@ -155,10 +146,11 @@ def test_building_revision_conflict(client):
     assert client.put(url, json=body).status_code == 409
 
 
-def test_health_does_not_claim_agent_or_robustness(client):
+def test_health_distinguishes_installed_tools_from_configured_provider(client):
     result = client.get("/api/health").json()
     assert not result["capabilities"]["llm_tools"]
-    assert not result["capabilities"]["robustness"]
+    assert result["capabilities"]["robustness"]
+    assert result["capabilities"]["agent_tools_installed"]
     assert not result["demo_mode"]
 
 
@@ -169,7 +161,8 @@ def test_report_reuses_one_validation_snapshot(client, monkeypatch):
         calls.append(run_id)
         return {"status": "stale", "provenance": None}
     monkeypatch.setattr(domain, "view", view)
-    monkeypatch.setattr(domain.store, "job", lambda rid: {"project_snapshot": {}, "evidence_snapshot": {}, "scheme_id": "baseline"})
+    project = create_project(client)
+    monkeypatch.setattr(domain.store, "job", lambda rid: {"project_id": project['project_id'], "factor_profile_id": "none", "project_snapshot": {}, "evidence_snapshot": {}, "scheme_id": "baseline"})
     report = domain.report("snapshot_test")
     assert calls == ["snapshot_test"]
     assert report["certificate"]["status"] == "STALE"
@@ -202,7 +195,7 @@ def test_stale_calculation_does_not_falsely_invalidate_unchanged_evidence(client
     confirm(client, p["project_id"])
     domain = client.app.state.domain
     inputs = domain.gate(p["project_id"])["selected_evidence"]
-    monkeypatch.setattr(domain.store, "job", lambda rid: {"evidence_snapshot": inputs})
+    monkeypatch.setattr(domain.store, "job", lambda rid: {"project_id": p['project_id'], "factor_profile_id": "none", "evidence_snapshot": inputs})
     graph = domain.claims("test_calculation_changed", {"status": "stale"})
     assert all(n["state"] == "VALID" for n in graph["nodes"] if n["kind"] == "Evidence")
     assert next(n for n in graph["nodes"] if n["kind"] == "Simulation")["state"] == "STALE"

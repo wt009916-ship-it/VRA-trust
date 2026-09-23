@@ -105,7 +105,12 @@ class Auth:
             return None
         with self.store.connect() as con:
             row = con.execute("SELECT u.id,u.username,u.display_name,s.csrf FROM sessions s JOIN users u ON u.id=s.user_id WHERE token_hash=? AND expires>?", (digest(token), time.time())).fetchone()
-        return dict(row) if row else None
+        return {**dict(row), 'is_admin': self.is_admin(row['id'])} if row else None
+
+    def is_admin(self, user_id):
+        with self.store.connect() as con:
+            first = con.execute('SELECT id FROM users ORDER BY rowid LIMIT 1').fetchone()
+        return bool(first and first[0] == user_id)
 
     def logout(self, token):
         with self.store.connect() as con:

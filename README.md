@@ -2,7 +2,7 @@
 
 既有公共建筑可核验节能改造决策智能体。核心原则：可复核、可拒答、可补证、可重放。
 
-本轮是 Phase 0/1 产品化基础与真实纵向流程。**完整 Agent、Claim DAG、反例搜索、图纸智能和云部署尚未完成。** 旧三维、优化、材料与研究成果保留，不代表已接入活动服务。
+当前已在 Phase 0/1 基础上接入节点追溯、碳因子选择性重算、受控工具执行与 DeepSeek Adapter、有限域真实仿真搜索，以及人工确认到简单三维的闭环。**这仍不是全部模块或生产环境验收完成。** 详见 docs/TRUST_AGENT_SPATIAL_DELIVERY.md。
 
 ## 启动
 
@@ -59,7 +59,7 @@ flowchart LR
   API --> Reports[JSON / HTML / PDF / 证据 ZIP]
 ```
 
-物理能耗不由 LLM 产生。结构化声明目前核对 IDF，尚不负责自动生成模型。运行级依赖视图不是完整 Claim DAG。
+物理能耗不由 LLM 产生。结构化声明目前核对 IDF，尚不负责自动生成模型。节点图区分证据版本、仿真、能耗、面积、EUI、因子和碳排；改变因子仅重算碳排，原仿真保持不变。
 
 ## 资料导航
 
@@ -81,4 +81,18 @@ runtime、runs、validation、密钥、依赖和私人建筑资料不提交。
 
 ## 发布状态
 
-本地会话和项目授权已验证；团队共享、邮件找回和公网部署未完成。HTTPS 部署必须设置 VRA_COOKIE_SECURE=true，另行配置域名/TLS/代理。Docker Compose 为准备配置，未运行容器；阿里云未配置。GitHub app 写入返回 403 时，本地 Git/CI 文件已就绪不等于已远程发布。
+本地会话和项目授权已验证；团队共享、邮件找回和公网部署未完成。HTTPS 部署必须设置 VRA_COOKIE_SECURE=true，另行配置域名/TLS/代理。Docker Compose 为准备配置，未运行容器；阿里云和第二台电脑验收按用户最新指示暂缓。GitHub app 写入返回 403 时，本地 Git/CI 文件已就绪不等于已远程发布。
+
+
+## 新增入口
+
+- 首页嵌入八步工作流动画，可暂停和逐步切换，明确标记为流程示意。
+- 首个管理员账号：侧栏 **开发者设置** → 填写 DeepSeek Key / 模型 → 保存 → 测试连接。Key 不进入前端构建或浏览器存储。
+- 项目工作台：选择“本地工程流程”或“AI Provider”，观察真实工具与 Provider 请求时间线；工程结果仍来自工具。
+- 仿真页：修改碳因子 → 观察 Carbon STALE → 仅重算碳排。
+- 反例与补证：填写共同材料导热系数离散点、来源与预算 → 真实仿真 → 条件补证成本候选排序。
+- 图纸与三维：先导入/确认来源，再填写墙体坐标、尺寸、状态和人工依据；生成确定性几何，点击墙查看证据。
+
+运行专项真实验收：`python scripts/verify_trust_slice.py`。它在 validation 下建立隔离账户，运行 3 个参考方案和 3 次预算内反例仿真，并核验选择性重算不调用 EnergyPlus。
+
+Provider 协议依据：[DeepSeek 官方 Tool Calls 文档](https://api-docs.deepseek.com/guides/tool_calls/)。默认模型 deepseek-flash，可在管理员设置中修改。未填 Key 时不会模拟 LLM 成功；协议测试不等于付费服务商在线验收。

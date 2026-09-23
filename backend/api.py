@@ -64,6 +64,8 @@ def create_app(data_dir=None, *, start_worker=True):
     @asynccontextmanager
     async def lifespan(app):
         if start_worker:
+            app.state.agent.recover()
+            app.state.robustness.recover()
             domain.start_worker()
         yield
         domain.stop.set()
@@ -133,7 +135,10 @@ def create_app(data_dir=None, *, start_worker=True):
             available = False
         return {"status": "ok", "engine_available": available, "worker_alive": bool(domain.worker and domain.worker.is_alive()),
                 "demo_mode": os.environ.get("DEMO_MODE", "false").lower() == "true", "deployment": "local_authenticated",
-                "capabilities": {"project_intake": True, "evidence_gate": True, "real_energyplus": available, "llm_tools": False, "drawing_ai": False, "robustness": False}}
+                "capabilities": {"project_intake": True, "evidence_gate": True, "real_energyplus": available,
+                    "llm_tools": all(app.state.gateway.public()[k] for k in ('enabled', 'key_configured')),
+                    "agent_tools_installed": True, "claim_dag": True, "selective_recomputation": True,
+                    "drawing_ai": False, "manual_geometry": True, "robustness": True}}
 
     @app.get("/api/auth/status")
     def auth_status():
@@ -291,6 +296,8 @@ def create_app(data_dir=None, *, start_worker=True):
             auth.require_run(run_id, request.state.user["id"])
         return domain.compare(body.run_ids)
 
+    from .extensions import register_extensions
+    register_extensions(app, domain, auth)
     dist = core.ROOT / "frontend/dist"
     if dist.is_dir():
         app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")

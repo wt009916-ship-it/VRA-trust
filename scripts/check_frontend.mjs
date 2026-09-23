@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-for (const path of ['frontend/src/main.js', 'frontend/src/api.js', 'frontend/src/layout.js']) {
+for (const path of ['frontend/src/main.js', 'frontend/src/api.js', 'frontend/src/layout.js', 'frontend/src/trust-ui.js', 'frontend/src/spatial-ui.js', 'frontend/src/robustness-ui.js']) {
   const r = spawnSync(process.execPath, ['--check', path], { stdio: 'inherit' });
   if (r.status !== 0) process.exit(r.status || 1);
 }

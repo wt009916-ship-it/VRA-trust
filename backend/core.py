@@ -33,7 +33,9 @@ def relative_file(root,value):
     if not p.is_relative_to(root) or not p.is_file():raise ValidationError('Missing or unsafe registered file: '+str(value))
     return p
 def code_hash():
-    return hash_json({p.name:sha(p) for p in sorted((ROOT/'backend').glob('*.py'))})
+    # Physics validity must not depend on UI, authentication or Agent code.
+    # Keep the entire audited computation module conservative for physics changes.
+    return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION})
 def engine_path():
     configured=os.environ.get('ENERGYPLUS_EXE')
     if not configured and (ROOT/'config.local.json').is_file():configured=read_json(ROOT/'config.local.json').get('energyplus_exe')

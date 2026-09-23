@@ -1,4 +1,7 @@
 import './style.css';
+import { spatialWorkspace } from './spatial-ui.js';
+import { robustnessWorkspace } from './robustness-ui.js';
+import { bindWorkflow, developerSettings, runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
 import { appShell, homeView, projectView, authView, icon } from './layout.js';
@@ -29,6 +32,7 @@ function shell() {
   document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
   document.querySelector('#theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; localStorage.setItem('vra-theme', theme); };
   document.querySelector('#logout').onclick = e => action(async () => { await post('/auth/logout', {}); clearSession(); authScreen(false); }, e.currentTarget);
+  const dev=document.querySelector('#developer-settings'); if(dev) dev.onclick=()=>developerSettings(modal,action,notice);
   bindProjectLinks();
 }
 function bindProjectLinks() {
@@ -40,6 +44,7 @@ function loadReference(button) {
 function home() {
   shell();
   document.querySelector('#workspace').innerHTML = homeView(state);
+  bindWorkflow();
   document.querySelector('#create-project').onclick = () => projectForm();
   document.querySelector('#reference-project').onclick = e => loadReference(e.currentTarget);
   document.querySelector('#intake-composer').onsubmit = e => { e.preventDefault(); const name = document.querySelector('#project-intent').value.trim(); projectForm(); if (name) document.querySelector('[name="name"]').value = name; };
@@ -85,6 +90,8 @@ function switchView(view) {
   state.view = view;
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
+  const host=document.querySelector('#'+view);
+  if(host && ['spatial','robustness'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(()=>view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
 }
 function renderProject() {
   const p = state.project;
@@ -98,13 +105,8 @@ function renderProject() {
   document.querySelector('#task-import').onclick = evidenceForm;
   document.querySelector('#composer-upload').onclick = evidenceForm;
   document.querySelector('#task-next').onclick = () => switchView(state.gate.can_simulate ? 'simulation' : 'evidence');
-  document.querySelector('#task-command').onsubmit = e => { e.preventDefault(); const input = document.querySelector('#command'); const text = input.value.trim(); if (!text) return; action(async () => {
-    if (/导入|上传/.test(text)) { evidenceForm(); return; }
-    if (/仿真|计算|运行|比较/.test(text)) { switchView('simulation'); notice('请选择方案与因子，再提交计算或比较。'); return; }
-    if (/报告|依据|追溯/.test(text)) { switchView('trace'); return; }
-    if (/资料|证据|检查|缺/.test(text)) { state.gate = await request('/projects/'+state.project.project_id+'/gate'); document.querySelector('#task-response').innerHTML = '<div class="task-reply"><strong>资料检查完成</strong><p>'+esc(state.gate.can_simulate ? '已满足仿真准入。模型适用性和方案稳定性仍需复核。' : state.gate.blockers.map(b => b.message+'；'+b.action).join('。'))+'</p><button id="response-evidence">查看项目资料</button></div>'; document.querySelector('#response-evidence').onclick = () => switchView('evidence'); input.value = ''; return; }
-    notice('当前支持检查资料、导入资料、前往仿真和查看报告。自由对话尚未接通。');
-  }, e.submitter); };
+  document.querySelector('#task-command').onsubmit = e => {e.preventDefault();const input=document.querySelector('#command');if(!input.value.trim())return;const target=document.querySelector('#task-response');action(()=>runAgent(state,input.value.trim(),target,document.querySelector('#agent-mode').value,document.querySelector('#allow-compute').checked),e.submitter);};
+  document.querySelector('#edit-factors').onclick=()=>factorEditor(state,modal,action,refreshRuns);
   document.querySelector('#add-evidence').onclick = evidenceForm;
   document.querySelector('#review-pending').onclick = () => reviewForm(state.evidence.filter(e => ['idf', 'epw'].includes(e.type) && e.review_state === 'pending'));
   document.querySelector('#run').onclick = e => action(async () => { const run = await post('/runs', { project_id: p.project_id, scheme_id: document.querySelector('#scheme').value, factor_profile_id: document.querySelector('#factor').value }); notice('已排队：' + run.run_id); await refreshRuns(); schedulePoll(); }, e.currentTarget);
@@ -117,6 +119,7 @@ function renderProject() {
     document.querySelector('#comparison').innerHTML = '<div class="comparison"><h3>当前能耗排序：' + data.energy_order.map(esc).join(' → ') + '</h3><p>' + esc(data.note) + '</p><table><thead><tr><th>方案</th><th>节能率</th><th>工程 CO₂ 差值</th><th>综合推荐</th></tr></thead><tbody>' + data.results.map(r => '<tr><td>' + esc(r.scheme_id) + '</td><td>' + num(r.saving_rate_pct) + '%</td><td>' + num(r.engineering_reduction_kg) + ' kg</td><td>证据不足</td></tr>').join('') + '</tbody></table></div>';
   }, e.currentTarget);
   renderEvidence(); renderRuns(); switchView(state.view);
+  const mode=document.querySelector('#agent-mode');request('/agent/status').then(info=>{if(mode?.isConnected){mode.options[1].textContent=info.provider_ready?'AI · '+info.model:'AI · 请先配置 Key';if(info.provider_ready)mode.value='provider';}}).catch(()=>{});
 }
 function renderEvidence() {
   document.querySelector('#evidence-table').innerHTML = state.evidence.length ? '<div class="table-scroll"><table><thead><tr><th>来源 / 证据</th><th>性质</th><th>人工复核</th><th>版本</th><th></th></tr></thead><tbody>' + state.evidence.map(e => '<tr><td><button class="text-button" data-evidence="' + e.evidence_id + '">' + esc(e.name) + '</button><small>' + esc(e.type.toUpperCase()) + (e.scheme_id ? ' · ' + esc(e.scheme_id) : '') + '</small></td><td>' + badge(e.status) + '</td><td>' + badge({ pending: '待确认', confirmed: '已确认', rejected: '已拒绝' }[e.review_state], e.review_state === 'confirmed' ? 'success' : 'warning') + '</td><td>v' + e.revision + '</td><td><button data-evidence="' + e.evidence_id + '">查看 →</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">尚无证据。上传原文件并登记来源定位，保留每一版资料。</div>';
@@ -144,13 +147,17 @@ function evidenceForm() {
 }
 function renderRuns() {
   const target = document.querySelector('#runs'); if (!target) return;
-  target.innerHTML = state.runs.length ? '<div class="table-scroll"><table><thead><tr><th>方案 / run_id</th><th>状态</th><th>年能耗 kWh</th><th>EUI</th><th>运行 CO₂ kg</th><th>依据</th></tr></thead><tbody>' + state.runs.map(r => '<tr><td><strong>' + esc(r.scheme_id) + '</strong><small class="mono">' + esc(r.run_id.slice(0, 16)) + '…</small></td><td>' + badge(label[r.status], r.status === 'succeeded' ? 'success' : 'warning') + (r.warnings_count ? '<small>' + r.warnings_count + ' warnings · 待复核</small>' : '') + (r.error ? '<small class="error-text">' + esc(r.error) + '</small>' : '') + (r.stale_reasons?.length ? '<small class="error-text">' + r.stale_reasons.map(esc).join('；') + '</small>' : '') + '</td><td class="numeric">' + num(resultValue(r, 'annual_energy_kwh')) + '</td><td class="numeric">' + num(resultValue(r, 'eui_kwh_m2a')) + '</td><td class="numeric">' + num(r.status === 'succeeded' ? r.carbon?.operating_carbon_kg : null) + (r.carbon?.scenario ? '<small>教学情景</small>' : '') + '</td><td><button data-trace="' + r.run_id + '">查看依据</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">未计算 · 没有历史数值补位</div>';
+  target.innerHTML = state.runs.length ? '<div class="table-scroll"><table><thead><tr><th>方案 / run_id</th><th>状态</th><th>年能耗 kWh</th><th>EUI</th><th>运行 CO₂ kg</th><th>依据</th></tr></thead><tbody>' + state.runs.map(r => '<tr><td><strong>' + esc(r.scheme_id) + '</strong><small class="mono">' + esc(r.run_id.slice(0, 16)) + '…</small></td><td>' + badge(label[r.status], r.status === 'succeeded' ? 'success' : 'warning') + (r.warnings_count ? '<small>' + r.warnings_count + ' warnings · 待复核</small>' : '') + (r.error ? '<small class="error-text">' + esc(r.error) + '</small>' : '') + (r.stale_reasons?.length ? '<small class="error-text">' + r.stale_reasons.map(esc).join('；') + '</small>' : '') + '</td><td class="numeric">' + num(resultValue(r, 'annual_energy_kwh')) + '</td><td class="numeric">' + num(resultValue(r, 'eui_kwh_m2a')) + '</td><td class="numeric">' + num(r.status === 'succeeded' ? r.carbon?.operating_carbon_kg : null) + (r.carbon?.scenario ? '<small>教学情景</small>' : '') + (r.carbon?.node_state==='STALE'?'<small class="error-text">STALE · 因子已更新</small><button data-recarbon="'+r.run_id+'">仅重算碳排</button>':'') + '</td><td><button data-trace="' + r.run_id + '">查看依据</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">未计算 · 没有历史数值补位</div>';
+  document.querySelectorAll('[data-recarbon]').forEach(b=>{b.onclick=()=>action(async()=>{await post('/runs/'+b.dataset.recarbon+'/recalculate-carbon',{});await refreshRuns();notice('碳排已重算；EnergyPlus 调用 0 次。');},b);});
   document.querySelectorAll('[data-trace]').forEach(b => { b.onclick = () => action(() => trace(b.dataset.trace)); });
 }
 function graphMarkup(nodes) {
-  const node = n => '<button class="graph-node ' + n.state.toLowerCase() + '" data-node="' + n.id + '"><small>' + esc(n.kind) + ' · ' + esc(n.state) + '</small><strong>' + esc(n.label) + '</strong></button>';
-  const inputs = '<div class="graph-inputs">' + nodes.filter(n => n.kind === 'Evidence').map(node).join('') + '</div>';
-  return [inputs, ...nodes.filter(n => n.kind !== 'Evidence').map(node)].join('<span class="graph-arrow">→</span>');
+  const index=new Map(nodes.map(n=>[n.id,n])), depth=new Map();
+  const level=(id,seen=new Set())=>{if(depth.has(id))return depth.get(id);if(seen.has(id))return 0;seen.add(id);const node=index.get(id),value=node?.depends_on?.length?1+Math.max(...node.depends_on.map(d=>level(d,new Set(seen)))):0;depth.set(id,value);return value;};
+  const counts=new Map(),positions=new Map();nodes.forEach(n=>{const col=level(n.id),row=counts.get(col)||0;counts.set(col,row+1);positions.set(n.id,{x:col*205+12,y:row*100+18});});
+  const width=(Math.max(...depth.values())+1)*205+12,height=Math.max(...counts.values())*100+20;
+  const edges=nodes.flatMap(n=>(n.depends_on||[]).map(d=>{const a=positions.get(d),b=positions.get(n.id);return a&&b?'<path d="M '+(a.x+174)+' '+(a.y+34)+' C '+(a.x+190)+' '+(a.y+34)+','+(b.x-18)+' '+(b.y+34)+','+b.x+' '+(b.y+34)+'" fill="none" stroke="currentColor" marker-end="url(#claim-arrow)"/>':'';})).join('');
+  return '<div class="dag-canvas" style="width:'+width+'px;height:'+height+'px"><svg width="'+width+'" height="'+height+'" aria-hidden="true"><defs><marker id="claim-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="currentColor"/></marker></defs>'+edges+'</svg>'+nodes.map(n=>{const p=positions.get(n.id);return '<button style="left:'+p.x+'px;top:'+p.y+'px" class="graph-node '+n.state.toLowerCase()+'" data-node="'+esc(n.id)+'"><small>'+esc(n.kind)+' · '+esc(n.state)+'</small><strong>'+esc(n.label)+'</strong></button>';}).join('')+'</div>';
 }
 async function trace(id, scroll = true) {
   state.selectedRun = id;
@@ -158,7 +165,7 @@ async function trace(id, scroll = true) {
   const r = report.run;
   document.querySelector('#trace-content').className = 'trace-content';
   document.querySelector('#trace-content').innerHTML = '<div class="trace-heading"><strong class="mono">' + esc(id) + '</strong>' + badge(label[r.status]) + '</div><div class="graph">' + graphMarkup(report.claims.nodes) + '</div><div class="report-actions">' + link('/api/runs/' + id + '/report.json', '完整 JSON') + link('/api/runs/' + id + '/report.html', '证据报告') + link('/api/runs/' + id + '/report.pdf', '下载 PDF') + link('/api/runs/' + id + '/artifacts', '原始证据 ZIP') + '</div><div class="certificate"><p class="eyebrow">DECISION CERTIFICATE · DRAFT</p><h3>当前拒绝给出确定最优推荐</h3><p>状态：' + esc(report.certificate.status) + ' · 工程师未签署</p><p>成立条件：当前输入适用；失效条件：证据、模型、代码或引擎版本变化。</p><p>尚未排除：模型偏差、舒适性问题、方案翻转风险。建议先复核 Warning，再补充账单和运行时段。</p></div><details><summary>完整版本、SQL 来源定位及未满足设定点时间</summary><pre>' + esc(JSON.stringify({ provenance: r.provenance, metrics: r.metrics, evidence: report.evidence, limitations: r.limitations }, null, 2)) + '</pre></details>';
-  document.querySelectorAll('[data-node]').forEach(b => { b.onclick = () => { const ev = report.evidence.find(e => e.evidence_id === b.dataset.node); if (ev) evidenceDetail(ev); else notice('该节点依赖与原始 SQL 定位见下方完整版本信息。'); }; });
+  document.querySelectorAll('[data-node]').forEach(b => { b.onclick = () => { const ev = report.evidence.find(e => e.evidence_id === report.claims.nodes.find(n=>n.id===b.dataset.node)?.evidence_id); if (ev) evidenceDetail(ev); else {const node=report.claims.nodes.find(n=>n.id===b.dataset.node);modal('结论节点与依赖','<pre>'+esc(JSON.stringify(node,null,2))+'</pre>');} }; });
   if (scroll) switchView('trace');
 }
 async function refreshRuns() {
@@ -168,6 +175,8 @@ async function refreshRuns() {
   if (token !== selection) return;
   const old = state.runs.find(r => r.run_id === state.selectedRun);
   const current = runs.find(r => r.run_id === state.selectedRun);
+  const carbonChanged=runs.some(r=>state.comparedIds.includes(r.run_id)&&JSON.stringify(r.carbon)!==JSON.stringify(state.runs.find(previous=>previous.run_id===r.run_id)?.carbon));
+  if(carbonChanged){const table=document.querySelector('#comparison');if(table)table.innerHTML='';state.comparedIds=[];}
   if (JSON.stringify(state.runs) !== JSON.stringify(runs)) {
     state.runs = runs;
     renderRuns();
