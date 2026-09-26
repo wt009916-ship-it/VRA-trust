@@ -45,7 +45,7 @@ def test_local_agent_real_gate_timeline_and_fail_closed_provider(client):
     assert task['status'] == 'succeeded'
     assert task['answer']['can_simulate'] is False
     assert task['answer']['can_recommend'] is False
-    assert [e['tool'] for e in task['events']] == ['project_get', 'evidence_list', 'evidence_validate']
+    assert [e['tool'] for e in task['events']] == ['project_get', 'evidence_list', 'evidence_validate', 'project_diagnose']
     assert all(e['status'] == 'succeeded' and e['result_hash'] and e['duration_ms'] >= 0 for e in task['events'])
     assert task['llm_commentary'] is None
     assert client.post(f'/api/projects/{pid}/agent/chat', json={'message': 'hello', 'mode': 'provider'}).status_code == 409
@@ -106,7 +106,7 @@ def test_provider_agent_calls_actual_registry_under_protocol_fixture(client, mon
     monkeypatch.setattr(agent.gateway, 'complete', lambda messages, tools: next(responses))
     result = agent.start(pid, Chat(message='检查资料', mode='provider'), background=False)
     assert result['status'] == 'succeeded'
-    assert len(result['events']) == 6
+    assert len(result['events']) == 7
     assert result['events'][-2]['result']['can_simulate'] is False
     assert result['events'][-1]['tool'] == 'llm.request'
     assert result['answer']['can_recommend'] is False

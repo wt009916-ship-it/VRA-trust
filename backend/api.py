@@ -66,6 +66,7 @@ def create_app(data_dir=None, *, start_worker=True):
         if start_worker:
             app.state.agent.recover()
             app.state.robustness.recover()
+            app.state.decisions.recover()
             domain.start_worker()
         yield
         domain.stop.set()
