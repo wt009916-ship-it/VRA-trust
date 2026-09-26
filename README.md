@@ -21,7 +21,7 @@ $env:ENERGYPLUS_EXE = 'F:/EnergyPlusV9-0-1/energyplus.exe'
 ./Start.ps1
 ```
 
-访问 http://127.0.0.1:8766 。本机任务也支持已有的 ../.codex_work/vra-venv 开发环境。Start.ps1 仅监听本机，不自动安装依赖。
+访问 http://127.0.0.1:8766 。本机任务也支持已有的 vra-venv 开发环境。Start.ps1 仅监听本机，不自动安装依赖。
 
 首次访问自行创建账号（用户名 3–32 位，密码至少 10 个字符）。无默认密码；既有项目归入首个账号，其他账号只能访问自己的项目。账号数据库保存在 runtime，不得提交或公开。当前暂无邮件找回。
 
@@ -31,7 +31,7 @@ $env:ENERGYPLUS_EXE = 'F:/EnergyPlusV9-0-1/energyplus.exe'
 4. 运行 baseline/R1/R2，查看真实任务状态、能耗、EUI、运行 CO2、Warnings 和 SQL 定位。
 5. 查看依据，下载 JSON/HTML/PDF/原始证据 ZIP。证据变更使受影响结果失效，确定推荐保持拒答。
 
-参考模型不是实际南昌建筑。基准已有保温，追加保温参数是教学假设；碳情景不是正式地区核算或 CCER。
+参考模型不是实际建筑。基准已有保温，追加保温参数是教学假设；碳情景不是正式地区核算或 CCER。
 
 ## 验证
 
