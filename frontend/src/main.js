@@ -3,6 +3,7 @@ import { createPoller } from './polling.js';
 import { createEvidenceImporter } from './evidence-import.js';
 import { spatialWorkspace } from './spatial-ui.js';
 import { robustnessWorkspace } from './robustness-ui.js';
+import { decisionWorkspace } from './decision-ui.js';
 import { bindWorkflow, developerSettings, runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
@@ -103,7 +104,7 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
-  if(host && ['spatial','robustness'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
+  if(host && ['spatial','robustness','decision'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
 }
 function renderProject() {
   const p = state.project;
