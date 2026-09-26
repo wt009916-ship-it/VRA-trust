@@ -279,7 +279,7 @@ class Domain:
                 study = self.robustness.view(job['project_id'], studies[0]['search_id'])
                 report['robustness'] = study
                 report['certificate']['stability_status'] = study['stability_status']
-                report['certificate']['counterexamples'] = [p for p in study['points'] if p['flipped']]
+                report['certificate']['counterexamples'] = [p for p in study['points'] if p['flipped']] if study['status'] == 'succeeded' else None
                 report['certificate']['conditions'].append('仅限记录中的离散搜索点及预算；不代表连续域稳定或综合工程最优')
                 report['certificate']['unresolved_uncertainties'] = ['未做模型校准', '搜索域外、未覆盖点和测量误差尚未排除', '未完成费用和舒适性工程验收']
                 plans = [p for p in self.store.list('actionplan', job['project_id']) if p['search_id'] == study['search_id'] and p['search_revision'] == study['revision']]

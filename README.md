@@ -4,6 +4,8 @@
 
 当前已在 Phase 0/1 基础上接入节点追溯、碳因子选择性重算、受控工具执行与 DeepSeek Adapter、有限域真实仿真搜索，以及人工确认到简单三维的闭环。**这仍不是全部模块或生产环境验收完成。** 详见 docs/TRUST_AGENT_SPATIAL_DELIVERY.md。
 
+可靠性优化：断线后自动重连并重新核验结果，导入重试复用已上传文件，搜索域可关联已复核证据并随其版本变化失效。变更、验证结果与限制见 [可靠性更新](docs/RELIABILITY_UPDATE.md)。
+
 ## 启动
 
 最新增量：真实账号与项目隔离，以及项目侧栏、中央任务区、独立工作视图和右侧详情。见 docs/ACCOUNT_WORKSPACE_UPDATE.md。

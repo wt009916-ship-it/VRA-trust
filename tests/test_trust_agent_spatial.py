@@ -7,7 +7,7 @@ import pytest
 from backend import core
 from backend.agent import Chat
 from backend.gateway import Gateway, ProviderSettings, protect
-from backend.robustness import Axis, set_conductivity, objects, stability_status
+from backend.robustness import Axis, Search, set_conductivity, objects, stability_status
 from backend.spatial import Reconstruction, geometry
 from backend.trust import descendants
 from test_api import create_project
@@ -159,3 +159,79 @@ def test_geometry_deterministic_and_degenerate_rejected():
     schema['walls'][0]['z2'] = 0
     with pytest.raises(ValueError):
         Reconstruction(**schema, expected_revision=0, responsible_person='engineer', review_note='test invalid geometry')
+
+
+@pytest.fixture
+def search_evidence_fixture(client, monkeypatch):
+    """Synthetic completed search for evidence invalidation, not physics validation."""
+    pid = create_project(client)['project_id']
+    file = client.post(f'/api/projects/{pid}/files', files={'file': ('material.csv', b'conductivity,0.2', 'text/csv')}).json()
+    evidence = client.post(f'/api/projects/{pid}/evidence', json={
+        'type': 'literature', 'name': 'Test material range', 'source_file': file['file_id'],
+        'source_locator': 'Fixture row 1', 'authority': 'test only', 'permission': 'test fixture',
+        'acquisition_method': 'test upload', 'responsible_person': 'tester', 'status': 'ASSUMED',
+    }).json()
+    domain, search = client.app.state.domain, client.app.state.robustness
+    views = {
+        'fixture_baseline': {'project_id': pid, 'status': 'succeeded', 'scheme_id': 'baseline', 'metrics': {'annual_energy_kwh': 100}, 'provenance': {}},
+        'fixture_r1': {'project_id': pid, 'status': 'succeeded', 'scheme_id': 'R1', 'metrics': {'annual_energy_kwh': 90}, 'provenance': {}},
+    }
+    monkeypatch.setattr(domain, 'view', lambda rid: views[rid])
+    monkeypatch.setattr(domain, 'compare', lambda ids: {})
+    monkeypatch.setattr(search, 'materials', lambda ids: [{'name': 'Wall'}])
+    def complete(record):
+        domain.store.put('search', {**record, 'status': 'succeeded'}, record['revision'])
+        search.capacity.release()
+    monkeypatch.setattr(search, 'execute', complete)
+    body = Search(run_ids=list(views), axes=[Axis(material='Wall', values=[.2, .3], source='Test-only range', evidence_id=evidence['evidence_id'])], budget=2)
+    return pid, evidence, file, search, body
+
+
+def review_axis(client, pid, evidence, state='confirmed'):
+    response = client.patch(f'/api/projects/{pid}/evidence/{evidence["evidence_id"]}', json={
+        'expected_revision': evidence['revision'], 'review_state': state,
+        'responsible_person': 'tester', 'review_note': 'Test-only source reviewed',
+    })
+    assert response.status_code == 200
+    return response.json()
+
+
+def test_search_requires_reviewed_axis_and_freezes_its_source_nature(client, search_evidence_fixture):
+    pid, evidence, file, search, body = search_evidence_fixture
+    with pytest.raises(core.ValidationError):
+        search.start(pid, body, background=False)
+    reviewed = review_axis(client, pid, evidence)
+    study = search.start(pid, body, background=False)
+    snapshot = study['axis_evidence_snapshot'][evidence['evidence_id']]
+    assert snapshot == reviewed
+    assert snapshot['status'] == 'ASSUMED'
+    assert search.view(pid, study['search_id'])['status'] == 'succeeded'
+
+
+@pytest.mark.parametrize('change', ['review', 'tamper', 'missing_snapshot'])
+def test_axis_changes_revoke_search_without_rewriting_history(client, search_evidence_fixture, change):
+    pid, evidence, file, search, body = search_evidence_fixture
+    reviewed = review_axis(client, pid, evidence)
+    study = search.start(pid, body, background=False)
+    if change == 'review':
+        review_axis(client, pid, reviewed, 'pending')
+    elif change == 'tamper':
+        _, path = search.domain.file_record(pid, file['file_id'])
+        path.write_text('changed source', encoding='utf-8')
+    else:
+        old = {**study}
+        old.pop('axis_evidence_snapshot')
+        study = search.store.put('search', old, study['revision'])
+    before = search.store.history('search', study['search_id'])
+    current = search.view(pid, study['search_id'])
+    assert current['status'] == 'stale' and current['stability_status'] == 'STALE'
+    assert current['stale_reasons']
+    assert search.store.history('search', study['search_id']) == before
+
+
+def test_axis_cannot_bind_another_projects_evidence(client, search_evidence_fixture):
+    pid, evidence, file, search, body = search_evidence_fixture
+    review_axis(client, pid, evidence)
+    other = create_project(client)['project_id']
+    with pytest.raises(core.ValidationError, match='Cross-project'):
+        search.axis_evidence(other, body.axes)
