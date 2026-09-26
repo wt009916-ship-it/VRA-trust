@@ -3,7 +3,8 @@ export function setCsrfToken(value) { csrfToken = value || ''; }
 export async function request(path, options = {}) {
   const headers = options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
   const response = await fetch('/api' + path, { ...options, credentials: 'same-origin', headers: { ...headers, ...(csrfToken ? {'X-CSRF-Token': csrfToken} : {}), ...options.headers }, cache: 'no-store' });
-  const data = await response.json().catch(() => null);
+  let invalidJson = false;
+  const data = await response.json().catch(() => { invalidJson = true; return null; });
   if (!response.ok) {
     const detail = data?.detail;
     const error = new Error(Array.isArray(detail) ? detail.map(x => x.loc.join('.') + ': ' + x.msg).join('; ') : detail || '请求失败 (' + response.status + ')');
@@ -11,6 +12,7 @@ export async function request(path, options = {}) {
     if (response.status === 401 && !path.startsWith('/auth/')) document.dispatchEvent(new Event('session-expired'));
     throw error;
   }
+  if (invalidJson) throw new Error('服务返回了无法读取的数据，请稍后重试');
   return data;
 }
 export const post = (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) });

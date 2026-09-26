@@ -87,6 +87,46 @@ class Robustness:
         common = set.intersection(*(set(c) for c in catalogs)) if catalogs else set()
         return [{'name': name, 'conductivity_w_mk': [c[name] for c in catalogs], 'unit': 'W/(m K)'} for name in sorted(common)]
 
+    def axis_evidence(self, project_id, axes):
+        snapshots = {}
+        for axis in axes:
+            if not axis.evidence_id:
+                continue
+            evidence = self.store.get('evidence', axis.evidence_id)
+            if evidence['project_id'] != project_id:
+                raise core.ValidationError('Cross-project axis evidence rejected')
+            if evidence['review_state'] != 'confirmed' or evidence['status'] in {'MISSING', 'AI_INFERRED'}:
+                raise core.ValidationError('搜索域关联证据尚未人工确认；请先复核其来源和适用范围')
+            if evidence['source_file']:
+                record, _ = self.domain.file_record(project_id, evidence['source_file'])
+                if record['hash'] != evidence['hash']:
+                    raise core.ValidationError('Search axis evidence/file hash mismatch')
+            snapshots[axis.evidence_id] = evidence
+        return snapshots
+
+    def axis_stale_reasons(self, record):
+        snapshots = record.get('axis_evidence_snapshot', {})
+        reasons = []
+        for axis in record['axes']:
+            eid = axis.get('evidence_id')
+            if not eid:
+                continue
+            snapshot = snapshots.get(eid)
+            if not snapshot:
+                reasons.append('搜索域证据缺少冻结版本: ' + eid)
+                continue
+            try:
+                current = self.store.get('evidence', eid)
+                if current != snapshot or current['review_state'] != 'confirmed':
+                    reasons.append('搜索域证据版本或复核状态变化: ' + snapshot['name'])
+                if snapshot['source_file']:
+                    source, _ = self.domain.file_record(record['project_id'], snapshot['source_file'])
+                    if source['hash'] != snapshot['hash']:
+                        reasons.append('搜索域证据文件哈希变化: ' + snapshot['name'])
+            except (KeyError, OSError, core.ValidationError):
+                reasons.append('搜索域证据文件缺失或已损坏: ' + snapshot['name'])
+        return reasons
+
     def start(self, project_id, body, *, background=True):
         views = [self.domain.view(r) for r in body.run_ids]
         if any(v['project_id'] != project_id or v['status'] != 'succeeded' for v in views):
@@ -100,17 +140,14 @@ class Robustness:
             raise core.ValidationError('Search axes require unique common Material objects')
         if body.budget < len(body.run_ids):
             raise core.ValidationError('Budget must cover at least one complete comparison')
-        for axis in body.axes:
-            if axis.evidence_id:
-                evidence = self.store.get('evidence', axis.evidence_id)
-                if evidence['project_id'] != project_id:
-                    raise core.ValidationError('Cross-project axis evidence rejected')
+        axis_evidence = self.axis_evidence(project_id, body.axes)
         if not self.capacity.acquire(blocking=False):
             raise core.ValidationError('已有反例搜索正在执行')
         record = {'search_id': 'search_' + uuid.uuid4().hex, 'project_id': project_id, 'status': 'running',
             **body.model_dump(), 'reference_order': [v['scheme_id'] for v in sorted(views, key=lambda v: v['metrics']['annual_energy_kwh'])],
             'reference_provenance': [v['provenance'] for v in views], 'points': [], 'engine_calls': 0,
             'created_at': core.now(), 'stability_status': 'NOT_ASSESSED', 'objective': 'annual_site_energy_kwh',
+            'axis_evidence_snapshot': axis_evidence,
             'domain_type': 'explicit_discrete_grid_not_continuous_interval', 'error': None, 'search_code_hash': core.sha(Path(__file__))}
         record = self.store.put('search', record)
         if background:
@@ -132,6 +169,8 @@ class Robustness:
                 point = {'parameters': dict(zip((a['material'] for a in record['axes']), values)), 'runs': [], 'order': None, 'flipped': None}
                 record['points'].append(point)
                 for source_id in record['run_ids']:
+                    if self.axis_stale_reasons(record):
+                        raise core.ValidationError('搜索期间参数域证据已失效，请复核后新建搜索')
                     if self.domain.view(source_id)['status'] != 'succeeded':
                         raise core.ValidationError('Source inputs became stale during search')
                     job = self.store.job(source_id)
@@ -162,6 +201,8 @@ class Robustness:
                 point['indeterminate'] = any(b - a <= record['ranking_tolerance_kwh'] for a, b in zip(energies, energies[1:]))
                 point['flipped'] = None if point['indeterminate'] else point['order'] != record['reference_order']
                 save()
+            if self.axis_stale_reasons(record):
+                raise core.ValidationError('搜索期间参数域证据已失效，请复核后新建搜索')
             record.update(status='succeeded', searched_points=len(record['points']), coverage=len(record['points']) / len(domain),
                 stability_status=stability_status(record['points'], len(domain)),
                 limitation='仅适用于声明的离散点、全年场地能耗目标和当前输入；不证明连续区间稳定，不等于综合最优。')
@@ -176,8 +217,13 @@ class Robustness:
         record = self.store.get('search', search_id)
         if record['project_id'] != project_id:
             raise core.ValidationError('Cross-project search rejected')
-        if record.get('search_code_hash') != core.sha(Path(__file__)) or any(self.domain.view(r)['status'] != 'succeeded' for r in record['run_ids']):
-            return {**record, 'status': 'stale', 'stability_status': 'STALE'}
+        reasons = self.axis_stale_reasons(record)
+        if record.get('search_code_hash') != core.sha(Path(__file__)):
+            reasons.append('搜索代码版本变化')
+        if any(self.domain.view(r)['status'] != 'succeeded' for r in record['run_ids']):
+            reasons.append('参考方案的输入或运行已失效')
+        if reasons:
+            return {**record, 'status': 'stale', 'stability_status': 'STALE', 'stale_reasons': reasons}
         for point in record['points']:
             for run in point['runs']:
                 rd = self.store.root / 'searches' / search_id / run['run_id']
