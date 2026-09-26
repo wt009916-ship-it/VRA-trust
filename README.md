@@ -2,7 +2,11 @@
 
 既有公共建筑可核验节能改造决策智能体。核心原则：可复核、可拒答、可补证、可重放。
 
+**新增“材料与决策”工作区**：项目诊断与补证待办 → 有来源的材料卡 → EnergyPlus 真实材料方案比较 → 目标/约束与非支配候选 → 助手执行及同源工程报告。支持能耗、增量造价、舒适性和运行碳排取舍，材料与证据变化后重新核验。使用方法和验收范围见 [核心功能升级](docs/CORE_DECISION_UPGRADE.md)。
+
 当前已在 Phase 0/1 基础上接入节点追溯、碳因子选择性重算、受控工具执行与 DeepSeek Adapter、有限域真实仿真搜索，以及人工确认到简单三维的闭环。**这仍不是全部模块或生产环境验收完成。** 详见 docs/TRUST_AGENT_SPATIAL_DELIVERY.md。
+
+可靠性优化：断线后自动重连并重新核验结果，导入重试复用已上传文件，搜索域可关联已复核证据并随其版本变化失效。变更、验证结果与限制见 [可靠性更新](docs/RELIABILITY_UPDATE.md)。
 
 ## 启动
 
@@ -30,6 +34,7 @@ $env:ENERGYPLUS_EXE = 'F:/EnergyPlusV9-0-1/energyplus.exe'
 3. 人工核对并确认模型/天气；输入不唯一、未确认或文件损坏时 Gate 拒绝计算。
 4. 运行 baseline/R1/R2，查看真实任务状态、能耗、EUI、运行 CO2、Warnings 和 SQL 定位。
 5. 查看依据，下载 JSON/HTML/PDF/原始证据 ZIP。证据变更使受影响结果失效，确定推荐保持拒答。
+6. 进入“材料与决策”，登记并复核材料，选择实际构造层、候选厚度、造价来源与工程约束，直接运行或让助手执行计划，再查看候选取舍和报告。
 
 参考模型不是实际南昌建筑。基准已有保温，追加保温参数是教学假设；碳情景不是正式地区核算或 CCER。
 
@@ -65,6 +70,7 @@ flowchart LR
 
 - docs/CURRENT_STATE_AUDIT.md：修改前真实状态及原包依据。
 - docs/IMPLEMENTATION_STATUS.md：当前完成度、阻塞和下一步。
+- docs/CORE_DECISION_UPGRADE.md：诊断、材料验证、真实方案比较与助手执行的使用步骤和验收。
 - docs/ROUND1_DELIVERY.md：本轮架构、变更、验收、未实现项。
 - docs/API_CONTRACT.md / shared/schemas：契约及 OpenAPI。
 - docs/REPLAY.md：可复算边界。
@@ -81,7 +87,7 @@ runtime、runs、validation、密钥、依赖和私人建筑资料不提交。
 
 ## 发布状态
 
-本地会话和项目授权已验证；团队共享、邮件找回和公网部署未完成。HTTPS 部署必须设置 VRA_COOKIE_SECURE=true，另行配置域名/TLS/代理。Docker Compose 为准备配置，未运行容器；阿里云和第二台电脑验收按用户最新指示暂缓。GitHub app 写入返回 403 时，本地 Git/CI 文件已就绪不等于已远程发布。
+本地会话和项目授权已验证；团队共享、邮件找回和公网部署未完成。HTTPS 部署必须设置 VRA_COOKIE_SECURE=true，另行配置域名/TLS/代理。Docker Compose 为准备配置，未运行容器；阿里云和第二台电脑验收按用户最新指示暂缓。项目源码已上传 GitHub；后续增量通过功能分支与 PR 交付，远程校验以各 PR 的 CI 为准。
 
 
 ## 新增入口

@@ -1,32 +1,38 @@
 import './style.css';
+import { createPoller } from './polling.js';
+import { createEvidenceImporter } from './evidence-import.js';
 import { spatialWorkspace } from './spatial-ui.js';
 import { robustnessWorkspace } from './robustness-ui.js';
+import { decisionWorkspace } from './decision-ui.js';
 import { bindWorkflow, developerSettings, runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
 import { appShell, homeView, projectView, authView, icon } from './layout.js';
 
 const root = document.querySelector('#app');
-const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [], user: null, view: 'readiness' };
-let pollTimer;
+const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [], user: null, view: 'readiness', syncError: false };
+const poller = createPoller(refreshRuns, { onError: markDisconnected });
 let selection = 0;
+let runsRequest = 0, traceRequest = 0;
 const label = { queued: '排队中', running: '仿真中', succeeded: '核验通过', failed: '失败 · 结果不可用', stale: '已失效 · 需复核' };
 const badge = (text, type = '') => '<span class="badge ' + type + '">' + esc(text) + '</span>';
 const link = (url, text) => '<a href="' + url + '" target="_blank" rel="noopener">' + text + ' ↗</a>';
 function notice(message, error = false) {
   const el = document.querySelector('#toast');
+  if (!el) return;
   el.textContent = message; el.className = error ? 'toast error' : 'toast'; el.hidden = false;
   clearTimeout(el.timer); el.timer = setTimeout(() => { el.hidden = true; }, 9000);
 }
 async function action(fn, button) {
+  const token = selection;
   if (button) button.disabled = true;
-  try { await fn(); } catch (err) { notice(err.message, true); }
-  finally { if (button?.isConnected) button.disabled = false; }
+  try { await fn(); } catch (err) { if (token === selection) notice(err.message, true); }
+  finally { if (button?.isConnected) button.disabled = state.syncError && ['run', 'compare'].includes(button.id); }
 }
 function shell() {
   root.innerHTML = appShell(state);
   document.querySelector('#new-project').onclick = () => projectForm();
-  document.querySelector('#all-projects').onclick = () => { selection++; clearTimeout(pollTimer); state.project = null; home(); };
+  document.querySelector('#all-projects').onclick = () => { selection++; poller.stop(); state.project = null; home(); };
   document.querySelector('#load-reference').onclick = e => loadReference(e.currentTarget);
   document.querySelector('#search-projects').onclick = searchProjects;
   document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
@@ -77,12 +83,19 @@ function projectForm(edit = false) {
 }
 async function refreshProjects() { state.projects = await request('/projects'); }
 async function selectProject(id) {
-  clearTimeout(pollTimer);
+  poller.stop();
   const token = ++selection;
-  const [p, ev, runs, gate] = await Promise.all([request('/projects/' + id), request('/projects/' + id + '/evidence'), request('/projects/' + id + '/runs'), request('/projects/' + id + '/gate')]);
+  let snapshot;
+  try {
+    snapshot = await Promise.all([request('/projects/' + id), request('/projects/' + id + '/evidence'), request('/projects/' + id + '/runs'), request('/projects/' + id + '/gate')]);
+  } catch (error) {
+    if (token === selection) { markDisconnected(error); schedulePoll(); }
+    throw error;
+  }
+  const [p, ev, runs, gate] = snapshot;
   if (token !== selection) return;
   const sameProject = state.project?.project_id === id;
-  Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [], view: sameProject ? state.view : 'readiness' });
+  Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [], syncError: false, view: sameProject ? state.view : 'readiness' });
   renderProject();
   schedulePoll();
 }
@@ -91,7 +104,7 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
-  if(host && ['spatial','robustness'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(()=>view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
+  if(host && ['spatial','robustness','decision'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
 }
 function renderProject() {
   const p = state.project;
@@ -114,7 +127,7 @@ function renderProject() {
     const latest = latestSchemes(state.runs);
     const token = selection;
     const data = await post('/comparisons', { run_ids: latest.map(r => r.run_id) });
-    if (token !== selection) return;
+    if (token !== selection || state.syncError || !comparisonIsCurrent(state.runs, latest.map(r => r.run_id))) return;
     state.comparedIds = latest.map(r => r.run_id);
     document.querySelector('#comparison').innerHTML = '<div class="comparison"><h3>当前能耗排序：' + data.energy_order.map(esc).join(' → ') + '</h3><p>' + esc(data.note) + '</p><table><thead><tr><th>方案</th><th>节能率</th><th>工程 CO₂ 差值</th><th>综合推荐</th></tr></thead><tbody>' + data.results.map(r => '<tr><td>' + esc(r.scheme_id) + '</td><td>' + num(r.saving_rate_pct) + '%</td><td>' + num(r.engineering_reduction_kg) + ' kg</td><td>证据不足</td></tr>').join('') + '</tbody></table></div>';
   }, e.currentTarget);
@@ -137,16 +150,22 @@ function reviewForm(items) {
   document.querySelector('#review-form').onsubmit = e => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.currentTarget)); action(async () => { for (const item of items) await request('/projects/' + item.project_id + '/evidence/' + item.evidence_id, { method: 'PATCH', body: JSON.stringify({ expected_revision: item.revision, review_state: data.state, responsible_person: data.person, review_note: data.note }) }); dialog.close(); await selectProject(state.project.project_id); notice('已保存独立复核版本。受影响的旧运行会显示失效。'); }, e.submitter); };
 }
 function evidenceForm() {
+  const projectId = state.project.project_id, token = selection;
+  const importEvidence = createEvidenceImporter(projectId);
   const dialog = modal('导入资料与登记来源', '<form id="evidence-form"><p class="form-note">PDF / 图片 / Excel 当前保存原文件并人工登记定位；尚未启用 OCR 或自动识别。IDF 目前要求 9.0 版本及原生 SQL 汇总输出。</p><label>文件（最大 20 MB）<input type="file" name="file" required accept=".idf,.epw,.pdf,.csv,.xlsx,.xls,.png,.jpg,.jpeg,.ifc,.json,.xml"></label><div class="form-grid"><label>证据类型<select name="type"><option value="idf">IDF 模型</option><option value="epw">EPW 天气</option><option value="drawing">图纸</option><option value="bill">能耗账单</option><option value="equipment_table">设备台账</option><option value="bim">BIM</option><option value="literature">文献</option><option value="sensor">传感器记录</option></select></label><label>IDF 方案<select name="scheme"><option value="baseline">baseline</option><option value="R1">R1</option><option value="R2">R2</option></select></label></div><label>来源定位<input name="locator" required placeholder="例如：A-17 第 2 页 / CSV 行 15 / IDF 对象名称"></label><label>来源与权威性<input name="authority" required placeholder="文件提供单位、版本和日期"></label><label>使用授权 / 许可<input name="permission" required placeholder="业主授权范围或开源许可来源"></label><label>登记人<input name="person" required></label><label>不确定性说明<textarea name="uncertainty"></textarea></label><button class="primary" type="submit">保存文件和证据记录</button></form>');
-  document.querySelector('#evidence-form').onsubmit = e => { e.preventDefault(); const data = new FormData(e.currentTarget); action(async () => {
-    const form = new FormData(); form.append('file', data.get('file'));
-    const file = await request('/projects/' + state.project.project_id + '/files', { method: 'POST', body: form });
-    await post('/projects/' + state.project.project_id + '/evidence', { type: data.get('type'), name: file.name, source_file: file.file_id, source_locator: data.get('locator'), authority: data.get('authority'), permission: data.get('permission'), responsible_person: data.get('person'), acquisition_method: 'manual_upload', status: 'IMPORTED', uncertainty: data.get('uncertainty') || null, scheme_id: data.get('type') === 'idf' ? data.get('scheme') : null });
-    dialog.close(); await selectProject(state.project.project_id);
+  document.querySelector('#evidence-form').onsubmit = e => { e.preventDefault(); const data = new FormData(e.currentTarget), file = e.currentTarget.elements.file.files[0]; action(async () => {
+    await importEvidence(file, { type: data.get('type'), source_locator: data.get('locator'), authority: data.get('authority'), permission: data.get('permission'), responsible_person: data.get('person'), acquisition_method: 'manual_upload', status: 'IMPORTED', uncertainty: data.get('uncertainty') || null, scheme_id: data.get('type') === 'idf' ? data.get('scheme') : null });
+    if (token !== selection || !dialog.isConnected) return;
+    dialog.close(); await selectProject(projectId);
   }, e.submitter); };
 }
 function renderRuns() {
   const target = document.querySelector('#runs'); if (!target) return;
+  for (const id of ['run', 'compare']) { const button = document.querySelector('#' + id); if (button) button.disabled = state.syncError; }
+  if (state.syncError) {
+    target.innerHTML = '<p class="empty" role="status">连接中断，当前数值有效性尚未核对。正在自动重连，恢复后重新显示核验结果。</p>';
+    return;
+  }
   target.innerHTML = state.runs.length ? '<div class="table-scroll"><table><thead><tr><th>方案 / run_id</th><th>状态</th><th>年能耗 kWh</th><th>EUI</th><th>运行 CO₂ kg</th><th>依据</th></tr></thead><tbody>' + state.runs.map(r => '<tr><td><strong>' + esc(r.scheme_id) + '</strong><small class="mono">' + esc(r.run_id.slice(0, 16)) + '…</small></td><td>' + badge(label[r.status], r.status === 'succeeded' ? 'success' : 'warning') + (r.warnings_count ? '<small>' + r.warnings_count + ' warnings · 待复核</small>' : '') + (r.error ? '<small class="error-text">' + esc(r.error) + '</small>' : '') + (r.stale_reasons?.length ? '<small class="error-text">' + r.stale_reasons.map(esc).join('；') + '</small>' : '') + '</td><td class="numeric">' + num(resultValue(r, 'annual_energy_kwh')) + '</td><td class="numeric">' + num(resultValue(r, 'eui_kwh_m2a')) + '</td><td class="numeric">' + num(r.status === 'succeeded' ? r.carbon?.operating_carbon_kg : null) + (r.carbon?.scenario ? '<small>教学情景</small>' : '') + (r.carbon?.node_state==='STALE'?'<small class="error-text">STALE · 因子已更新</small><button data-recarbon="'+r.run_id+'">仅重算碳排</button>':'') + '</td><td><button data-trace="' + r.run_id + '">查看依据</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">未计算 · 没有历史数值补位</div>';
   document.querySelectorAll('[data-recarbon]').forEach(b=>{b.onclick=()=>action(async()=>{await post('/runs/'+b.dataset.recarbon+'/recalculate-carbon',{});await refreshRuns();notice('碳排已重算；EnergyPlus 调用 0 次。');},b);});
   document.querySelectorAll('[data-trace]').forEach(b => { b.onclick = () => action(() => trace(b.dataset.trace)); });
@@ -160,8 +179,10 @@ function graphMarkup(nodes) {
   return '<div class="dag-canvas" style="width:'+width+'px;height:'+height+'px"><svg width="'+width+'" height="'+height+'" aria-hidden="true"><defs><marker id="claim-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="currentColor"/></marker></defs>'+edges+'</svg>'+nodes.map(n=>{const p=positions.get(n.id);return '<button style="left:'+p.x+'px;top:'+p.y+'px" class="graph-node '+n.state.toLowerCase()+'" data-node="'+esc(n.id)+'"><small>'+esc(n.kind)+' · '+esc(n.state)+'</small><strong>'+esc(n.label)+'</strong></button>';}).join('')+'</div>';
 }
 async function trace(id, scroll = true) {
+  const token = selection, requestId = ++traceRequest;
   state.selectedRun = id;
   const report = await request('/runs/' + id + '/report.json');
+  if (token !== selection || requestId !== traceRequest || state.selectedRun !== id || state.syncError) return;
   const r = report.run;
   document.querySelector('#trace-content').className = 'trace-content';
   document.querySelector('#trace-content').innerHTML = '<div class="trace-heading"><strong class="mono">' + esc(id) + '</strong>' + badge(label[r.status]) + '</div><div class="graph">' + graphMarkup(report.claims.nodes) + '</div><div class="report-actions">' + link('/api/runs/' + id + '/report.json', '完整 JSON') + link('/api/runs/' + id + '/report.html', '证据报告') + link('/api/runs/' + id + '/report.pdf', '下载 PDF') + link('/api/runs/' + id + '/artifacts', '原始证据 ZIP') + '</div><div class="certificate"><p class="eyebrow">DECISION CERTIFICATE · DRAFT</p><h3>当前拒绝给出确定最优推荐</h3><p>状态：' + esc(report.certificate.status) + ' · 工程师未签署</p><p>成立条件：当前输入适用；失效条件：证据、模型、代码或引擎版本变化。</p><p>尚未排除：模型偏差、舒适性问题、方案翻转风险。建议先复核 Warning，再补充账单和运行时段。</p></div><details><summary>完整版本、SQL 来源定位及未满足设定点时间</summary><pre>' + esc(JSON.stringify({ provenance: r.provenance, metrics: r.metrics, evidence: report.evidence, limitations: r.limitations }, null, 2)) + '</pre></details>';
@@ -170,21 +191,24 @@ async function trace(id, scroll = true) {
 }
 async function refreshRuns() {
   if (!state.project) return;
-  const id = state.project.project_id, token = selection;
+  const id = state.project.project_id, token = selection, requestId = ++runsRequest;
   const runs = await request('/projects/' + id + '/runs');
-  if (token !== selection) return;
+  if (token !== selection || requestId !== runsRequest) return;
+  const reconnecting = state.syncError;
+  state.syncError = false;
   const old = state.runs.find(r => r.run_id === state.selectedRun);
   const current = runs.find(r => r.run_id === state.selectedRun);
   const carbonChanged=runs.some(r=>state.comparedIds.includes(r.run_id)&&JSON.stringify(r.carbon)!==JSON.stringify(state.runs.find(previous=>previous.run_id===r.run_id)?.carbon));
   if(carbonChanged){const table=document.querySelector('#comparison');if(table)table.innerHTML='';state.comparedIds=[];}
-  if (JSON.stringify(state.runs) !== JSON.stringify(runs)) {
+  if (reconnecting || JSON.stringify(state.runs) !== JSON.stringify(runs)) {
     state.runs = runs;
     renderRuns();
   }
   const health = document.querySelector('#simulation-health');
   const healthText = runs.some(r => r.status === 'running') ? '仿真中' : runs.length ? '见运行记录' : '未计算';
   if (health && health.textContent !== healthText) health.textContent = healthText;
-  if (current && old && JSON.stringify(current) !== JSON.stringify(old)) await trace(current.run_id, false);
+  if (current && (reconnecting || (old && JSON.stringify(current) !== JSON.stringify(old)))) await trace(current.run_id, false);
+  if (token !== selection) return;
   const comparison = document.querySelector('#comparison');
   if (comparison && !comparisonIsCurrent(runs, state.comparedIds)) {
     comparison.innerHTML = '';
@@ -192,12 +216,22 @@ async function refreshRuns() {
   }
 }
 function schedulePoll() {
-  clearTimeout(pollTimer);
-  if (!state.project) return;
-  pollTimer = setTimeout(async () => { try { await refreshRuns(); schedulePoll(); } catch (err) { notice(err.message, true); } }, 3000);
+  if (state.project) poller.start();
+}
+function markDisconnected(error) {
+  if (!state.project || error.status === 401) return;
+  state.syncError = true;
+  state.comparedIds = [];
+  renderRuns();
+  const comparison = document.querySelector('#comparison');
+  if (comparison) comparison.innerHTML = '';
+  const traceContent = document.querySelector('#trace-content');
+  if (traceContent) traceContent.textContent = '连接中断，暂时无法核对报告是否仍然有效。恢复连接后自动重新核验。';
+  const health = document.querySelector('#simulation-health');
+  if (health) health.textContent = '连接中断 · 正在自动重连';
 }
 function clearSession() {
-  selection++; clearTimeout(pollTimer); setCsrfToken('');
+  selection++; poller.stop(); setCsrfToken('');
   Object.assign(state, {user:null, projects:[], project:null, evidence:[], runs:[], selectedRun:null, comparedIds:[]});
 }
 async function enterWorkspace(session) {

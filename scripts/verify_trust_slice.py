@@ -75,10 +75,23 @@ with TestClient(create_app(root)) as client:
     check(updated['carbon']['node_state'] == 'VALID' and updated['carbon']['provenance']['energyplus_calls'] == 0, 'carbon derivation records zero engine calls')
     check(updated['carbon']['operating_carbon_kg'] != runs[0]['carbon']['operating_carbon_kg'], 'new factor changes only carbon result')
     check(before == {p.relative_to(rd).as_posix(): core.sha(p) for p in rd.rglob('*') if p.is_file()}, 'original run artifacts byte-for-byte unchanged')
-    search = client.post(f'/api/projects/{pid}/searches', json={'run_ids': [r['run_id'] for r in runs], 'axes': [{'material': 'IN46', 'values': [.023, .035], 'source': 'Explicit reference-test assumptions, not a measured material range'}], 'budget': 3})
+    axis_source = client.post(f'/api/projects/{pid}/evidence', json={
+        'type': 'assumption', 'name': 'Reference conductivity test domain', 'source_locator': 'IN46 explicit test grid',
+        'authority': 'Automated reference fixture', 'permission': 'Test-only assumptions',
+        'acquisition_method': 'Explicit test assumption', 'responsible_person': 'Automated reference test',
+        'status': 'ASSUMED', 'value': [.023, .035], 'unit': 'W/(m K)',
+    }).json()
+    response = client.patch(f'/api/projects/{pid}/evidence/{axis_source["evidence_id"]}', json={
+        'expected_revision': axis_source['revision'], 'review_state': 'confirmed',
+        'responsible_person': 'Automated reference test', 'review_note': 'Explicit assumptions only, not measured parameters',
+    })
+    check(response.status_code == 200, 'axis assumptions reviewed without claiming measurement')
+    axis_source = response.json()
+    search = client.post(f'/api/projects/{pid}/searches', json={'run_ids': [r['run_id'] for r in runs], 'axes': [{'material': 'IN46', 'values': [.023, .035], 'source': 'Explicit reference-test assumptions, not a measured material range', 'evidence_id': axis_source['evidence_id']}], 'budget': 3})
     check(search.status_code == 202, 'bounded real counterexample search accepted')
     study = wait(client, f'/api/projects/{pid}/searches/' + search.json()['search_id'])
     check(study['status'] == 'succeeded', 'search succeeded: ' + str(study.get('error')))
+    check(study['axis_evidence_snapshot'][axis_source['evidence_id']] == axis_source, 'search freezes axis source version and ASSUMED nature')
     check(study['engine_calls'] == 3 and study['coverage'] == .5, 'actual budget and incomplete grid coverage recorded')
     check(study['stability_status'] in {'NO_FLIP_WITHIN_BUDGET', 'COUNTEREXAMPLE_FOUND'}, 'limited search never claims proven stability')
     check(all(r['metrics']['annual_days'] == 365 for p in study['points'] for r in p['runs']), 'all counterexample evaluations use full-year SQL')
@@ -89,6 +102,16 @@ with TestClient(create_app(root)) as client:
     report = client.get('/api/runs/' + rid + '/report.json').json()
     check(report['certificate']['stability_status'] == study['stability_status'], 'decision certificate includes same bounded search evidence')
     check(client.get('/api/runs/' + rid + '/report.pdf').status_code == 200, 'PDF generated from updated report snapshot')
+    response = client.patch(f'/api/projects/{pid}/evidence/{axis_source["evidence_id"]}', json={
+        'expected_revision': axis_source['revision'], 'review_state': 'pending',
+        'responsible_person': 'Automated reference test', 'review_note': 'Withdraw the test domain for invalidation acceptance',
+    })
+    check(response.status_code == 200, 'axis confirmation withdrawn as a new evidence version')
+    stale_study = client.get(f'/api/projects/{pid}/searches/{study["search_id"]}').json()
+    check(stale_study['stability_status'] == 'STALE' and stale_study['stale_reasons'], 'withdrawing axis evidence invalidates the bounded search')
+    report = client.get('/api/runs/' + rid + '/report.json').json()
+    check(report['run']['status'] == 'succeeded' and report['run']['metrics'] == runs[0]['metrics'], 'axis revision preserves the original verified physical result')
+    check(report['certificate']['counterexamples'] is None and 'evidence_action_plan' not in report, 'stale search cannot publish current counterexamples or evidence benefit')
     output = {'checks': checks, 'project_id': pid, 'runs': runs, 'carbon_after': updated['carbon'], 'search': study, 'data_nature': 'official reference, not field validation', 'root': str(root)}
     core.write_json(ROOT / 'validation/trust-slice/latest.json', output)
     print(json.dumps({'passed': len(checks), 'root': str(root)}, ensure_ascii=False), flush=True)
