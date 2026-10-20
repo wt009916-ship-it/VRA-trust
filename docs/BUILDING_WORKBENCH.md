@@ -101,4 +101,13 @@ HTTP API 契约在 `/openapi.json` 与 `shared/schemas`。主要新增入口为�
 
 真实 stdio MCP 验收验证发现八个工具、项目绑定、工程准入、计算显式请求、只读拒绝和 Token 撤销。旧材料决策实际三次仿真通过 30 项检查；官方参考 baseline/R1/R2 也重新运行成功。测试总数以交付验收清单为准。
 
+复验时先安装开发依赖并设置 `ENERGYPLUS_EXE`。以下命令各自创建隔离数据和随机测试账号；输出路径须为未使用的新路径，保留旧结果：
+
+```powershell
+.venv/Scripts/python scripts/verify_building_workbench.py --output validation/building-new
+.venv/Scripts/python scripts/verify_mcp_adapter.py --output validation/mcp-new.json
+```
+
+MCP 脚本自行启动临时回环 HTTP 服务，验收后关闭，不依赖浏览器登录或固定端口。它不调用 EnergyPlus、不请求外部 Provider。
+
 浏览器已操作过 DXF 上传、候选合并、参数填写、复核保存、三维工作区和 IDF 发布。未完成跨浏览器、移动端、屏幕阅读器或开发者设置全部交互验收；没有据此声明全部界面已验收。

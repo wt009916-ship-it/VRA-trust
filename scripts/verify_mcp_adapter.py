@@ -4,7 +4,11 @@ import asyncio
 import json
 import os
 from pathlib import Path
+import secrets
+import socket
 import sys
+import threading
+import time
 
 import httpx
 from mcp import Client
@@ -15,7 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 async def verify(base, output):
     with httpx.Client(base_url=base, trust_env=False, timeout=20) as api:
-        login = api.post("/api/auth/login", json={"username": "workbench_test", "password": "Synthetic-ui-test-2026-only"})
+        login = api.post("/api/auth/register", json={"username": "mcp_"+secrets.token_hex(6),
+            "password": secrets.token_urlsafe(24), "display_name": "MCP synthetic acceptance only"})
         login.raise_for_status()
         api.headers["X-CSRF-Token"] = login.json()["csrf_token"]
         response = api.post("/api/projects", json={"name": "MCP protocol acceptance · synthetic",
@@ -46,7 +51,7 @@ async def verify(base, output):
                 after = await client.call_tool("project_get", {})
                 assert after.is_error and "401" in json.dumps(after.model_dump())
                 report = {"status": "passed", "transport": "real stdio process -> local HTTP API",
-                          "tools": names, "project_id": pid, "checks": [
+                          "isolated_service": True, "tools": names, "project_id": pid, "checks": [
                               "MCP initialize and tool discovery", "project binding", "real evidence gate",
                               "compute opt-in", "read-token compute rejection", "revocation rejection"],
                           "engine_calls_executed": 0, "live_provider_tested": False}
@@ -57,11 +62,40 @@ async def verify(base, output):
             api.delete(f"/api/projects/{pid}/tokens/{credential['id']}")
 
 
+def run_isolated(output):
+    """Start a private HTTP service; no pre-existing account or application is used."""
+    import uvicorn
+    output = output.resolve()
+    if output.exists():
+        raise SystemExit("Choose a new output path; existing acceptance records are preserved.")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    runtime = output.parent / ("mcp-runtime-" + secrets.token_hex(8))
+    os.environ["VRA_DATA_DIR"] = str(runtime)
+    sys.path.insert(0, str(ROOT))
+    from backend.api import create_app
+
+    with socket.socket() as listener:
+        listener.bind(("127.0.0.1", 0))
+        base = "http://127.0.0.1:" + str(listener.getsockname()[1])
+        server = uvicorn.Server(uvicorn.Config(create_app(runtime), log_level="warning"))
+        thread = threading.Thread(target=server.run, kwargs={"sockets": [listener]}, daemon=True)
+        thread.start()
+        try:
+            deadline = time.monotonic() + 30
+            while not server.started:
+                if not thread.is_alive() or time.monotonic() > deadline:
+                    raise RuntimeError("Isolated API service did not start.")
+                time.sleep(.05)
+            asyncio.run(verify(base, output))
+        finally:
+            server.should_exit = True
+            thread.join(timeout=15)
+            if thread.is_alive():
+                raise RuntimeError("Isolated API service did not shut down.")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--base", default="http://127.0.0.1:8126")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    if args.base not in {"http://127.0.0.1:8126", "http://localhost:8126"}:
-        raise SystemExit("This script is limited to the isolated localhost acceptance service on port 8126.")
-    asyncio.run(verify(args.base, args.output))
+    run_isolated(args.output)
