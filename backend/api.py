@@ -17,6 +17,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from . import core
 from .domain import Domain
 from .auth import Auth, Credentials, Registration
+from .api_tokens import Tokens
 from .reports import report_html, report_pdf
 from .schema import (
     BuildingUpdate,
@@ -67,6 +68,7 @@ def create_app(data_dir=None, *, start_worker=True):
             app.state.agent.recover()
             app.state.robustness.recover()
             app.state.decisions.recover()
+            app.state.modeling.recover()
             domain.start_worker()
         yield
         domain.stop.set()
@@ -76,6 +78,7 @@ def create_app(data_dir=None, *, start_worker=True):
     app = FastAPI(title="VRA-Trust Evidence API", version="1.0.0", lifespan=lifespan)
     app.state.domain = domain
     app.state.auth = auth
+    app.state.tokens = Tokens(auth)
     public_api = {"/api/health", "/api/auth/status", "/api/auth/login", "/api/auth/register"}
     maximum = int(os.environ.get("VRA_MAX_UPLOAD_MB", "20")) * 1024 * 1024
     app.add_middleware(BodyLimit, limit=maximum + 65536)
@@ -90,11 +93,16 @@ def create_app(data_dir=None, *, start_worker=True):
             return JSONResponse({"detail": "Cross-site request rejected"}, status_code=403)
         path = request.url.path
         if path.startswith("/api/") and path not in public_api:
-            user = auth.session(request.cookies.get(auth.cookie))
+            authorization = request.headers.get("authorization", "")
+            bearer = authorization.startswith("Bearer ")
+            user = (app.state.tokens.authenticate(authorization[7:]) if bearer
+                    else auth.session(request.cookies.get(auth.cookie)))
             if not user:
                 return JSONResponse({"detail": "请先登录"}, status_code=401)
+            if bearer and not app.state.tokens.permits(user, request.method, path):
+                return JSONResponse({"detail": "API Token 的项目或权限范围不足"}, status_code=403)
             request.state.user = user
-            if request.method not in {"GET", "HEAD", "OPTIONS"} and not hmac.compare_digest(request.headers.get("x-csrf-token", ""), user["csrf"]):
+            if not bearer and request.method not in {"GET", "HEAD", "OPTIONS"} and not hmac.compare_digest(request.headers.get("x-csrf-token", ""), user["csrf"]):
                 return JSONResponse({"detail": "会话校验失败，请刷新后重试"}, status_code=403)
             parts = path.strip("/").split("/")
             try:
@@ -139,7 +147,11 @@ def create_app(data_dir=None, *, start_worker=True):
                 "capabilities": {"project_intake": True, "evidence_gate": True, "real_energyplus": available,
                     "llm_tools": all(app.state.gateway.public()[k] for k in ('enabled', 'key_configured')),
                     "agent_tools_installed": True, "claim_dag": True, "selective_recomputation": True,
-                    "drawing_ai": False, "manual_geometry": True, "robustness": True}}
+                    "drawing_ai": bool(app.state.gateway.public().get("vision_model") and
+                                       app.state.gateway.public()["enabled"] and app.state.gateway.public()["key_configured"]),
+                    "local_dxf_pdf_ifc": True, "model_to_idf": True, "ifc_export": True,
+                    "persistent_model_workflow": True, "mcp_adapter": True,
+                    "manual_geometry": True, "robustness": True}}
 
     @app.get("/api/auth/status")
     def auth_status():
@@ -299,6 +311,8 @@ def create_app(data_dir=None, *, start_worker=True):
 
     from .extensions import register_extensions
     register_extensions(app, domain, auth)
+    from .product_api import register_product
+    register_product(app, domain, auth)
     dist = core.ROOT / "frontend/dist"
     if dist.is_dir():
         app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")
@@ -310,6 +324,7 @@ def create_app(data_dir=None, *, start_worker=True):
         schema.setdefault("components", {})["securitySchemes"] = {
             "sessionCookie": {"type": "apiKey", "in": "cookie", "name": auth.cookie},
             "csrfHeader": {"type": "apiKey", "in": "header", "name": "X-CSRF-Token"},
+            "projectToken": {"type": "http", "scheme": "bearer", "description": "Project-scoped token; read/write/compute scopes. Token management and developer configuration require session authentication."},
         }
         for path, methods in schema["paths"].items():
             if path.startswith("/api/") and path not in public_api:
@@ -318,6 +333,8 @@ def create_app(data_dir=None, *, start_worker=True):
                     if method not in {"get", "head", "options"}:
                         security["csrfHeader"] = []
                     operation["security"] = [security]
+                    if path.startswith(("/api/projects/{project_id}", "/api/runs/{run_id}")) and "/tokens" not in path:
+                        operation["security"].append({"projectToken": []})
                     operation["responses"].setdefault("401", {"description": "Authentication required"})
                     operation["responses"].setdefault("403", {"description": "CSRF or origin rejected"})
         app.openapi_schema = schema

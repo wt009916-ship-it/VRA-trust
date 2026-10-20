@@ -38,7 +38,7 @@ class Domain:
     def add_file(self, project_id, filename, content):
         self.store.get("project", project_id)
         extension = Path(filename).suffix.lower()
-        if extension not in {".idf", ".epw", ".pdf", ".csv", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".ifc", ".json", ".xml"}:
+        if extension not in {".idf", ".epw", ".pdf", ".csv", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".ifc", ".json", ".xml", ".dxf", ".dwg"}:
             raise core.ValidationError("Unsupported file extension")
         if not content:
             raise core.ValidationError("Empty file")
@@ -103,6 +103,14 @@ class Domain:
                 if core.sha(path) != ev["hash"]:
                     raise core.ValidationError("Evidence/file hash mismatch")
                 if kind == "idf":
+                    binding = ev.get("value")
+                    if isinstance(binding, dict) and binding.get("model_id"):
+                        from . import model_export
+                        current_model = self.store.get("model", binding["model_id"], binding["revision"])
+                        if current_model["project_id"] != project_id or core.hash_json(current_model) != binding.get("model_hash"):
+                            raise core.ValidationError("已发布建筑模型的版本或内容不匹配")
+                        if binding.get("compiler_hash") != core.sha(model_export.__file__):
+                            raise core.ValidationError("几何编译器版本变化，请重新发布 IDF")
                     text = re.sub(r"!.*", "", path.read_text(encoding="utf-8-sig", errors="replace"))
                     if not re.search(r"\bVersion\s*,\s*9\.0(?:\.\d+)?\s*;", text, re.IGNORECASE):
                         raise core.ValidationError("当前计算链仅验收 EnergyPlus 9.0 IDF，请使用匹配版本模型")
@@ -115,7 +123,7 @@ class Domain:
         return {"project_id": project_id, "scheme_id": scheme_id, "can_simulate": not blockers,
                 "can_recommend": False, "readiness": "READY_FOR_SIMULATION" if not blockers else "EVIDENCE_INSUFFICIENT",
                 "blockers": blockers, "selected_evidence": inputs,
-                "limitations": ["通过准入仅允许仿真，不证明模型代表真实建筑。", "结构化建筑字段是核对声明，当前不会自动修改 IDF。", "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。", "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"]}
+                "limitations": ["通过准入仅允许仿真，不证明模型代表真实建筑。", "项目声明不会直接修改 IDF；建模工作区通过显式发布生成有版本的计算输入。", "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。", "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"]}
 
     def submit(self, body):
         gate = self.gate(body.project_id, body.scheme_id)
@@ -128,13 +136,18 @@ class Domain:
         # Resolve engine before accepting a job; missing installation is not simulated success.
         engine = core.engine_path()
         selected = gate["selected_evidence"]
+        binding = selected["idf"].get("value")
+        generated = isinstance(binding, dict) and binding.get("model_id")
         model, _ = self.file_record(body.project_id, selected["idf"]["source_file"])
         weather, _ = self.file_record(body.project_id, selected["epw"]["source_file"])
         rid = identifier("run")
         case = {"case_id": body.project_id, "name": project["name"], "data_nature": project["data_nature"],
                 "region": project["building"]["region"], "weather": weather["path"],
                 "schemes": [{"scheme_id": body.scheme_id, "name": body.scheme_id, "model": model["path"], "cost": None}],
-                "geometry_status": "not_reconstructed", "notes": gate["limitations"]}
+                "geometry_status": "reviewed_prismatic_model" if generated else "not_reconstructed",
+                "notes": gate["limitations"] + (binding.get("limitations", []) if generated else [])}
+        if generated:
+            gate["limitations"] = case["notes"]
         job = {**body.model_dump(), "run_id": rid, "case_id": body.project_id, "created_at": core.now(),
                "project_snapshot": project, "evidence_snapshot": selected, "case_snapshot": case,
                "factor_snapshot": profile, "code_hash": core.code_hash(), "engine_hash": core.sha(engine),

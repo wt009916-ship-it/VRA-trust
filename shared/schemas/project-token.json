@@ -1,0 +1,40 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "days": {
+      "default": 30,
+      "maximum": 90,
+      "minimum": 1,
+      "title": "Days",
+      "type": "integer"
+    },
+    "scopes": {
+      "default": [
+        "read"
+      ],
+      "items": {
+        "enum": [
+          "read",
+          "write",
+          "compute"
+        ],
+        "type": "string"
+      },
+      "maxItems": 3,
+      "minItems": 1,
+      "title": "Scopes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "title": "TokenCreate",
+  "type": "object"
+}

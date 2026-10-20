@@ -36,6 +36,9 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'model_get': '读取已保存建筑空间、热工参数、来源和模型版本；AI 候选不会自动变成工程事实',
+    'model_validate': '检查建筑模型到 EnergyPlus 的编译条件、面积一致性及已知简化',
+    'model_import_status': '读取 DXF/PDF/IFC/视觉识别任务与待人工复核候选',
     'project_diagnose': '读取当前资料缺口、按工程影响排序的补证任务、材料准入和最新方案评估',
     'material_list': '读取候选材料参数、批次、实测/假设性质和待补检测证据',
     'material_targets': '读取当前基准 IDF 中可替换材料层及其 Construction、表面和区域映射；需 run_id',
@@ -80,6 +83,12 @@ class Agent:
             raise core.ValidationError('Unknown or disabled tool: ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'model_get':
+            return d.modeling.get(project_id)
+        if name == 'model_validate':
+            return d.modeling.validate(project_id)
+        if name == 'model_import_status':
+            return self.store.list('import', project_id)
         if args.run_id and self.store.job(args.run_id)['project_id'] != project_id:
             raise core.ValidationError('Cross-project tool argument rejected')
         if name in {'simulation_create', 'carbon_calculate', 'counterexample_search', 'material_study_create'} and not allow_compute:

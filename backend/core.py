@@ -6,6 +6,8 @@ Python standard library only. Not a certified design or carbon-credit verifier.
 """
 from __future__ import annotations
 import hashlib, json, math, os, re, shutil, sqlite3, subprocess, tempfile, time, uuid
+import threading
+from functools import wraps
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -143,6 +145,20 @@ def source_fingerprints(case,scheme,profile,engine,file_root=None):
     root=Path(file_root) if file_root else ROOT
     return {'model':sha(relative_file(root,scheme['model'])),'weather':sha(relative_file(root,case['weather'])),'case':hash_json(case),'factor':hash_json(profile),'engine':sha(engine),'code':code_hash()}
 
+_ENGINE_SLOT = threading.BoundedSemaphore(1)
+
+def serialized_engine(fn):
+    """One native engine process across baseline, material and robustness workers.
+
+    This is a process-wide lock. Production must run exactly one API worker.
+    """
+    @wraps(fn)
+    def run(*args, **kwargs):
+        with _ENGINE_SLOT:
+            return fn(*args, **kwargs)
+    return run
+
+@serialized_engine
 def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_override=None,profile_override=None,file_root=None):
     rd=Path(run_dir);rd.mkdir(parents=True,exist_ok=True)
     identity={'run_id':rd.name,'case_id':case_id,'scheme_id':scheme_id,'status':'running','started_at':now(),'data_nature':'engineering_reference'}

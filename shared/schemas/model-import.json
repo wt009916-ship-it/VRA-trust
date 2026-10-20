@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "file_id": {
+      "title": "File Id",
+      "type": "string"
+    },
+    "mode": {
+      "default": "geometry",
+      "enum": [
+        "geometry",
+        "vision"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "scale_to_m": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scale To M"
+    },
+    "height_m": {
+      "default": 3,
+      "exclusiveMinimum": 0.5,
+      "maximum": 30,
+      "title": "Height M",
+      "type": "number"
+    },
+    "elevation_m": {
+      "default": 0,
+      "maximum": 1500,
+      "minimum": -100,
+      "title": "Elevation M",
+      "type": "number"
+    },
+    "layer": {
+      "anyOf": [
+        {
+          "maxLength": 150,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Layer"
+    },
+    "page": {
+      "default": 1,
+      "maximum": 500,
+      "minimum": 1,
+      "title": "Page",
+      "type": "integer"
+    },
+    "send_to_provider": {
+      "default": false,
+      "title": "Send To Provider",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "file_id"
+  ],
+  "title": "ImportOptions",
+  "type": "object"
+}

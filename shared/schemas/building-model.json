@@ -1,0 +1,318 @@
+{
+  "$defs": {
+    "MaterialLayer": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "thickness_m": {
+          "exclusiveMinimum": 0.001,
+          "maximum": 2,
+          "title": "Thickness M",
+          "type": "number"
+        },
+        "conductivity_w_mk": {
+          "exclusiveMinimum": 0.005,
+          "maximum": 400,
+          "title": "Conductivity W Mk",
+          "type": "number"
+        },
+        "density_kg_m3": {
+          "maximum": 30000,
+          "minimum": 1,
+          "title": "Density Kg M3",
+          "type": "number"
+        },
+        "specific_heat_j_kgk": {
+          "maximum": 6000,
+          "minimum": 100,
+          "title": "Specific Heat J Kgk",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "thickness_m",
+        "conductivity_w_mk",
+        "density_kg_m3",
+        "specific_heat_j_kgk"
+      ],
+      "title": "MaterialLayer",
+      "type": "object"
+    },
+    "Room": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "polygon": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 100,
+          "minItems": 3,
+          "title": "Polygon",
+          "type": "array"
+        },
+        "elevation_m": {
+          "default": 0,
+          "maximum": 1500,
+          "minimum": -100,
+          "title": "Elevation M",
+          "type": "number"
+        },
+        "height_m": {
+          "default": 3,
+          "exclusiveMinimum": 0.5,
+          "maximum": 30,
+          "title": "Height M",
+          "type": "number"
+        },
+        "source_locator": {
+          "default": "人工输入",
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Source Locator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "polygon"
+      ],
+      "title": "Room",
+      "type": "object"
+    },
+    "Thermal": {
+      "additionalProperties": false,
+      "properties": {
+        "wall_u": {
+          "exclusiveMinimum": 0.05,
+          "maximum": 10,
+          "title": "Wall U",
+          "type": "number"
+        },
+        "roof_u": {
+          "exclusiveMinimum": 0.05,
+          "maximum": 10,
+          "title": "Roof U",
+          "type": "number"
+        },
+        "floor_u": {
+          "exclusiveMinimum": 0.05,
+          "maximum": 10,
+          "title": "Floor U",
+          "type": "number"
+        },
+        "window_u": {
+          "exclusiveMinimum": 0.1,
+          "maximum": 8,
+          "title": "Window U",
+          "type": "number"
+        },
+        "window_shgc": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Window Shgc",
+          "type": "number"
+        },
+        "window_wall_ratio": {
+          "maximum": 0.6,
+          "minimum": 0,
+          "title": "Window Wall Ratio",
+          "type": "number"
+        },
+        "heating_c": {
+          "maximum": 28,
+          "minimum": 5,
+          "title": "Heating C",
+          "type": "number"
+        },
+        "cooling_c": {
+          "maximum": 40,
+          "minimum": 18,
+          "title": "Cooling C",
+          "type": "number"
+        },
+        "infiltration_ach": {
+          "maximum": 5,
+          "minimum": 0,
+          "title": "Infiltration Ach",
+          "type": "number"
+        },
+        "ground_temperature_c": {
+          "maximum": 50,
+          "minimum": -30,
+          "title": "Ground Temperature C",
+          "type": "number"
+        },
+        "lights_w_m2": {
+          "maximum": 50,
+          "minimum": 0,
+          "title": "Lights W M2",
+          "type": "number"
+        },
+        "equipment_w_m2": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Equipment W M2",
+          "type": "number"
+        },
+        "people_m2_person": {
+          "exclusiveMinimum": 1,
+          "maximum": 1000,
+          "title": "People M2 Person",
+          "type": "number"
+        },
+        "active_start": {
+          "maximum": 22,
+          "minimum": 0,
+          "title": "Active Start",
+          "type": "integer"
+        },
+        "active_end": {
+          "maximum": 24,
+          "minimum": 1,
+          "title": "Active End",
+          "type": "integer"
+        },
+        "north_deg": {
+          "default": 0,
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "North Deg",
+          "type": "number"
+        },
+        "basis": {
+          "enum": [
+            "assumed_scenario",
+            "documented"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "source_note": {
+          "maxLength": 2000,
+          "minLength": 10,
+          "title": "Source Note",
+          "type": "string"
+        },
+        "constructions": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/MaterialLayer"
+            },
+            "type": "array"
+          },
+          "propertyNames": {
+            "enum": [
+              "wall",
+              "roof",
+              "floor"
+            ]
+          },
+          "title": "Constructions",
+          "type": "object"
+        }
+      },
+      "required": [
+        "wall_u",
+        "roof_u",
+        "floor_u",
+        "window_u",
+        "window_shgc",
+        "window_wall_ratio",
+        "heating_c",
+        "cooling_c",
+        "infiltration_ach",
+        "ground_temperature_c",
+        "lights_w_m2",
+        "equipment_w_m2",
+        "people_m2_person",
+        "active_start",
+        "active_end",
+        "basis",
+        "source_note"
+      ],
+      "title": "Thermal",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "expected_revision": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Expected Revision",
+      "type": "integer"
+    },
+    "name": {
+      "default": "建筑模型",
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "rooms": {
+      "items": {
+        "$ref": "#/$defs/Room"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Rooms",
+      "type": "array"
+    },
+    "thermal": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Thermal"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "review_note": {
+      "maxLength": 2000,
+      "minLength": 5,
+      "title": "Review Note",
+      "type": "string"
+    },
+    "reviewed": {
+      "default": false,
+      "title": "Reviewed",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "rooms",
+    "review_note"
+  ],
+  "title": "ModelDraft",
+  "type": "object"
+}

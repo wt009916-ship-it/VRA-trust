@@ -1,10 +1,11 @@
 import './style.css';
 import { createPoller } from './polling.js';
 import { createEvidenceImporter } from './evidence-import.js';
-import { spatialWorkspace } from './spatial-ui.js';
+import { spatialWorkspace } from './model-ui.js';
+import { privateConsoleUnavailable } from './developer-ui.js';
 import { robustnessWorkspace } from './robustness-ui.js';
 import { decisionWorkspace } from './decision-ui.js';
-import { bindWorkflow, privateConsoleUnavailable, runAgent, factorEditor } from './trust-ui.js';
+import { bindWorkflow, runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
 import { appShell, homeView, projectView, authView, icon } from './layout.js';
@@ -54,7 +55,7 @@ function home() {
   document.querySelector('#create-project').onclick = () => projectForm();
   document.querySelector('#reference-project').onclick = e => loadReference(e.currentTarget);
   document.querySelector('#intake-composer').onsubmit = e => { e.preventDefault(); const name = document.querySelector('#project-intent').value.trim(); projectForm(); if (name) document.querySelector('[name="name"]').value = name; };
-  document.querySelector('#how-it-works').onclick = () => modal('从资料到可复核结果', '<ol class="workflow-steps"><li><strong>建立项目</strong><p>填写建筑用途、地点和面积。</p></li><li><strong>导入并确认资料</strong><p>上传 IDF、天气文件和工程依据，记录来源。</p></li><li><strong>运行并比较方案</strong><p>使用真实仿真结果，保留警告与不确定性。</p></li><li><strong>查看依据，导出报告</strong><p>每个结果绑定独立运行与证据版本。</p></li></ol>');
+  document.querySelector('#how-it-works').onclick = () => modal('从资料到可复核结果', '<ol class="workflow-steps"><li><strong>建立项目</strong><p>填写建筑用途、地点和面积。</p></li><li><strong>导入并确认资料</strong><p>导入图纸生成并复核模型，或上传已有 IDF；补齐天气文件和工程依据。</p></li><li><strong>运行并比较方案</strong><p>使用真实仿真结果，保留警告与不确定性。</p></li><li><strong>查看依据，导出报告</strong><p>每个结果绑定独立运行与证据版本。</p></li></ol>');
   bindProjectLinks();
 }
 function searchProjects() {
@@ -72,7 +73,7 @@ function modal(title, html) {
 function projectForm(edit = false) {
   const p = edit ? state.project : null, b = p?.building || {};
   const fields = [['use', '建筑用途', 'text', b.use || ''], ['location', '地点', 'text', b.location || ''], ['region', '地区代码（如 CN-JX / US-CO）', 'text', b.region || ''], ['area_m2', '总建筑面积 m²', 'number', b.area_m2 || ''], ['floors', '楼层数（可留空）', 'number', b.floors || ''], ['floor_height_m', '层高 m（可留空）', 'number', b.floor_height_m || ''], ['window_wall_ratio', '窗墙比 0–1（可留空）', 'number', b.window_wall_ratio ?? '']];
-  const dialog = modal(edit ? '修订建筑声明' : '创建工程项目', '<form id="project-form"><p class="form-note">用于核对导入模型。当前版本不会根据表单自动生成或修改 IDF；修改声明将使已有运行失效。</p>' + (!edit ? '<label>项目名称<input name="name" required maxlength="160"></label>' : '') + '<div class="form-grid">' + fields.map(([name, text, type, value]) => '<label>' + text + '<input name="' + name + '" type="' + type + '" ' + (type === 'number' ? 'step="any"' : '') + ' value="' + esc(value) + '" ' + (['use', 'location', 'region', 'area_m2'].includes(name) ? 'required' : '') + '></label>').join('') + '</div>' + ['envelope', 'hvac', 'schedules', 'notes'].map((name, i) => '<label>' + ['围护结构说明', 'HVAC / 设备说明', '运行时段 / 内部负荷说明', '其他资料与不确定性'][i] + '<textarea name="' + name + '">' + esc(b[name] || '') + '</textarea></label>').join('') + '<button class="primary" type="submit">保存项目声明</button></form>');
+  const dialog = modal(edit ? '修订建筑声明' : '创建工程项目', '<form id="project-form"><p class="form-note">这里登记建筑声明。创建后进入「建模工作区」导入图纸、复核空间并生成 IDF；修订声明会重新核验已有结果。</p>' + (!edit ? '<label>项目名称<input name="name" required maxlength="160"></label>' : '') + '<div class="form-grid">' + fields.map(([name, text, type, value]) => '<label>' + text + '<input name="' + name + '" type="' + type + '" ' + (type === 'number' ? 'step="any"' : '') + ' value="' + esc(value) + '" ' + (['use', 'location', 'region', 'area_m2'].includes(name) ? 'required' : '') + '></label>').join('') + '</div>' + ['envelope', 'hvac', 'schedules', 'notes'].map((name, i) => '<label>' + ['围护结构说明', 'HVAC / 设备说明', '运行时段 / 内部负荷说明', '其他资料与不确定性'][i] + '<textarea name="' + name + '">' + esc(b[name] || '') + '</textarea></label>').join('') + '<button class="primary" type="submit">保存项目声明</button></form>');
   document.querySelector('#project-form').onsubmit = e => { e.preventDefault(); action(async () => {
     const data = Object.fromEntries(new FormData(e.currentTarget));
     const building = Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'name'));
@@ -104,7 +105,18 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
-  if(host && ['spatial','robustness','decision'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
+  if(host && ['spatial','robustness','decision'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,syncModelViews):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
+}
+async function syncModelViews(projectId) {
+  if(state.project?.project_id!==projectId)return;
+  const token=selection;
+  renderEvidence();renderRuns();
+  const count=document.querySelector('[data-view="evidence"] span');if(count)count.textContent=state.evidence.length;
+  const base='/projects/'+state.project.project_id;
+  const gate=await request(base+'/gate');
+  if(token!==selection||state.project?.project_id!==projectId)return;
+  state.gate=gate;
+  await refreshRuns();
 }
 function renderProject() {
   const p = state.project;
@@ -152,7 +164,7 @@ function reviewForm(items) {
 function evidenceForm() {
   const projectId = state.project.project_id, token = selection;
   const importEvidence = createEvidenceImporter(projectId);
-  const dialog = modal('导入资料与登记来源', '<form id="evidence-form"><p class="form-note">PDF / 图片 / Excel 当前保存原文件并人工登记定位；尚未启用 OCR 或自动识别。IDF 目前要求 9.0 版本及原生 SQL 汇总输出。</p><label>文件（最大 20 MB）<input type="file" name="file" required accept=".idf,.epw,.pdf,.csv,.xlsx,.xls,.png,.jpg,.jpeg,.ifc,.json,.xml"></label><div class="form-grid"><label>证据类型<select name="type"><option value="idf">IDF 模型</option><option value="epw">EPW 天气</option><option value="drawing">图纸</option><option value="bill">能耗账单</option><option value="equipment_table">设备台账</option><option value="bim">BIM</option><option value="literature">文献</option><option value="sensor">传感器记录</option></select></label><label>IDF 方案<select name="scheme"><option value="baseline">baseline</option><option value="R1">R1</option><option value="R2">R2</option></select></label></div><label>来源定位<input name="locator" required placeholder="例如：A-17 第 2 页 / CSV 行 15 / IDF 对象名称"></label><label>来源与权威性<input name="authority" required placeholder="文件提供单位、版本和日期"></label><label>使用授权 / 许可<input name="permission" required placeholder="业主授权范围或开源许可来源"></label><label>登记人<input name="person" required></label><label>不确定性说明<textarea name="uncertainty"></textarea></label><button class="primary" type="submit">保存文件和证据记录</button></form>');
+  const dialog = modal('导入资料与登记来源', '<form id="evidence-form"><p class="form-note">这里保存原文件并登记出处。图纸识别请进入「建模工作区」；IDF 要求 9.0 版本及原生 SQL 汇总输出。</p><label>文件（最大 20 MB）<input type="file" name="file" required accept=".idf,.epw,.pdf,.csv,.xlsx,.xls,.png,.jpg,.jpeg,.ifc,.dxf,.dwg,.json,.xml"></label><div class="form-grid"><label>证据类型<select name="type"><option value="idf">IDF 模型</option><option value="epw">EPW 天气</option><option value="drawing">图纸</option><option value="bill">能耗账单</option><option value="equipment_table">设备台账</option><option value="bim">BIM</option><option value="literature">文献</option><option value="sensor">传感器记录</option></select></label><label>IDF 方案<select name="scheme"><option value="baseline">baseline</option><option value="R1">R1</option><option value="R2">R2</option></select></label></div><label>来源定位<input name="locator" required placeholder="例如：A-17 第 2 页 / CSV 行 15 / IDF 对象名称"></label><label>来源与权威性<input name="authority" required placeholder="文件提供单位、版本和日期"></label><label>使用授权 / 许可<input name="permission" required placeholder="业主授权范围或开源许可来源"></label><label>登记人<input name="person" required></label><label>不确定性说明<textarea name="uncertainty"></textarea></label><button class="primary" type="submit">保存文件和证据记录</button></form>');
   document.querySelector('#evidence-form').onsubmit = e => { e.preventDefault(); const data = new FormData(e.currentTarget), file = e.currentTarget.elements.file.files[0]; action(async () => {
     await importEvidence(file, { type: data.get('type'), source_locator: data.get('locator'), authority: data.get('authority'), permission: data.get('permission'), responsible_person: data.get('person'), acquisition_method: 'manual_upload', status: 'IMPORTED', uncertainty: data.get('uncertainty') || null, scheme_id: data.get('type') === 'idf' ? data.get('scheme') : null });
     if (token !== selection || !dialog.isConnected) return;
