@@ -165,7 +165,7 @@ def test_model_rejects_bad_geometry_and_parameters(change):
         ModelDraft.model_validate(body)
 
 
-def test_compiler_shared_walls_and_partial_stacked_refusal():
+def test_compiler_shared_walls_and_partial_stacked_contacts():
     model = ModelDraft.model_validate(model_body()).model_dump()
     text, surfaces = model_export.idf(model)
     shared = [s for s in surfaces if s["boundary"] == "Surface"]
@@ -176,8 +176,18 @@ def test_compiler_shared_walls_and_partial_stacked_refusal():
     upstairs = copy.deepcopy(model["rooms"][0])
     upstairs.update(id="R3", elevation_m=3, polygon=[[0, 0], [3, 0], [3, 8], [0, 8]])
     model["rooms"].append(upstairs)
-    with pytest.raises(core.ValidationError, match="部分叠层"):
-        model_export.geometry(model)
+    from backend.model_geometry import frame
+    surfaces = model_export.geometry(model)
+    lookup = {s["name"]: s for s in surfaces}
+    shared_roof = [s for s in surfaces if s["zone"] == "R1" and s["kind"] == "Roof" and s["boundary"] == "Surface"]
+    outdoor_roof = [s for s in surfaces if s["zone"] == "R1" and s["kind"] == "Roof" and s["boundary"] == "Outdoors"]
+    assert sum(frame(s["points"])["poly"].area for s in shared_roof) == pytest.approx(24)
+    assert sum(frame(s["points"])["poly"].area for s in outdoor_roof) == pytest.approx(16)
+    for s in surfaces:
+        if s["boundary"] == "Surface":
+            other = lookup[s["other"]]
+            assert other["other"] == s["name"] and other["zone"] != s["zone"]
+            assert frame(s["points"])["side"] == -frame(other["points"])["side"]
 
 
 def test_layered_envelope_derives_u_and_exports_mass():

@@ -1,29 +1,78 @@
 """Metric, reviewable room geometry. Recognition never establishes engineering truth."""
 from typing import Literal
 
-from pydantic import Field, StrictFloat, StrictInt, model_validator
+from pydantic import Field, StrictBool, StrictFloat, StrictInt, model_validator
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import orient
+from shapely.ops import unary_union
 
 from .schema import Contract
+from .model_geometry import parts
 
 
-class Room(Contract):
-    id: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,59}$")
-    name: str = Field(min_length=1, max_length=120)
+class Segment(Contract):
     polygon: list[tuple[StrictFloat, StrictFloat]] = Field(min_length=3, max_length=100)
     elevation_m: StrictFloat = Field(default=0, ge=-100, le=1500)
-    height_m: StrictFloat = Field(default=3, gt=.5, le=30)
-    source_locator: str = Field(default="人工输入", min_length=1, max_length=500)
+    height_m: StrictFloat = Field(default=3, gt=.000001, le=30)
 
     @model_validator(mode="after")
     def topology(self):
         if any(abs(v) > 10000 for pt in self.polygon for v in pt):
             raise ValueError("坐标超出本地工程坐标范围，请先转换大地坐标")
         p = Polygon(self.polygon)
-        if not p.is_valid or p.area < .5 or p.area > 100000:
-            raise ValueError("房间必须是不自交的闭合平面，面积 0.5–100000 m²")
+        if not p.is_valid or p.area < .000001 or p.area > 100000:
+            raise ValueError("空间分段必须是不自交、非零面积的闭合平面")
         self.polygon = list(orient(p, sign=1).exterior.coords)[:-1]
+        return self
+
+
+class BoundaryHint(Contract):
+    points: list[tuple[StrictFloat, StrictFloat, StrictFloat]] = Field(min_length=3, max_length=100)
+    classification: Literal["INTERNAL", "EXTERNAL", "EXTERNAL_EARTH", "EXTERNAL_WATER", "EXTERNAL_FIRE", "NOTDEFINED"]
+    source_id: str = Field(min_length=1, max_length=100)
+    element_plane_range_m: tuple[StrictFloat, StrictFloat] | None = None
+
+    @model_validator(mode="after")
+    def bounded(self):
+        from .model_geometry import frame
+        if any(abs(v) > 15000 for p in self.points for v in p):
+            raise ValueError("边界坐标超出工程坐标范围")
+        frame(self.points)
+        if self.element_plane_range_m:
+            low, high = self.element_plane_range_m
+            if not -15000 <= low <= high <= 15000 or high-low > 1:
+                raise ValueError("墙体投影范围无效")
+        return self
+
+
+class Room(Segment):
+    id: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,59}$")
+    name: str = Field(min_length=1, max_length=120)
+    height_m: StrictFloat = Field(default=3, gt=.5, le=30)
+    source_locator: str = Field(default="人工输入", min_length=1, max_length=500)
+    segments: list[Segment] = Field(default_factory=list, max_length=128)
+    ifc_source: str | None = Field(default=None, max_length=100)
+    boundary_hints: list[BoundaryHint] = Field(default_factory=list, max_length=500)
+    conditioned: StrictBool | None = True
+    include_floor_area: StrictBool | None = True
+
+    @model_validator(mode="after")
+    def solid(self):
+        if Polygon(self.polygon).area < .5:
+            raise ValueError("房间底面积须不小于 0.5 m²")
+        if self.segments:
+            low = min(s.elevation_m for s in self.segments)
+            high = max(s.elevation_m+s.height_m for s in self.segments)
+            if abs(low-self.elevation_m) > 1e-6 or abs(high-low-self.height_m) > 1e-6:
+                raise ValueError("房间高度与分段范围不一致")
+            base = unary_union([Polygon(s.polygon) for s in self.segments if abs(s.elevation_m-low) < 1e-7])
+            if base.symmetric_difference(Polygon(self.polygon)).area > 1e-6:
+                raise ValueError("房间底面与最低分段不一致")
+            for i, a in enumerate(self.segments):
+                for b in self.segments[i+1:]:
+                    if min(a.elevation_m+a.height_m, b.elevation_m+b.height_m)-max(a.elevation_m, b.elevation_m) > 1e-6:
+                        if Polygon(a.polygon).intersection(Polygon(b.polygon)).area > 1e-7:
+                            raise ValueError("同一空间的几何分段体积重叠")
         return self
 
 
@@ -56,9 +105,15 @@ class Thermal(Contract):
     basis: Literal["assumed_scenario", "documented"]
     source_note: str = Field(min_length=10, max_length=2000)
     constructions: dict[Literal["wall", "roof", "floor"], list[MaterialLayer]] = Field(default_factory=dict)
+    ifc_unpaired_policy: Literal["reject", "adiabatic_scenario"] = "reject"
+    geometry_tolerance_m: StrictFloat = Field(default=0, ge=0, le=.05)
 
     @model_validator(mode="after")
     def ordered(self):
+        if self.ifc_unpaired_policy == "adiabatic_scenario" and self.basis != "assumed_scenario":
+            raise ValueError("未配对 IFC 边界绝热处理只能用于明确假设的情景，不能标成已有文件证明")
+        if self.geometry_tolerance_m and self.basis != "assumed_scenario":
+            raise ValueError("几何公差简化只能用于明确假设的情景，并保留原始空间")
         for key, layers in self.constructions.items():
             if not 1 <= len(layers) <= 8:
                 raise ValueError("每组构造须有 1–8 层材料")
@@ -89,11 +144,18 @@ class ModelDraft(Contract):
     def nonoverlap(self):
         if len({r.id.casefold() for r in self.rooms}) != len(self.rooms):
             raise ValueError("房间 ID 重复（EnergyPlus 不区分大小写）")
-        for i, a in enumerate(self.rooms):
-            for b in self.rooms[i + 1:]:
-                if min(a.elevation_m + a.height_m, b.elevation_m + b.height_m) - max(a.elevation_m, b.elevation_m) > .001:
-                    if Polygon(a.polygon).intersection(Polygon(b.polygon)).area > .01:
-                        raise ValueError(f"房间 {a.id} 与 {b.id} 体积重叠，请修正识别候选")
+        solids = [[(s["elevation_m"], s["elevation_m"]+s["height_m"], Polygon(s["polygon"]))
+                   for s in parts(room.model_dump())] for room in self.rooms]
+        if sum(map(len, solids)) > 1000:
+            raise ValueError("建筑分段超过 1000")
+        for i, room in enumerate(self.rooms):
+            for j in range(i+1, len(self.rooms)):
+                other = self.rooms[j]
+                for low, high, shape in solids[i]:
+                    for bottom, top, polygon in solids[j]:
+                        if min(high, top)-max(low, bottom) > .001:
+                            if shape.intersection(polygon).area > .01:
+                                raise ValueError(f"房间 {room.id} 与 {other.id} 体积重叠，请修正识别候选")
         return self
 
 

@@ -1,5 +1,79 @@
 {
   "$defs": {
+    "BoundaryHint": {
+      "additionalProperties": false,
+      "properties": {
+        "points": {
+          "items": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 100,
+          "minItems": 3,
+          "title": "Points",
+          "type": "array"
+        },
+        "classification": {
+          "enum": [
+            "INTERNAL",
+            "EXTERNAL",
+            "EXTERNAL_EARTH",
+            "EXTERNAL_WATER",
+            "EXTERNAL_FIRE",
+            "NOTDEFINED"
+          ],
+          "title": "Classification",
+          "type": "string"
+        },
+        "source_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "element_plane_range_m": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Element Plane Range M"
+        }
+      },
+      "required": [
+        "points",
+        "classification",
+        "source_id"
+      ],
+      "title": "BoundaryHint",
+      "type": "object"
+    },
     "MaterialLayer": {
       "additionalProperties": false,
       "properties": {
@@ -47,17 +121,6 @@
     "Room": {
       "additionalProperties": false,
       "properties": {
-        "id": {
-          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
-          "title": "Id",
-          "type": "string"
-        },
-        "name": {
-          "maxLength": 120,
-          "minLength": 1,
-          "title": "Name",
-          "type": "string"
-        },
         "polygon": {
           "items": {
             "maxItems": 2,
@@ -91,20 +154,127 @@
           "title": "Height M",
           "type": "number"
         },
+        "id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
         "source_locator": {
           "default": "人工输入",
           "maxLength": 500,
           "minLength": 1,
           "title": "Source Locator",
           "type": "string"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "maxItems": 128,
+          "title": "Segments",
+          "type": "array"
+        },
+        "ifc_source": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ifc Source"
+        },
+        "boundary_hints": {
+          "items": {
+            "$ref": "#/$defs/BoundaryHint"
+          },
+          "maxItems": 500,
+          "title": "Boundary Hints",
+          "type": "array"
+        },
+        "conditioned": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": true,
+          "title": "Conditioned"
+        },
+        "include_floor_area": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": true,
+          "title": "Include Floor Area"
         }
       },
       "required": [
+        "polygon",
         "id",
-        "name",
-        "polygon"
+        "name"
       ],
       "title": "Room",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "properties": {
+        "polygon": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 100,
+          "minItems": 3,
+          "title": "Polygon",
+          "type": "array"
+        },
+        "elevation_m": {
+          "default": 0,
+          "maximum": 1500,
+          "minimum": -100,
+          "title": "Elevation M",
+          "type": "number"
+        },
+        "height_m": {
+          "default": 3,
+          "exclusiveMinimum": 1e-06,
+          "maximum": 30,
+          "title": "Height M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "polygon"
+      ],
+      "title": "Segment",
       "type": "object"
     },
     "Thermal": {
@@ -237,6 +407,22 @@
           },
           "title": "Constructions",
           "type": "object"
+        },
+        "ifc_unpaired_policy": {
+          "default": "reject",
+          "enum": [
+            "reject",
+            "adiabatic_scenario"
+          ],
+          "title": "Ifc Unpaired Policy",
+          "type": "string"
+        },
+        "geometry_tolerance_m": {
+          "default": 0,
+          "maximum": 0.05,
+          "minimum": 0,
+          "title": "Geometry Tolerance M",
+          "type": "number"
         }
       },
       "required": [

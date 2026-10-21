@@ -4111,6 +4111,79 @@
         ],
         "title": "Body_upload_api_projects__project_id__files_post"
       },
+      "BoundaryHint": {
+        "properties": {
+          "points": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 3,
+              "minItems": 3
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 3,
+            "title": "Points"
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "INTERNAL",
+              "EXTERNAL",
+              "EXTERNAL_EARTH",
+              "EXTERNAL_WATER",
+              "EXTERNAL_FIRE",
+              "NOTDEFINED"
+            ],
+            "title": "Classification"
+          },
+          "source_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source Id"
+          },
+          "element_plane_range_m": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Element Plane Range M"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "classification",
+          "source_id"
+        ],
+        "title": "BoundaryHint"
+      },
       "Building": {
         "properties": {
           "use": {
@@ -5790,17 +5863,6 @@
       },
       "Room": {
         "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 120,
-            "minLength": 1,
-            "title": "Name"
-          },
           "polygon": {
             "items": {
               "prefixItems": [
@@ -5834,20 +5896,83 @@
             "title": "Height M",
             "default": 3
           },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
           "source_locator": {
             "type": "string",
             "maxLength": 500,
             "minLength": 1,
             "title": "Source Locator",
             "default": "人工输入"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/Segment"
+            },
+            "type": "array",
+            "maxItems": 128,
+            "title": "Segments"
+          },
+          "ifc_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ifc Source"
+          },
+          "boundary_hints": {
+            "items": {
+              "$ref": "#/components/schemas/BoundaryHint"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Boundary Hints"
+          },
+          "conditioned": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conditioned",
+            "default": true
+          },
+          "include_floor_area": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Floor Area",
+            "default": true
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
+          "polygon",
           "id",
-          "name",
-          "polygon"
+          "name"
         ],
         "title": "Room"
       },
@@ -6065,6 +6190,49 @@
         ],
         "title": "Search"
       },
+      "Segment": {
+        "properties": {
+          "polygon": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 3,
+            "title": "Polygon"
+          },
+          "elevation_m": {
+            "type": "number",
+            "maximum": 1500.0,
+            "minimum": -100.0,
+            "title": "Elevation M",
+            "default": 0
+          },
+          "height_m": {
+            "type": "number",
+            "maximum": 30.0,
+            "exclusiveMinimum": 1e-06,
+            "title": "Height M",
+            "default": 3
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "polygon"
+        ],
+        "title": "Segment"
+      },
       "StudyCreate": {
         "properties": {
           "source_run_id": {
@@ -6257,6 +6425,22 @@
             },
             "type": "object",
             "title": "Constructions"
+          },
+          "ifc_unpaired_policy": {
+            "type": "string",
+            "enum": [
+              "reject",
+              "adiabatic_scenario"
+            ],
+            "title": "Ifc Unpaired Policy",
+            "default": "reject"
+          },
+          "geometry_tolerance_m": {
+            "type": "number",
+            "maximum": 0.05,
+            "minimum": 0.0,
+            "title": "Geometry Tolerance M",
+            "default": 0
           }
         },
         "additionalProperties": false,
