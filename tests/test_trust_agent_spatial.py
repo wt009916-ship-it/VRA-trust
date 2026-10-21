@@ -101,7 +101,8 @@ def test_provider_configuration_admin_only(client):
 def test_provider_agent_calls_actual_registry_under_protocol_fixture(client, monkeypatch):
     pid = create_project(client)['project_id']
     agent = client.app.state.agent
-    monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
+    monkeypatch.setattr(agent.gateway, 'public', lambda: {
+        'enabled': True, 'key_configured': True, 'provider': 'OpenAI-compatible', 'model': 'protocol-fixture'})
     responses = iter([{'role': 'assistant', 'content': None, 'tool_calls': [{'id': 'call1', 'type': 'function', 'function': {'name': 'evidence_validate', 'arguments': '{}'}}]}, {'role': 'assistant', 'content': '需要补证，见工具结果'}])
     monkeypatch.setattr(agent.gateway, 'complete', lambda messages, tools: next(responses))
     result = agent.start(pid, Chat(message='检查资料', mode='provider'), background=False)

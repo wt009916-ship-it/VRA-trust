@@ -1,3 +1,11 @@
+# 公开输入与开源工具实测 2026-10-21
+
+- MEASURED：五份 EPW 与 Ladybug Core / pvlib 对照，43,800 小时温度/GHI 按时标对齐后逐值一致；三种异常副本在产品中阻止仿真。Duplex 新 API 与同输入原生 CLI 的 7 项 SQL 数值一致、365 天、零 Warning / Severe。
+- FAILED：新增 Schependomlaan 工程 IFC 默认上传 413；隔离配置 64 MB 后上传成功但导入 409。100 空间中 94 个仅有 Box/FootPrint，不能完整生成三维热模型；没有删空间制造成功。
+- FIXED：真实本地 Qwen 调用发现重复工具参数使首请求达到 49,219 token 并失败；按工具裁剪后实际为 5,252 token。Provider 时间线记录真实模型名称。权限和工程计算口径不变。
+- MEASURED / INSUFFICIENT：VRA、AutoGen 0.7.5、LangGraph 1.2.16 共享 Qwen3-0.6B 与生产工具完成两轮三题、18 次真实任务；天气答案未完成、第三题未调用所需工具，只有缺证结论两轮均答出。框架 completed 不等于任务正确，不能据此宣称助手可靠或主流 AI 优势。
+- CHECKS：后端 161 项及 6 子测试、全仓 Ruff、OpenAPI 漂移检查通过。实测原文、输入哈希和失败保留。商业软件、国内客户能耗校准仍未实测；详见 [实测报告](EMPIRICAL_BENCHMARK_RESULTS.md)。
+
 # 工作台密度与视觉优化 2026-10-21
 
 - UI：暖白 / 松绿 / 铜色视觉体系、建筑概念插画；压缩首页宣传区与新建输入框，项目列表和流程说明并排，项目页去掉嵌套边距并收紧助手输入区。
