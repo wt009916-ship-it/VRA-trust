@@ -2,6 +2,8 @@
 
 既有公共建筑可核验节能改造决策智能体。核心原则：可复核、可拒答、可补证、可重放。
 
+**2026-10-21：天气分析与工作台更新**。已接入 NASA POWER 公开日气象获取、月图／度日／CSV、EPW 质量检查与仿真准入；更新项目概览、登录、深色和窄屏界面。新增天气 Agent/MCP 工具（当前 26 / 9 个）。真实数据、原生全年计算验收及适用范围见 [天气工作台](docs/WEATHER_WORKSPACE.md)。
+
 **2026-10-20：建模与智能体集成版**。DXF / 矢量 PDF / IFC 实际解析、扫描图视觉接口、LangGraph 持久复核、三维空间编辑、分层热工构造、IDF 生成和真实 EnergyPlus 计算已贯通；新增项目 API Token 与八个 MCP 工具。使用方法、开源组件和工程边界见 [建模工作区](docs/BUILDING_WORKBENCH.md)。
 
 发布包含已构建前端：Python 3.12 下执行 `./Setup.ps1`，再执行 `./Start.ps1 -EnergyPlusPath <energyplus.exe绝对路径>`。下面也保留源码开发方式。

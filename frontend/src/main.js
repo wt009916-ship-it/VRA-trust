@@ -1,4 +1,6 @@
 import './style.css';
+import './studio.css';
+import { weatherWorkspace } from './weather-ui.js';
 import { createPoller } from './polling.js';
 import { createEvidenceImporter } from './evidence-import.js';
 import { spatialWorkspace } from './model-ui.js';
@@ -8,7 +10,7 @@ import { decisionWorkspace } from './decision-ui.js';
 import { bindWorkflow, runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
-import { appShell, homeView, projectView, authView, icon } from './layout.js';
+import { appShell, homeView, projectView, authView, icon, projectMetricsMarkup } from './layout.js';
 
 const root = document.querySelector('#app');
 const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [], user: null, view: 'readiness', syncError: false };
@@ -105,7 +107,7 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
-  if(host && ['spatial','robustness','decision'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,syncModelViews):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
+  if(host && ['spatial','robustness','decision','weather'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='weather'?weatherWorkspace(state,host,action,notice,modal,syncModelViews):view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,syncModelViews):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
 }
 async function syncModelViews(projectId) {
   if(state.project?.project_id!==projectId)return;
@@ -123,6 +125,7 @@ function renderProject() {
   shell();
   document.querySelector('#workspace').innerHTML = projectView(state);
   document.querySelectorAll('[data-view]').forEach(b => { b.onclick = () => switchView(b.dataset.view); });
+  document.querySelectorAll('[data-open-view]').forEach(b => { b.onclick = () => switchView(b.dataset.openView); });
   const inspector = document.querySelector('.inspector');
   document.querySelector('#toggle-inspector').onclick = () => { inspector.hidden = !inspector.hidden; };
   document.querySelector('#close-inspector').onclick = () => { inspector.hidden = true; };
@@ -172,6 +175,8 @@ function evidenceForm() {
   }, e.submitter); };
 }
 function renderRuns() {
+  const summary=document.querySelector('.project-metrics');
+  if(summary && state.project)summary.innerHTML=state.syncError?'<p class="empty">连接中断，等待重新核验项目状态。</p>':projectMetricsMarkup(state);
   const target = document.querySelector('#runs'); if (!target) return;
   for (const id of ['run', 'compare']) { const button = document.querySelector('#' + id); if (button) button.disabled = state.syncError; }
   if (state.syncError) {

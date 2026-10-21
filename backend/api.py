@@ -151,6 +151,7 @@ def create_app(data_dir=None, *, start_worker=True):
                                        app.state.gateway.public()["enabled"] and app.state.gateway.public()["key_configured"]),
                     "local_dxf_pdf_ifc": True, "model_to_idf": True, "ifc_export": True,
                     "persistent_model_workflow": True, "mcp_adapter": True,
+                    "weather_analysis": True, "nasa_daily_connector": True, "epw_quality_gate": True,
                     "manual_geometry": True, "robustness": True}}
 
     @app.get("/api/auth/status")
@@ -313,6 +314,8 @@ def create_app(data_dir=None, *, start_worker=True):
     register_extensions(app, domain, auth)
     from .product_api import register_product
     register_product(app, domain, auth)
+    from .weather_api import register_weather
+    register_weather(app, domain)
     dist = core.ROOT / "frontend/dist"
     if dist.is_dir():
         app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")

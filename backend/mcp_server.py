@@ -83,6 +83,12 @@ def simulation_list() -> list:
 
 
 @server.tool()
+def weather_summary() -> list:
+    """读取天气分析与来源；日尺度数据不能作为 EnergyPlus 逐时天气。"""
+    return call("GET", "/weather")
+
+
+@server.tool()
 def simulation_create(scheme_id: Literal["baseline", "R1", "R2"] = "baseline",
                       confirm_compute: bool = False) -> dict:
     """用户明确要求后提交实际 EnergyPlus；需具有 compute 权限的项目 Token。"""
