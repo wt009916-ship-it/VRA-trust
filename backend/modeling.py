@@ -96,12 +96,13 @@ class Modeling:
         return graph.compile(checkpointer=saver)
 
     def start_import(self, project_id, options, actor):
-        self.domain.file_record(project_id, options.file_id)
+        source, _ = self.domain.file_record(project_id, options.file_id)
         if not self.capacity.acquire(blocking=False):
             raise core.ValidationError("识别工作线程已满，请稍后再试")
         record = self.store.put("import", {"import_id": identifier("import"), "project_id": project_id,
                                 "status": "running", "created_at": core.now(), "options": options.model_dump(),
-                                "actor": actor, "error": None})
+                                "actor": actor, "error": None,
+                                "source": {k: source[k] for k in ("file_id", "name", "hash", "size")}})
         try:
             with SqliteSaver.from_conn_string(str(self.checkpoints)) as saver:
                 graph = self._graph(saver, actor)
@@ -110,7 +111,8 @@ class Modeling:
             return self.store.put("import", {**record, "status": "awaiting_review",
                                             "candidate": output["candidate"]}, record["revision"])
         except Exception as exc:
-            self.store.put("import", {**record, "status": "failed", "error": str(exc)}, record["revision"])
+            self.store.put("import", {**record, "status": "failed", "error": str(exc),
+                           "diagnostics": getattr(exc, "diagnostics", None)}, record["revision"])
             raise
         finally:
             self.capacity.release()

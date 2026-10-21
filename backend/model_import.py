@@ -11,6 +11,12 @@ from . import core, model_geometry
 from .model_schema import Room
 
 
+class ImportDiagnosticError(core.ValidationError):
+    def __init__(self, message, diagnostics):
+        super().__init__(message)
+        self.diagnostics = diagnostics
+
+
 def _candidates(polygons, options, locator):
     result = []
     for index, polygon in enumerate(polygons):
@@ -111,12 +117,23 @@ def ifc(path, options):
     import ifcopenshell.geom
     document = ifcopenshell.open(str(path))
     spaces = document.by_type("IfcSpace")
+    diagnostics = {"format": "IFC", "schema": document.schema, "total": len(spaces),
+                   "extracted": 0, "blocked": len(spaces), "spaces": [], "actions": []}
+    if not spaces:
+        diagnostics["actions"] = ["请在原建模软件创建并导出 IfcSpace 空间及其实体几何；构件包围盒不能代替房间。"]
+        raise ImportDiagnosticError("IFC 没有 IfcSpace，无法建立空间模型", diagnostics)
     if len(spaces) > 100:
-        raise core.ValidationError("IFC 空间超过 100，请按楼层拆分")
+        diagnostics["actions"] = ["单次最多解析 100 个空间，请在原软件按楼层导出并分别导入。"]
+        raise ImportDiagnosticError("IFC 空间超过 100，请按楼层拆分", diagnostics)
     settings = ifcopenshell.geom.settings()
     settings.set(settings.USE_WORLD_COORDS, True)
     rooms, warnings = [], []
     for index, space in enumerate(spaces):
+        representations = [{"identifier": r.RepresentationIdentifier, "type": r.RepresentationType}
+                           for r in getattr(space.Representation, "Representations", ())]
+        detail = {"global_id": space.GlobalId, "name": space.Name or "",
+                  "long_name": space.LongName or "", "representations": representations,
+                  "status": "extracted", "code": None, "error": None, "action": None}
         try:
             shape = ifcopenshell.geom.create_shape(settings, space)
             sections = model_geometry.mesh_segments(shape.geometry.verts, shape.geometry.faces)
@@ -136,14 +153,23 @@ def ifc(path, options):
             if skipped:
                 warnings.append(f"{space.GlobalId}: {skipped} 条空间边界暂无法解析；未匹配区域默认阻止发布。")
         except Exception as exc:
-            warnings.append(f"{space.GlobalId}: 无法提取完整空间（{type(exc).__name__}: {str(exc)[:250]}），需人工建模")
+            missing_body = not any(r["identifier"] == "Body" for r in representations)
+            detail.update(status="blocked", code="MISSING_BODY" if missing_body else "UNSUPPORTED_GEOMETRY",
+                          error=f"{type(exc).__name__}: {str(exc)[:500]}",
+                          action="在源软件中导出此 IfcSpace 的三维 Body 实体；仅 Box/FootPrint 不能确定空间体积。" if missing_body
+                          else "检查此空间是否为无孔、水平分段空间；修复源几何或在人工建模中依据图纸重建。")
+        diagnostics["spaces"].append(detail)
+    diagnostics.update(extracted=len(rooms), blocked=len(spaces)-len(rooms))
     if len(rooms) != len(spaces):
-        raise core.ValidationError("IFC 未完整导入，禁止把剩余空间当作整栋建筑：" + "；".join(warnings)[:3500])
+        diagnostics["actions"] = ["按清单中的 GlobalId 在原软件定位并修复，重新导出后再次导入。",
+                                  "本次未生成可采纳的部分建筑；已解析空间不等于完整模型。"]
+        raise ImportDiagnosticError(f"IFC 未完整导入：共 {len(spaces)} 个空间，解析 {len(rooms)} 个，阻断 {len(spaces)-len(rooms)} 个。请查看逐空间补证清单。", diagnostics)
     warnings += ["IFC 保留水平分段空间；斜面拒绝近似。墙层与实际门窗仍需热工建模，不自动替代。",
                  "须逐间确认是否空调空间、是否计入面积；Roof、楼梯等名称不作为自动分类依据。",
                  "内部及缺失边界未配对时默认拒绝发布；只有显式假设情景才能按绝热处理。",
                  "IfcSpace 缺失时不会用实体包围盒冒充房间。"]
-    return {"rooms": rooms, "warnings": warnings, "metadata": {"schema": document.schema, "spaces": len(spaces)}}
+    return {"rooms": rooms, "warnings": warnings, "diagnostics": diagnostics,
+            "metadata": {"schema": document.schema, "spaces": len(spaces)}}
 
 
 def vision(path, options, gateway):

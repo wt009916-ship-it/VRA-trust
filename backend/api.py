@@ -80,7 +80,7 @@ def create_app(data_dir=None, *, start_worker=True):
     app.state.auth = auth
     app.state.tokens = Tokens(auth)
     public_api = {"/api/health", "/api/auth/status", "/api/auth/login", "/api/auth/register"}
-    maximum = int(os.environ.get("VRA_MAX_UPLOAD_MB", "20")) * 1024 * 1024
+    maximum = int(os.environ.get("VRA_MAX_UPLOAD_MB", "64")) * 1024 * 1024
     app.add_middleware(BodyLimit, limit=maximum + 65536)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
 
@@ -114,7 +114,7 @@ def create_app(data_dir=None, *, start_worker=True):
                 return JSONResponse({"detail": "记录不存在或无访问权限"}, status_code=404)
         declared = request.headers.get("content-length")
         if declared and (not declared.isdigit() or int(declared) > maximum + 65536):
-            return JSONResponse({"detail": "Request size limit exceeded"}, status_code=413)
+            return JSONResponse({"detail": f"请求超过大小限制；单文件上限 {maximum // 1024 // 1024} MB，请拆分资料"}, status_code=413)
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
@@ -143,6 +143,7 @@ def create_app(data_dir=None, *, start_worker=True):
         except core.ValidationError:
             available = False
         return {"status": "ok", "engine_available": available, "worker_alive": bool(domain.worker and domain.worker.is_alive()),
+                "upload_policy": {"max_file_bytes": maximum, "max_file_mb": maximum // 1024 // 1024},
                 "demo_mode": os.environ.get("DEMO_MODE", "false").lower() == "true", "deployment": "local_authenticated",
                 "capabilities": {"project_intake": True, "evidence_gate": True, "real_energyplus": available,
                     "llm_tools": all(app.state.gateway.public()[k] for k in ('enabled', 'key_configured')),
@@ -218,7 +219,7 @@ def create_app(data_dir=None, *, start_worker=True):
     async def upload(project_id: str, file: UploadFile = File(...)):
         content = await file.read(maximum + 1)
         if len(content) > maximum:
-            return JSONResponse({"detail": "File exceeds upload limit"}, status_code=413)
+            return JSONResponse({"detail": f"文件超过 {maximum // 1024 // 1024} MB，请拆分资料后上传"}, status_code=413)
         return domain.add_file(project_id, file.filename or "unnamed", content)
 
     @app.get("/api/projects/{project_id}/files/{file_id}")

@@ -1,4 +1,5 @@
-import { request, post, escape as esc, number as num } from './api.js';
+import { importDiagnostics } from './assurance-ui.js';
+import { request, post, escape as esc, number as num, uploadLimitMB } from './api.js';
 import { projectTokens } from './developer-ui.js';
 
 const thermalFields = [
@@ -50,7 +51,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   host.innerHTML=`<div class="view-heading"><div><span class="eyebrow">BUILDING WORKBENCH</span><h1>资料进入，空间成形。</h1><p>DXF · 矢量 PDF · IFC · 图片识别 → 几何复核 → 三维模型 → EnergyPlus</p></div><button id="model-api">项目 API / MCP</button></div>
   <div class="model-workbench"><div class="model-inputs">
   <details class="model-card" open><summary>01 / 导入与识别</summary><form id="model-import">
-  <label>选择资料<input name="file" type="file" accept=".dxf,.dwg,.pdf,.ifc,.png,.jpg,.jpeg" required></label>
+  <label>选择资料 · 最大 ${uploadLimitMB()} MB<input name="file" type="file" accept=".dxf,.dwg,.pdf,.ifc,.png,.jpg,.jpeg" required></label>
   <label>识别方式<select name="mode"><option value="geometry">本地几何解析 · DXF / PDF / IFC</option><option value="vision">视觉模型 · 扫描 PDF / 图片</option></select></label>
   <div class="form-grid"><label>长度换算系数<input name="scale_to_m" type="number" step="any" min=".0000001" placeholder="DXF 可自动读取单位"></label><label>页码<input name="page" type="number" value="1" min="1" max="500"></label><label>候选层高 m<input name="height_m" type="number" value="3" step=".1" min=".6" max="30"></label><label>候选标高 m<input name="elevation_m" type="number" value="0" step=".1"></label></div>
   <label>DXF 图层（可选）<input name="layer" placeholder="建议先选择房间边界图层"></label>
@@ -124,7 +125,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     target.querySelector('#remove-room').onclick=()=>{rooms.splice(selected,1);markDirty();action(preview);};
   }
   function paintImports(){
-    host.querySelector('#model-imports').innerHTML=imports.slice(0,12).map(t=>`<details><summary>${esc(t.candidate?.source?.name||t.import_id)} · ${esc(t.status)}</summary><p>${esc(t.error||'')}</p><ul>${(t.candidate?.warnings||[]).map(w=>'<li>'+esc(w)+'</li>').join('')}</ul><p>${t.candidate?.rooms?.length??0} 个候选</p>${t.status==='awaiting_review'?`<button data-adopt="${t.import_id}">合并候选到编辑区</button>`:''}</details>`).join('');
+    host.querySelector('#model-imports').innerHTML=imports.slice(0,12).map(t=>`<details><summary>${esc(t.source?.name||t.candidate?.source?.name||t.import_id)} · ${esc(({failed:"导入受阻",awaiting_review:"待人工复核",completed:"已采纳",running:"识别中"})[t.status]||t.status)}</summary><p>${esc(t.error||'')}</p><ul>${(t.candidate?.warnings||[]).map(w=>'<li>'+esc(w)+'</li>').join('')}</ul>${importDiagnostics(t,base)}<p>${t.candidate?.rooms?.length??0} 个可采纳候选</p>${t.status==='awaiting_review'?`<button data-adopt="${t.import_id}">合并候选到编辑区</button>`:''}</details>`).join('');
     host.querySelectorAll('[data-adopt]').forEach(b=>{b.onclick=()=>action(async()=>{
       const task=imports.find(t=>t.import_id===b.dataset.adopt);
       if(!task.candidate.rooms.length)throw Error('没有可用的闭合空间，请检查比例、图层或切换视觉识别。');
@@ -169,7 +170,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
         height_m:Number(form.get('height_m')),elevation_m:Number(form.get('elevation_m')),
         page:Number(form.get('page')),layer:form.get('layer')||null,send_to_provider:form.has('send_to_provider')});
       imports.unshift(task);paintImports();host.querySelector('#import-progress').textContent='识别完成，请展开任务并合并候选后复核。';
-    }catch(error){host.querySelector('#import-progress').textContent=error.message;throw error;}
+    }catch(error){if(host.isConnected&&state.project?.project_id===pid){host.querySelector('#import-progress').textContent=error.message;try{imports=await request(base+'/imports');if(host.isConnected&&state.project?.project_id===pid)paintImports();}catch{ /* Preserve the original import failure. */ }}throw error;}
   },e.submitter);};
   host.querySelector('#teaching-thermal').onclick=()=>{
     host.querySelectorAll('[data-thermal]').forEach(el=>{el.value=teachingThermal[el.dataset.thermal];});host.querySelector('#thermal-basis').value='assumed_scenario';host.querySelector('#thermal-source').value=teachingThermal.source_note;
