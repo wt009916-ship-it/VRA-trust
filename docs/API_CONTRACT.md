@@ -5,7 +5,9 @@
 权威定义：backend/schema.py；生成件 shared/schemas/openapi.json、building.json、evidence.json、run.json。执行 python scripts/export_contract.py；CI 检查 schema drift。
 
 - POST/GET /api/projects；GET /api/projects/{id}；PUT /api/projects/{id}/building。
-- POST /api/projects/{id}/files：multipart file，20 MB 默认，返回 file_id；GET 对应 file_id 下载源文件。
+- POST /api/projects/{id}/files：multipart file，64 MB 默认（VRA_MAX_UPLOAD_MB 可配置），返回 file_id；GET 对应 file_id 下载源文件。health.upload_policy 公布实际文件上限；天气解析另有 20 MB / 单年限制。上传保留 64 MB 存储余量，登记失败清理本次新文件。
+- GET /api/projects/{id}/imports/{import_id}/report.json：下载持久化导入诊断、原始来源哈希和当前来源校验；失败 IFC 逐空间报告不产生部分可采纳模型。项目归属与会话校验同其他业务接口。
+- Agent Chat.task：auto / weather / diagnose。weather 固定读取天气工具，AI 说明不产生工程数值；status=partial 表示存在说明或工具失败，tool_status 与 explanation_status 分别报告。
 - POST/GET /api/projects/{id}/evidence；PATCH /evidence/{evidence_id} 人工复核；GET /history。
 - GET /api/projects/{id}/gate?scheme_id=baseline；GET /api/projects/{id}/runs。
 - POST /api/runs；GET /api/runs/{id}、/result、/evidence、/claims、/artifacts。

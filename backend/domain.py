@@ -1,6 +1,7 @@
 """Project-bound evidence and real runs. No model-generated engineering values."""
 import hashlib
 import re
+import shutil
 import threading
 import uuid
 from pathlib import Path
@@ -25,6 +26,7 @@ class Domain:
         self.store = store
         self.stop = threading.Event()
         self.worker = None
+        self.upload_lock = threading.Lock()
 
     def create_project(self, body: ProjectCreate):
         obj = Project(**body.model_dump(), project_id=identifier("project"), revision=1,
@@ -45,12 +47,23 @@ class Domain:
         fid = identifier("file")
         path = self.store.root / "files" / (fid + extension)
         path.parent.mkdir(exist_ok=True)
-        path.write_bytes(content)
-        return self.store.put("file", {"file_id": fid, "project_id": project_id,
-                              "name": Path(filename.replace("\\", "/")).name,
-                              "path": path.relative_to(self.store.root).as_posix(),
-                              "hash": hashlib.sha256(content).hexdigest(), "size": len(content),
-                              "timestamp": core.now()})
+        temporary = path.with_suffix(path.suffix + ".part")
+        with self.upload_lock:
+            if shutil.disk_usage(path.parent).free < len(content) + 64 * 1024 * 1024:
+                raise core.ValidationError("存储空间不足：写入文件后须至少保留 64 MB。请由管理员整理存储或迁移数据目录后重试。")
+            try:
+                temporary.write_bytes(content)
+                temporary.replace(path)
+                return self.store.put("file", {"file_id": fid, "project_id": project_id,
+                                      "name": Path(filename.replace("\\", "/")).name,
+                                      "path": path.relative_to(self.store.root).as_posix(),
+                                      "hash": hashlib.sha256(content).hexdigest(), "size": len(content),
+                                      "timestamp": core.now()})
+            except Exception:
+                # Only these newly allocated paths belong to this failed upload.
+                temporary.unlink(missing_ok=True)
+                path.unlink(missing_ok=True)
+                raise
 
     def file_record(self, project_id, file_id):
         obj = self.store.get("file", file_id)

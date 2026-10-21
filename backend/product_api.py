@@ -1,4 +1,5 @@
 """Building workbench, public tool contracts and developer diagnostics."""
+import json
 from typing import Literal
 from fastapi import HTTPException, Request
 from fastapi.responses import Response
@@ -66,6 +67,19 @@ def register_product(app, domain, auth):
     @app.get('/api/projects/{project_id}/imports')
     def imports(project_id: str):
         return domain.store.list('import', project_id)
+
+    @app.get('/api/projects/{project_id}/imports/{import_id}/report.json')
+    def import_report(project_id: str, import_id: str):
+        record = domain.store.get('import', import_id)
+        if record['project_id'] != project_id:
+            raise HTTPException(404)
+        try:
+            domain.file_record(project_id, record['options']['file_id'])
+            source_check = {'valid': True}
+        except (core.ValidationError, KeyError, OSError) as exc:
+            source_check = {'valid': False, 'error': str(exc)}
+        report = {'report_version': 1, 'import': record, 'current_source_check': source_check, 'scope': '导入诊断，不构成建筑性能或完整工程模型验收'}
+        return Response(json.dumps(report, ensure_ascii=False, indent=2), media_type='application/json', headers={'Content-Disposition': f'attachment; filename="{import_id}-diagnostics.json"'})
 
     @app.post('/api/projects/{project_id}/imports/{import_id}/review')
     def import_review(project_id: str, import_id: str, body: ModelDraft, request: Request):

@@ -3633,6 +3633,66 @@
         ]
       }
     },
+    "/api/projects/{project_id}/imports/{import_id}/report.json": {
+      "get": {
+        "summary": "Import Report",
+        "operationId": "import_report_api_projects__project_id__imports__import_id__report_json_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "import_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Import Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/imports/{import_id}/review": {
       "post": {
         "summary": "Import Review",
@@ -4694,6 +4754,16 @@
             "type": "boolean",
             "title": "Allow Compute",
             "default": false
+          },
+          "task": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "weather",
+              "diagnose"
+            ],
+            "title": "Task",
+            "default": "auto"
           },
           "search_plan": {
             "anyOf": [

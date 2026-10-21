@@ -299,7 +299,7 @@ class Weather:
             try:
                 obj = self.get(project_id, obj["weather_id"])
                 result.append({k: v for k, v in obj.items() if k not in {"rows", "daily", "heatmap", "upstream"}})
-            except (core.ValidationError, KeyError):
+            except (core.ValidationError, KeyError, OSError):
                 result.append({"weather_id": obj["weather_id"], "name": obj["name"], "kind": obj["kind"],
                                "invalid": True, "error": "原始来源或分析版本已变化，请重新分析"})
         return result
