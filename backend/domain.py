@@ -109,7 +109,7 @@ class Domain:
                         current_model = self.store.get("model", binding["model_id"], binding["revision"])
                         if current_model["project_id"] != project_id or core.hash_json(current_model) != binding.get("model_hash"):
                             raise core.ValidationError("已发布建筑模型的版本或内容不匹配")
-                        if binding.get("compiler_hash") != core.sha(model_export.__file__):
+                        if binding.get("compiler_hash") != model_export.compiler_hash():
                             raise core.ValidationError("几何编译器版本变化，请重新发布 IDF")
                     text = re.sub(r"!.*", "", path.read_text(encoding="utf-8-sig", errors="replace"))
                     if not re.search(r"\bVersion\s*,\s*9\.0(?:\.\d+)?\s*;", text, re.IGNORECASE):

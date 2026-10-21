@@ -5,9 +5,7 @@ from typing import TypedDict
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
-from shapely.geometry import Polygon
-
-from . import core, model_export, model_import
+from . import core, model_export, model_import, model_geometry
 from .domain import identifier
 from .model_schema import ImportOptions, ModelDraft
 from .schema import BuildingUpdate, EvidenceCreate, EvidenceReview
@@ -54,7 +52,8 @@ class Modeling:
             data.update(model_id=old["model_id"] if old else identifier("model"), project_id=project_id,
                         sources=sources, actor=actor, updated_at=core.now(),
                         workflow_id=workflow_id, review_hash=core.hash_json(body.model_dump()),
-                        area_m2=sum(Polygon(r.polygon).area for r in body.rooms),
+                        area_m2=sum(model_geometry.floor_area(r.model_dump()) for r in body.rooms
+                                    if r.include_floor_area is not False),
                         status="REVIEWED" if body.reviewed else "DRAFT")
             return self.store.put("model", data, body.expected_revision)
 
@@ -154,8 +153,21 @@ class Modeling:
             blockers.append("空间几何尚未复核")
         if not model["thermal"]:
             blockers.append("热工参数不完整")
+        unresolved = [r["name"] for r in model["rooms"]
+                      if r.get("conditioned", True) is None or r.get("include_floor_area", True) is None]
+        if unresolved:
+            blockers.append("须确认空调及计入面积属性：" + "、".join(unresolved)[:1000])
+        if model["area_m2"] <= 0:
+            blockers.append("至少一个空间须计入项目面积")
+        geometry_review = None
         try:
-            model_export.geometry(model)
+            surfaces = model_export.geometry(model)
+            _, adjustment = model_geometry.thermal_geometry_model(model)
+            geometry_review = {
+                "boundary_faces": {kind: sum(s["boundary"] == kind for s in surfaces)
+                                   for kind in ("Surface", "Outdoors", "Ground", "Adiabatic")},
+                "adjustment": adjustment,
+            }
             for source in model["sources"]:
                 self.domain.file_record(project_id, source["file_id"])
         except core.ValidationError as exc:
@@ -164,7 +176,8 @@ class Modeling:
         if abs(declared-model["area_m2"]) > max(.1, model["area_m2"]*.001):
             blockers.append(f"模型面积 {model['area_m2']:.2f} m² 与项目声明 {declared:.2f} m² 不符；请先同步声明")
         return {"can_publish": not blockers, "blockers": blockers, "model_revision": model["revision"],
-                "area_m2": model["area_m2"], "limitations": model_export.LIMITATIONS}
+                "area_m2": model["area_m2"], "limitations": model_export.LIMITATIONS,
+                "geometry_review": geometry_review}
 
     def publish(self, project_id, body):
         with self.lock:
@@ -175,9 +188,14 @@ class Modeling:
             if not check["can_publish"]:
                 raise core.ValidationError("；".join(check["blockers"]))
             text, surfaces = model_export.idf(model)
+            _, adjustment = model_geometry.thermal_geometry_model(model)
             binding = {"model_id": model["model_id"], "revision": model["revision"],
                        "model_hash": core.hash_json(model),
-                       "compiler": model_export.COMPILER_VERSION, "compiler_hash": core.sha(model_export.__file__),
+                       "compiler": model_export.COMPILER_VERSION, "compiler_hash": model_export.compiler_hash(),
+                       "boundary_summary": {kind: sum(s["boundary"] == kind for s in surfaces)
+                                            for kind in ("Surface", "Outdoors", "Ground", "Adiabatic")},
+                       "ifc_unpaired_policy": model["thermal"].get("ifc_unpaired_policy", "reject"),
+                       "geometry_adjustment": adjustment,
                        "scope": "ideal_thermal_loads", "limitations": model_export.LIMITATIONS}
             existing = [ev for ev in self.store.list("evidence", project_id)
                         if ev["type"] == "idf" and ev["scheme_id"] == body.scheme_id and ev["review_state"] != "rejected"]

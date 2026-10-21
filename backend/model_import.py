@@ -7,7 +7,7 @@ from pathlib import Path
 from shapely.geometry import LineString, Polygon
 from shapely.ops import polygonize, unary_union
 
-from . import core
+from . import core, model_geometry
 from .model_schema import Room
 
 
@@ -119,26 +119,29 @@ def ifc(path, options):
     for index, space in enumerate(spaces):
         try:
             shape = ifcopenshell.geom.create_shape(settings, space)
-            verts, faces = shape.geometry.verts, shape.geometry.faces
-            if len(verts) > 300000:
-                raise ValueError("空间网格过大")
-            points = [verts[i:i + 3] for i in range(0, len(verts), 3)]
-            low, high = min(p[2] for p in points), max(p[2] for p in points)
-            triangles = []
-            for i in range(0, len(faces), 3):
-                tri = [points[faces[i + j]] for j in range(3)]
-                if all(abs(p[2] - low) < .001 for p in tri):
-                    triangles.append(Polygon([(p[0], p[1]) for p in tri]))
-            floor = unary_union(triangles)
+            sections = model_geometry.mesh_segments(shape.geometry.verts, shape.geometry.faces)
+            low = min(s["elevation_m"] for s in sections)
+            high = max(s["elevation_m"]+s["height_m"] for s in sections)
+            floor = unary_union([Polygon(s["polygon"]) for s in sections if abs(s["elevation_m"]-low) < 1e-7])
             if floor.geom_type != "Polygon" or floor.interiors:
                 raise ValueError("非单一无孔水平底面")
-            # Preserve the footprint, not its axis-aligned bounding box.
-            rooms.append(Room(id=f"R{index + 1}", name=space.Name or f"空间 {index + 1}",
+            hints, skipped = model_geometry.ifc_boundary_hints(document, space)
+            name = " · ".join(n for n in (space.Name, space.LongName) if n) or f"空间 {index + 1}"
+            rooms.append(Room(id=f"R{index + 1}", name=name,
                               polygon=list(floor.exterior.coords)[:-1], elevation_m=low,
-                              height_m=high-low, source_locator="IFC GlobalId=" + space.GlobalId).model_dump())
+                              height_m=high-low, segments=sections if len(sections) > 1 else [],
+                              ifc_source=space.GlobalId, boundary_hints=hints,
+                              conditioned=None, include_floor_area=None,
+                              source_locator="IFC GlobalId=" + space.GlobalId).model_dump())
+            if skipped:
+                warnings.append(f"{space.GlobalId}: {skipped} 条空间边界暂无法解析；未匹配区域默认阻止发布。")
         except Exception as exc:
-            warnings.append(f"{space.GlobalId}: 无法提取棱柱候选（{type(exc).__name__}），需人工建模")
-    warnings += ["IFC 空间投影为水平棱柱候选；斜屋面、曲面、墙层和门窗暂不转译到热模型，须复核。",
+            warnings.append(f"{space.GlobalId}: 无法提取完整空间（{type(exc).__name__}: {str(exc)[:250]}），需人工建模")
+    if len(rooms) != len(spaces):
+        raise core.ValidationError("IFC 未完整导入，禁止把剩余空间当作整栋建筑：" + "；".join(warnings)[:3500])
+    warnings += ["IFC 保留水平分段空间；斜面拒绝近似。墙层与实际门窗仍需热工建模，不自动替代。",
+                 "须逐间确认是否空调空间、是否计入面积；Roof、楼梯等名称不作为自动分类依据。",
+                 "内部及缺失边界未配对时默认拒绝发布；只有显式假设情景才能按绝热处理。",
                  "IfcSpace 缺失时不会用实体包围盒冒充房间。"]
     return {"rooms": rooms, "warnings": warnings, "metadata": {"schema": document.schema, "spaces": len(spaces)}}
 

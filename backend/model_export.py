@@ -1,13 +1,14 @@
 """Deterministic IFC4 space export and EnergyPlus 9.0 ideal-load model compiler."""
 import math
 
-from shapely.geometry import LineString, Point, Polygon
+from shapely.geometry import Polygon
 
-from . import core
+from . import core, model_geometry
 
-COMPILER_VERSION = "prismatic-ideal-loads-1"
+COMPILER_VERSION = "stepped-spaces-ideal-loads-2"
 LIMITATIONS = [
-    "水平棱柱空间模型；不表示施工级墙、门、结构构件或完整 BIM。",
+    "水平分段空间模型，保留变截面和共面局部邻接；斜面仍拒绝。不表示完整施工 BIM。",
+    "IFC 未配对内部及未知边界默认拒绝；仅显式 assumed_scenario 可按绝热计算，并保留逐面来源。该情景不等于完整建筑热模型。",
     "理想负荷 HVAC：DistrictHeating/DistrictCooling 是供热/供冷需求，不是热泵耗电；未建真实设备效率、风机、水泵、管网。",
     "有分层构造时按材料厚度、导热、密度与比热建模；未提供构造层时按 U 值生成无热容层。未建相变潜热或温变物性，窗按均匀窗墙比生成。",
     "人员、照明、设备和 HVAC 按每日同一运行时段，无假日差异；渗透按 ACH，机械新风与湿度控制尚未建模；土温全年固定。",
@@ -15,67 +16,13 @@ LIMITATIONS = [
 ]
 
 
+def compiler_hash():
+    return core.hash_json({"export": core.sha(__file__), "geometry": core.sha(model_geometry.__file__)})
+
+
 def geometry(model):
-    rooms = model["rooms"]
-    surfaces = []
-    polygons = {r["id"]: Polygon(r["polygon"]) for r in rooms}
-    minimum = min(r["elevation_m"] for r in rooms)
-    for r in rooms:
-        rid, z, height = r["id"], r["elevation_m"], r["height_m"]
-        poly = polygons[rid]
-        # Refuse partial vertical adjacency rather than turning it into outside air.
-        for other in rooms:
-            if other is r:
-                continue
-            q = polygons[other["id"]]
-            overlap = poly.intersection(q).area
-            touching = abs(z + height-other["elevation_m"]) < .001 or abs(z-other["elevation_m"]-other["height_m"]) < .001
-            if overlap > .01 and touching and poly.symmetric_difference(q).area > .01:
-                raise core.ValidationError("部分叠层空间需要拆分成对齐热区；当前编译器拒绝近似楼板边界")
-            vertical_overlap = min(z + height, other["elevation_m"] + other["height_m"])-max(z, other["elevation_m"])
-            if poly.boundary.intersection(q.boundary).length > .01 and vertical_overlap > .001:
-                if abs(z-other["elevation_m"]) > .001 or abs(height-other["height_m"]) > .001:
-                    raise core.ValidationError("相邻房间存在错层或不同层高，请先拆分热区")
-        for kind, plane_z, suffix in (("Floor", z, "F"), ("Roof", z+height, "R")):
-            other = next((q for q in rooms if q is not r and
-                          abs((q["elevation_m"]+q["height_m"] if kind == "Floor" else q["elevation_m"])-plane_z) < .001
-                          and poly.symmetric_difference(polygons[q["id"]]).area < .01), None)
-            points = [[x, y, plane_z] for x, y in r["polygon"]]
-            if kind == "Floor":
-                points.reverse()
-            surfaces.append({"name": rid+"_"+suffix, "zone": rid, "kind": kind,
-                             "construction": ("FloorReverse" if kind == "Roof" else "Floor") if other else ("Floor" if kind == "Floor" else "Roof"),
-                             "boundary": "Surface" if other else ("Ground" if kind == "Floor" and abs(z-minimum) < .001 else "Outdoors"),
-                             "other": (other["id"]+("_R" if kind == "Floor" else "_F")) if other else "",
-                             "points": points})
-        coords = r["polygon"]
-        n = 0
-        for a, b in zip(coords, coords[1:] + coords[:1]):
-            edge = LineString([a, b])
-            cuts = {0.0, 1.0}
-            for q in rooms:
-                if abs(z-q["elevation_m"]) < .001:
-                    for point in q["polygon"]:
-                        if edge.distance(Point(point)) < .00001:
-                            cuts.add(edge.project(Point(point), normalized=True))
-            cuts = sorted(cuts)
-            for begin, end in zip(cuts, cuts[1:]):
-                if end-begin < .000001:
-                    continue
-                p, q = edge.interpolate(begin, normalized=True), edge.interpolate(end, normalized=True)
-                n += 1
-                surfaces.append({"name": f"{rid}_W{n}", "zone": rid, "kind": "Wall", "construction": "Wall",
-                                 "boundary": "Outdoors", "other": "", "points":
-                                 [[p.x, p.y, z], [q.x, q.y, z], [q.x, q.y, z+height], [p.x, p.y, z+height]]})
-    for index, a in enumerate(surfaces):
-        if a["kind"] != "Wall":
-            continue
-        key = {tuple(round(c, 5) for c in pt) for pt in a["points"]}
-        for b in surfaces[index+1:]:
-            if b["kind"] == "Wall" and b["zone"] != a["zone"] and key == {tuple(round(c, 5) for c in pt) for pt in b["points"]}:
-                a.update(boundary="Surface", other=b["name"])
-                b.update(boundary="Surface", other=a["name"], construction="WallReverse")
-    return surfaces
+    derived, _ = model_geometry.thermal_geometry_model(model)
+    return model_geometry.geometry(derived)
 
 
 def idf(model):
@@ -84,7 +31,9 @@ def idf(model):
         raise core.ValidationError("需完整填写热工、内部负荷、时段与参数来源")
     surfaces = geometry(model)
     used_constructions = {surface["construction"] for surface in surfaces}
-    objects = ["! VRA compiler " + COMPILER_VERSION, "! Ideal loads: thermal demand is NOT heat-pump electricity."]
+    objects = ["! VRA compiler " + COMPILER_VERSION, "! Ideal loads: thermal demand is NOT heat-pump electricity.",
+               "! Geometry normalization tolerance (m): " + str(t.get("geometry_tolerance_m", 0)),
+               "! Unpaired IFC boundary policy: " + t.get("ifc_unpaired_policy", "reject")]
 
     def obj(kind, *fields):
         objects.append(kind + ",\n  " + ",\n  ".join(str(v) for v in fields) + ";\n")
@@ -132,9 +81,14 @@ def idf(model):
     obj("Construction", "Window", "Glass")
     for r in model["rooms"]:
         name = r["id"]
-        obj("Zone", name, 0, 0, 0, 0, 1, 1, r["height_m"], "autocalculate", "autocalculate")
+        volume = sum(Polygon(s["polygon"]).area*s["height_m"] for s in model_geometry.parts(r))
+        area = model_geometry.floor_area(r)
+        obj("Zone", name, 0, 0, 0, 0, 1, 1, volume/area, "autocalculate", area,
+            "", "", "Yes" if r.get("include_floor_area", True) else "No")
         obj("ZoneInfiltration:DesignFlowRate", name+"Infil", name, "Always", "AirChanges/Hour",
             "", "", "", t["infiltration_ach"], 1, 0, 0, 0)
+        if not r.get("conditioned", True):
+            continue
         obj("People", name+"People", name, "Occupied", "Area/Person", "", "", t["people_m2_person"], .3, "autocalculate", "Activity")
         obj("Lights", name+"Lights", name, "Occupied", "Watts/Area", "", t["lights_w_m2"], "", 0, .5, .2, 0)
         obj("ElectricEquipment", name+"Equip", name, "Occupied", "Watts/Area", "", t["equipment_w_m2"], "", 0, .5, 0)
@@ -151,11 +105,11 @@ def idf(model):
             "WindExposed" if external else "NoWind", "autocalculate", len(s["points"]),
             *[round(v, 6) for p in s["points"] for v in p])
         if external and s["kind"] == "Wall" and t["window_wall_ratio"] > 0:
-            center = [sum(p[j] for p in s["points"])/4 for j in range(3)]
+            center = [sum(p[j] for p in s["points"])/len(s["points"]) for j in range(3)]
             scale = math.sqrt(t["window_wall_ratio"])
             points = [[center[j]+scale*(p[j]-center[j]) for j in range(3)] for p in s["points"]]
             obj("FenestrationSurface:Detailed", s["name"]+"Win", "Window", "Window", s["name"], "",
-                "autocalculate", "", 1, 4, *[round(v, 6) for p in points for v in p])
+                "autocalculate", "", 1, len(points), *[round(v, 6) for p in points for v in p])
     obj("Output:SQLite", "SimpleAndTabular")
     obj("Output:Table:SummaryReports", "AllSummary")
     obj("OutputControl:Table:Style", "HTML", "JtoKWH")
@@ -187,16 +141,25 @@ def ifc(model):
         for room in [r for r in model["rooms"] if r["elevation_m"] == elevation]:
             space = run("root.create_entity", doc, ifc_class="IfcSpace", name=room["name"])
             run("aggregate.assign_object", doc, products=[space], relating_object=story)
-            pts = [doc.createIfcCartesianPoint((float(x), float(y))) for x, y in room["polygon"]]
-            curve = doc.createIfcPolyline(pts + [pts[0]])
-            profile = doc.createIfcArbitraryClosedProfileDef("AREA", None, curve)
-            rep = run("geometry.add_profile_representation", doc, context=body, profile=profile,
-                      depth=room["height_m"], cardinal_point=None)
+            solids = []
+            for section in model_geometry.parts(room):
+                pts = [doc.createIfcCartesianPoint((float(x), float(y))) for x, y in section["polygon"]]
+                curve = doc.createIfcPolyline(pts + [pts[0]])
+                profile = doc.createIfcArbitraryClosedProfileDef("AREA", None, curve)
+                position = doc.createIfcAxis2Placement3D(doc.createIfcCartesianPoint(
+                    (0., 0., float(section["elevation_m"]-elevation))), None, None)
+                solids.append(doc.createIfcExtrudedAreaSolid(profile, position,
+                    doc.createIfcDirection((0., 0., 1.)), float(section["height_m"])))
+            solid = solids[0]
+            for other in solids[1:]:
+                solid = doc.createIfcBooleanResult("UNION", solid, other)
+            rep = doc.createIfcShapeRepresentation(body, "Body", "CSG" if len(solids) > 1 else "SweptSolid", [solid])
             run("geometry.assign_representation", doc, product=space, representation=rep)
             matrix = np.eye(4)
             matrix[2, 3] = elevation
             run("geometry.edit_object_placement", doc, product=space, matrix=matrix, is_si=True)
             pset = run("pset.add_pset", doc, product=space, name="VRA_Provenance")
             run("pset.edit_pset", doc, pset=pset, properties={"RoomId": room["id"], "Source": room["source_locator"],
-                "ModelRevision": model.get("revision", 0), "Reviewed": model.get("reviewed", False)})
+                "ModelRevision": model.get("revision", 0), "Reviewed": model.get("reviewed", False),
+                "Conditioned": room.get("conditioned"), "IncludedFloorArea": room.get("include_floor_area")})
     return doc.to_string()
