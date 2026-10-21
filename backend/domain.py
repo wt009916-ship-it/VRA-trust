@@ -116,8 +116,11 @@ class Domain:
                         raise core.ValidationError("当前计算链仅验收 EnergyPlus 9.0 IDF，请使用匹配版本模型")
                     if not re.search(r"Output:SQLite\s*,\s*SimpleAndTabular\s*;", text, re.IGNORECASE):
                         raise core.ValidationError("IDF 需要 Output:SQLite,SimpleAndTabular; 和年度汇总输出")
-                elif not path.read_text(encoding="utf-8-sig", errors="replace").startswith("LOCATION,"):
-                    raise core.ValidationError("EPW LOCATION header missing")
+                else:
+                    from .weather import checked_epw_quality
+                    quality = checked_epw_quality(str(path), ev["hash"])
+                    if not quality["simulation_candidate"]:
+                        raise core.ValidationError("EPW 天气质量检查未通过：" + "; ".join(quality["issues"]))
             except (core.ValidationError, OSError, KeyError) as exc:
                 blockers.append({"code": "INVALID_SOURCE", "field": kind, "message": str(exc), "action": "重新导入正确源文件并保留失败版本"})
         return {"project_id": project_id, "scheme_id": scheme_id, "can_simulate": not blockers,

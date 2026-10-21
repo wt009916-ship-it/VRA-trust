@@ -36,6 +36,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'weather_summary': '读取本项目已保存的天气质量、月度气候和度日分析；日均数据不是逐时 EPW，不能据此编造能耗',
     'model_get': '读取已保存建筑空间、热工参数、来源和模型版本；AI 候选不会自动变成工程事实',
     'model_validate': '检查建筑模型到 EnergyPlus 的编译条件、面积一致性及已知简化',
     'model_import_status': '读取 DXF/PDF/IFC/视觉识别任务与待人工复核候选',
@@ -83,6 +84,8 @@ class Agent:
             raise core.ValidationError('Unknown or disabled tool: ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'weather_summary':
+            return d.weather.list(project_id)
         if name == 'model_get':
             return d.modeling.get(project_id)
         if name == 'model_validate':
@@ -193,6 +196,8 @@ class Agent:
             invoke('evidence_list', {})
             gate = invoke('evidence_validate', {})
             diagnosis = invoke('project_diagnose', {})
+            if body.mode == 'local' and any(word in body.message.lower() for word in ('天气', '气候', '气象', 'weather', 'epw', '度日')):
+                invoke('weather_summary', {})
             if body.mode == 'local' and body.study_plan:
                 invoke('material_study_create', {'study': body.study_plan.model_dump()})
             elif body.mode == 'local' and diagnosis['current_study_id']:
@@ -230,10 +235,12 @@ class Agent:
                     raise core.ValidationError('Provider iteration budget exhausted')
             # Authoritative decision fields are computed from current tools, never model prose.
             gate = self.domain.gate(record['project_id'])
+            weather = next((e['result'] for e in reversed(record['events']) if e['tool'] == 'weather_summary' and e['status'] == 'succeeded'), None)
             record.update(status='succeeded', answer={'can_simulate': gate['can_simulate'], 'can_recommend': False,
                 'basis': [e['tool'] for e in record['events'] if e['status'] == 'succeeded' and e['tool'] in TOOLS], 'gaps': gate['blockers'],
                 'summary': '已完成工程诊断，见补证优先级、材料准入和实际方案比较。' if gate['can_simulate'] else '当前输入阻断计算；已列出可执行补证顺序。',
                 'diagnosis': self.domain.decisions.diagnosis(record['project_id']),
+                'weather': weather,
                 'limitations': gate['limitations']})
         except Exception as exc:
             record.update(status='failed', error=str(exc)[:1000], answer=None)

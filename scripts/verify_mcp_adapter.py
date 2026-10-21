@@ -36,12 +36,14 @@ async def verify(base, output):
             async with Client(parameters) as client:
                 tools = await client.list_tools()
                 names = [tool.name for tool in tools.tools]
-                assert len(names) == 8 and "simulation_create" in names
+                assert len(names) == 9 and "simulation_create" in names and "weather_summary" in names
                 project = await client.call_tool("project_get", {})
                 record = project.model_dump(mode="json")
                 assert pid in json.dumps(record) and not project.is_error
                 gate = await client.call_tool("evidence_gate", {})
                 assert not gate.is_error and "MISSING_INPUT" in json.dumps(gate.model_dump())
+                weather = await client.call_tool("weather_summary", {})
+                assert not weather.is_error
                 refused = await client.call_tool("simulation_create", {})
                 assert "USER_COMPUTE_CONFIRMATION_REQUIRED" in json.dumps(refused.model_dump())
                 forbidden = await client.call_tool("simulation_create", {"confirm_compute": True})
@@ -52,7 +54,7 @@ async def verify(base, output):
                 assert after.is_error and "401" in json.dumps(after.model_dump())
                 report = {"status": "passed", "transport": "real stdio process -> local HTTP API",
                           "isolated_service": True, "tools": names, "project_id": pid, "checks": [
-                              "MCP initialize and tool discovery", "project binding", "real evidence gate",
+                              "MCP initialize and tool discovery", "project binding", "real evidence gate", "weather summary read",
                               "compute opt-in", "read-token compute rejection", "revocation rejection"],
                           "engine_calls_executed": 0, "live_provider_tested": False}
                 output.parent.mkdir(parents=True, exist_ok=True)
