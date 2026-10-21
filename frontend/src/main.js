@@ -37,7 +37,7 @@ function shell() {
   document.querySelector('#new-project').onclick = () => projectForm();
   document.querySelector('#all-projects').onclick = () => { selection++; poller.stop(); state.project = null; home(); };
   document.querySelector('#load-reference').onclick = e => loadReference(e.currentTarget);
-  document.querySelector('#search-projects').onclick = searchProjects;
+  document.querySelector('#search-projects').onclick = () => searchProjects();
   document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
   document.querySelector('#theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; localStorage.setItem('vra-theme', theme); };
   document.querySelector('#logout').onclick = e => action(async () => { await post('/auth/logout', {}); clearSession(); authScreen(false); }, e.currentTarget);
@@ -55,14 +55,25 @@ function home() {
   document.querySelector('#workspace').innerHTML = homeView(state);
   bindWorkflow();
   document.querySelector('#create-project').onclick = () => projectForm();
+  const emptyCreate = document.querySelector('#empty-create-project');
+  if (emptyCreate) emptyCreate.onclick = () => projectForm();
+  document.querySelector('#browse-projects').onclick = () => searchProjects();
+  document.querySelectorAll('[data-entry-view]').forEach(button => {
+    button.onclick = () => {
+      const view = button.dataset.entryView;
+      if (!state.projects.length) projectForm(false, view);
+      else if (state.projects.length === 1) action(() => selectProject(state.projects[0].project_id, view), button);
+      else searchProjects(view, '选择项目 · ' + esc(button.dataset.entryTitle));
+    };
+  });
   document.querySelector('#reference-project').onclick = e => loadReference(e.currentTarget);
   document.querySelector('#intake-composer').onsubmit = e => { e.preventDefault(); const name = document.querySelector('#project-intent').value.trim(); projectForm(); if (name) document.querySelector('[name="name"]').value = name; };
   document.querySelector('#how-it-works').onclick = () => modal('从资料到可复核结果', '<ol class="workflow-steps"><li><strong>建立项目</strong><p>填写建筑用途、地点和面积。</p></li><li><strong>导入并确认资料</strong><p>导入图纸生成并复核模型，或上传已有 IDF；补齐天气文件和工程依据。</p></li><li><strong>运行并比较方案</strong><p>使用真实仿真结果，保留警告与不确定性。</p></li><li><strong>查看依据，导出报告</strong><p>每个结果绑定独立运行与证据版本。</p></li></ol>');
   bindProjectLinks();
 }
-function searchProjects() {
-  const dialog = modal('搜索项目', '<input id="project-search" aria-label="搜索项目名称" placeholder="输入项目名称…" autocomplete="off"><div id="search-results"></div>');
-  const update = () => { const term = document.querySelector('#project-search').value.toLowerCase(); document.querySelector('#search-results').innerHTML = state.projects.filter(p => p.name.toLowerCase().includes(term)).map(p => '<button class="search-result" data-search-project="'+p.project_id+'">'+icon('folder')+esc(p.name)+'</button>').join('') || '<p class="empty">没有匹配的项目</p>'; document.querySelectorAll('[data-search-project]').forEach(b => { b.onclick = () => { dialog.close(); action(() => selectProject(b.dataset.searchProject)); }; }); };
+function searchProjects(view = null, title = '搜索项目') {
+  const dialog = modal(title, '<input id="project-search" aria-label="搜索项目名称" placeholder="输入项目名称…" autocomplete="off"><div id="search-results"></div>');
+  const update = () => { const term = document.querySelector('#project-search').value.toLowerCase(); document.querySelector('#search-results').innerHTML = state.projects.filter(p => p.name.toLowerCase().includes(term)).map(p => '<button class="search-result" data-search-project="'+p.project_id+'">'+icon('folder')+esc(p.name)+'</button>').join('') || '<p class="empty">没有匹配的项目</p>'; document.querySelectorAll('[data-search-project]').forEach(b => { b.onclick = () => { dialog.close(); action(() => selectProject(b.dataset.searchProject, view)); }; }); };
   document.querySelector('#project-search').oninput = update; update(); document.querySelector('#project-search').focus();
 }
 function modal(title, html) {
@@ -72,7 +83,7 @@ function modal(title, html) {
   dialog.showModal();
   return dialog;
 }
-function projectForm(edit = false) {
+function projectForm(edit = false, view = null) {
   const p = edit ? state.project : null, b = p?.building || {};
   const fields = [['use', '建筑用途', 'text', b.use || ''], ['location', '地点', 'text', b.location || ''], ['region', '地区代码（如 CN-JX / US-CO）', 'text', b.region || ''], ['area_m2', '总建筑面积 m²', 'number', b.area_m2 || ''], ['floors', '楼层数（可留空）', 'number', b.floors || ''], ['floor_height_m', '层高 m（可留空）', 'number', b.floor_height_m || ''], ['window_wall_ratio', '窗墙比 0–1（可留空）', 'number', b.window_wall_ratio ?? '']];
   const dialog = modal(edit ? '修订建筑声明' : '创建工程项目', '<form id="project-form"><p class="form-note">这里登记建筑声明。创建后进入「建模工作区」导入图纸、复核空间并生成 IDF；修订声明会重新核验已有结果。</p>' + (!edit ? '<label>项目名称<input name="name" required maxlength="160"></label>' : '') + '<div class="form-grid">' + fields.map(([name, text, type, value]) => '<label>' + text + '<input name="' + name + '" type="' + type + '" ' + (type === 'number' ? 'step="any"' : '') + ' value="' + esc(value) + '" ' + (['use', 'location', 'region', 'area_m2'].includes(name) ? 'required' : '') + '></label>').join('') + '</div>' + ['envelope', 'hvac', 'schedules', 'notes'].map((name, i) => '<label>' + ['围护结构说明', 'HVAC / 设备说明', '运行时段 / 内部负荷说明', '其他资料与不确定性'][i] + '<textarea name="' + name + '">' + esc(b[name] || '') + '</textarea></label>').join('') + '<button class="primary" type="submit">保存项目声明</button></form>');
@@ -81,11 +92,11 @@ function projectForm(edit = false) {
     const building = Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'name'));
     for (const key of ['area_m2', 'floors', 'floor_height_m', 'window_wall_ratio']) building[key] = building[key] === '' ? null : Number(building[key]);
     const result = edit ? await request('/projects/' + p.project_id + '/building', { method: 'PUT', body: JSON.stringify({ expected_revision: p.revision, building }) }) : await post('/projects', { name: data.name, building });
-    dialog.close(); await refreshProjects(); await selectProject(result.project_id);
+    dialog.close(); await refreshProjects(); await selectProject(result.project_id, view);
   }, e.submitter); };
 }
 async function refreshProjects() { state.projects = await request('/projects'); }
-async function selectProject(id) {
+async function selectProject(id, view = null) {
   poller.stop();
   const token = ++selection;
   let snapshot;
@@ -98,7 +109,7 @@ async function selectProject(id) {
   const [p, ev, runs, gate] = snapshot;
   if (token !== selection) return;
   const sameProject = state.project?.project_id === id;
-  Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [], syncError: false, view: sameProject ? state.view : 'readiness' });
+  Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [], syncError: false, view: view || (sameProject ? state.view : 'readiness') });
   renderProject();
   schedulePoll();
 }

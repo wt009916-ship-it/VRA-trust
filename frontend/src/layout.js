@@ -9,6 +9,7 @@ const paths = {
   run:'m8 4 12 8-12 8Z', check:'m5 12 4 4L19 6',
   layers:'m12 3 10 5-10 5L2 8Zm-10 9 10 5 10-5M2 16l10 5 10-5',
   moon:'M20 14A9 9 0 0 1 10 4a9 9 0 1 0 10 10',
+  sun:'M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
   exit:'M9 3H4v18h5M10 12h11m-4-4 4 4-4 4',
   dots:'M5 12h.01M12 12h.01M19 12h.01', bolt:'m13 2-9 12h7l-1 8 10-12h-7Z',
 };
@@ -28,14 +29,49 @@ export function appShell(state) {
 }
 
 export function homeView(state) {
-  return `<main class="home"><div class="studio-welcome"><span class="eyebrow">BUILDING PERFORMANCE STUDIO</span><span class="workspace-label"><i></i>${state.projects.length} 个项目在工作区</span></div><div class="home-hero"><div class="home-hero-copy"><div class="home-intro"><p class="greeting">稀土智暖 · 建筑改造工作台</p><h1>从建筑资料，<br>走向有依据的改造。</h1><p class="home-subtitle">把气候、空间、能耗与材料放进同一个项目。<br>每一步分析，都能回到它的来源。</p></div>
-  <form class="composer home-composer" id="intake-composer"><label class="sr-only" for="project-intent">项目名称或描述</label><textarea id="project-intent" placeholder="为你的建筑项目起个名字…" maxlength="160" rows="2"></textarea><div class="composer-bottom"><button type="button" class="composer-tool" id="create-project">${icon('plus')} 创建项目</button><span class="composer-hint">从项目资料开始</span><button class="send-button" type="submit" aria-label="创建这个项目">${icon('arrow')}</button></div></form>
-  <div class="starter-actions"><button id="reference-project">${icon('layers')}体验官方参考项目</button><button id="how-it-works">${icon('file')}了解工作流程</button></div></div><div class="building-visual" aria-label="建筑分析流程示意"><div class="visual-label">PROJECT → EVIDENCE → ANALYSIS</div>${studioDrawing()}<div class="visual-caption"><strong>一栋建筑，多维度理解。</strong><span>气候资料 · 空间模型 · 原生仿真 · 决策依据</span></div><span class="visual-note">流程插画 · 非项目模型</span></div></div>
-  <div class="studio-capabilities">${[['01','气候与天气','NASA 公开数据 · EPW 质量检查'],['02','空间与建模','导入资料 · 复核空间 · 发布 IDF'],['03','仿真与比较','EnergyPlus 计算 · 原始结果追溯'],['04','材料与决策','登记参数 · 方案研究 · 条件复核']].map(([n,title,text])=>`<div><span>${n}</span><h3>${title}</h3><p>${text}</p></div>`).join('')}</div><section class="recent"><div class="section-title"><h2>项目空间</h2><span>${state.projects.length?'选择项目，继续工作':'从一个真实项目开始'}</span></div><div class="recent-grid">${state.projects.slice(0,6).map(p=>`<button class="recent-project" data-project="${p.project_id}"><span class="recent-icon">${icon('folder')}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.building.location)} · ${num(p.building.area_m2)} m²</small><em>${p.data_nature==='engineering_reference'?'官方参考 · 非实测':'工程项目'} · 声明 v${p.revision}</em></span>${icon('chevron')}</button>`).join('')||'<div class="home-empty">尚无项目。创建后即可整理天气资料、导入图纸并建立模型。</div>'}</div></section>${workflowMarkup()}<p class="home-footnote">有依据的计算，有边界的建议。</p></main>`;
+  const entries = [
+    ['weather','sun','气候与天气','NASA 历史资料 · EPW 检查'],
+    ['spatial','layers','空间与建模','图纸 / PDF / IFC · 空间复核'],
+    ['simulation','bolt','仿真与比较','EnergyPlus · 原始结果'],
+    ['decision','file','材料与决策','参数证据 · 方案研究'],
+  ];
+  return `<main class="home home-dense">
+    <div class="studio-welcome"><span class="eyebrow">BUILDING PERFORMANCE STUDIO</span><span class="workspace-label"><i></i>${state.projects.length} 个项目在工作区</span></div>
+    <div class="home-hero">
+      <div class="home-hero-copy"><div class="home-intro"><p class="greeting">稀土智暖 · VRA-Trust</p><h1>建筑改造<span class="title-accent">工作台</span></h1><p class="home-subtitle">整理资料、复核模型、运行仿真，让每个结果都有据可查。</p></div>
+        <form class="composer home-composer" id="intake-composer"><label class="sr-only" for="project-intent">项目名称或描述</label><input id="project-intent" placeholder="输入项目名称，开始新的分析…" maxlength="160"><button type="submit" class="primary">${icon('plus')}新建项目</button></form>
+        <div class="starter-actions"><button id="reference-project">${icon('layers')}体验官方参考项目</button><button id="how-it-works">${icon('file')}查看操作流程</button></div>
+      </div>
+      <div class="building-visual" aria-label="建筑分析流程示意"><div class="visual-label"><span>BUILDING / PERSPECTIVE</span></div>${studioDrawing()}<div class="visual-caption"><strong>一栋建筑，多维度理解。</strong><span>气候 · 空间 · 能耗 · 材料</span></div><span class="visual-note">概念插画 · 非项目模型</span></div>
+    </div>
+    <section class="home-tools"><div class="section-title"><h2>常用工作入口</h2><span>${state.projects.length?'选择入口后进入对应项目':'先建项目，再接入工程资料'}</span></div><div class="studio-capabilities">${entries.map(([view,symbol,title,text],i)=>`<button class="capability-entry" data-entry-view="${view}" data-entry-title="${title}"><span class="capability-icon">${icon(symbol)}</span><span class="capability-copy"><strong>${title}</strong><small>${text}</small></span><span class="capability-number">0${i+1} ↗</span></button>`).join('')}</div></section>
+    <div class="home-content-grid"><section class="recent"><div class="section-title"><h2>项目空间 <small>${state.projects.length}</small></h2><button id="browse-projects" class="text-button">查看全部 ${icon('chevron')}</button></div>
+      <div class="recent-grid">${state.projects.slice(0,5).map(p=>`<button class="recent-project" data-project="${p.project_id}"><span class="recent-icon">${icon('folder')}</span><span class="recent-project-copy"><strong>${esc(p.name)}</strong><small>${esc(p.building.location)} · ${num(p.building.area_m2)} m²</small><em>${p.data_nature==='engineering_reference'?'官方参考 · 非实测':'工程项目'} · 声明 v${p.revision}</em></span>${icon('chevron')}</button>`).join('')||'<div class="home-empty"><strong>开始你的第一个建筑项目</strong><p>登记建筑地点、用途与面积，再补充图纸和天气资料。</p><button class="primary" id="empty-create-project">创建工程项目</button></div>'}</div>
+      <div class="project-list-footer"><span>建筑声明、资料和计算结果按项目保存</span><button id="create-project">${icon('plus')}新建</button></div>
+      <div class="home-preparation"><strong>开始前准备好</strong><span>建筑基本信息</span><span>图纸或已有模型</span><span>天气与参数来源</span></div>
+    </section>${workflowMarkup()}</div>
+    <p class="home-footnote">有依据的计算，有边界的建议。</p>
+  </main>`;
 }
 
 function studioDrawing() {
-  return `<svg viewBox="0 0 400 300" class="studio-drawing" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M25 215 210 112 376 205 195 306ZM25 175 210 72 376 165M25 135 210 32 376 125" opacity=".16"/><path d="M70 215 70 111 203 37 332 109 332 213 200 287Z" opacity=".2"/><path d="M98 214V120L201 63 305 120V214L201 272Z" fill="currentColor" fill-opacity=".04"/><path d="M98 120 201 178 305 120M201 178V272M98 150 201 208 305 150M98 181 201 239 305 181M132 139V233M167 159V253M236 159V252M270 139V233"/><path d="M98 120 201 63 305 120 201 178Z" fill="currentColor" fill-opacity=".12"/><path d="M125 120 201 78 278 120 201 163Z" stroke-dasharray="3 4"/><path d="M34 86H93L125 104M277 230 315 252H367" stroke-dasharray="3 4"/><circle cx="34" cy="86" r="5" fill="currentColor"/><circle cx="367" cy="252" r="5" fill="currentColor"/><circle cx="321" cy="49" r="19"/><path d="M321 20V15M321 78V83M292 49H287M350 49H355M300 28 297 25M342 70 345 73M300 70 297 73M342 28 345 25"/></g></svg>`;
+  return `<svg viewBox="0 0 430 330" class="studio-drawing" aria-hidden="true">
+    <g class="drawing-guides" fill="none" stroke="currentColor" stroke-width=".8"><path d="m30 222 186-98 185 98-185 98ZM58 177 216 94 374 177M58 132 216 49 374 132"/><path d="M58 132v90M374 132v90M216 49v56" stroke-dasharray="3 5"/><circle cx="216" cy="222" r="101" transform="translate(0 102) scale(1 .54)"/><path d="M27 295h34m-17-17v34M365 53h28m-14-14v28"/></g>
+    <path d="m88 232 133-70 142 71-134 71Z" class="drawing-shadow"/>
+    <g stroke-linejoin="round"><path d="m99 219 117-62 127 63-115 63Z" class="drawing-slab"/><path d="m114 126 114 58v89l-114-58Z" class="drawing-wall"/><path d="m228 184 102-56v89l-102 56Z" class="drawing-glass"/>
+      <g class="drawing-windows"><path d="m124 142 24 12v18l-24-12Zm35 18 24 12v18l-24-12Zm35 18 24 12v18l-24-12ZM124 174l24 12v18l-24-12Zm35 18 24 12v18l-24-12Zm35 18 24 12v18l-24-12ZM124 206l24 12v17l-24-12Zm35 18 24 12v17l-24-12Zm35 18 24 12v17l-24-12Z"/></g>
+      <path d="m265 165 23-13v83l-23 13Z" class="drawing-warm-glass"/>
+      <path d="m109 154 119 61 107-59v6l-107 59-119-61Zm0 32 119 61 107-59v6l-107 59-119-61Z" class="drawing-slab"/>
+      <path d="M249 173v88m20-99v88m20-99v88m20-99v88" class="drawing-mullions"/>
+      <path d="m108 124 108-59 120 61-108 60Z" class="drawing-roof"/><path d="m108 124 120 62 108-60v6l-108 60-120-62Z" class="drawing-slab"/>
+      <path d="m131 122 84-46 97 50-84 46Z" class="drawing-roof-inset"/>
+      <path d="m152 106 48-26 43 22-48 26Z" class="drawing-solar"/><path d="m168 97 43 22m-27-31 43 22m-61 3 48-26m-34 33 48-26" class="drawing-solar-grid"/>
+      <path d="m243 132 32-18 21 11-32 18Z" class="drawing-planter"/><path d="m243 132 21 11 32-18v7l-32 18-21-11Z" class="drawing-planter-edge"/>
+      <path d="M261 131v-16m17 8v-17" class="drawing-tree-trunks"/><ellipse cx="261" cy="111" rx="9" ry="12" class="drawing-tree"/><ellipse cx="278" cy="103" rx="8" ry="11" class="drawing-tree"/>
+    </g>
+    <g class="drawing-annotations" fill="none" stroke="currentColor" stroke-width=".9"><path d="M147 95 106 73H51m248 99 44-25h41M161 240l-48 27H57" stroke-dasharray="3 4"/><circle cx="147" cy="95" r="3"/><circle cx="299" cy="172" r="3"/><circle cx="161" cy="240" r="3"/></g>
+    <g class="drawing-labels" fill="currentColor"><text x="51" y="63">气候</text><text x="362" y="136">空间</text><text x="57" y="284">能耗</text></g>
+  </svg>`;
 }
 
 export function projectView(state) {
