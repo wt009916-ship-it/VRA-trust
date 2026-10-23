@@ -15,7 +15,7 @@ function factSummary(analysis) {
   return `${analysis.candidates.length} 条明确标注的项目字段`;
 }
 const routes = {weather:'气候与天气',spatial:'建模工作区',simulation:'仿真与方案',evidence:'项目资料'};
-export async function intakeWorkspace(host, {project = null, openProject, back, initialFiles = [], resume = null, destination = 'evidence'}) {
+export async function intakeWorkspace(host, {project = null, openProject, back, initialFiles = [], resume = null, destination = 'evidence', onCommitted = async()=>{}}) {
   let batch = resume ? await request('/intakes/'+resume) : null, busy = false;
   host.innerHTML = `<main class="intake-workspace"><header class="view-heading"><div><span class="eyebrow">PROJECT INBOX / 资料收件箱</span><h1>${project?'向项目补充资料':'从项目文件开始'}</h1><p>${project?esc(project.name)+' · 保留现有建筑声明':'先整理资料，再确认缺失信息；不用先填写完整项目表。'}</p></div><button id="inbox-back">返回工作台</button></header>
     <ol class="intake-steps"><li>01 拖入资料</li><li>02 自动分类与提取</li><li>03 核对来源与缺口</li><li>04 进入专项分析</li></ol>
@@ -51,7 +51,7 @@ export async function intakeWorkspace(host, {project = null, openProject, back, 
       try{
         const f=Object.fromEntries(new FormData(e.currentTarget)); const body={reviewed:f.reviewed==='on'};
         if(!batch.project_id){body.project={name:f.name,building:{use:f.use,location:f.location,region:f.region,area_m2:Number(f.area_m2)}};}
-        batch=await post('/intakes/'+batch.id+'/commit',body);paint();progress('资料已归档，专项分析结果见下方。');host.querySelector('#inbox-open')?.scrollIntoView({block:'center'});
+        batch=await post('/intakes/'+batch.id+'/commit',body);await onCommitted();paint();progress('资料已归档，专项分析结果见下方。');host.querySelector('#inbox-open')?.scrollIntoView({block:'center'});
       }catch(err){error(err.message);button.disabled=false;button.textContent='重试归档';}
     });
   }

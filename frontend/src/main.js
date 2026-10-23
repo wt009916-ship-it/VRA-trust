@@ -86,6 +86,17 @@ function openIntake(project = null, files = [], destination = 'evidence') {
   selection++; poller.stop(); state.project=project; shell();
   action(()=>intakeWorkspace(document.querySelector('#workspace'), {
     project, initialFiles:files, destination,
+    onCommitted:async()=>{
+      try{
+        await refreshProjects();
+        const template=document.createElement('template');template.innerHTML=appShell(state);
+        for(const selector of ['.sidebar-projects','.sidebar-label']){
+          const current=root.querySelector(selector), updated=template.content.querySelector(selector);
+          if(current&&updated)current.replaceWith(updated);
+        }
+        bindProjectLinks();
+      }catch(error){notice('资料已归档，项目列表暂未刷新：'+error.message,true);}
+    },
     back:()=>project?action(()=>selectProject(project.project_id)):home(),
     openProject:async(id,view)=>{await refreshProjects();await selectProject(id,view);notice('资料已归档为待审证据；请核对来源、许可与工程适用性。');}
   }));
