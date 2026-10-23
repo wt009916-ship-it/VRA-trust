@@ -4,6 +4,13 @@ from fastapi.testclient import TestClient
 from backend.api import create_app
 
 
+@pytest.fixture(autouse=True)
+def legacy_test_registration(monkeypatch):
+    # Existing isolation tests register multiple owners directly. Production defaults
+    # to invitation mode; dedicated admission tests explicitly remove this override.
+    monkeypatch.setenv('VRA_REGISTRATION_MODE', 'open')
+
+
 @pytest.fixture
 def client(tmp_path):
     app = create_app(tmp_path / 'data', start_worker=False)

@@ -16,7 +16,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import core
 from .domain import Domain
-from .auth import Auth, Credentials, Registration
+from .auth import Auth, Credentials, Registration, PasswordChange
 from .api_tokens import Tokens
 from .reports import report_html, report_pdf
 from .schema import (
@@ -25,6 +25,7 @@ from .schema import (
     Evidence,
     EvidenceCreate,
     EvidenceReview,
+    EvidenceMetadata,
     Project,
     ProjectCreate,
     RunCreate,
@@ -157,7 +158,7 @@ def create_app(data_dir=None, *, start_worker=True):
 
     @app.get("/api/auth/status")
     def auth_status():
-        return {"setup_required": auth.setup_required()}
+        return {"setup_required": auth.setup_required(), "registration_mode": auth.registration_mode()}
 
     def session_response(result, old_token=None):
         token, user = result
@@ -190,6 +191,12 @@ def create_app(data_dir=None, *, start_worker=True):
         response = JSONResponse({"logged_out": True})
         response.delete_cookie(auth.cookie)
         return response
+
+    @app.post('/api/auth/password')
+    def change_password(body: PasswordChange, request: Request):
+        user = request.state.user
+        auth.throttle(user['username'], request.client.host if request.client else 'unknown')
+        return session_response(auth.change_password(user['id'], body))
 
     @app.get("/api/projects", response_model=list[Project])
     def projects(request: Request):
@@ -246,6 +253,16 @@ def create_app(data_dir=None, *, start_worker=True):
         if ev["project_id"] != project_id:
             raise core.ValidationError("Cross-project evidence rejected")
         return domain.store.history("evidence", evidence_id)
+
+    @app.put('/api/projects/{project_id}/evidence/{evidence_id}/metadata', response_model=Evidence)
+    def evidence_metadata(project_id: str, evidence_id: str, body: EvidenceMetadata):
+        ev = domain.store.get('evidence', evidence_id)
+        if ev['project_id'] != project_id:
+            raise HTTPException(404, '资料不属于当前项目')
+        if ev['source_file']:
+            domain.file_record(project_id, ev['source_file'])
+        return domain.store.put('evidence', {**ev, **body.model_dump(exclude={'expected_revision'}),
+                                'review_state': 'pending', 'review_note': None, 'timestamp': core.now()}, body.expected_revision)
 
     @app.get("/api/projects/{project_id}/gate")
     def gate(project_id: str, scheme_id: str = "baseline"):
@@ -317,8 +334,16 @@ def create_app(data_dir=None, *, start_worker=True):
     register_product(app, domain, auth)
     from .weather_api import register_weather
     register_weather(app, domain)
+    from .admin_api import register_admin
+    register_admin(app, domain, auth)
+    from .intake import register_intake
+    register_intake(app, domain, auth, maximum)
     dist = core.ROOT / "frontend/dist"
     if dist.is_dir():
+        @app.get('/admin', include_in_schema=False)
+        @app.get('/admin/', include_in_schema=False)
+        def admin_page():
+            return FileResponse(dist / 'index.html')
         app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")
 
     def secured_openapi():

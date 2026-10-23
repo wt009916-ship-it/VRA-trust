@@ -107,7 +107,8 @@ def test_provider_agent_calls_actual_registry_under_protocol_fixture(client, mon
     monkeypatch.setattr(agent.gateway, 'complete', lambda messages, tools: next(responses))
     result = agent.start(pid, Chat(message='检查资料', mode='provider'), background=False)
     assert result['status'] == 'succeeded'
-    assert len(result['events']) == 7
+    assert [e['tool'] for e in result['events']] == ['project_get', 'evidence_list', 'evidence_validate',
+                                                   'llm.request', 'evidence_validate', 'llm.request']
     assert result['events'][-2]['result']['can_simulate'] is False
     assert result['events'][-1]['tool'] == 'llm.request'
     assert result['answer']['can_recommend'] is False
