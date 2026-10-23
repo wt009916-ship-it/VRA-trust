@@ -16,6 +16,8 @@ export async function adminWorkspace(root, user, logout) {
     const data=await request('/admin/overview');
     if(view==='services'){
       host.innerHTML='<section class="admin-panel"><h2>AI 与工程服务</h2><p>配置兼容 API、视觉模型和工程工具连接。项目用户无权读取或修改这些配置。</p><button id="admin-provider" class="primary">管理模型与 API 连接</button><p>服务商配置后需执行真实连接测试；未配置时，资料收件箱仍可使用本地解析工具。</p></section>';
+      const ocr=data.document_ocr;
+      host.insertAdjacentHTML('beforeend',`<section class="admin-panel"><h2>扫描件与图片识别</h2><p>${ocr.available?esc(ocr.engine+' '+ocr.version+' · '+ocr.runtime):esc(ocr.error)}</p><p>文档在本机识别，不发送至外部 API。${ocr.available?'每份最多 '+ocr.max_ocr_pages+' 页 OCR、'+ocr.max_text_pages+' 页文字；超限或超时会保留原因。':''}</p><p>项目用户可在资料收件箱对照原图逐页校正，原始识别和校正历史均保留。</p></section>`);
       host.querySelector('#admin-provider').onclick=()=>developerSettings(modal,action,notice);return;
     }
     if(view==='operations'){

@@ -22,7 +22,7 @@
 先核对了以下上游，区分“评估”与“已运行”，未直接引入另一套完整产品：
 
 - [FastAPI 官方全栈模板](https://github.com/fastapi/full-stack-fastapi-template)：MIT；参考账号与后台独立组织方式。未迁移其 React/PostgreSQL 栈，未声称已集成该模板。
-- [Docling](https://github.com/docling-project/docling)：MIT；评估其多文档与 OCR 方向。本次没有下载模型权重、接入 OCR，也没有将扫描件识别列为已通过。
+- [Docling](https://github.com/docling-project/docling)：MIT；评估其多文档与 OCR 方向。没有集成 Docling；后续扫描件识别采用 RapidOCR，见 [OCR 实测](DOCUMENT_OCR.md)。
 - [pdfplumber](https://github.com/jsvine/pdfplumber)：现有依赖，实际复用 PDF 文本与页码提取；明确标注的项目字段才成为候选。
 - [IfcOpenShell](https://github.com/IfcOpenShell/IfcOpenShell) 与 [ezdxf](https://github.com/mozman/ezdxf)：复用实际 BIM/CAD 解析器与项目现有几何导入流程；不是调用模型随意编造空间。
 - [LangGraph](https://github.com/langchain-ai/langgraph)：复用现有持久化识别/人工复核工作流，归档后的 IFC/DXF 自动进入候选识别。
@@ -37,7 +37,7 @@
 4. EPW 调用天气服务；IFC/DXF 调用已有空间识别服务，成功后停在人工复核。DXF 未知单位会阻断；候选默认层高/标高来自导入设置，并非测量结果。PDF 自动提取文字不等于已完成几何重建。
 5. 在资料详情补充来源和使用许可，保存为新版本并重新待审；原文件与历史版本保留。完成必要工程复核后再进入真实仿真。
 
-扫描 PDF、图片与 DWG 目前不能靠此流程自动完成工程建模：扫描件可能提取不到文字；图片/DWG 明确显示“仅保留原件”，不显示成功识别。账单/设备表目前完成结构清点，未自动完成列语义映射和能耗校准。
+扫描 PDF 和图片现已接入本地 OCR 与原图校正，但文字提取不等于完成工程建模；DWG 仍只保留原件。详见 [OCR 实测](DOCUMENT_OCR.md)。账单/设备表目前完成结构清点，未自动完成列语义映射和能耗校准。
 
 ## 账号、数据库与后台
 
@@ -61,4 +61,4 @@
 - 可复跑脚本：`scripts/verify_intake.py`，要求用户提供两个公开 IFC 路径和全新隔离数据目录。原 IFC 不随仓库再分发；来源、许可及上一轮物理对照见 [此前实测](EMPIRICAL_BENCHMARK_RESULTS.md)。
 - 回归覆盖：多账号隔离、一次性邀请/过期/撤销、弱凭据、密码修改、账号停用、旧数据库迁移、批次恢复、损坏文件保留、冲突、原件篡改、事务回滚、重复归档、来源修订、PDF/XLSX/EPW/DXF 实际解析、不同任务工具、外发文本过滤。
 
-本次改善导入与使用流程，不等于完成商业交付。复杂 IFC 自动建模、扫描图 OCR、任意图纸理解、真实客户账单校准、成熟团队权限、多实例运行及与斯维尔/广联达持证同题测试仍未完成。现有测试不能据此宣称可替代这些商业软件。
+本次改善导入与使用流程，不等于完成商业交付。复杂 IFC 自动建模、任意图纸理解、真实客户账单校准、成熟团队权限、多实例运行及与斯维尔/广联达持证同题测试仍未完成。现有测试不能据此宣称可替代这些商业软件。

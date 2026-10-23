@@ -7,6 +7,7 @@ import { createEvidenceImporter } from './evidence-import.js';
 import { spatialWorkspace } from './model-ui.js';
 import { changePassword } from './account-ui.js';
 import { intakeWorkspace } from './intake-ui.js';
+import { reviewDocument } from './document-review.js';
 import { adminWorkspace } from './admin-ui.js';
 import './intake.css';
 import { robustnessWorkspace } from './robustness-ui.js';
@@ -197,7 +198,17 @@ function renderEvidence() {
 }
 function evidenceDetail(ev) {
   const content = Object.entries(ev).map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(typeof v === 'object' ? JSON.stringify(v) : v ?? '—') + '</dd>').join('');
-  const dialog = modal('证据来源 · ' + esc(ev.name), '<p>来源：'+esc(ev.authority)+' · 使用许可：'+esc(ev.permission)+'</p><p>定位：'+esc(ev.source_locator)+'</p>'+ (ev.value?.analysis?'<details open><summary>自动提取的内容（待核对）</summary><pre>'+esc(JSON.stringify(ev.value.analysis,null,2))+'</pre></details>':'')+'<details><summary>完整证据记录</summary><dl class="metadata">' + content + '</dl></details>' + (ev.source_file ? link('/api/projects/' + ev.project_id + '/files/' + ev.source_file, '下载原文件') : '') + '<div class="actions"><button id="amend-source">完善来源与许可</button><button id="review-this">更改复核状态</button><button id="history">查看版本历史</button></div><div id="history-content"></div>');
+  const dialog = modal('证据来源 · ' + esc(ev.name), '<p>来源：'+esc(ev.authority)+' · 使用许可：'+esc(ev.permission)+'</p><p>定位：'+esc(ev.source_locator)+'</p>'+ (ev.value?.analysis?'<details><summary>自动提取的完整记录（待核对）</summary><pre>'+esc(JSON.stringify(ev.value.analysis,null,2))+'</pre></details>':'')+'<details><summary>完整证据记录</summary><dl class="metadata">' + content + '</dl></details>' + (ev.source_file ? link('/api/projects/' + ev.project_id + '/files/' + ev.source_file, '下载原文件') : '') + '<div class="actions"><button id="amend-source">完善来源与许可</button><button id="review-this">更改复核状态</button><button id="history">查看版本历史</button></div><div id="history-content"></div>');
+  if(ev.value?.intake_id&&ev.value?.analysis?.facts?.document_pages?.length){
+    const button=document.createElement('button');button.textContent='对照原图与校正历史';
+    dialog.querySelector('.actions').prepend(button);
+    button.onclick=()=>action(async()=>{
+      const batch=await request('/intakes/'+ev.value.intake_id);
+      const source=batch.files.find(s=>s.file_id===ev.source_file);
+      if(!source)throw new Error('资料原件记录不存在，请核对来源');
+      dialog.close();reviewDocument(root,batch,source,async()=>{});
+    },button);
+  }
   document.querySelector('#amend-source').onclick=()=>{
     dialog.close();
     const fields=[['source_locator','来源定位',1000],['authority','来源单位 / 版本',300],['permission','使用许可 / 授权范围',1000],['responsible_person','登记人',100]];

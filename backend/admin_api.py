@@ -33,8 +33,10 @@ def register_admin(app, domain, auth):
     @app.get('/api/admin/overview')
     def overview(request: Request):
         require(request)
+        from .document_reader import capability
         with domain.store.connect() as con:
             return {
+                'document_ocr': capability(),
                 'database': {'engine': 'SQLite', 'persistent': True,
                              'journal_mode': con.execute('PRAGMA journal_mode').fetchone()[0],
                              'schema_version': con.execute('PRAGMA user_version').fetchone()[0]},
