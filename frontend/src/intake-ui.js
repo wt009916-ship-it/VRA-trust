@@ -1,4 +1,5 @@
 import { request, post, escape as esc, checkUpload } from './api.js';
+import { reviewDocument } from './document-review.js';
 
 const names = {name:'项目名称',use:'建筑用途',location:'项目地点',region:'地区代码',area_m2:'总建筑面积（m²）'};
 const batchStatuses={collecting:'待添加 / 分析',analyzing:'分析中',review:'待核对',interrupted:'任务中断，可重试'};
@@ -7,7 +8,7 @@ function factSummary(analysis) {
   const f=analysis?.facts;if(!f)return '';
   if(f.quality)return `${f.quality.records} 条逐时记录 · ${f.location.name} · 年均温 ${f.annual.temperature_c??'缺失'} °C`;
   if(f.spaces!==undefined)return `${f.spaces} 个空间 · ${f.storeys} 个楼层 · ${f.spaces_with_body} 个空间含 Body 表示`;
-  if(f.pages!==undefined)return `${f.pages} 页文档 · ${analysis.candidates.length} 条明确标注的项目字段`;
+  if(f.pages!==undefined)return `${f.pages} 页文档 · ${f.document_pages?.filter(p=>p.method==='ocr').length||0} 页 OCR · ${analysis.candidates.length} 条项目字段`;
   if(f.data_rows!==undefined)return `${f.data_rows} 行数据 · ${f.columns.length} 列`;
   if(f.sheets)return `${f.sheets.length} 张工作表：${f.sheets.map(x=>x.name).join('、')}`;
   if(f.zones!==undefined)return `${f.zones} 个 Zone · ${Object.keys(f.objects).length} 类 IDF 对象`;
@@ -32,7 +33,7 @@ export async function intakeWorkspace(host, {project = null, openProject, back, 
   }
   function paint() {
     if(!host.querySelector('#inbox-result')||!batch)return;
-    const cards=batch.files.map(s=>`<article class="intake-card"><header><span class="file-kind">${esc(s.type.toUpperCase())}</span><strong>${esc(s.name)}</strong><span class="badge">${statuses[s.status]||esc(s.status)}</span></header><small>${(s.size/1024).toFixed(1)} KB · SHA256 ${esc(s.hash.slice(0,16))}…</small>${s.error?`<p class="error-text">${esc(s.error)}</p>`:''}${s.analysis?`<p class="intake-fact">${esc(factSummary(s.analysis))}</p><p>后续工作区：${routes[s.analysis.next_view]}</p>${s.analysis.warnings.map(w=>`<p class="intake-warning">${esc(w)}</p>`).join('')}<details><summary>查看实际提取内容与定位</summary><pre>${esc(JSON.stringify(s.analysis.facts,null,2))}</pre></details>`:''}</article>`).join('');
+    const cards=batch.files.map(s=>`<article class="intake-card"><header><span class="file-kind">${esc(s.type.toUpperCase())}</span><strong>${esc(s.name)}</strong><span class="badge">${statuses[s.status]||esc(s.status)}</span></header><small>${(s.size/1024).toFixed(1)} KB · SHA256 ${esc(s.hash.slice(0,16))}…</small>${s.error?`<p class="error-text">${esc(s.error)}</p>`:''}${s.analysis?`<p class="intake-fact">${esc(factSummary(s.analysis))}</p><p>后续工作区：${routes[s.analysis.next_view]}</p>${s.analysis.warnings.map(w=>`<p class="intake-warning">${esc(w)}</p>`).join('')}${s.analysis.facts.document_pages?.length?`<button data-review-document="${esc(s.file_id)}">对照原图 · 核对 / 校正文字${s.corrections?.length?`（${s.corrections.length} 次校正）`:""}</button>`:""}<details><summary>查看实际提取内容与定位</summary><pre>${esc(JSON.stringify(s.analysis.facts,null,2))}</pre></details>`:''}</article>`).join('');
     let review='';
     if(batch.status==='review'){
       const suggestions=batch.suggestions||{};
@@ -42,6 +43,7 @@ export async function intakeWorkspace(host, {project = null, openProject, back, 
       <form id="inbox-confirm"><div class="form-grid">${fields}</div><label class="check-option"><input type="checkbox" name="reviewed" required>我已核对本次文件与项目的对应关系${fields?'及上述建筑声明':''}（必选）</label><p class="subtle">此处归档不代替工程复核。模型、天气、参数仍以待审证据进入项目，不会自动确认或启动仿真。</p><button class="primary" type="submit">${batch.project_id?'归档到项目':'建立项目并归档资料'}</button></form></section>`;
     }
     host.querySelector('#inbox-result').innerHTML=`<div class="intake-file-grid">${cards}</div>${['collecting','interrupted'].includes(batch.status)&&batch.files.length?'<button id="inbox-analyze" class="primary">分析已保存的资料</button>':''}${review}${['collecting','review','interrupted'].includes(batch.status)?'<button id="inbox-discard" class="text-button">丢弃此未归档批次</button>':''}${batch.status==='committed'?'<section class="intake-review"><h2>归档完成 · 专项处理结果</h2><p>原文件和提取记录已保存为待审证据。各专项工具结果如下。</p>'+Object.entries(batch.prepared||{}).map(([fid,result])=>'<article class="intake-card"><strong>'+esc(batch.files.find(f=>f.file_id===fid)?.name)+'</strong><p>'+esc(({analyzed:'天气分析已生成',awaiting_review:'空间候选已生成，等待人工复核',failed:'专项处理失败，原件与原因保留',running:'处理中'})[result.status]||result.status)+'</p>'+(result.error?'<p class="error-text">'+esc(result.error)+'</p>':'')+'<button data-intake-view="'+esc(result.view)+'">打开'+routes[result.view]+' →</button></article>').join('')+'<button id="inbox-open" class="primary">打开'+(routes[destination]||'项目资料')+'</button></section>':''}`;
+    host.querySelectorAll('[data-review-document]').forEach(b=>b.onclick=()=>reviewDocument(host,batch,batch.files.find(s=>s.file_id===b.dataset.reviewDocument),async updated=>{batch=updated;paint();progress('校正已保存，项目字段及冲突已重新整理。');}));
     host.querySelector('#inbox-discard')?.addEventListener('click',async()=>{if(busy||!confirm('删除此批次尚未归档的文件与解析记录？此操作不能撤销。'))return;try{await request('/intakes/'+batch.id,{method:'DELETE'});batch=null;host.querySelector('#inbox-result').innerHTML='';progress('已丢弃未归档批次。');await history();}catch(e){error(e.message);}});
     host.querySelector('#inbox-analyze')?.addEventListener('click',()=>analyze().catch(e=>error(e.message)));
     host.querySelectorAll('[data-intake-view]').forEach(b=>b.onclick=()=>openProject(batch.project_id,b.dataset.intakeView));

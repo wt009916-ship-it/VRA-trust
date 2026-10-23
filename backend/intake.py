@@ -14,6 +14,8 @@ from collections import Counter
 from pathlib import Path
 
 from fastapi import BackgroundTasks, File, HTTPException, Request, UploadFile
+from fastapi.responses import Response
+from pydantic import Field, StrictInt
 
 from . import core
 from .domain import identifier
@@ -35,6 +37,13 @@ class InboxCreate(Contract):
 class InboxCommit(Contract):
     project: ProjectCreate | None = None
     reviewed: bool
+
+
+class TextCorrection(Contract):
+    expected_revision: StrictInt = Field(ge=0)
+    page: StrictInt = Field(ge=1, le=80)
+    text: str = Field(max_length=30000)
+    reason: str = Field(min_length=3, max_length=500)
 
 
 def text_candidates(text, source):
@@ -79,20 +88,17 @@ def parse_source(path):
             raise core.ValidationError('没有找到 IDF Version 对象，请核对文件格式')
         out.update(facts={'objects': dict(counts), 'zones': counts.get('zone', 0)}, next_view='simulation')
         out['warnings'] = ['仅清点对象；未运行 EnergyPlus，不证明可计算。批量导入的 IDF 暂登记为基准候选，多份候选会阻止计算。']
-    elif ext == '.pdf':
-        import pdfplumber
-        with pdfplumber.open(path) as pdf:
-            out['facts']['pages'] = len(pdf.pages)
-            for n, page in enumerate(pdf.pages[:80], 1):
-                text = (page.extract_text() or '')[:30000]
-                out['candidates'] += text_candidates(text, f'PDF 第 {n} 页')
-                if n <= 3:
-                    out['facts'].setdefault('text_preview', []).append({'page': n, 'text': text[:1600]})
-            if len(pdf.pages) > 80:
-                out['warnings'].append('本次只提取前 80 页，后续页需另行处理。')
-            if not any(p['text'] for p in out['facts'].get('text_preview', [])):
-                out['warnings'].append('未提取到可读文字；可能为扫描件，需 OCR 或人工核对。')
-        out['warnings'].append('PDF 文字提取不等于图纸几何识别；建模仍需比例尺与空间复核。')
+    elif ext in {'.pdf', '.png', '.jpg', '.jpeg'}:
+        from .document_reader import worker
+        document = worker(path)
+        out['warnings'] = document.pop('warnings')
+        out['facts'] = document
+        out['parser'] = 'local-document-2'
+        for page in document['document_pages']:
+            locator = f"PDF 第 {page['page']} 页" if page['method'] == 'text' else f"第 {page['page']} 页 · {page['method']}"
+            out['candidates'] += text_candidates(page['text'], locator)
+            out['candidates'] += text_candidates(page.get('native_text', ''), f"PDF 第 {page['page']} 页文字层")
+        out['warnings'].append('OCR / 文本提取仅为待审声明，不代表工程参数准确或已识别空间几何；请逐页对照原图核对。')
         if out['candidates']:
             out['suggested_type'] = 'manual_input'
     elif ext == '.dxf':
@@ -176,6 +182,8 @@ class Inbox:
     def _analyze(self, iid, uid):
         batch = self.get(iid, uid)
         for source in batch['files']:
+            if source.get('corrections'):
+                continue  # Preserve the immutable extraction underlying manual revisions.
             source['status'] = 'analyzing'
             self.save(batch)
             try:
@@ -190,6 +198,10 @@ class Inbox:
                 source['status'] = 'failed'
                 source['error'] = str(exc)[:1000]
             self.save(batch)
+        self.summarize(batch)
+        self.save(batch)
+
+    def summarize(self, batch):
         candidates = [{**c, 'file_id': s['file_id'], 'file_name': s['name']} for s in batch['files']
                       if s['status'] == 'analyzed' for c in s['analysis']['candidates']]
         suggestions, conflicts = {}, []
@@ -202,7 +214,44 @@ class Inbox:
                 conflicts.append(field)
         batch.update(status='review', candidates=candidates, suggestions=suggestions, conflicts=conflicts,
                      missing=[key for key in FIELDS if key not in suggestions])
-        self.save(batch)
+
+    def correct(self, iid, uid, body):
+        with self.lock:
+            batch = self.get(iid, uid)
+            if batch['status'] != 'review':
+                raise HTTPException(409, '仅可校正尚未归档且已完成分析的批次')
+            source = next((s for s in batch['files'] if s['file_id'] == body['file_id']), None)
+            if source is None:
+                raise HTTPException(404, '文件不存在')
+            revision = len(source.get('corrections', []))
+            options = body['options']
+            if len(options.reason.strip()) < 3:
+                raise HTTPException(422, '请填写至少 3 个字符的校正原因')
+            if revision != options.expected_revision:
+                raise HTTPException(409, '校正记录已变化，请刷新后重试')
+            pages = source.get('analysis', {}).get('facts', {}).get('document_pages', [])
+            page = next((p for p in pages if p['page'] == options.page), None)
+            if page is None:
+                raise HTTPException(422, '该页没有解析记录，请重新上传或拆分文件')
+            path = core.relative_file(self.store.root, source['path'])
+            if core.sha(path) != source['hash']:
+                raise HTTPException(409, '原文件校验失败，不能校正旧分析')
+            if revision >= 100:
+                raise HTTPException(409, '此文件已达到 100 次校正上限，请另建批次保留新资料')
+            change = {**options.model_dump(), 'revision': revision + 1, 'actor': uid,
+                      'timestamp': core.now(), 'source_hash': source['hash']}
+            source.setdefault('corrections', []).append(change)
+            # Original page text/boxes remain immutable. Candidates use latest explicit correction.
+            latest = {c['page']: c for c in source['corrections']}
+            source['analysis']['candidates'] = [c for p in pages for c in text_candidates(
+                latest.get(p['page'], p)['text'], f"第 {p['page']} 页 · " +
+                (f"人工校正 v{latest[p['page']]['revision']}" if p['page'] in latest else p['method']))]
+            for p in pages:
+                if p['page'] not in latest:
+                    source['analysis']['candidates'] += text_candidates(p.get('native_text', ''), f"PDF 第 {p['page']} 页文字层")
+            self.summarize(batch)
+            self.save(batch)
+            return batch
 
     def prepare(self, batch, actor):
         """Reuse production tools after atomic adoption; never publish/confirm a model."""
@@ -260,7 +309,8 @@ class Inbox:
                               authority='用户提供，来源真实性待核对', permission='使用许可待复核',
                               acquisition_method='批量上传与本地解析', responsible_person=actor,
                               uncertainty='自动提取结果未经过工程确认',
-                              value={'intake_id': iid, 'analysis_status': source['status'], 'analysis': source.get('analysis'), 'error': source.get('error')},
+                              value={'intake_id': iid, 'analysis_status': source['status'], 'analysis': source.get('analysis'),
+                                     'corrections': source.get('corrections', []), 'error': source.get('error')},
                               scheme_id='baseline' if source['type'] == 'idf' else None).model_dump(mode='json')
                 records.append(('evidence', ev['evidence_id'], ev))
             batch.update(status='committed', project_id=pid, committed_at=core.now())
@@ -297,6 +347,24 @@ def register_intake(app, domain, auth, maximum):
     @app.get('/api/intakes/{intake_id}')
     def detail(intake_id: str, request: Request):
         return inbox.get(intake_id, request.state.user['id'])
+
+    @app.get('/api/intakes/{intake_id}/files/{file_id}/pages/{page}')
+    def page_preview(intake_id: str, file_id: str, page: int, request: Request):
+        from .document_reader import preview
+        batch = inbox.get(intake_id, request.state.user['id'])
+        source = next((s for s in batch['files'] if s['file_id'] == file_id), None)
+        if not source:
+            raise HTTPException(404, '文件不存在')
+        path = core.relative_file(domain.store.root, source['path'])
+        if path.suffix.lower() not in {'.pdf', '.png', '.jpg', '.jpeg'} or not 1 <= page <= 80:
+            raise HTTPException(422, '此文件或页码不支持预览')
+        if core.sha(path) != source['hash']:
+            raise HTTPException(409, '原文件校验失败')
+        return Response(preview(path, page), media_type='image/png', headers={'Cache-Control': 'no-store'})
+
+    @app.post('/api/intakes/{intake_id}/files/{file_id}/corrections')
+    def correction(intake_id: str, file_id: str, body: TextCorrection, request: Request):
+        return inbox.correct(intake_id, request.state.user['id'], {'file_id': file_id, 'options': body})
 
     @app.delete('/api/intakes/{intake_id}')
     def discard(intake_id: str, request: Request):

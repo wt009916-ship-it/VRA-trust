@@ -21,7 +21,8 @@ class PlanAuthorizationError(core.ValidationError):
 def provider_context(value):
     """Document previews stay local, even when evidence metadata is tool context."""
     if isinstance(value, dict):
-        return {key: provider_context(item) for key, item in value.items() if key not in {'text_preview', 'excerpt'}}
+        return {key: provider_context(item) for key, item in value.items()
+                if key not in {'text_preview', 'excerpt', 'document_pages', 'corrections'}}
     if isinstance(value, list):
         return [provider_context(item) for item in value]
     return value
