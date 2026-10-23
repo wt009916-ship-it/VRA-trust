@@ -40,7 +40,7 @@ class Domain:
     def add_file(self, project_id, filename, content):
         self.store.get("project", project_id)
         extension = Path(filename).suffix.lower()
-        if extension not in {".idf", ".epw", ".pdf", ".csv", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".ifc", ".json", ".xml", ".dxf", ".dwg"}:
+        if extension not in {".idf", ".epw", ".pdf", ".csv", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".ifc", ".json", ".xml", ".dxf", ".dwg", ".txt"}:
             raise core.ValidationError("Unsupported file extension")
         if not content:
             raise core.ValidationError("Empty file")

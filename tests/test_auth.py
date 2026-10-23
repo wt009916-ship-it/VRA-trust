@@ -13,7 +13,7 @@ def app(tmp_path):
 
 
 def register(client, username='engineer_one'):
-    password = secrets.token_urlsafe(18)
+    password = 'Test-' + secrets.token_urlsafe(18)
     result = client.post('/api/auth/register', json={'username':username,'display_name':'测试工程师','password':password})
     assert result.status_code == 200, result.text
     client.headers['X-CSRF-Token'] = result.json()['csrf_token']

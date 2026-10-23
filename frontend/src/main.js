@@ -5,7 +5,10 @@ import { weatherWorkspace } from './weather-ui.js';
 import { createPoller } from './polling.js';
 import { createEvidenceImporter } from './evidence-import.js';
 import { spatialWorkspace } from './model-ui.js';
-import { privateConsoleUnavailable } from './developer-ui.js';
+import { changePassword } from './account-ui.js';
+import { intakeWorkspace } from './intake-ui.js';
+const adminWorkspace=async root=>{root.textContent='Private console excluded';};
+import './intake.css';
 import { robustnessWorkspace } from './robustness-ui.js';
 import { decisionWorkspace } from './decision-ui.js';
 import { bindWorkflow, runAgent, factorEditor } from './trust-ui.js';
@@ -35,14 +38,15 @@ async function action(fn, button) {
 }
 function shell() {
   root.innerHTML = appShell(state);
-  document.querySelector('#new-project').onclick = () => projectForm();
+  document.querySelector('#new-project').onclick = () => openIntake();
   document.querySelector('#all-projects').onclick = () => { selection++; poller.stop(); state.project = null; home(); };
   document.querySelector('#load-reference').onclick = e => loadReference(e.currentTarget);
   document.querySelector('#search-projects').onclick = () => searchProjects();
   document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
   document.querySelector('#theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; localStorage.setItem('vra-theme', theme); };
   document.querySelector('#logout').onclick = e => action(async () => { await post('/auth/logout', {}); clearSession(); authScreen(false); }, e.currentTarget);
-  const dev=document.querySelector('#developer-settings'); if(dev) dev.onclick=()=>privateConsoleUnavailable(modal,action,notice);
+
+  document.querySelector('#account-settings').onclick=()=>changePassword(modal,action,notice);
   bindProjectLinks();
 }
 function bindProjectLinks() {
@@ -55,22 +59,36 @@ function home() {
   shell();
   document.querySelector('#workspace').innerHTML = homeView(state);
   bindWorkflow();
-  document.querySelector('#create-project').onclick = () => projectForm();
+  document.querySelector('#create-project').onclick = () => openIntake();
   const emptyCreate = document.querySelector('#empty-create-project');
-  if (emptyCreate) emptyCreate.onclick = () => projectForm();
+  if (emptyCreate) emptyCreate.onclick = () => openIntake();
   document.querySelector('#browse-projects').onclick = () => searchProjects();
   document.querySelectorAll('[data-entry-view]').forEach(button => {
     button.onclick = () => {
       const view = button.dataset.entryView;
-      if (!state.projects.length) projectForm(false, view);
+      if (!state.projects.length) openIntake(null, [], view);
       else if (state.projects.length === 1) action(() => selectProject(state.projects[0].project_id, view), button);
       else searchProjects(view, '选择项目 · ' + esc(button.dataset.entryTitle));
     };
   });
   document.querySelector('#reference-project').onclick = e => loadReference(e.currentTarget);
-  document.querySelector('#intake-composer').onsubmit = e => { e.preventDefault(); const name = document.querySelector('#project-intent').value.trim(); projectForm(); if (name) document.querySelector('[name="name"]').value = name; };
-  document.querySelector('#how-it-works').onclick = () => modal('从资料到可复核结果', '<ol class="workflow-steps"><li><strong>建立项目</strong><p>填写建筑用途、地点和面积。</p></li><li><strong>导入并确认资料</strong><p>导入图纸生成并复核模型，或上传已有 IDF；补齐天气文件和工程依据。</p></li><li><strong>运行并比较方案</strong><p>使用真实仿真结果，保留警告与不确定性。</p></li><li><strong>查看依据，导出报告</strong><p>每个结果绑定独立运行与证据版本。</p></li></ol>');
+  const intakeDrop=document.querySelector('#home-intake-drop');
+  intakeDrop.onclick=()=>openIntake();
+  intakeDrop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openIntake();}};
+  intakeDrop.ondragover=e=>{e.preventDefault();intakeDrop.classList.add('dragging');};
+  intakeDrop.ondragleave=()=>intakeDrop.classList.remove('dragging');
+  intakeDrop.ondrop=e=>{e.preventDefault();e.stopPropagation();openIntake(null,Array.from(e.dataTransfer.files));};
+  document.querySelector('#manual-project').onclick=()=>projectForm();
+  document.querySelector('#how-it-works').onclick = () => modal('从资料到可复核结果', '<ol class="workflow-steps"><li><strong>拖入项目资料</strong><p>批量上传文档、模型、台账和天气，自动分类并提取明确标注的项目信息。</p></li><li><strong>核对缺口与来源</strong><p>确认自动提取字段，补齐缺失或冲突项。IFC / DXF 进入候选识别，EPW 进入天气分析；扫描图和未知比例尺仍需补证。</p></li><li><strong>运行并比较方案</strong><p>使用真实仿真结果，保留警告与不确定性。</p></li><li><strong>查看依据，导出报告</strong><p>每个结果绑定独立运行与证据版本。</p></li></ol>');
   bindProjectLinks();
+}
+function openIntake(project = null, files = [], destination = 'evidence') {
+  selection++; poller.stop(); state.project=project; shell();
+  action(()=>intakeWorkspace(document.querySelector('#workspace'), {
+    project, initialFiles:files, destination,
+    back:()=>project?action(()=>selectProject(project.project_id)):home(),
+    openProject:async(id,view)=>{await refreshProjects();await selectProject(id,view);notice('资料已归档为待审证据；请核对来源、许可与工程适用性。');}
+  }));
 }
 function searchProjects(view = null, title = '搜索项目') {
   const dialog = modal(title, '<input id="project-search" aria-label="搜索项目名称" placeholder="输入项目名称…" autocomplete="off"><div id="search-results"></div>');
@@ -87,7 +105,7 @@ function modal(title, html) {
 function projectForm(edit = false, view = null) {
   const p = edit ? state.project : null, b = p?.building || {};
   const fields = [['use', '建筑用途', 'text', b.use || ''], ['location', '地点', 'text', b.location || ''], ['region', '地区代码（如 CN-JX / US-CO）', 'text', b.region || ''], ['area_m2', '总建筑面积 m²', 'number', b.area_m2 || ''], ['floors', '楼层数（可留空）', 'number', b.floors || ''], ['floor_height_m', '层高 m（可留空）', 'number', b.floor_height_m || ''], ['window_wall_ratio', '窗墙比 0–1（可留空）', 'number', b.window_wall_ratio ?? '']];
-  const dialog = modal(edit ? '修订建筑声明' : '创建工程项目', '<form id="project-form"><p class="form-note">这里登记建筑声明。创建后进入「建模工作区」导入图纸、复核空间并生成 IDF；修订声明会重新核验已有结果。</p>' + (!edit ? '<label>项目名称<input name="name" required maxlength="160"></label>' : '') + '<div class="form-grid">' + fields.map(([name, text, type, value]) => '<label>' + text + '<input name="' + name + '" type="' + type + '" ' + (type === 'number' ? 'step="any"' : '') + ' value="' + esc(value) + '" ' + (['use', 'location', 'region', 'area_m2'].includes(name) ? 'required' : '') + '></label>').join('') + '</div>' + ['envelope', 'hvac', 'schedules', 'notes'].map((name, i) => '<label>' + ['围护结构说明', 'HVAC / 设备说明', '运行时段 / 内部负荷说明', '其他资料与不确定性'][i] + '<textarea name="' + name + '">' + esc(b[name] || '') + '</textarea></label>').join('') + '<button class="primary" type="submit">保存项目声明</button></form>');
+  const dialog = modal(edit ? '修订建筑声明' : '创建工程项目', '<form id="project-form"><p class="form-note">标注必填的项目必须填写；其余可留空。这里登记建筑声明。创建后进入「建模工作区」导入图纸、复核空间并生成 IDF；修订声明会重新核验已有结果。</p>' + (!edit ? '<label>项目名称 <span class="required-mark">必填</span><input name="name" required maxlength="160"></label>' : '') + '<div class="form-grid">' + fields.map(([name, text, type, value]) => '<label>' + text + (['use','location','region','area_m2'].includes(name)?' <span class="required-mark">必填</span>':'') + '<input name="' + name + '" type="' + type + '" ' + (type === 'number' ? 'step="any"' : '') + ' value="' + esc(value) + '" ' + (['use', 'location', 'region', 'area_m2'].includes(name) ? 'required' : '') + '></label>').join('') + '</div>' + ['envelope', 'hvac', 'schedules', 'notes'].map((name, i) => '<label>' + ['围护结构说明', 'HVAC / 设备说明', '运行时段 / 内部负荷说明', '其他资料与不确定性'][i] + '<textarea name="' + name + '">' + esc(b[name] || '') + '</textarea></label>').join('') + '<button class="primary" type="submit">保存项目声明</button></form>');
   document.querySelector('#project-form').onsubmit = e => { e.preventDefault(); action(async () => {
     const data = Object.fromEntries(new FormData(e.currentTarget));
     const building = Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'name'));
@@ -142,12 +160,13 @@ function renderProject() {
   document.querySelector('#toggle-inspector').onclick = () => { inspector.hidden = !inspector.hidden; };
   document.querySelector('#close-inspector').onclick = () => { inspector.hidden = true; };
   document.querySelector('#edit-building').onclick = () => projectForm(true);
-  document.querySelector('#task-import').onclick = evidenceForm;
-  document.querySelector('#composer-upload').onclick = evidenceForm;
+  document.querySelector('#task-import').onclick = () => openIntake(state.project);
+  document.querySelector('#composer-upload').onclick = () => openIntake(state.project);
   document.querySelector('#task-next').onclick = () => switchView(state.gate.can_simulate ? 'simulation' : 'evidence');
-  document.querySelector('#task-command').onsubmit = e => {e.preventDefault();const input=document.querySelector('#command');if(!input.value.trim())return;const target=document.querySelector('#task-response');action(()=>runAgent(state,input.value.trim(),target,document.querySelector('#agent-mode').value,document.querySelector('#allow-compute').checked,null,document.querySelector('#agent-task').value),e.submitter);};
+  document.querySelector('#task-command').onsubmit = e => {e.preventDefault();const input=document.querySelector('#command');if(!input.value.trim())return;const target=document.querySelector('#task-response');action(()=>runAgent(state,input.value.trim(),target,document.querySelector('#agent-mode').value,document.querySelector('#allow-compute').checked,null,document.querySelector('#agent-task').value,switchView),e.submitter);};
   document.querySelector('#edit-factors').onclick=()=>factorEditor(state,modal,action,refreshRuns);
-  document.querySelector('#add-evidence').onclick = evidenceForm;
+  document.querySelector('#add-evidence').onclick = () => openIntake(state.project);
+  document.querySelector('#manual-evidence').onclick = evidenceForm;
   document.querySelector('#review-pending').onclick = () => reviewForm(state.evidence.filter(e => ['idf', 'epw'].includes(e.type) && e.review_state === 'pending'));
   document.querySelector('#run').onclick = e => action(async () => { const run = await post('/runs', { project_id: p.project_id, scheme_id: document.querySelector('#scheme').value, factor_profile_id: document.querySelector('#factor').value }); notice('已排队：' + run.run_id); await refreshRuns(); schedulePoll(); }, e.currentTarget);
   document.querySelector('#compare').onclick = e => action(async () => {
@@ -167,7 +186,13 @@ function renderEvidence() {
 }
 function evidenceDetail(ev) {
   const content = Object.entries(ev).map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(typeof v === 'object' ? JSON.stringify(v) : v ?? '—') + '</dd>').join('');
-  const dialog = modal('证据来源 · ' + esc(ev.name), '<dl class="metadata">' + content + '</dl>' + (ev.source_file ? link('/api/projects/' + ev.project_id + '/files/' + ev.source_file, '下载原文件') : '') + '<div class="actions"><button id="review-this">更改复核状态</button><button id="history">查看版本历史</button></div><div id="history-content"></div>');
+  const dialog = modal('证据来源 · ' + esc(ev.name), '<p>来源：'+esc(ev.authority)+' · 使用许可：'+esc(ev.permission)+'</p><p>定位：'+esc(ev.source_locator)+'</p>'+ (ev.value?.analysis?'<details open><summary>自动提取的内容（待核对）</summary><pre>'+esc(JSON.stringify(ev.value.analysis,null,2))+'</pre></details>':'')+'<details><summary>完整证据记录</summary><dl class="metadata">' + content + '</dl></details>' + (ev.source_file ? link('/api/projects/' + ev.project_id + '/files/' + ev.source_file, '下载原文件') : '') + '<div class="actions"><button id="amend-source">完善来源与许可</button><button id="review-this">更改复核状态</button><button id="history">查看版本历史</button></div><div id="history-content"></div>');
+  document.querySelector('#amend-source').onclick=()=>{
+    dialog.close();
+    const fields=[['source_locator','来源定位',1000],['authority','来源单位 / 版本',300],['permission','使用许可 / 授权范围',1000],['responsible_person','登记人',100]];
+    const editor=modal('完善资料来源', '<form id="source-form"><p>保存为新版本，并恢复待复核状态；原文件和旧记录保留。</p>'+fields.map(([key,label,max])=>'<label>'+label+'<input name="'+key+'" required maxlength="'+max+'" value="'+esc(ev[key])+'"></label>').join('')+'<label>不确定性（可选）<textarea name="uncertainty" maxlength="2000">'+esc(ev.uncertainty||'')+'</textarea></label><button class="primary">保存来源修订</button></form>');
+    document.querySelector('#source-form').onsubmit=e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{await request('/projects/'+ev.project_id+'/evidence/'+ev.evidence_id+'/metadata',{method:'PUT',body:JSON.stringify({...values,expected_revision:ev.revision})});editor.close();await selectProject(ev.project_id,'evidence');},e.submitter);};
+  };
   document.querySelector('#review-this').onclick = () => { dialog.close(); reviewForm([ev]); };
   document.querySelector('#history').onclick = e => action(async () => { const history = await request('/projects/' + ev.project_id + '/evidence/' + ev.evidence_id + '/history'); document.querySelector('#history-content').innerHTML = '<pre>' + esc(JSON.stringify(history, null, 2)) + '</pre>'; }, e.currentTarget);
 }
@@ -265,25 +290,37 @@ function clearSession() {
 }
 async function enterWorkspace(session) {
   state.user = session.user; setCsrfToken(session.csrf_token);
+  if(location.pathname.replace(/\/$/,'')==='/admin'){
+    await adminWorkspace(root,state.user,async()=>{await post('/auth/logout',{});clearSession();authScreen(false);});return;
+  }
   [state.health, state.profiles] = await Promise.all([request('/health'), request('/factor-profiles')]);
   await refreshProjects(); home();
 }
 function authScreen(setup, register = false) {
-  root.innerHTML = authView({setup, register});
+  root.innerHTML = authView({setup, register, admin:location.pathname.startsWith('/admin'), registrationMode:state.registrationMode});
   const toggle = document.querySelector('#switch-auth'); if (toggle) toggle.onclick = () => authScreen(false, !register);
   document.querySelector('#show-password').onclick = e => { const password = document.querySelector('#password'); password.type = password.type === 'password' ? 'text' : 'password'; e.currentTarget.textContent = password.type === 'password' ? '显示' : '隐藏'; e.currentTarget.setAttribute('aria-label', password.type === 'password' ? '显示密码' : '隐藏密码'); };
   document.querySelector('#auth-form').onsubmit = async e => {
     e.preventDefault(); const button=e.submitter, error=document.querySelector('#auth-error');
     button.disabled=true; error.hidden=true;
-    try { const body=Object.fromEntries(new FormData(e.currentTarget)); const session=await post('/auth/'+(setup||register?'register':'login'),body); await enterWorkspace(session); }
+    try { const body=Object.fromEntries(new FormData(e.currentTarget)); if(setup||register){if(body.password!==body.confirm_password)throw new Error('两次密码不一致');delete body.confirm_password;} const session=await post('/auth/'+(setup||register?'register':'login'),body); await enterWorkspace(session); }
     catch (err) { error.textContent=err.message; error.hidden=false; button.disabled=false; }
   };
 }
 document.addEventListener('session-expired', () => { clearSession(); authScreen(false); });
 document.addEventListener('keydown', e => {
-  if (!state.user || document.querySelector('dialog[open]')) return;
-  if ((e.ctrlKey || e.metaKey) && ['k','n'].includes(e.key.toLowerCase())) { e.preventDefault(); if (e.key.toLowerCase()==='k') searchProjects(); else projectForm(); }
+  if (!state.user || location.pathname.startsWith('/admin') || document.querySelector('dialog[open]')) return;
+  if ((e.ctrlKey || e.metaKey) && ['k','n'].includes(e.key.toLowerCase())) { e.preventDefault(); if (e.key.toLowerCase()==='k') searchProjects(); else openIntake(); }
 });
 document.documentElement.dataset.theme = localStorage.getItem('vra-theme') || 'light';
 root.innerHTML = '<div class="boot-screen">稀土智暖 <span>正在打开工作区…</span></div>';
-(async () => { try { const status=await request('/auth/status'); if (status.setup_required) { authScreen(true); return; } try { await enterWorkspace(await request('/auth/me')); } catch(err) { if(err.status===401) authScreen(false); else throw err; } } catch(err) { root.innerHTML='<div class="boot-screen"><strong>暂时无法连接工作区</strong><p>'+esc(err.message)+'</p><button id="retry-connection">重试</button></div>'; document.querySelector('#retry-connection').onclick=()=>location.reload(); } })();
+(async () => { try { const status=await request('/auth/status'); state.registrationMode=status.registration_mode; if (status.setup_required) { authScreen(true); return; } try { await enterWorkspace(await request('/auth/me')); } catch(err) { if(err.status===401) authScreen(false); else throw err; } } catch(err) { root.innerHTML='<div class="boot-screen"><strong>暂时无法连接工作区</strong><p>'+esc(err.message)+'</p><button id="retry-connection">重试</button></div>'; document.querySelector('#retry-connection').onclick=()=>location.reload(); } })();
+
+// Apply one consistent required-field cue to dynamic forms in every workspace.
+new MutationObserver(()=>{
+  root.querySelectorAll('input[required],select[required],textarea[required]').forEach(input=>{
+    const label=input.closest('label');
+    if(!label||label.querySelector('.required-mark')||label.textContent.includes('必填')||label.textContent.includes('必选'))return;
+    const mark=document.createElement('span');mark.className='required-mark';mark.textContent='必填';label.append(mark);
+  });
+}).observe(root,{childList:true,subtree:true});

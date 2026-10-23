@@ -53,7 +53,7 @@ class Tokens:
             return None
         with self.store.connect() as con:
             row = con.execute("""SELECT t.*,u.username,u.display_name FROM api_tokens t
-                JOIN users u ON u.id=t.user_id WHERE token_hash=? AND revoked=0 AND expires>?""",
+                JOIN users u ON u.id=t.user_id WHERE token_hash=? AND revoked=0 AND expires>? AND u.disabled=0""",
                 (digest(token), time.time())).fetchone()
         if not row or not self.auth.allows(row["project_id"], row["user_id"]):
             return None
