@@ -3162,7 +3162,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Reconstruction"
+                "$ref": "#/components/schemas/backend__spatial__Reconstruction"
               }
             }
           }
@@ -3553,6 +3553,127 @@
             "schema": {
               "type": "string",
               "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/model/geometry.hbjson": {
+      "get": {
+        "summary": "Export Hbjson",
+        "operationId": "export_hbjson_api_projects__project_id__model_geometry_hbjson_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/files/{file_id}/plan-preview": {
+      "get": {
+        "summary": "Plan Preview",
+        "operationId": "plan_preview_api_projects__project_id__files__file_id__plan_preview_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page"
             }
           }
         ],
@@ -5513,6 +5634,107 @@
         ],
         "title": "Credentials"
       },
+      "DrawingTrace": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "maximum": 500.0,
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "pixels": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Pixels"
+          },
+          "polygon_px": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 3,
+            "title": "Polygon Px"
+          },
+          "scale_to_m": {
+            "type": "number",
+            "maximum": 100.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Scale To M"
+          },
+          "scale_basis": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 10,
+            "title": "Scale Basis"
+          },
+          "closure_m": {
+            "type": "number",
+            "maximum": 1.5,
+            "minimum": 0.0,
+            "title": "Closure M"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Label"
+          },
+          "annotated_area_m2": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annotated Area M2"
+          },
+          "area_error_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Error Percent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "page",
+          "pixels",
+          "polygon_px",
+          "scale_to_m",
+          "scale_basis",
+          "closure_m",
+          "label"
+        ],
+        "title": "DrawingTrace"
+      },
       "EPWAnalysis": {
         "properties": {
           "heating_base_c": {
@@ -6057,6 +6279,107 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "HeatPump": {
+        "properties": {
+          "cooling_w_m2": {
+            "type": "number",
+            "maximum": 500.0,
+            "exclusiveMinimum": 10.0,
+            "title": "Cooling W M2"
+          },
+          "heating_w_m2": {
+            "type": "number",
+            "maximum": 500.0,
+            "exclusiveMinimum": 10.0,
+            "title": "Heating W M2"
+          },
+          "airflow_l_s_m2": {
+            "type": "number",
+            "maximum": 30.0,
+            "exclusiveMinimum": 0.5,
+            "title": "Airflow L S M2"
+          },
+          "cooling_cop": {
+            "type": "number",
+            "maximum": 8.0,
+            "exclusiveMinimum": 1.0,
+            "title": "Cooling Cop"
+          },
+          "heating_cop": {
+            "type": "number",
+            "maximum": 8.0,
+            "exclusiveMinimum": 1.0,
+            "title": "Heating Cop"
+          },
+          "sensible_heat_ratio": {
+            "type": "number",
+            "maximum": 0.95,
+            "minimum": 0.5,
+            "title": "Sensible Heat Ratio"
+          },
+          "fan_pressure_pa": {
+            "type": "number",
+            "maximum": 1500.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Fan Pressure Pa"
+          },
+          "fan_total_efficiency": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.1,
+            "title": "Fan Total Efficiency"
+          },
+          "fan_motor_efficiency": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.1,
+            "title": "Fan Motor Efficiency"
+          },
+          "supplemental_w_m2": {
+            "type": "number",
+            "maximum": 500.0,
+            "minimum": 0.0,
+            "title": "Supplemental W M2"
+          },
+          "minimum_outdoor_c": {
+            "type": "number",
+            "maximum": 5.0,
+            "minimum": -20.0,
+            "title": "Minimum Outdoor C"
+          },
+          "minimum_cooling_outdoor_c": {
+            "type": "number",
+            "maximum": 18.0,
+            "minimum": 0.0,
+            "title": "Minimum Cooling Outdoor C"
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Source Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cooling_w_m2",
+          "heating_w_m2",
+          "airflow_l_s_m2",
+          "cooling_cop",
+          "heating_cop",
+          "sensible_heat_ratio",
+          "fan_pressure_pa",
+          "fan_total_efficiency",
+          "fan_motor_efficiency",
+          "supplemental_w_m2",
+          "minimum_outdoor_c",
+          "minimum_cooling_outdoor_c",
+          "source_note"
+        ],
+        "title": "HeatPump",
+        "description": "Explicit fixed-size single-speed PTHP; no inferred manufacturer data."
+      },
       "ImportOptions": {
         "properties": {
           "file_id": {
@@ -6067,7 +6390,8 @@
             "type": "string",
             "enum": [
               "geometry",
-              "vision"
+              "vision",
+              "local_raster"
             ],
             "title": "Mode",
             "default": "geometry"
@@ -6122,6 +6446,58 @@
             "type": "boolean",
             "title": "Send To Provider",
             "default": false
+          },
+          "reconstruct_footprints": {
+            "type": "boolean",
+            "title": "Reconstruct Footprints",
+            "default": false
+          },
+          "crop_px": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crop Px"
+          },
+          "scale_basis": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Scale Basis",
+            "default": ""
+          },
+          "closure_m": {
+            "type": "number",
+            "maximum": 1.5,
+            "minimum": 0.0,
+            "title": "Closure M",
+            "default": 0
+          },
+          "min_room_area_m2": {
+            "type": "number",
+            "maximum": 20.0,
+            "minimum": 0.5,
+            "title": "Min Room Area M2",
+            "default": 1
           }
         },
         "additionalProperties": false,
@@ -6736,6 +7112,85 @@
         ],
         "title": "NASARequest"
       },
+      "Operation": {
+        "properties": {
+          "weekday": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 24,
+            "minItems": 24,
+            "title": "Weekday"
+          },
+          "weekend": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 24,
+            "minItems": 24,
+            "title": "Weekend"
+          },
+          "outdoor_air_l_s_person": {
+            "type": "number",
+            "maximum": 30.0,
+            "minimum": 0.0,
+            "title": "Outdoor Air L S Person"
+          },
+          "outdoor_air_l_s_m2": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Outdoor Air L S M2"
+          },
+          "sensible_recovery": {
+            "type": "number",
+            "maximum": 0.95,
+            "minimum": 0.0,
+            "title": "Sensible Recovery"
+          },
+          "latent_recovery": {
+            "type": "number",
+            "maximum": 0.95,
+            "minimum": 0.0,
+            "title": "Latent Recovery"
+          },
+          "heating_setback_c": {
+            "type": "number",
+            "maximum": 28.0,
+            "minimum": 0.0,
+            "title": "Heating Setback C"
+          },
+          "cooling_setback_c": {
+            "type": "number",
+            "maximum": 45.0,
+            "minimum": 18.0,
+            "title": "Cooling Setback C"
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Source Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "weekday",
+          "weekend",
+          "outdoor_air_l_s_person",
+          "outdoor_air_l_s_m2",
+          "sensible_recovery",
+          "latent_recovery",
+          "heating_setback_c",
+          "cooling_setback_c",
+          "source_note"
+        ],
+        "title": "Operation",
+        "description": "An explicit load/ventilation scenario, never an inferred occupancy standard."
+      },
       "Option": {
         "properties": {
           "option_id": {
@@ -7014,58 +7469,32 @@
         ],
         "title": "PublishModel"
       },
-      "Reconstruction": {
+      "QuantitySource": {
         "properties": {
-          "expected_revision": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Expected Revision"
-          },
-          "floor_height_m": {
+          "value": {
             "type": "number",
-            "maximum": 20.0,
             "exclusiveMinimum": 0.0,
-            "title": "Floor Height M"
+            "title": "Value"
           },
-          "floors": {
+          "entity_id": {
             "type": "integer",
-            "maximum": 30.0,
-            "minimum": 1.0,
-            "title": "Floors"
+            "exclusiveMinimum": 0.0,
+            "title": "Entity Id"
           },
-          "responsible_person": {
+          "set": {
             "type": "string",
-            "maxLength": 100,
-            "minLength": 1,
-            "title": "Responsible Person"
-          },
-          "review_note": {
-            "type": "string",
-            "maxLength": 2000,
-            "minLength": 5,
-            "title": "Review Note"
-          },
-          "walls": {
-            "items": {
-              "$ref": "#/components/schemas/Wall"
-            },
-            "type": "array",
-            "maxItems": 300,
-            "minItems": 1,
-            "title": "Walls"
+            "maxLength": 200,
+            "title": "Set"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "expected_revision",
-          "floor_height_m",
-          "floors",
-          "responsible_person",
-          "review_note",
-          "walls"
+          "value",
+          "entity_id",
+          "set"
         ],
-        "title": "Reconstruction"
+        "title": "QuantitySource"
       },
       "Registration": {
         "properties": {
@@ -7172,6 +7601,26 @@
             "type": "array",
             "maxItems": 128,
             "title": "Segments"
+          },
+          "reconstruction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/backend__model_schema__Reconstruction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "drawing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DrawingTrace"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "ifc_source": {
             "anyOf": [
@@ -7712,6 +8161,33 @@
             "type": "object",
             "title": "Constructions"
           },
+          "operation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Operation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heat_pump": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HeatPump"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "adjacency_gap_m": {
+            "type": "number",
+            "maximum": 0.6,
+            "minimum": 0.0,
+            "title": "Adjacency Gap M",
+            "default": 0
+          },
           "ifc_unpaired_policy": {
             "type": "string",
             "enum": [
@@ -7915,6 +8391,115 @@
           "status"
         ],
         "title": "Wall"
+      },
+      "backend__model_schema__Reconstruction": {
+        "properties": {
+          "method": {
+            "type": "string",
+            "const": "IFC_FOOTPRINT_QUANTITY_EXTRUSION",
+            "title": "Method"
+          },
+          "footprint_entity_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Footprint Entity Id"
+          },
+          "quantities": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/QuantitySource"
+            },
+            "propertyNames": {
+              "enum": [
+                "Height",
+                "NetFloorArea",
+                "NetVolume"
+              ]
+            },
+            "type": "object",
+            "title": "Quantities"
+          },
+          "area_error_percent": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Area Error Percent"
+          },
+          "volume_error_percent": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Volume Error Percent"
+          },
+          "assumption": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Assumption"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "method",
+          "footprint_entity_id",
+          "quantities",
+          "area_error_percent",
+          "volume_error_percent",
+          "assumption"
+        ],
+        "title": "Reconstruction"
+      },
+      "backend__spatial__Reconstruction": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "floor_height_m": {
+            "type": "number",
+            "maximum": 20.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Floor Height M"
+          },
+          "floors": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Floors"
+          },
+          "responsible_person": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Responsible Person"
+          },
+          "review_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Review Note"
+          },
+          "walls": {
+            "items": {
+              "$ref": "#/components/schemas/Wall"
+            },
+            "type": "array",
+            "maxItems": 300,
+            "minItems": 1,
+            "title": "Walls"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "floor_height_m",
+          "floors",
+          "responsible_person",
+          "review_note",
+          "walls"
+        ],
+        "title": "Reconstruction"
       }
     },
     "securitySchemes": {

@@ -1,3 +1,5 @@
+import { planCalibration } from './plan-calibration.js';
+import { thermalResults } from './thermal-results.js';
 import { importDiagnostics } from './assurance-ui.js';
 import { request, post, escape as esc, number as num, uploadLimitMB } from './api.js';
 function projectTokens(pid, host, action, notice) {
@@ -72,11 +74,11 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   <div class="model-workbench"><div class="model-inputs">
   <details class="model-card" open><summary>01 / 导入与识别</summary><form id="model-import">
   <label>选择资料 · 最大 ${uploadLimitMB()} MB<input name="file" type="file" accept=".dxf,.dwg,.pdf,.ifc,.png,.jpg,.jpeg" required></label>
-  <label>识别方式<select name="mode"><option value="geometry">本地几何解析 · DXF / PDF / IFC</option><option value="vision">视觉模型 · 扫描 PDF / 图片</option></select></label>
+  <label>识别方式<select name="mode"><option value="geometry">本地几何解析 · DXF / PDF / IFC</option><option value="local_raster">本地墙线 + OCR · 扫描图 / PDF</option><option value="vision">视觉模型 · 扫描 PDF / 图片</option></select></label>
   <div class="form-grid"><label>长度换算系数<input name="scale_to_m" type="number" step="any" min=".0000001" placeholder="DXF 可自动读取单位"></label><label>页码<input name="page" type="number" value="1" min="1" max="500"></label><label>候选层高 m<input name="height_m" type="number" value="3" step=".1" min=".6" max="30"></label><label>候选标高 m<input name="elevation_m" type="number" value="0" step=".1"></label></div>
   <label>DXF 图层（可选）<input name="layer" placeholder="建议先选择房间边界图层"></label>
-  <p class="subtle">换算系数 = 米 / 图纸单位；PDF 为米 / point，图片为米 / 原图像素。PDF 视觉识别按 72 dpi 渲染。DWG 请先导出 DXF。</p>
-  <label class="check-option"><input name="send_to_provider" type="checkbox">允许把本次选中的图页发送给开发者设置中的视觉服务</label>
+  <p class="subtle">换算系数 = 米 / 图纸单位；PDF 为米 / point，图片为米 / 原图像素。PDF 视觉识别按 72 dpi 渲染；本地图纸模式使用下方预览像素标定。DWG 请先导出 DXF。</p>
+  <label class="check-option"><input name="reconstruct_footprints" type="checkbox">IFC 缺少 Body 时，允许从闭合 FootPrint 与一致的高度/面积/体积工程量生成待复核柱体</label><label class="check-option"><input name="send_to_provider" type="checkbox">允许把本次选中的图页发送给开发者设置中的视觉服务</label>
   <button class="primary">识别空间候选</button><p id="import-progress" role="status"></p></form>
   <div id="model-imports"></div></details>
   <section class="model-card"><h2>02 / 空间与尺寸</h2><div class="actions"><button id="add-room">＋ 矩形房间</button><button id="duplicate-floor">复制到上一层</button></div>
@@ -87,11 +89,12 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   <section class="model-card"><h2>04 / 复核、保存与计算</h2><label>模型名称<input id="model-name" value="${esc(model?.name||state.project.name)}"></label><label>比例、空间及来源复核说明<textarea id="model-review" minlength="5" placeholder="说明比例依据、核对的房间和仍存在的假设">${esc(model?.review_note||'')}</textarea></label>
   <div class="actions"><button id="save-model">保存草稿</button><button class="primary" id="review-model">确认空间并保存</button><button id="sync-model-area">同步项目面积</button></div>
   <p id="model-status" role="status"></p><div id="model-gate"></div>
-  <div class="form-grid"><label>发布为方案<select id="model-scheme"><option value="baseline">基准 baseline</option><option value="R1">方案 R1</option><option value="R2">方案 R2</option></select></label><label>发布与参数复核依据<input id="publish-note" minlength="10" placeholder="确认空间、参数性质和理想负荷适用范围"></label></div>
-  <div class="actions"><button id="publish-model">生成并登记 IDF</button><button id="run-model">提交全年仿真</button><a href="/api${base}/model/export.ifc" download>导出 IFC 空间模型</a><a href="/api${base}/model/export.idf" download>导出 IDF</a></div>
+  <div class="form-grid"><label>发布为方案<select id="model-scheme"><option value="baseline">基准 baseline</option><option value="R1">方案 R1</option><option value="R2">方案 R2</option></select></label><label>发布与参数复核依据<input id="publish-note" minlength="10" placeholder="确认空间、参数性质和设备计算口径"></label></div>
+  <div class="actions"><button id="publish-model">生成并登记 IDF</button><button id="run-model">提交全年仿真</button><a href="/api${base}/model/export.ifc" download>导出 IFC 空间模型</a><a href="/api${base}/model/export.idf" download>导出 IDF</a><a href="/api${base}/model/geometry.hbjson" download>Honeybee 几何交换</a></div>
   <p class="subtle">发布会以新版本替代此方案的有效 IDF，旧资料和计算记录保留。还需在「资料」中登记并确认项目对应的全年 EPW。</p>
   <div id="model-runs"></div><details><summary>版本与来源</summary><pre id="model-history"></pre></details>
   </section></div></div>`;
+  const calibration=planCalibration(host.querySelector("#model-import"),base,action);
   if(model?.thermal)host.querySelector('#thermal-basis').value=model.thermal.basis;
   const boundaryPolicy=document.createElement('label');
   boundaryPolicy.innerHTML='<span>IFC 未配对边界</span><select id="ifc-boundary-policy"><option value="reject">阻止发布，等待补全邻接</option><option value="adiabatic_scenario">假设情景：未配对内部/未知边界按绝热处理</option></select><small>绝热处理会改变冷热需求，只能用于明确标注的假设情景；不代表完整建筑性能。</small>';
@@ -100,9 +103,36 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   const tolerance=document.createElement('label');
   tolerance.innerHTML=`几何归并公差 m<input id="geometry-tolerance" type="number" min="0" max=".05" step=".001" value="${esc(model?.thermal?.geometry_tolerance_m??0)}"><small>默认 0，不调整几何。仅假设情景可显式设置，用于处理引擎不接受的细碎面；发布记录保留实际位移和每个空间的面积、体积变化。</small>`;
   boundaryPolicy.after(tolerance);
+  const gap=document.createElement('label');gap.innerHTML=`跨墙厚配对上限 m<input id="adjacency-gap" type="number" min="0" max=".6" step=".01" value="${esc(model?.thermal?.adjacency_gap_m??0)}"><small>默认不推断；仅明确假设情景可按距离将相向平行面配对，保留原空间体积和逐面距离。不是施工连接证明。</small>`;tolerance.after(gap);
+  const operationPanel=document.createElement('details');operationPanel.className='model-card';
+  operationPanel.innerHTML='<summary>逐时运行、新风与热回收</summary><label class="check-option"><input id="operation-enabled" type="checkbox">启用有来源的运行档案</label><p>每个格子是该小时的使用率 0–1；人员、照明、设备共享此档案。使用率为 0 时采用非使用温度；理想负荷模式新风按人数及面积之和计算；人数部分随使用率变化，面积部分全天持续。PTHP 的新风与风机规则见设备卡。假日按周末处理，未配置当地节假日日历。</p><div id="operation-fields"></div>';
+  gap.after(operationPanel);
+  const operationFields=[['outdoor_air_l_s_person','新风 L/(s·人)'],['outdoor_air_l_s_m2','新风 L/(s·m²)'],['sensible_recovery','显热回收效率 0–0.95'],['latent_recovery','潜热回收效率 0–0.95'],['heating_setback_c','非使用供暖温度 °C'],['cooling_setback_c','非使用制冷温度 °C']];
+  function paintOperation(op){
+    host.querySelector('#operation-enabled').checked=!!op;
+    host.querySelector('#operation-fields').innerHTML=['weekday','weekend'].map((key,i)=>`<fieldset><legend>${i?'周末 / 假日':'工作日'} · 24 小时使用率</legend><div class="hour-grid">${Array.from({length:24},(_,h)=>`<label>${h}时<input data-hour="${key}" data-index="${h}" type="number" min="0" max="1" step=".1" value="${esc(op?.[key]?.[h]??'')}"></label>`).join('')}</div></fieldset>`).join('')+`<div class="form-grid">${operationFields.map(([key,label])=>`<label>${label}<input data-operation="${key}" type="number" step="any" value="${esc(op?.[key]??'')}"></label>`).join('')}</div><label>运行档案来源（必填）<textarea id="operation-source" minlength="10">${esc(op?.source_note||'')}</textarea></label>`;
+  }
+  paintOperation(model?.thermal?.operation);
+  const pumpPanel=document.createElement('details');pumpPanel.className='model-card';
+  const pumpFields=[['cooling_w_m2','额定制冷量 W/m²',10,500],['heating_w_m2','额定制热量 W/m²',10,500],['airflow_l_s_m2','额定风量 L/(s·m²)',.5,30],['cooling_cop','制冷 COP',1,8],['heating_cop','制热 COP',1,8],['sensible_heat_ratio','额定显热比',.5,.95],['fan_pressure_pa','风机压升 Pa',0,1500],['fan_total_efficiency','风机总效率',.1,1],['fan_motor_efficiency','电机效率',.1,1],['supplemental_w_m2','电辅热 W/m²',0,500],['minimum_outdoor_c','制热压缩机最低室外温度 °C',-20,5],['minimum_cooling_outdoor_c','制冷压缩机最低室外温度 °C',0,18]];
+  const pump=model?.thermal?.heat_pump;
+  pumpPanel.innerHTML=`<summary>设备模型 · 单速空气源热泵</summary><label class="check-option"><input id="pump-enabled" type="checkbox" ${pump?'checked':''}>采用定容 PTHP 计算设备耗电</label><p>不勾选则计算理想冷热需求。勾选后，每个空调空间按面积配置独立热泵、风机和电辅热，以下参数全部必填。须启用逐时档案且热回收效率为 0。新风按设计人数和面积定流量，使用时连续风机，其余随冷热负荷启停。</p><p>原生引擎计算变工况与除霜；曲线为 EnergyPlus 官方模板假设，不能代替厂家性能数据。容量不足会出现未满足温度时数，须一起审阅。</p><div class="form-grid">${pumpFields.map(([key,label,min,max])=>`<label>${label}<input data-pump="${key}" type="number" step="any" min="${min}" max="${max}" value="${esc(pump?.[key]??'')}"></label>`).join('')}</div><label>设备参数来源（必填，至少 10 字）<textarea id="pump-source" minlength="10">${esc(pump?.source_note||'')}</textarea></label>`;
+  operationPanel.after(pumpPanel);
+  function pumpBody(){
+    if(!host.querySelector('#pump-enabled').checked)return null;
+    const fields=[...host.querySelectorAll('[data-pump]')];
+    if(fields.some(el=>el.value===''))throw Error('启用热泵后须填齐额定容量、效率、风量及电辅热参数；不会自动猜测设备。');
+    return {...Object.fromEntries(fields.map(el=>[el.dataset.pump,Number(el.value)])),source_note:host.querySelector('#pump-source').value};
+  }
+  function operationBody(){
+    if(!host.querySelector('#operation-enabled').checked)return null;
+    const fields=[...host.querySelectorAll('[data-operation],[data-hour]')];
+    if(fields.some(el=>el.value===''))throw Error('启用运行档案后须补齐逐时使用率、新风、回收和非使用温度；无新风/回收请明确填写 0。');
+    return {...Object.fromEntries([...host.querySelectorAll('[data-operation]')].map(el=>[el.dataset.operation,Number(el.value)])),weekday:[...host.querySelectorAll('[data-hour="weekday"]')].map(el=>Number(el.value)),weekend:[...host.querySelectorAll('[data-hour="weekend"]')].map(el=>Number(el.value)),source_note:host.querySelector('#operation-source').value};
+  }
   const setStatus=text=>{host.querySelector('#model-status').textContent=text;};
   const markDirty=()=>{dirty=true;setStatus('有未保存的编辑，请保存后再发布或计算。');};
-  host.addEventListener('input',e=>{if(e.target.matches('[data-room],[data-point],[data-thermal],#thermal-source,#thermal-basis,#model-name,#model-review'))markDirty();});
+  host.addEventListener('input',e=>{if(e.target.matches('[data-room],[data-point],[data-thermal],[data-operation],[data-hour],[data-pump],#pump-source,#pump-enabled,#operation-source,#operation-enabled,#adjacency-gap,#thermal-source,#thermal-basis,#model-name,#model-review'))markDirty();});
   host.querySelector('#thermal-basis').onchange=markDirty;
   host.querySelector('#ifc-boundary-policy').onchange=markDirty;
   host.querySelector('#geometry-tolerance').oninput=markDirty;
@@ -130,7 +160,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     if(!r){target.innerHTML='<p class="empty">导入空间候选，或从一个矩形房间开始。</p>';return;}
     target.innerHTML=`<label>名称<input data-room="name" value="${esc(r.name)}"></label><div class="form-grid"><label>标高 m<input data-room="elevation_m" type="number" step=".1" value="${r.elevation_m}"></label><label>层高 m<input data-room="height_m" type="number" step=".1" min=".6" value="${r.height_m}"></label></div><label>来源定位<input data-room="source_locator" value="${esc(r.source_locator)}"></label><details><summary>边界顶点 · 米</summary><div class="model-vertices">${r.polygon.map((p,i)=>`<div><span>${i+1}</span>${p.map((v,j)=>`<input aria-label="顶点 ${i+1} ${j?'y':'x'}" data-point="${i}" data-axis="${j}" type="number" step=".01" value="${v}">`).join('')}<button data-remove-point="${i}" aria-label="删除顶点 ${i+1}">×</button></div>`).join('')}</div><button id="add-point">增加顶点</button></details><button id="remove-room">移除此编辑中的房间</button>`;
     const use=document.createElement('div');use.className='form-grid';
-    use.innerHTML=[['conditioned','是否设置理想空调和人员/设备负荷'],['include_floor_area','是否计入项目面积']].map(([k,label])=>`<label>${label}<select data-use="${k}"><option value="">待复核</option><option value="true">是</option><option value="false">否</option></select></label>`).join('');
+    use.innerHTML=[['conditioned','是否设置空调和人员/设备负荷'],['include_floor_area','是否计入项目面积']].map(([k,label])=>`<label>${label}<select data-use="${k}"><option value="">待复核</option><option value="true">是</option><option value="false">否</option></select></label>`).join('');
     target.prepend(use);
     use.querySelectorAll('[data-use]').forEach(el=>{const value=r[el.dataset.use];el.value=value===null?'':String(value??true);el.onchange=()=>{r[el.dataset.use]=el.value===''?null:el.value==='true';markDirty();action(preview);};});
     if(r.ifc_source||r.segments?.length){
@@ -145,7 +175,8 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     target.querySelector('#remove-room').onclick=()=>{rooms.splice(selected,1);markDirty();action(preview);};
   }
   function paintImports(){
-    host.querySelector('#model-imports').innerHTML=imports.slice(0,12).map(t=>`<details><summary>${esc(t.source?.name||t.candidate?.source?.name||t.import_id)} · ${esc(({failed:"导入受阻",awaiting_review:"待人工复核",completed:"已采纳",running:"识别中"})[t.status]||t.status)}</summary><p>${esc(t.error||'')}</p><ul>${(t.candidate?.warnings||[]).map(w=>'<li>'+esc(w)+'</li>').join('')}</ul>${importDiagnostics(t,base)}<p>${t.candidate?.rooms?.length??0} 个可采纳候选</p>${t.status==='awaiting_review'?`<button data-adopt="${t.import_id}">合并候选到编辑区</button>`:''}</details>`).join('');
+    host.querySelector('#model-imports').innerHTML=imports.slice(0,12).map(t=>`<details><summary>${esc(t.source?.name||t.candidate?.source?.name||t.import_id)} · ${esc(({failed:"导入受阻",awaiting_review:"待人工复核",completed:"已采纳",running:"识别中"})[t.status]||t.status)}</summary><p>${esc(t.error||'')}</p><ul>${(t.candidate?.warnings||[]).map(w=>'<li>'+esc(w)+'</li>').join('')}</ul>${importDiagnostics(t,base)}<p>${t.candidate?.rooms?.length??0} 个可采纳候选</p>${t.candidate?.rooms?.some(r=>r.drawing)?`<button data-overlay="${t.import_id}">原图叠加与面积误差</button>`:''}${t.status==='awaiting_review'?`<button data-adopt="${t.import_id}">合并候选到编辑区</button>`:''}</details>`).join('');
+    host.querySelectorAll('[data-overlay]').forEach(b=>{b.onclick=()=>action(()=>calibration.overlay(imports.find(t=>t.import_id===b.dataset.overlay)),b);});
     host.querySelectorAll('[data-adopt]').forEach(b=>{b.onclick=()=>action(async()=>{
       const task=imports.find(t=>t.import_id===b.dataset.adopt);
       if(!task.candidate.rooms.length)throw Error('没有可用的闭合空间，请检查比例、图层或切换视觉识别。');
@@ -157,7 +188,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     const check=await request(base+'/model/validate');
     if(!host.isConnected||state.project?.project_id!==pid)return;
     const review=check.geometry_review, boundaries=review?.boundary_faces;
-    const details=review?`<p>热边界面：外界 ${num(boundaries.Outdoors)}；地面 ${num(boundaries.Ground)}；空间配对 ${num(boundaries.Surface)}；绝热 ${num(boundaries.Adiabatic)}。绝热面不与外界或相邻空间传热。</p><p>本次公差 ${num(review.adjustment.tolerance_m*1000)} mm，实际最大单轴位移 ${num(review.adjustment.max_axis_displacement_m*1000)} mm；逐空间变化记录随 IDF 证据保存。</p>`:'';
+    const details=review?`<p>Honeybee 独立校验：${review.independent_audit?.passed?'通过':'未通过'} · 检查闭合实体、平面性、自交和邻接面积；跨墙厚假设配对 ${num(review.assumed_gap_faces)} 面。</p><p>热容构造 ${review.coverage?.thermal_mass_assemblies?.length??0}/3 类；逐时运行 ${review.coverage?.hourly_operation?'已配置':'未配置'}；推导空间 ${num(review.coverage?.inferred_rooms)} 个；绝热表面积 ${num(review.coverage?.adiabatic_area_m2)} m²。设备口径：${review.coverage?.actual_hvac_equipment?'定容 PTHP 耗电':'理想冷热需求'}；源门窗几何未接入，开窗仍为假设窗墙比。</p><p>热边界面：外界 ${num(boundaries.Outdoors)}；地面 ${num(boundaries.Ground)}；空间配对 ${num(boundaries.Surface)}；绝热 ${num(boundaries.Adiabatic)}。绝热面不与外界或相邻空间传热。</p><p>本次公差 ${num(review.adjustment.tolerance_m*1000)} mm，实际最大单轴位移 ${num(review.adjustment.max_axis_displacement_m*1000)} mm；逐空间变化记录随 IDF 证据保存。</p>`:'';
     host.querySelector('#model-gate').innerHTML=`<p class="${check.can_publish?'':'error-text'}">${check.can_publish?'模型可发布；请核对下列适用范围。':check.blockers.map(esc).join('；')}</p><details><summary>计算范围与简化</summary><ul>${check.limitations.map(l=>'<li>'+esc(l)+'</li>').join('')}</ul>${details}</details>`;
     const history=await request(base+'/model/history');
     if(!host.isConnected||state.project?.project_id!==pid)return;
@@ -167,7 +198,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   async function refreshRuns(){
     const runs=await request(base+'/runs');
     if(!host.isConnected)return;
-    host.querySelector('#model-runs').innerHTML=runs.slice(0,5).map(r=>`<p><strong>${esc(r.scheme_id)} · ${esc(r.status)}</strong> ${r.metrics?num(r.metrics.annual_energy_kwh)+' kWh · 核对能源种类及理想负荷范围':''} ${esc(r.error||'')} ${r.status==='queued'?`<button data-cancel-run="${r.run_id}">取消排队</button>`:''} <a href="/api/runs/${r.run_id}/report.html" target="_blank" rel="noopener">报告与依据 ↗</a></p>`).join('');
+    host.querySelector('#model-runs').innerHTML=runs.slice(0,5).map(r=>`<p><strong>${esc(r.scheme_id)} · ${esc(r.status)}</strong> ${r.metrics?num(r.metrics.annual_energy_kwh)+' kWh · 按下方能源口径解释':''} ${esc(r.error||'')} ${r.status==='queued'?`<button data-cancel-run="${r.run_id}">取消排队</button>`:''} <a href="/api/runs/${r.run_id}/report.html" target="_blank" rel="noopener">报告与依据 ↗</a></p>${thermalResults(r)}`).join('');
     host.querySelectorAll('[data-cancel-run]').forEach(b=>{b.onclick=()=>action(async()=>{await post(base+'/runs/'+b.dataset.cancelRun+'/cancel',{});await refreshRuns();},b);});
     await onChange(pid);
   }
@@ -183,17 +214,17 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   host.querySelector('#model-import').onsubmit=e=>{e.preventDefault();const form=new FormData(e.currentTarget);action(async()=>{
     host.querySelector('#import-progress').textContent='正在读取资料与识别，请等待…';
     try{
-      const filedata=new FormData();filedata.set('file',form.get('file'));
-      const f=await request(base+'/files',{method:'POST',body:filedata});
-      const task=await post(base+'/imports',{file_id:f.file_id,mode:form.get('mode'),
+      const f=await calibration.upload();
+      const task=await post(base+'/imports',{...calibration.options(),file_id:f.file_id,mode:form.get('mode'),
         scale_to_m:form.get('scale_to_m')?Number(form.get('scale_to_m')):null,
         height_m:Number(form.get('height_m')),elevation_m:Number(form.get('elevation_m')),
-        page:Number(form.get('page')),layer:form.get('layer')||null,send_to_provider:form.has('send_to_provider')});
-      imports.unshift(task);paintImports();host.querySelector('#import-progress').textContent='识别完成，请展开任务并合并候选后复核。';
+        reconstruct_footprints:form.has('reconstruct_footprints'),page:Number(form.get('page')),layer:form.get('layer')||null,send_to_provider:form.has('send_to_provider')});
+      imports.unshift(task);paintImports();if(task.candidate?.rooms.some(r=>r.drawing))await calibration.overlay(task);host.querySelector('#import-progress').textContent='识别完成，请展开任务并合并候选后复核。';
     }catch(error){if(host.isConnected&&state.project?.project_id===pid){host.querySelector('#import-progress').textContent=error.message;try{imports=await request(base+'/imports');if(host.isConnected&&state.project?.project_id===pid)paintImports();}catch{ /* Preserve the original import failure. */ }}throw error;}
   },e.submitter);};
   host.querySelector('#teaching-thermal').onclick=()=>{
     host.querySelectorAll('[data-thermal]').forEach(el=>{el.value=teachingThermal[el.dataset.thermal];});host.querySelector('#thermal-basis').value='assumed_scenario';host.querySelector('#thermal-source').value=teachingThermal.source_note;
+    paintOperation({weekday:Array.from({length:24},(_,h)=>h>=8&&h<18?1:0),weekend:Array(24).fill(0),outdoor_air_l_s_person:5,outdoor_air_l_s_m2:.3,sensible_recovery:.6,latent_recovery:0,heating_setback_c:12,cooling_setback_c:32,source_note:'教学假设：工作日 8–18 时；周末无人；新风和热回收仅测试，须替换为项目资料。'});
     for(const [key,depth] of [['wall',.04],['roof',.08],['floor',.05]])constructions[key]=[
       {name:'假设混凝土',thickness_m:.2,conductivity_w_mk:1.4,density_kg_m3:2300,specific_heat_j_kgk:900},
       {name:'假设保温层',thickness_m:depth,conductivity_w_mk:.04,density_kg_m3:40,specific_heat_j_kgk:1400}
@@ -203,7 +234,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     const values=[...host.querySelectorAll('[data-thermal]')],hasThermal=values.some(el=>el.value!=='');
     if(hasThermal&&values.some(el=>el.value===''))throw Error('请补齐热工字段，或全部留空仅保存空间模型。');
     if(!hasThermal&&Object.keys(constructions).length)throw Error('已输入构造层，请补齐其余热工参数。');
-    const thermal=hasThermal?{...Object.fromEntries(values.map(el=>[el.dataset.thermal,Number(el.value)])),constructions,basis:host.querySelector('#thermal-basis').value,source_note:host.querySelector('#thermal-source').value,ifc_unpaired_policy:host.querySelector('#ifc-boundary-policy').value,geometry_tolerance_m:Number(host.querySelector('#geometry-tolerance').value)}:null;
+    const thermal=hasThermal?{...Object.fromEntries(values.map(el=>[el.dataset.thermal,Number(el.value)])),constructions,operation:operationBody(),heat_pump:pumpBody(),adjacency_gap_m:Number(host.querySelector('#adjacency-gap').value),basis:host.querySelector('#thermal-basis').value,source_note:host.querySelector('#thermal-source').value,ifc_unpaired_policy:host.querySelector('#ifc-boundary-policy').value,geometry_tolerance_m:Number(host.querySelector('#geometry-tolerance').value)}:null;
     return {expected_revision:model?.revision||0,name:host.querySelector('#model-name').value,rooms,thermal,reviewed,review_note:host.querySelector('#model-review').value};
   }
   async function save(reviewed){

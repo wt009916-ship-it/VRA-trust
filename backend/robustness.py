@@ -15,13 +15,21 @@ def objects(text):
     return [[part.strip() for part in chunk.split(',')] for chunk in re.sub(r'!.*', '', text).split(';') if chunk.strip()]
 
 
+def serialize_objects(parsed, source):
+    # Keep the reviewed compiler's equipment routing when deriving materials.
+    # Other comments can contain obsolete values after replacement.
+    header = '\n'.join(line for line in source.splitlines()
+                       if line.startswith(('! VRA compiler ', '! HVAC scope: ')))
+    return header+'\n'+'\n\n'.join(',\n  '.join(obj)+';' for obj in parsed)
+
+
 def set_conductivity(text, name, value):
     parsed = objects(text)
     matched = [o for o in parsed if o[0].lower() == 'material' and o[1].lower() == name.lower()]
     if len(matched) != 1 or len(matched[0]) < 7:
         raise core.ValidationError('Material object missing or ambiguous: ' + name)
     matched[0][4] = str(value)
-    return '\n\n'.join(',\n  '.join(obj) + ';' for obj in parsed)
+    return serialize_objects(parsed, text)
 
 
 class Axis(Contract):

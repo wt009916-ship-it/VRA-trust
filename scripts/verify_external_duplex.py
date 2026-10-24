@@ -45,7 +45,7 @@ def main():
     app = create_app(out/"private-runtime", start_worker=True)
     with TestClient(app) as client:
         response = client.post("/api/auth/register", json={"username": "isolated_duplex",
-            "display_name": "Software acceptance only", "password": secrets.token_urlsafe(32)})
+            "display_name": "Software acceptance only", "password": secrets.token_urlsafe(32)+"Aa9!"})
         assert response.status_code == 200
         client.headers["X-CSRF-Token"] = response.json()["csrf_token"]
         pid = helpers["project"](client, area=375.745686)

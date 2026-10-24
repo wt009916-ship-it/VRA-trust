@@ -42,7 +42,7 @@ def raster(path, page=1):
         return image
 
 
-def read(path):
+def read(path, selected_page=None):
     pages, warnings, engine = [], [], None
     provenance = None
 
@@ -72,6 +72,9 @@ def read(path):
         finally:
             image.close()
 
+    if selected_page is not None:
+        result = scanned(selected_page)
+        return {'document_pages': [result], 'ocr': provenance, 'warnings': warnings}
     if path.suffix.lower() == '.pdf':
         import pdfplumber
         ocr_count = 0

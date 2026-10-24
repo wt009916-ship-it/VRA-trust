@@ -202,45 +202,75 @@ def geometry(model):
                     sa = emit(a, poly, "Surface", reason="共面空间接触")
                     sb = emit(b, poly, "Surface", sa["name"], True, "共面空间接触")
                     sa["other"] = sb["name"]
-        for surface in group:
-            remaining = surface["remaining"]
-            room, plane = surface["room"], surface["plane"]
-            if room.get("ifc_source"):
-                hints = []
-                for hint in room.get("boundary_hints", []):
-                    hp = frame(hint["points"])
-                    offset = abs(hp["distance"] - plane["distance"])
-                    bounds = hint.get("element_plane_range_m")
-                    supported = bounds and bounds[0]-1e-5 <= plane["distance"] <= bounds[1]+1e-5
-                    if np.linalg.norm(hp["normal"] - plane["normal"]) < 1e-6 and (offset <= .05 or supported):
-                        # IFC boundary can lie at slab reference elevation, a few mm from finished floor.
-                        hints.append((offset, hint, hp))
-                hints.sort(key=lambda x: x[0])
-                for offset, hint, hp in hints:
-                    match = remaining.intersection(hp["poly"])
-                    if match.area <= EPS:
-                        continue
-                    classification = hint["classification"]
-                    if classification == "EXTERNAL_EARTH":
-                        boundary = "Ground"
-                    elif classification == "EXTERNAL":
-                        boundary = "Ground" if surface["kind"] == "Floor" and abs(plane["distance"]-minimum) < .05 else "Outdoors"
-                    else:
-                        boundary = "Adiabatic"
-                    if boundary == "Adiabatic" and (model.get("thermal") or {}).get("ifc_unpaired_policy", "reject") != "adiabatic_scenario":
-                        raise core.ValidationError("IFC 内部边界尚未配对；须补充邻接，或明确选择未配对边界绝热的假设情景")
-                    for poly in simple_pieces(match):
-                        emit(surface, poly, boundary, reason=f'IFC {hint["source_id"]}; {classification}; offset={offset:.6f}m')
-                    remaining = remaining.difference(match)
-                if remaining.area > EPS:
-                    if (model.get("thermal") or {}).get("ifc_unpaired_policy", "reject") != "adiabatic_scenario":
-                        raise core.ValidationError("IFC 部分热边界缺少可匹配依据；禁止自动当成外墙")
-                    for poly in simple_pieces(remaining):
-                        emit(surface, poly, "Adiabatic", reason="ASSUMED: 未匹配 IFC 边界明确按绝热处理")
-            else:
-                boundary = "Ground" if surface["kind"] == "Floor" and abs(plane["distance"]-minimum) < EPS else "Outdoors"
+    # A finite wall thickness separates room air volumes. Pair only facing, parallel
+    # portions, nearest first. This is an explicit scenario, never source geometry repair.
+    gap_limit = (model.get("thermal") or {}).get("adjacency_gap_m", 0)
+    if gap_limit:
+        orientations = defaultdict(list)
+        for surface in raw:
+            orientations[surface["plane"]["key"][:3]].append(surface)
+        contacts = []
+        for candidates in orientations.values():
+            ordered = sorted(candidates, key=lambda s: s["plane"]["distance"])
+            for i, a in enumerate(ordered):
+                if a["plane"]["side"] != 1:
+                    continue
+                for b in ordered[i+1:]:
+                    gap = b["plane"]["distance"]-a["plane"]["distance"]
+                    if gap > gap_limit:
+                        break
+                    if gap > 1e-5 and b["plane"]["side"] == -1 and a["zone"] != b["zone"]:
+                        contacts.append((gap, a, b))
+        for gap, a, b in sorted(contacts, key=lambda c: c[0]):
+            overlap = a["remaining"].intersection(b["remaining"])
+            if overlap.area <= EPS:
+                continue
+            a["remaining"] = a["remaining"].difference(overlap)
+            b["remaining"] = b["remaining"].difference(overlap)
+            reason = f"ASSUMED: facing parallel room surfaces across {gap:.6f} m; allowed gap {gap_limit:g} m"
+            for poly in simple_pieces(overlap):
+                sa = emit(a, poly, "Surface", reason=reason)
+                sb = emit(b, poly, "Surface", sa["name"], True, reason)
+                sa["other"] = sb["name"]
+    for surface in raw:
+        remaining = surface["remaining"]
+        room, plane = surface["room"], surface["plane"]
+        if room.get("ifc_source"):
+            hints = []
+            for hint in room.get("boundary_hints", []):
+                hp = frame(hint["points"])
+                offset = abs(hp["distance"] - plane["distance"])
+                bounds = hint.get("element_plane_range_m")
+                supported = bounds and bounds[0]-1e-5 <= plane["distance"] <= bounds[1]+1e-5
+                if np.linalg.norm(hp["normal"] - plane["normal"]) < 1e-6 and (offset <= .05 or supported):
+                    # IFC boundary can lie at slab reference elevation, a few mm from finished floor.
+                    hints.append((offset, hint, hp))
+            hints.sort(key=lambda x: x[0])
+            for offset, hint, hp in hints:
+                match = remaining.intersection(hp["poly"])
+                if match.area <= EPS:
+                    continue
+                classification = hint["classification"]
+                if classification == "EXTERNAL_EARTH":
+                    boundary = "Ground"
+                elif classification == "EXTERNAL":
+                    boundary = "Ground" if surface["kind"] == "Floor" and abs(plane["distance"]-minimum) < .05 else "Outdoors"
+                else:
+                    boundary = "Adiabatic"
+                if boundary == "Adiabatic" and (model.get("thermal") or {}).get("ifc_unpaired_policy", "reject") != "adiabatic_scenario":
+                    raise core.ValidationError("IFC 内部边界尚未配对；须补充邻接，或明确选择未配对边界绝热的假设情景")
+                for poly in simple_pieces(match):
+                    emit(surface, poly, boundary, reason=f'IFC {hint["source_id"]}; {classification}; offset={offset:.6f}m')
+                remaining = remaining.difference(match)
+            if remaining.area > EPS:
+                if (model.get("thermal") or {}).get("ifc_unpaired_policy", "reject") != "adiabatic_scenario":
+                    raise core.ValidationError("IFC 部分热边界缺少可匹配依据；禁止自动当成外墙")
                 for poly in simple_pieces(remaining):
-                    emit(surface, poly, boundary, reason="人工空间模型外围边界")
+                    emit(surface, poly, "Adiabatic", reason="ASSUMED: 未匹配 IFC 边界明确按绝热处理")
+        else:
+            boundary = "Ground" if surface["kind"] == "Floor" and abs(plane["distance"]-minimum) < EPS else "Outdoors"
+            for poly in simple_pieces(remaining):
+                emit(surface, poly, boundary, reason="人工空间模型外围边界")
     # Remove artificial cuts introduced by overlapping first-level boundary hints.
     # Paired interzone faces retain their reciprocal identities.
     compacted = [s for s in result if s["boundary"] == "Surface"]

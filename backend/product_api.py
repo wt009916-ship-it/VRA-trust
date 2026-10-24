@@ -52,6 +52,24 @@ def register_product(app, domain, auth):
             raise core.ValidationError('尚无模型')
         return Response(model_export.ifc(model), media_type='application/x-step', headers={'Content-Disposition': f'''attachment; filename="building-v{model['revision']}.ifc"'''})
 
+    @app.get('/api/projects/{project_id}/model/geometry.hbjson')
+    def export_hbjson(project_id: str):
+        from .honeybee_bridge import geometry_model
+        model = modeling.get(project_id)
+        if not model:
+            raise core.ValidationError('尚无模型')
+        hb = geometry_model(model, model_export.geometry(model))
+        return Response(json.dumps(hb.to_dict(), ensure_ascii=False), media_type='application/json', headers={'Content-Disposition': f'''attachment; filename="geometry-v{model['revision']}.hbjson"'''})
+
+    @app.get('/api/projects/{project_id}/files/{file_id}/plan-preview')
+    def plan_preview(project_id: str, file_id: str, page: int=1):
+        from .document_reader import preview
+        from pathlib import Path
+        record, path = domain.file_record(project_id, file_id)
+        if Path(record['name']).suffix.lower() not in {'.pdf', '.png', '.jpg', '.jpeg'} or not 1 <= page <= 500:
+            raise core.ValidationError('仅支持有效 PDF/图片图页')
+        return Response(preview(path, page), media_type='image/png', headers={'Cache-Control': 'no-store'})
+
     @app.get('/api/projects/{project_id}/model/export.idf')
     def export_idf(project_id: str):
         model = modeling.get(project_id)

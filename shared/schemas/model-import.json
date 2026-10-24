@@ -9,7 +9,8 @@
       "default": "geometry",
       "enum": [
         "geometry",
-        "vision"
+        "vision",
+        "local_raster"
       ],
       "title": "Mode",
       "type": "string"
@@ -66,6 +67,59 @@
       "default": false,
       "title": "Send To Provider",
       "type": "boolean"
+    },
+    "reconstruct_footprints": {
+      "default": false,
+      "title": "Reconstruct Footprints",
+      "type": "boolean"
+    },
+    "crop_px": {
+      "anyOf": [
+        {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Crop Px"
+    },
+    "scale_basis": {
+      "default": "",
+      "maxLength": 500,
+      "title": "Scale Basis",
+      "type": "string"
+    },
+    "closure_m": {
+      "default": 0,
+      "maximum": 1.5,
+      "minimum": 0,
+      "title": "Closure M",
+      "type": "number"
+    },
+    "min_room_area_m2": {
+      "default": 1,
+      "maximum": 20,
+      "minimum": 0.5,
+      "title": "Min Room Area M2",
+      "type": "number"
     }
   },
   "required": [

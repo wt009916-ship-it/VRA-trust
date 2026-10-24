@@ -165,7 +165,20 @@ class Modeling:
         try:
             surfaces = model_export.geometry(model)
             _, adjustment = model_geometry.thermal_geometry_model(model)
+            from .honeybee_bridge import audit
+            independent = audit(model, surfaces)
+            if not independent["passed"]:
+                blockers.append("Honeybee 校验失败：" + "; ".join(i["message"] for i in independent["issues"])[:1500])
             geometry_review = {
+                "independent_audit": independent,
+                "coverage": {
+                    "thermal_mass_assemblies": list((model.get("thermal") or {}).get("constructions", {})),
+                    "hourly_operation": bool((model.get("thermal") or {}).get("operation")),
+                    "actual_hvac_equipment": bool((model.get("thermal") or {}).get("heat_pump")), "source_window_geometry": False,
+                    "inferred_rooms": sum(bool(r.get("drawing") or r.get("reconstruction")) for r in model["rooms"]),
+                    "adiabatic_area_m2": sum(model_geometry.frame(s["points"])["poly"].area for s in surfaces if s["boundary"] == "Adiabatic"),
+                },
+                "assumed_gap_faces": sum("ASSUMED: facing" in s["boundary_basis"] for s in surfaces),
                 "boundary_faces": {kind: sum(s["boundary"] == kind for s in surfaces)
                                    for kind in ("Surface", "Outdoors", "Ground", "Adiabatic")},
                 "adjustment": adjustment,
@@ -198,14 +211,15 @@ class Modeling:
                                             for kind in ("Surface", "Outdoors", "Ground", "Adiabatic")},
                        "ifc_unpaired_policy": model["thermal"].get("ifc_unpaired_policy", "reject"),
                        "geometry_adjustment": adjustment,
-                       "scope": "ideal_thermal_loads", "limitations": model_export.LIMITATIONS}
+                       "independent_audit": check["geometry_review"]["independent_audit"],
+                       "scope": model_export.scope(model), "limitations": model_export.LIMITATIONS}
             existing = [ev for ev in self.store.list("evidence", project_id)
                         if ev["type"] == "idf" and ev["scheme_id"] == body.scheme_id and ev["review_state"] != "rejected"]
             if len(existing) == 1 and existing[0].get("value") == binding and existing[0]["review_state"] == "confirmed":
                 return {"evidence": existing[0], "binding": binding, "reused": True}
             file = self.domain.add_file(project_id, f"model-v{model['revision']}-{body.scheme_id}.idf", text.encode())
             evidence = self.domain.add_evidence(project_id, EvidenceCreate(
-                type="idf", name=f"空间模型 v{model['revision']} · 理想负荷 · {body.scheme_id}",
+                type="idf", name=f"空间模型 v{model['revision']} · {'定容热泵' if model['thermal'].get('heat_pump') else '理想负荷'} · {body.scheme_id}",
                 source_file=file["file_id"], scheme_id=body.scheme_id, source_locator="VRA Building Model "+model["model_id"],
                 value=binding, authority=body.responsible_person, permission="项目内部工程分析",
                 acquisition_method="确定性棱柱空间编译器", responsible_person=body.responsible_person,

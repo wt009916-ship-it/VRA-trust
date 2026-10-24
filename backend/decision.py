@@ -9,7 +9,7 @@ from pydantic import Field, model_validator
 
 from . import core
 from .materials import Materials, evidence_changes, evidence_snapshot, gap_text
-from .robustness import objects
+from .robustness import objects, serialize_objects
 from .schema import Contract
 from .trust import Trust
 
@@ -95,7 +95,7 @@ def replace_material(model, target, card, thickness):
     obj = matches[0]
     before = obj.copy()
     obj[3:7] = [str(v) for v in (thickness, card['conductivity_w_mk'], card['density_kg_m3'], card['specific_heat_j_kgk'])]
-    return '\n\n'.join(',\n  '.join(o) + ';' for o in parsed), {'object': target, 'before': before, 'after': obj.copy()}
+    return serialize_objects(parsed, model), {'object': target, 'before': before, 'after': obj.copy()}
 
 
 def assess(points, baseline_energy, objectives, constraints, profile, region):
