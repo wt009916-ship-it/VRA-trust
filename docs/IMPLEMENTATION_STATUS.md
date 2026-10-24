@@ -1,3 +1,11 @@
+# 图纸建模与设备年计算 2026-10-24
+
+- IMPLEMENTED：本地墙线/OCR 图纸候选与标定叠加、DXF 块/曲线、IFC FootPrint + 工程量追溯重建、共形热边界与 Honeybee 校验、逐时运行/新风/热回收、定容 PTHP 及原生分项/未满足温度。
+- MEASURED：公开 PDF 6 区域/5 处面积对照，最大偏差 7.42%，三组年度均 2 条微小面警告；Duplex 21 空间/25 分段，六组年度均 0 警告。容量加倍改善未满足时数但增加风机电，未宣称合格选型。
+- BLOCKED INPUT：Schependomlaan 显式重建后 88/100 可解析，12 个源体积不一致，整体仍拒绝；未跳过失败空间。
+- CHECKS：完整后端 200 项 + 6 子测试，前端 31 项；另做材料衍生后热泵回归。真实浏览器完成原图至 IDF 发布，390/1440 px 无横向溢出。
+- LIMITS：Honeybee/Ladybug AGPL 许可、复杂斜面/源窗/真实设备曲线/水系统/校准仍需完成；详见 [实测交付说明](DRAWING_THERMAL_ACCEPTANCE.md)。
+
 # 本地 OCR、原图核对与修订归档 2026-10-23
 
 - IMPLEMENTED：RapidOCR 3.10.0 / ONNX Runtime CPU 1.31.0，扫描 PDF、PNG/JPEG 与混合 PDF 的本地识别；逐页原图、文字框、置信度、原文字层、模型版本/哈希均保留。

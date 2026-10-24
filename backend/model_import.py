@@ -41,30 +41,53 @@ def dxf(path, options):
     if factor is None:
         raise core.ValidationError("DXF 没有可识别的长度单位，请指定每图纸单位对应的米数")
     lines, layers, skipped = [], set(), 0
-    for count, entity in enumerate(document.modelspace()):
-        if count > 50000:
-            raise core.ValidationError("图元超过 50000，请按图层拆分")
-        layers.add(entity.dxf.layer)
-        if options.layer and entity.dxf.layer != options.layer:
+    from ezdxf.path import make_path
+    expanded = 0
+    def entities(items, inherited=None, depth=0):
+        nonlocal expanded, skipped
+        if depth > 16:
+            raise core.ValidationError("DXF 块嵌套超过 16 层")
+        for entity in items:
+            expanded += 1
+            if expanded > 50000:
+                raise core.ValidationError("展开后图元超过 50000，请按图层拆分")
+            layer = entity.dxf.layer
+            layer = inherited if layer == "0" and inherited else layer
+            layers.add(layer)
+            if entity.dxftype() == "INSERT":
+                inserts = entity.multi_insert() if entity.mcount > 1 else [entity]
+                for insert in inserts:
+                    def skipped_entity(entity, reason):
+                        nonlocal skipped
+                        skipped += 1
+                    yield from entities(insert.virtual_entities(skipped_entity_callback=skipped_entity), layer, depth+1)
+            else:
+                yield entity, layer
+    for entity, layer in entities(document.modelspace()):
+        if options.layer and layer != options.layer:
             continue
         kind = entity.dxftype()
         points = None
-        if kind == "LWPOLYLINE" and not entity.has_arc:
-            points = [(x * factor, y * factor) for x, y in entity.get_points("xy")]
-            if entity.closed and points:
-                points.append(points[0])
-        elif kind == "LINE":
-            points = [(entity.dxf.start.x * factor, entity.dxf.start.y * factor),
-                      (entity.dxf.end.x * factor, entity.dxf.end.y * factor)]
+        if kind in {"LWPOLYLINE", "POLYLINE", "LINE", "ARC", "CIRCLE", "ELLIPSE", "SPLINE"}:
+            try:
+                path = make_path(entity)
+                vertices = list(path.flattening(distance=.01/factor, segments=4))
+                if len(vertices) > 10000:
+                    raise core.ValidationError("曲线细分点超过 10000")
+                if vertices and max(v.z for v in vertices)-min(v.z for v in vertices) > .001/factor:
+                    raise core.ValidationError("DXF 包含非平面线，请按楼层导出二维轮廓")
+                points = [(v.x*factor, v.y*factor) for v in vertices]
+            except (TypeError, ValueError, NotImplementedError):
+                skipped += 1
         else:
             skipped += 1
         if points and len(points) >= 2:
             lines.append(LineString(points))
     polygons = list(polygonize(unary_union(lines))) if lines else []
     return {"rooms": _candidates(polygons, options, "DXF layer=" + (options.layer or "*")),
-            "warnings": [f"识别闭合线环候选；须剔除墙厚、家具、图框。跳过 {skipped} 个非直线图元/块；不推断缺失门洞。",
+            "warnings": [f"识别闭合线环候选；须剔除墙厚、家具、图框。已递归展开块，曲线以 10 mm 弦差细分；跳过 {skipped} 个不支持图元；不推断缺失门洞。",
                          "层高、标高来自导入设置，需核对剖面图。"],
-            "metadata": {"units_to_m": factor, "layers": sorted(layers)}}
+            "metadata": {"units_to_m": factor, "layers": sorted(layers), "expanded_entities": expanded, "curve_tolerance_m": .01}}
 
 
 def pdf(path, options):
@@ -135,8 +158,14 @@ def ifc(path, options):
                   "long_name": space.LongName or "", "representations": representations,
                   "status": "extracted", "code": None, "error": None, "action": None}
         try:
-            shape = ifcopenshell.geom.create_shape(settings, space)
-            sections = model_geometry.mesh_segments(shape.geometry.verts, shape.geometry.faces)
+            reconstruction = None
+            if options.reconstruct_footprints and not any(r["identifier"] == "Body" for r in representations):
+                from .ifc_footprint import reconstruct
+                sections, reconstruction = reconstruct(document, space)
+                detail["reconstruction"] = reconstruction
+            else:
+                shape = ifcopenshell.geom.create_shape(settings, space)
+                sections = model_geometry.mesh_segments(shape.geometry.verts, shape.geometry.faces)
             low = min(s["elevation_m"] for s in sections)
             high = max(s["elevation_m"]+s["height_m"] for s in sections)
             floor = unary_union([Polygon(s["polygon"]) for s in sections if abs(s["elevation_m"]-low) < 1e-7])
@@ -147,9 +176,9 @@ def ifc(path, options):
             rooms.append(Room(id=f"R{index + 1}", name=name,
                               polygon=list(floor.exterior.coords)[:-1], elevation_m=low,
                               height_m=high-low, segments=sections if len(sections) > 1 else [],
-                              ifc_source=space.GlobalId, boundary_hints=hints,
+                              ifc_source=space.GlobalId, boundary_hints=hints, reconstruction=reconstruction,
                               conditioned=None, include_floor_area=None,
-                              source_locator="IFC GlobalId=" + space.GlobalId).model_dump())
+                              source_locator="IFC GlobalId=" + space.GlobalId + ("; INFERRED FootPrint+Height+NetArea+NetVolume" if reconstruction else "")).model_dump())
             if skipped:
                 warnings.append(f"{space.GlobalId}: {skipped} 条空间边界暂无法解析；未匹配区域默认阻止发布。")
         except Exception as exc:
@@ -164,6 +193,8 @@ def ifc(path, options):
         diagnostics["actions"] = ["按清单中的 GlobalId 在原软件定位并修复，重新导出后再次导入。",
                                   "本次未生成可采纳的部分建筑；已解析空间不等于完整模型。"]
         raise ImportDiagnosticError(f"IFC 未完整导入：共 {len(spaces)} 个空间，解析 {len(rooms)} 个，阻断 {len(spaces)-len(rooms)} 个。请查看逐空间补证清单。", diagnostics)
+    if any(r.get("reconstruction") for r in rooms):
+        warnings.append("已根据 FootPrint 与一致的高度/面积/体积工程量重建缺失 Body；属于推导柱体，须核对斜顶、楼板和源模型，不能标为完整原生三维实体。")
     warnings += ["IFC 保留水平分段空间；斜面拒绝近似。墙层与实际门窗仍需热工建模，不自动替代。",
                  "须逐间确认是否空调空间、是否计入面积；Roof、楼梯等名称不作为自动分类依据。",
                  "内部及缺失边界未配对时默认拒绝发布；只有显式假设情景才能按绝热处理。",
@@ -226,6 +257,9 @@ def vision(path, options, gateway):
 
 def extract(path, options, gateway):
     try:
+        if options.mode == "local_raster":
+            from .floorplan import extract as raster_extract
+            return raster_extract(path, options)
         if options.mode == "vision":
             if path.suffix.lower() not in {".pdf", ".png", ".jpg", ".jpeg"}:
                 raise core.ValidationError("视觉识别仅支持 PDF/PNG/JPEG")

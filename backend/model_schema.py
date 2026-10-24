@@ -45,12 +45,41 @@ class BoundaryHint(Contract):
         return self
 
 
+class DrawingTrace(Contract):
+    page: StrictInt = Field(ge=1, le=500)
+    pixels: tuple[StrictInt, StrictInt]
+    polygon_px: list[tuple[StrictFloat, StrictFloat]] = Field(min_length=3, max_length=100)
+    scale_to_m: StrictFloat = Field(gt=0, le=100)
+    scale_basis: str = Field(min_length=10, max_length=500)
+    closure_m: StrictFloat = Field(ge=0, le=1.5)
+    label: str = Field(max_length=500)
+    annotated_area_m2: StrictFloat | None = Field(default=None, gt=0)
+    area_error_percent: StrictFloat | None = None
+
+
+class QuantitySource(Contract):
+    value: StrictFloat = Field(gt=0)
+    entity_id: StrictInt = Field(gt=0)
+    set: str = Field(max_length=200)
+
+
+class Reconstruction(Contract):
+    method: Literal["IFC_FOOTPRINT_QUANTITY_EXTRUSION"]
+    footprint_entity_id: StrictInt = Field(gt=0)
+    quantities: dict[Literal["Height", "NetFloorArea", "NetVolume"], QuantitySource]
+    area_error_percent: StrictFloat = Field(ge=-1, le=1)
+    volume_error_percent: StrictFloat = Field(ge=-1, le=1)
+    assumption: str = Field(max_length=500)
+
+
 class Room(Segment):
     id: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,59}$")
     name: str = Field(min_length=1, max_length=120)
     height_m: StrictFloat = Field(default=3, gt=.5, le=30)
     source_locator: str = Field(default="人工输入", min_length=1, max_length=500)
     segments: list[Segment] = Field(default_factory=list, max_length=128)
+    reconstruction: Reconstruction | None = None
+    drawing: DrawingTrace | None = None
     ifc_source: str | None = Field(default=None, max_length=100)
     boundary_hints: list[BoundaryHint] = Field(default_factory=list, max_length=500)
     conditioned: StrictBool | None = True
@@ -58,8 +87,9 @@ class Room(Segment):
 
     @model_validator(mode="after")
     def solid(self):
-        if Polygon(self.polygon).area < .5:
-            raise ValueError("房间底面积须不小于 0.5 m²")
+        minimum = .05 if self.ifc_source else .5
+        if Polygon(self.polygon).area < minimum:
+            raise ValueError(f"房间底面积须不小于 {minimum:g} m²（IFC 保留小型设备间）")
         if self.segments:
             low = min(s.elevation_m for s in self.segments)
             high = max(s.elevation_m+s.height_m for s in self.segments)
@@ -84,6 +114,46 @@ class MaterialLayer(Contract):
     specific_heat_j_kgk: StrictFloat = Field(ge=100, le=6000)
 
 
+class Operation(Contract):
+    """An explicit load/ventilation scenario, never an inferred occupancy standard."""
+    weekday: list[StrictFloat] = Field(min_length=24, max_length=24)
+    weekend: list[StrictFloat] = Field(min_length=24, max_length=24)
+    outdoor_air_l_s_person: StrictFloat = Field(ge=0, le=30)
+    outdoor_air_l_s_m2: StrictFloat = Field(ge=0, le=10)
+    sensible_recovery: StrictFloat = Field(ge=0, le=.95)
+    latent_recovery: StrictFloat = Field(ge=0, le=.95)
+    heating_setback_c: StrictFloat = Field(ge=0, le=28)
+    cooling_setback_c: StrictFloat = Field(ge=18, le=45)
+    source_note: str = Field(min_length=10, max_length=2000)
+
+    @model_validator(mode="after")
+    def fractions(self):
+        if any(not 0 <= v <= 1 for v in self.weekday + self.weekend):
+            raise ValueError("逐时使用率须在 0–1 之间")
+        if self.heating_setback_c >= self.cooling_setback_c:
+            raise ValueError("非使用时段供暖温度须低于制冷温度")
+        if (self.sensible_recovery or self.latent_recovery) and not (self.outdoor_air_l_s_person or self.outdoor_air_l_s_m2):
+            raise ValueError("热回收需要明确的新风流量")
+        return self
+
+
+class HeatPump(Contract):
+    """Explicit fixed-size single-speed PTHP; no inferred manufacturer data."""
+    cooling_w_m2: StrictFloat = Field(gt=10, le=500)
+    heating_w_m2: StrictFloat = Field(gt=10, le=500)
+    airflow_l_s_m2: StrictFloat = Field(gt=.5, le=30)
+    cooling_cop: StrictFloat = Field(gt=1, le=8)
+    heating_cop: StrictFloat = Field(gt=1, le=8)
+    sensible_heat_ratio: StrictFloat = Field(ge=.5, le=.95)
+    fan_pressure_pa: StrictFloat = Field(gt=0, le=1500)
+    fan_total_efficiency: StrictFloat = Field(gt=.1, le=1)
+    fan_motor_efficiency: StrictFloat = Field(gt=.1, le=1)
+    supplemental_w_m2: StrictFloat = Field(ge=0, le=500)
+    minimum_outdoor_c: StrictFloat = Field(ge=-20, le=5)
+    minimum_cooling_outdoor_c: StrictFloat = Field(ge=0, le=18)
+    source_note: str = Field(min_length=10, max_length=2000)
+
+
 class Thermal(Contract):
     # No default thermal values: the user must provide a scenario or measured inputs.
     wall_u: StrictFloat = Field(gt=.05, le=10)
@@ -105,11 +175,23 @@ class Thermal(Contract):
     basis: Literal["assumed_scenario", "documented"]
     source_note: str = Field(min_length=10, max_length=2000)
     constructions: dict[Literal["wall", "roof", "floor"], list[MaterialLayer]] = Field(default_factory=dict)
+    operation: Operation | None = None
+    heat_pump: HeatPump | None = None
+    adjacency_gap_m: StrictFloat = Field(default=0, ge=0, le=.6)
     ifc_unpaired_policy: Literal["reject", "adiabatic_scenario"] = "reject"
     geometry_tolerance_m: StrictFloat = Field(default=0, ge=0, le=.05)
 
     @model_validator(mode="after")
     def ordered(self):
+        if self.heat_pump:
+            if not self.operation:
+                raise ValueError("热泵设备模型须填写逐时运行与新风参数")
+            if self.operation.sensible_recovery or self.operation.latent_recovery:
+                raise ValueError("当前独立 PTHP 不含新风热回收器，请将回收效率设为 0；不能静默忽略")
+            if self.heat_pump.fan_total_efficiency > self.heat_pump.fan_motor_efficiency:
+                raise ValueError("风机总效率不能高于电机效率")
+        if self.adjacency_gap_m and self.basis != "assumed_scenario":
+            raise ValueError("跨墙厚邻接推断须标为假设情景并记录距离，不能当作实测连接")
         if self.ifc_unpaired_policy == "adiabatic_scenario" and self.basis != "assumed_scenario":
             raise ValueError("未配对 IFC 边界绝热处理只能用于明确假设的情景，不能标成已有文件证明")
         if self.geometry_tolerance_m and self.basis != "assumed_scenario":
@@ -161,13 +243,28 @@ class ModelDraft(Contract):
 
 class ImportOptions(Contract):
     file_id: str
-    mode: Literal["geometry", "vision"] = "geometry"
+    mode: Literal["geometry", "vision", "local_raster"] = "geometry"
     scale_to_m: StrictFloat | None = Field(default=None, gt=0, le=100)
     height_m: StrictFloat = Field(default=3, gt=.5, le=30)
     elevation_m: StrictFloat = Field(default=0, ge=-100, le=1500)
     layer: str | None = Field(default=None, max_length=150)
     page: StrictInt = Field(default=1, ge=1, le=500)
     send_to_provider: bool = False
+    reconstruct_footprints: bool = False
+    crop_px: tuple[StrictInt, StrictInt, StrictInt, StrictInt] | None = None
+    scale_basis: str = Field(default="", max_length=500)
+    closure_m: StrictFloat = Field(default=0, ge=0, le=1.5)
+    min_room_area_m2: StrictFloat = Field(default=1, ge=.5, le=20)
+
+    @model_validator(mode="after")
+    def raster_options(self):
+        if self.mode == "local_raster" and (self.scale_to_m is None or len(self.scale_basis.strip()) < 10):
+            raise ValueError("本地图纸建模须标定比例并填写至少 10 字的尺寸来源；不会自动猜测米数")
+        if self.crop_px:
+            x0, y0, x1, y1 = self.crop_px
+            if not 0 <= x0 < x1 <= 2400 or not 0 <= y0 < y1 <= 2400:
+                raise ValueError("裁剪范围须是预览图内的有效像素矩形")
+        return self
 
 
 class PublishModel(Contract):

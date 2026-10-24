@@ -168,6 +168,7 @@ class Domain:
                "project_snapshot": project, "evidence_snapshot": selected, "case_snapshot": case,
                "factor_snapshot": profile, "code_hash": core.code_hash(), "engine_hash": core.sha(engine),
                "idd_hash": core.sha(engine.parent / "Energy+.idd"), "gate": gate}
+        job["expander_hash"] = core.expansion_hash(self.store.root / model["path"], engine)
         self.store.add_job(job)
         return self.view(rid)
 
@@ -193,6 +194,10 @@ class Domain:
             engine = core.engine_path()
             if core.sha(engine) != job["engine_hash"] or core.sha(engine.parent / "Energy+.idd") != job["idd_hash"]:
                 reasons.append("计算引擎或 IDD 版本变化")
+            if job.get("expander_hash"):
+                source = self.store.root / job["case_snapshot"]["schemes"][0]["model"]
+                if core.expansion_hash(source, engine) != job["expander_hash"]:
+                    reasons.append("HVAC 模板展开器版本变化")
         except (core.ValidationError, OSError) as exc:
             reasons.append(str(exc))
         return reasons
@@ -249,6 +254,8 @@ class Domain:
                 raise core.ValidationError("Manifest/input evidence binding mismatch")
             expected_fingerprints = {"code": job["code_hash"], "engine": job["engine_hash"],
                                      "case": core.hash_json(job["case_snapshot"]), "factor": core.hash_json(job["factor_snapshot"])}
+            if job.get("expander_hash"):
+                expected_fingerprints["expander"] = job["expander_hash"]
             if any(fp.get(key) != value for key, value in expected_fingerprints.items()) or manifest.get("engine_idd_hash") != job["idd_hash"]:
                 raise core.ValidationError("Manifest/version snapshot binding mismatch")
             view.update(finished_at=result["finished_at"], engine_calls_executed=manifest["engine_calls_executed"], warnings_count=manifest.get("warnings"))
@@ -265,6 +272,7 @@ class Domain:
                 else:
                     from .trust import Trust
                     view.update(metrics=result["metrics"], carbon=Trust(self).carbon_view(job, result["carbon"]))
+                    view['metrics']['hvac_scope'] = self.energy_scope(run_id)
         except (core.ValidationError, OSError, KeyError, ValueError) as exc:
             view.update(status="failed", metrics=None, carbon=None, error=job["error"] or str(exc))
         return view
@@ -325,18 +333,27 @@ class Domain:
         nodes = {n['id']: n for graph in graphs for n in graph['nodes']}
         energy = [rid + ':energy' for rid in latest.values()]
         carbon = [rid + ':carbon' for rid in latest.values()]
+        compatible_scope = len({self.energy_scope(rid) for rid in latest.values()}) <= 1
         for suffix, label, deps in [('energy-ranking', '能耗排序', energy), ('carbon-ranking', '运行碳排序', carbon)]:
             statuses = {nodes[d]['state'] for d in deps}
             status = 'STALE' if 'STALE' in statuses else 'VALID' if len(deps) >= 2 and statuses == {'VALID'} and 'baseline' in latest else 'UNKNOWN'
             if suffix == 'carbon-ranking' and len({(self.view(r).get('carbon') or {}).get('profile_hash') for r in latest.values()}) != 1:
                 status = 'UNKNOWN'
+            if not compatible_scope:
+                status = 'UNKNOWN'
             nodes[project_id + ':' + suffix] = {'id': project_id + ':' + suffix, 'kind': 'Comparison', 'label': label, 'state': status, 'depends_on': deps}
         return {'project_id': project_id, 'nodes': list(nodes.values()), 'selected_runs': latest}
+
+    def energy_scope(self, run_id):
+        value = self.store.job(run_id)['evidence_snapshot']['idf'].get('value')
+        return value.get('scope', 'external_idf') if isinstance(value, dict) else 'external_idf'
 
     def compare(self, run_ids):
         views = [self.view(rid) for rid in run_ids]
         if any(v["status"] != "succeeded" for v in views):
             raise core.ValidationError("Failed/stale/incomplete runs cannot be compared")
+        if len({self.energy_scope(rid) for rid in run_ids}) != 1:
+            raise core.ValidationError("能耗口径不同：理想冷热需求、热泵耗电和外部 IDF 不可混合排名")
         if len({v["project_id"] for v in views}) != 1 or len({v["scheme_id"] for v in views}) != len(views):
             raise core.ValidationError("Comparison requires unique schemes from one project")
         bases = [v for v in views if v["scheme_id"] == "baseline"]

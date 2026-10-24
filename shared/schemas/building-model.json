@@ -74,6 +74,210 @@
       "title": "BoundaryHint",
       "type": "object"
     },
+    "DrawingTrace": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "maximum": 500,
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "pixels": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Pixels",
+          "type": "array"
+        },
+        "polygon_px": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 100,
+          "minItems": 3,
+          "title": "Polygon Px",
+          "type": "array"
+        },
+        "scale_to_m": {
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "title": "Scale To M",
+          "type": "number"
+        },
+        "scale_basis": {
+          "maxLength": 500,
+          "minLength": 10,
+          "title": "Scale Basis",
+          "type": "string"
+        },
+        "closure_m": {
+          "maximum": 1.5,
+          "minimum": 0,
+          "title": "Closure M",
+          "type": "number"
+        },
+        "label": {
+          "maxLength": 500,
+          "title": "Label",
+          "type": "string"
+        },
+        "annotated_area_m2": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Annotated Area M2"
+        },
+        "area_error_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Area Error Percent"
+        }
+      },
+      "required": [
+        "page",
+        "pixels",
+        "polygon_px",
+        "scale_to_m",
+        "scale_basis",
+        "closure_m",
+        "label"
+      ],
+      "title": "DrawingTrace",
+      "type": "object"
+    },
+    "HeatPump": {
+      "additionalProperties": false,
+      "description": "Explicit fixed-size single-speed PTHP; no inferred manufacturer data.",
+      "properties": {
+        "cooling_w_m2": {
+          "exclusiveMinimum": 10,
+          "maximum": 500,
+          "title": "Cooling W M2",
+          "type": "number"
+        },
+        "heating_w_m2": {
+          "exclusiveMinimum": 10,
+          "maximum": 500,
+          "title": "Heating W M2",
+          "type": "number"
+        },
+        "airflow_l_s_m2": {
+          "exclusiveMinimum": 0.5,
+          "maximum": 30,
+          "title": "Airflow L S M2",
+          "type": "number"
+        },
+        "cooling_cop": {
+          "exclusiveMinimum": 1,
+          "maximum": 8,
+          "title": "Cooling Cop",
+          "type": "number"
+        },
+        "heating_cop": {
+          "exclusiveMinimum": 1,
+          "maximum": 8,
+          "title": "Heating Cop",
+          "type": "number"
+        },
+        "sensible_heat_ratio": {
+          "maximum": 0.95,
+          "minimum": 0.5,
+          "title": "Sensible Heat Ratio",
+          "type": "number"
+        },
+        "fan_pressure_pa": {
+          "exclusiveMinimum": 0,
+          "maximum": 1500,
+          "title": "Fan Pressure Pa",
+          "type": "number"
+        },
+        "fan_total_efficiency": {
+          "exclusiveMinimum": 0.1,
+          "maximum": 1,
+          "title": "Fan Total Efficiency",
+          "type": "number"
+        },
+        "fan_motor_efficiency": {
+          "exclusiveMinimum": 0.1,
+          "maximum": 1,
+          "title": "Fan Motor Efficiency",
+          "type": "number"
+        },
+        "supplemental_w_m2": {
+          "maximum": 500,
+          "minimum": 0,
+          "title": "Supplemental W M2",
+          "type": "number"
+        },
+        "minimum_outdoor_c": {
+          "maximum": 5,
+          "minimum": -20,
+          "title": "Minimum Outdoor C",
+          "type": "number"
+        },
+        "minimum_cooling_outdoor_c": {
+          "maximum": 18,
+          "minimum": 0,
+          "title": "Minimum Cooling Outdoor C",
+          "type": "number"
+        },
+        "source_note": {
+          "maxLength": 2000,
+          "minLength": 10,
+          "title": "Source Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cooling_w_m2",
+        "heating_w_m2",
+        "airflow_l_s_m2",
+        "cooling_cop",
+        "heating_cop",
+        "sensible_heat_ratio",
+        "fan_pressure_pa",
+        "fan_total_efficiency",
+        "fan_motor_efficiency",
+        "supplemental_w_m2",
+        "minimum_outdoor_c",
+        "minimum_cooling_outdoor_c",
+        "source_note"
+      ],
+      "title": "HeatPump",
+      "type": "object"
+    },
     "MaterialLayer": {
       "additionalProperties": false,
       "properties": {
@@ -116,6 +320,168 @@
         "specific_heat_j_kgk"
       ],
       "title": "MaterialLayer",
+      "type": "object"
+    },
+    "Operation": {
+      "additionalProperties": false,
+      "description": "An explicit load/ventilation scenario, never an inferred occupancy standard.",
+      "properties": {
+        "weekday": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 24,
+          "minItems": 24,
+          "title": "Weekday",
+          "type": "array"
+        },
+        "weekend": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 24,
+          "minItems": 24,
+          "title": "Weekend",
+          "type": "array"
+        },
+        "outdoor_air_l_s_person": {
+          "maximum": 30,
+          "minimum": 0,
+          "title": "Outdoor Air L S Person",
+          "type": "number"
+        },
+        "outdoor_air_l_s_m2": {
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Outdoor Air L S M2",
+          "type": "number"
+        },
+        "sensible_recovery": {
+          "maximum": 0.95,
+          "minimum": 0,
+          "title": "Sensible Recovery",
+          "type": "number"
+        },
+        "latent_recovery": {
+          "maximum": 0.95,
+          "minimum": 0,
+          "title": "Latent Recovery",
+          "type": "number"
+        },
+        "heating_setback_c": {
+          "maximum": 28,
+          "minimum": 0,
+          "title": "Heating Setback C",
+          "type": "number"
+        },
+        "cooling_setback_c": {
+          "maximum": 45,
+          "minimum": 18,
+          "title": "Cooling Setback C",
+          "type": "number"
+        },
+        "source_note": {
+          "maxLength": 2000,
+          "minLength": 10,
+          "title": "Source Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "weekday",
+        "weekend",
+        "outdoor_air_l_s_person",
+        "outdoor_air_l_s_m2",
+        "sensible_recovery",
+        "latent_recovery",
+        "heating_setback_c",
+        "cooling_setback_c",
+        "source_note"
+      ],
+      "title": "Operation",
+      "type": "object"
+    },
+    "QuantitySource": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "entity_id": {
+          "exclusiveMinimum": 0,
+          "title": "Entity Id",
+          "type": "integer"
+        },
+        "set": {
+          "maxLength": 200,
+          "title": "Set",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "entity_id",
+        "set"
+      ],
+      "title": "QuantitySource",
+      "type": "object"
+    },
+    "Reconstruction": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "IFC_FOOTPRINT_QUANTITY_EXTRUSION",
+          "title": "Method",
+          "type": "string"
+        },
+        "footprint_entity_id": {
+          "exclusiveMinimum": 0,
+          "title": "Footprint Entity Id",
+          "type": "integer"
+        },
+        "quantities": {
+          "additionalProperties": {
+            "$ref": "#/$defs/QuantitySource"
+          },
+          "propertyNames": {
+            "enum": [
+              "Height",
+              "NetFloorArea",
+              "NetVolume"
+            ]
+          },
+          "title": "Quantities",
+          "type": "object"
+        },
+        "area_error_percent": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Area Error Percent",
+          "type": "number"
+        },
+        "volume_error_percent": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Volume Error Percent",
+          "type": "number"
+        },
+        "assumption": {
+          "maxLength": 500,
+          "title": "Assumption",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "footprint_entity_id",
+        "quantities",
+        "area_error_percent",
+        "volume_error_percent",
+        "assumption"
+      ],
+      "title": "Reconstruction",
       "type": "object"
     },
     "Room": {
@@ -179,6 +545,28 @@
           "maxItems": 128,
           "title": "Segments",
           "type": "array"
+        },
+        "reconstruction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Reconstruction"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "drawing": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DrawingTrace"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "ifc_source": {
           "anyOf": [
@@ -407,6 +795,35 @@
           },
           "title": "Constructions",
           "type": "object"
+        },
+        "operation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Operation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "heat_pump": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeatPump"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "adjacency_gap_m": {
+          "default": 0,
+          "maximum": 0.6,
+          "minimum": 0,
+          "title": "Adjacency Gap M",
+          "type": "number"
         },
         "ifc_unpaired_policy": {
           "default": "reject",
