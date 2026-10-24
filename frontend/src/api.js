@@ -1,9 +1,17 @@
 let csrfToken = '';
+let maxUploadBytes = 64 * 1024 * 1024;
+export function uploadLimitMB() { return maxUploadBytes / 1024 / 1024; }
+export function checkUpload(file) {
+  if (!file || typeof file.size !== 'number' || file.size === 0) throw new Error('请选择非空文件');
+  if (file.size > maxUploadBytes) throw new Error(`文件 ${(file.size / 1024 / 1024).toFixed(1)} MB，超过服务端 ${uploadLimitMB()} MB 上限；请按楼层或图页拆分。`);
+}
 export function setCsrfToken(value) { csrfToken = value || ''; }
 export async function request(path, options = {}) {
+  if (path.endsWith('/files') && options.body instanceof FormData) checkUpload(options.body.get('file'));
   const headers = options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
   const response = await fetch('/api' + path, { ...options, credentials: 'same-origin', headers: { ...headers, ...(csrfToken ? {'X-CSRF-Token': csrfToken} : {}), ...options.headers }, cache: 'no-store' });
-  const data = await response.json().catch(() => null);
+  let invalidJson = false;
+  const data = await response.json().catch(() => { invalidJson = true; return null; });
   if (!response.ok) {
     const detail = data?.detail;
     const error = new Error(Array.isArray(detail) ? detail.map(x => x.loc.join('.') + ': ' + x.msg).join('; ') : detail || '请求失败 (' + response.status + ')');
@@ -11,6 +19,8 @@ export async function request(path, options = {}) {
     if (response.status === 401 && !path.startsWith('/auth/')) document.dispatchEvent(new Event('session-expired'));
     throw error;
   }
+  if (invalidJson) throw new Error('服务返回了无法读取的数据，请稍后重试');
+  if (path === '/health' && Number.isSafeInteger(data?.upload_policy?.max_file_bytes) && data.upload_policy.max_file_bytes > 0) maxUploadBytes = data.upload_policy.max_file_bytes;
   return data;
 }
 export const post = (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) });

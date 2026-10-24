@@ -5,7 +5,9 @@
 权威定义：backend/schema.py；生成件 shared/schemas/openapi.json、building.json、evidence.json、run.json。执行 python scripts/export_contract.py；CI 检查 schema drift。
 
 - POST/GET /api/projects；GET /api/projects/{id}；PUT /api/projects/{id}/building。
-- POST /api/projects/{id}/files：multipart file，20 MB 默认，返回 file_id；GET 对应 file_id 下载源文件。
+- POST /api/projects/{id}/files：multipart file，64 MB 默认（VRA_MAX_UPLOAD_MB 可配置），返回 file_id；GET 对应 file_id 下载源文件。health.upload_policy 公布实际文件上限；天气解析另有 20 MB / 单年限制。上传保留 64 MB 存储余量，登记失败清理本次新文件。
+- GET /api/projects/{id}/imports/{import_id}/report.json：下载持久化导入诊断、原始来源哈希和当前来源校验；失败 IFC 逐空间报告不产生部分可采纳模型。项目归属与会话校验同其他业务接口。
+- Agent Chat.task：auto / weather / diagnose。weather 固定读取天气工具，AI 说明不产生工程数值；status=partial 表示存在说明或工具失败，tool_status 与 explanation_status 分别报告。
 - POST/GET /api/projects/{id}/evidence；PATCH /evidence/{evidence_id} 人工复核；GET /history。
 - GET /api/projects/{id}/gate?scheme_id=baseline；GET /api/projects/{id}/runs。
 - POST /api/runs；GET /api/runs/{id}、/result、/evidence、/claims、/artifacts。
@@ -16,8 +18,8 @@
 
 证据/建筑修改带 expected_revision；409 拒绝版本冲突、证据不齐或绑定错误；422 拒绝非法 schema；413 超限。来源文件不能通过 API 覆写，复核历史追加保留。
 正式 run 结果必须包含完整 provenance。queued/running/failed/stale 的受影响数值为 null。错误不能触发 demo fallback。
-建筑声明只用于核对，不自动改变 IDF。当前接受 IDF 9.0 + SimpleAndTabular 输出；IFC/epJSON 等可作为资料保存但未接通转换计算。
-API 具备账号会话及项目归属校验，仍绑定本机；公网部署待验收。自动方案生成、完整优化与通用 decision evaluate 尚未实现。
+建筑声明用于核对；建模工作区可显式生成、复核并发布 IDF 9.0 + SimpleAndTabular 输出。IFC 空间转换已接入，epJSON 转换尚未实现。
+API 具备账号会话、项目归属及受限 Token 校验，仍绑定本机；公网部署待验收。材料方案评估已接入；完整工程优化尚未实现。
 
 
 ## Trust / Agent / Spatial 增量
@@ -33,3 +35,12 @@ API 具备账号会话及项目归属校验，仍绑定本机；公网部署待�
 - GET/PUT `/api/projects/{id}/geometry`：人工坐标确认→Building Schema→确定性墙体；按证据版本失效。UNKNOWN/AI_SUGGESTED 保留，ASSUMED 不升级为实测。三维与 IDF 尚未映射，affected_claims 保持空。
 
 新增共享 JSON Schema：geometry.json、factor-update.json、search.json；OpenAPI 包含上述全部受保护 API。
+
+## 建模与开放接口 · 2026-10-20
+
+`/api/projects/{id}` 下的 `/model`、`/model/history`、`/model/validate`、`/model/sync-area`、`/model/publish`、`/model/export.ifc`、`/model/export.idf` 提供版本化空间模型和发布。
+`/imports` 创建/列举持久化识别任务，`/imports/{import_id}/review` 恢复人工复核节点。模型字段见 `building-model.json`，选项见 `model-import.json`。
+`/model-runs` 提交原生仿真，`/runs/{run_id}/cancel` 仅取消排队任务。计算仍检查证据、文件哈希、发布模型快照及编译器版本。
+`/tokens` 创建/列举项目 Token，`DELETE /tokens/{id}` 撤销。Token 有 read/write/compute 三类独立权限，最长 90 天；不可读取开发者设置、创建其他 Token 或访问其他项目。
+`GET /api/developer/runtime` 提供实际安装组件、引擎版本、工具清单和单进程限制。通用 Provider endpoint、文本模型和视觉模型共用管理员配置。
+旧 `/geometry` 保留兼容；当前建模 UI 使用 `/model`，不要把旧墙体草稿和新发布模型混为同一契约。完整步骤和限制见 `BUILDING_WORKBENCH.md`。

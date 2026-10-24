@@ -3,9 +3,10 @@ import base64
 import ctypes
 import os
 import threading
+from urllib.parse import urlsplit
 
 import httpx
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, model_validator
 
 from . import core
 from .schema import Contract
@@ -13,9 +14,21 @@ from .schema import Contract
 
 class ProviderSettings(Contract):
     enabled: bool
-    model: str = Field(default='deepseek-flash', pattern=r'^[a-zA-Z0-9_.:-]{1,80}$')
+    model: str = Field(default='deepseek-flash', pattern=r'^[a-zA-Z0-9_./:-]{1,100}$')
+    endpoint: str = 'https://api.deepseek.com/chat/completions'
+    vision_model: str | None = Field(default=None, pattern=r'^[a-zA-Z0-9_./:-]{1,100}$')
     api_key: SecretStr | None = None
     clear_key: bool = False
+
+    @model_validator(mode='after')
+    def endpoint_contract(self):
+        url = urlsplit(self.endpoint)
+        local = url.hostname in {'localhost', '127.0.0.1', '::1'}
+        if (url.scheme != 'https' and not (url.scheme == 'http' and local)) or not url.hostname:
+            raise ValueError('外部服务须使用 HTTPS；本机服务允许 HTTP')
+        if url.username or url.password or url.query or url.fragment or not url.path.endswith('/chat/completions'):
+            raise ValueError('填写不含凭据/查询参数的完整 /chat/completions 地址')
+        return self
 
 
 def protect(value, decrypt=False):
@@ -57,14 +70,23 @@ class Gateway:
 
     def public(self):
         settings = self.settings()
-        return {'provider': 'DeepSeek', 'model': settings['model'], 'enabled': settings['enabled'],
-                'key_configured': bool(settings.get('sealed_key') or os.environ.get('DEEPSEEK_API_KEY')),
-                'endpoint': self.endpoint, 'key_storage': 'Windows DPAPI' if os.name == 'nt' else 'environment',
-                'data_scope': '发送提问、项目摘要与工具结果；不自动发送原始文件。'}
+        endpoint = settings.get('endpoint', self.endpoint)
+        return {'provider': 'OpenAI-compatible', 'model': settings['model'], 'enabled': settings['enabled'],
+                'vision_model': settings.get('vision_model'),
+                'key_configured': bool(settings.get('sealed_key') or self.environment_key(settings)),
+                'endpoint': endpoint, 'key_storage': 'Windows DPAPI' if os.name == 'nt' else 'environment',
+                'data_scope': '聊天发送提问、项目摘要与工具结果；仅在显式勾选视觉识别时发送选定图页。'}
+
+    def environment_key(self, settings):
+        return os.environ.get('VRA_API_KEY') or (os.environ.get('DEEPSEEK_API_KEY')
+            if settings.get('endpoint', self.endpoint) == self.endpoint else None)
 
     def save(self, body):
         with self.lock:
             config = self.settings()
+            if body.endpoint != config.get('endpoint', self.endpoint):
+                if config.get('sealed_key') and not body.clear_key and not body.api_key:
+                    raise core.ValidationError('更换服务地址时须同时提供新 Key 或清除旧 Key，避免把旧凭据发送到新服务')
             if body.clear_key:
                 config.pop('sealed_key', None)
             elif body.api_key and body.api_key.get_secret_value():
@@ -72,22 +94,29 @@ class Gateway:
                 if not 10 <= len(value) <= 500 or any(c.isspace() for c in value):
                     raise core.ValidationError('密钥格式无效')
                 config['sealed_key'] = protect(value)
-            config.update(enabled=body.enabled, model=body.model)
+            config.update(enabled=body.enabled, model=body.model, endpoint=body.endpoint, vision_model=body.vision_model)
             core.write_json(self.path, config)
         return self.public()
 
-    def complete(self, messages, tools, *, transport=None):
+    def complete(self, messages, tools, *, transport=None, vision=False):
         settings = self.settings()
         if not settings['enabled']:
             raise core.ValidationError('AI Provider 尚未启用，请在开发者设置中配置')
-        key = protect(settings['sealed_key'], True) if settings.get('sealed_key') else os.environ.get('DEEPSEEK_API_KEY')
+        if vision and not settings.get('vision_model'):
+            raise core.ValidationError('请先在开发者设置中配置支持图片的视觉模型')
+        key = protect(settings['sealed_key'], True) if settings.get('sealed_key') else self.environment_key(settings)
         if not key:
             raise core.ValidationError('尚未配置 API Key')
         try:
             with httpx.Client(timeout=60, follow_redirects=False, transport=transport, trust_env=False) as client:
-                payload = {'model': settings['model'], 'messages': messages, 'max_tokens': 1400,
-                           'thinking': {'type': 'disabled'}, 'tools': tools, 'tool_choice': 'auto'}
-                with client.stream('POST', self.endpoint, headers={'Authorization': 'Bearer ' + key}, json=payload) as response:
+                endpoint = settings.get('endpoint', self.endpoint)
+                payload = {'model': settings['vision_model'] if vision else settings['model'],
+                           'messages': messages, 'max_tokens': 6000 if vision else 1400}
+                if endpoint == self.endpoint:
+                    payload['thinking'] = {'type': 'disabled'}
+                if tools:
+                    payload.update(tools=tools, tool_choice='auto')
+                with client.stream('POST', endpoint, headers={'Authorization': 'Bearer ' + key}, json=payload) as response:
                     if response.status_code != 200:
                         raise core.ValidationError('Provider 请求失败，HTTP ' + str(response.status_code) + '；请检查配置、余额和模型权限')
                     raw = bytearray()

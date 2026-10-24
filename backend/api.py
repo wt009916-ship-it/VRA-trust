@@ -16,7 +16,8 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import core
 from .domain import Domain
-from .auth import Auth, Credentials, Registration
+from .auth import Auth, Credentials, Registration, PasswordChange
+from .api_tokens import Tokens
 from .reports import report_html, report_pdf
 from .schema import (
     BuildingUpdate,
@@ -24,6 +25,7 @@ from .schema import (
     Evidence,
     EvidenceCreate,
     EvidenceReview,
+    EvidenceMetadata,
     Project,
     ProjectCreate,
     RunCreate,
@@ -66,6 +68,8 @@ def create_app(data_dir=None, *, start_worker=True):
         if start_worker:
             app.state.agent.recover()
             app.state.robustness.recover()
+            app.state.decisions.recover()
+            app.state.modeling.recover()
             domain.start_worker()
         yield
         domain.stop.set()
@@ -75,8 +79,9 @@ def create_app(data_dir=None, *, start_worker=True):
     app = FastAPI(title="VRA-Trust Evidence API", version="1.0.0", lifespan=lifespan)
     app.state.domain = domain
     app.state.auth = auth
+    app.state.tokens = Tokens(auth)
     public_api = {"/api/health", "/api/auth/status", "/api/auth/login", "/api/auth/register"}
-    maximum = int(os.environ.get("VRA_MAX_UPLOAD_MB", "20")) * 1024 * 1024
+    maximum = int(os.environ.get("VRA_MAX_UPLOAD_MB", "64")) * 1024 * 1024
     app.add_middleware(BodyLimit, limit=maximum + 65536)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
 
@@ -89,11 +94,16 @@ def create_app(data_dir=None, *, start_worker=True):
             return JSONResponse({"detail": "Cross-site request rejected"}, status_code=403)
         path = request.url.path
         if path.startswith("/api/") and path not in public_api:
-            user = auth.session(request.cookies.get(auth.cookie))
+            authorization = request.headers.get("authorization", "")
+            bearer = authorization.startswith("Bearer ")
+            user = (app.state.tokens.authenticate(authorization[7:]) if bearer
+                    else auth.session(request.cookies.get(auth.cookie)))
             if not user:
                 return JSONResponse({"detail": "请先登录"}, status_code=401)
+            if bearer and not app.state.tokens.permits(user, request.method, path):
+                return JSONResponse({"detail": "API Token 的项目或权限范围不足"}, status_code=403)
             request.state.user = user
-            if request.method not in {"GET", "HEAD", "OPTIONS"} and not hmac.compare_digest(request.headers.get("x-csrf-token", ""), user["csrf"]):
+            if not bearer and request.method not in {"GET", "HEAD", "OPTIONS"} and not hmac.compare_digest(request.headers.get("x-csrf-token", ""), user["csrf"]):
                 return JSONResponse({"detail": "会话校验失败，请刷新后重试"}, status_code=403)
             parts = path.strip("/").split("/")
             try:
@@ -105,7 +115,7 @@ def create_app(data_dir=None, *, start_worker=True):
                 return JSONResponse({"detail": "记录不存在或无访问权限"}, status_code=404)
         declared = request.headers.get("content-length")
         if declared and (not declared.isdigit() or int(declared) > maximum + 65536):
-            return JSONResponse({"detail": "Request size limit exceeded"}, status_code=413)
+            return JSONResponse({"detail": f"请求超过大小限制；单文件上限 {maximum // 1024 // 1024} MB，请拆分资料"}, status_code=413)
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
@@ -134,15 +144,21 @@ def create_app(data_dir=None, *, start_worker=True):
         except core.ValidationError:
             available = False
         return {"status": "ok", "engine_available": available, "worker_alive": bool(domain.worker and domain.worker.is_alive()),
+                "upload_policy": {"max_file_bytes": maximum, "max_file_mb": maximum // 1024 // 1024},
                 "demo_mode": os.environ.get("DEMO_MODE", "false").lower() == "true", "deployment": "local_authenticated",
                 "capabilities": {"project_intake": True, "evidence_gate": True, "real_energyplus": available,
                     "llm_tools": all(app.state.gateway.public()[k] for k in ('enabled', 'key_configured')),
                     "agent_tools_installed": True, "claim_dag": True, "selective_recomputation": True,
-                    "drawing_ai": False, "manual_geometry": True, "robustness": True}}
+                    "drawing_ai": bool(app.state.gateway.public().get("vision_model") and
+                                       app.state.gateway.public()["enabled"] and app.state.gateway.public()["key_configured"]),
+                    "local_dxf_pdf_ifc": True, "model_to_idf": True, "ifc_export": True,
+                    "persistent_model_workflow": True, "mcp_adapter": True,
+                    "weather_analysis": True, "nasa_daily_connector": True, "epw_quality_gate": True,
+                    "manual_geometry": True, "robustness": True}}
 
     @app.get("/api/auth/status")
     def auth_status():
-        return {"setup_required": auth.setup_required()}
+        return {"setup_required": auth.setup_required(), "registration_mode": auth.registration_mode()}
 
     def session_response(result, old_token=None):
         token, user = result
@@ -176,6 +192,12 @@ def create_app(data_dir=None, *, start_worker=True):
         response.delete_cookie(auth.cookie)
         return response
 
+    @app.post('/api/auth/password')
+    def change_password(body: PasswordChange, request: Request):
+        user = request.state.user
+        auth.throttle(user['username'], request.client.host if request.client else 'unknown')
+        return session_response(auth.change_password(user['id'], body))
+
     @app.get("/api/projects", response_model=list[Project])
     def projects(request: Request):
         return [p for p in domain.store.list("project") if auth.allows(p["project_id"], request.state.user["id"])]
@@ -204,7 +226,7 @@ def create_app(data_dir=None, *, start_worker=True):
     async def upload(project_id: str, file: UploadFile = File(...)):
         content = await file.read(maximum + 1)
         if len(content) > maximum:
-            return JSONResponse({"detail": "File exceeds upload limit"}, status_code=413)
+            return JSONResponse({"detail": f"文件超过 {maximum // 1024 // 1024} MB，请拆分资料后上传"}, status_code=413)
         return domain.add_file(project_id, file.filename or "unnamed", content)
 
     @app.get("/api/projects/{project_id}/files/{file_id}")
@@ -231,6 +253,16 @@ def create_app(data_dir=None, *, start_worker=True):
         if ev["project_id"] != project_id:
             raise core.ValidationError("Cross-project evidence rejected")
         return domain.store.history("evidence", evidence_id)
+
+    @app.put('/api/projects/{project_id}/evidence/{evidence_id}/metadata', response_model=Evidence)
+    def evidence_metadata(project_id: str, evidence_id: str, body: EvidenceMetadata):
+        ev = domain.store.get('evidence', evidence_id)
+        if ev['project_id'] != project_id:
+            raise HTTPException(404, '资料不属于当前项目')
+        if ev['source_file']:
+            domain.file_record(project_id, ev['source_file'])
+        return domain.store.put('evidence', {**ev, **body.model_dump(exclude={'expected_revision'}),
+                                'review_state': 'pending', 'review_note': None, 'timestamp': core.now()}, body.expected_revision)
 
     @app.get("/api/projects/{project_id}/gate")
     def gate(project_id: str, scheme_id: str = "baseline"):
@@ -298,8 +330,20 @@ def create_app(data_dir=None, *, start_worker=True):
 
     from .extensions import register_extensions
     register_extensions(app, domain, auth)
+    from .product_api import register_product
+    register_product(app, domain, auth)
+    from .weather_api import register_weather
+    register_weather(app, domain)
+    from .admin_api import register_admin
+    register_admin(app, domain, auth)
+    from .intake import register_intake
+    register_intake(app, domain, auth, maximum)
     dist = core.ROOT / "frontend/dist"
     if dist.is_dir():
+        @app.get('/admin', include_in_schema=False)
+        @app.get('/admin/', include_in_schema=False)
+        def admin_page():
+            return FileResponse(dist / 'index.html')
         app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")
 
     def secured_openapi():
@@ -309,6 +353,7 @@ def create_app(data_dir=None, *, start_worker=True):
         schema.setdefault("components", {})["securitySchemes"] = {
             "sessionCookie": {"type": "apiKey", "in": "cookie", "name": auth.cookie},
             "csrfHeader": {"type": "apiKey", "in": "header", "name": "X-CSRF-Token"},
+            "projectToken": {"type": "http", "scheme": "bearer", "description": "Project-scoped token; read/write/compute scopes. Token management and developer configuration require session authentication."},
         }
         for path, methods in schema["paths"].items():
             if path.startswith("/api/") and path not in public_api:
@@ -317,6 +362,8 @@ def create_app(data_dir=None, *, start_worker=True):
                     if method not in {"get", "head", "options"}:
                         security["csrfHeader"] = []
                     operation["security"] = [security]
+                    if path.startswith(("/api/projects/{project_id}", "/api/runs/{run_id}")) and "/tokens" not in path:
+                        operation["security"].append({"projectToken": []})
                     operation["responses"].setdefault("401", {"description": "Authentication required"})
                     operation["responses"].setdefault("403", {"description": "CSRF or origin rejected"})
         app.openapi_schema = schema

@@ -1,6 +1,7 @@
 """Project-bound evidence and real runs. No model-generated engineering values."""
 import hashlib
 import re
+import shutil
 import threading
 import uuid
 from pathlib import Path
@@ -25,6 +26,7 @@ class Domain:
         self.store = store
         self.stop = threading.Event()
         self.worker = None
+        self.upload_lock = threading.Lock()
 
     def create_project(self, body: ProjectCreate):
         obj = Project(**body.model_dump(), project_id=identifier("project"), revision=1,
@@ -38,19 +40,30 @@ class Domain:
     def add_file(self, project_id, filename, content):
         self.store.get("project", project_id)
         extension = Path(filename).suffix.lower()
-        if extension not in {".idf", ".epw", ".pdf", ".csv", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".ifc", ".json", ".xml"}:
+        if extension not in {".idf", ".epw", ".pdf", ".csv", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".ifc", ".json", ".xml", ".dxf", ".dwg", ".txt"}:
             raise core.ValidationError("Unsupported file extension")
         if not content:
             raise core.ValidationError("Empty file")
         fid = identifier("file")
         path = self.store.root / "files" / (fid + extension)
         path.parent.mkdir(exist_ok=True)
-        path.write_bytes(content)
-        return self.store.put("file", {"file_id": fid, "project_id": project_id,
-                              "name": Path(filename.replace("\\", "/")).name,
-                              "path": path.relative_to(self.store.root).as_posix(),
-                              "hash": hashlib.sha256(content).hexdigest(), "size": len(content),
-                              "timestamp": core.now()})
+        temporary = path.with_suffix(path.suffix + ".part")
+        with self.upload_lock:
+            if shutil.disk_usage(path.parent).free < len(content) + 64 * 1024 * 1024:
+                raise core.ValidationError("存储空间不足：写入文件后须至少保留 64 MB。请由管理员整理存储或迁移数据目录后重试。")
+            try:
+                temporary.write_bytes(content)
+                temporary.replace(path)
+                return self.store.put("file", {"file_id": fid, "project_id": project_id,
+                                      "name": Path(filename.replace("\\", "/")).name,
+                                      "path": path.relative_to(self.store.root).as_posix(),
+                                      "hash": hashlib.sha256(content).hexdigest(), "size": len(content),
+                                      "timestamp": core.now()})
+            except Exception:
+                # Only these newly allocated paths belong to this failed upload.
+                temporary.unlink(missing_ok=True)
+                path.unlink(missing_ok=True)
+                raise
 
     def file_record(self, project_id, file_id):
         obj = self.store.get("file", file_id)
@@ -103,19 +116,30 @@ class Domain:
                 if core.sha(path) != ev["hash"]:
                     raise core.ValidationError("Evidence/file hash mismatch")
                 if kind == "idf":
+                    binding = ev.get("value")
+                    if isinstance(binding, dict) and binding.get("model_id"):
+                        from . import model_export
+                        current_model = self.store.get("model", binding["model_id"], binding["revision"])
+                        if current_model["project_id"] != project_id or core.hash_json(current_model) != binding.get("model_hash"):
+                            raise core.ValidationError("已发布建筑模型的版本或内容不匹配")
+                        if binding.get("compiler_hash") != model_export.compiler_hash():
+                            raise core.ValidationError("几何编译器版本变化，请重新发布 IDF")
                     text = re.sub(r"!.*", "", path.read_text(encoding="utf-8-sig", errors="replace"))
                     if not re.search(r"\bVersion\s*,\s*9\.0(?:\.\d+)?\s*;", text, re.IGNORECASE):
                         raise core.ValidationError("当前计算链仅验收 EnergyPlus 9.0 IDF，请使用匹配版本模型")
                     if not re.search(r"Output:SQLite\s*,\s*SimpleAndTabular\s*;", text, re.IGNORECASE):
                         raise core.ValidationError("IDF 需要 Output:SQLite,SimpleAndTabular; 和年度汇总输出")
-                elif not path.read_text(encoding="utf-8-sig", errors="replace").startswith("LOCATION,"):
-                    raise core.ValidationError("EPW LOCATION header missing")
+                else:
+                    from .weather import checked_epw_quality
+                    quality = checked_epw_quality(str(path), ev["hash"])
+                    if not quality["simulation_candidate"]:
+                        raise core.ValidationError("EPW 天气质量检查未通过：" + "; ".join(quality["issues"]))
             except (core.ValidationError, OSError, KeyError) as exc:
                 blockers.append({"code": "INVALID_SOURCE", "field": kind, "message": str(exc), "action": "重新导入正确源文件并保留失败版本"})
         return {"project_id": project_id, "scheme_id": scheme_id, "can_simulate": not blockers,
                 "can_recommend": False, "readiness": "READY_FOR_SIMULATION" if not blockers else "EVIDENCE_INSUFFICIENT",
                 "blockers": blockers, "selected_evidence": inputs,
-                "limitations": ["通过准入仅允许仿真，不证明模型代表真实建筑。", "结构化建筑字段是核对声明，当前不会自动修改 IDF。", "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。", "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"]}
+                "limitations": ["通过准入仅允许仿真，不证明模型代表真实建筑。", "项目声明不会直接修改 IDF；建模工作区通过显式发布生成有版本的计算输入。", "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。", "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"]}
 
     def submit(self, body):
         gate = self.gate(body.project_id, body.scheme_id)
@@ -128,17 +152,23 @@ class Domain:
         # Resolve engine before accepting a job; missing installation is not simulated success.
         engine = core.engine_path()
         selected = gate["selected_evidence"]
+        binding = selected["idf"].get("value")
+        generated = isinstance(binding, dict) and binding.get("model_id")
         model, _ = self.file_record(body.project_id, selected["idf"]["source_file"])
         weather, _ = self.file_record(body.project_id, selected["epw"]["source_file"])
         rid = identifier("run")
         case = {"case_id": body.project_id, "name": project["name"], "data_nature": project["data_nature"],
                 "region": project["building"]["region"], "weather": weather["path"],
                 "schemes": [{"scheme_id": body.scheme_id, "name": body.scheme_id, "model": model["path"], "cost": None}],
-                "geometry_status": "not_reconstructed", "notes": gate["limitations"]}
+                "geometry_status": "reviewed_prismatic_model" if generated else "not_reconstructed",
+                "notes": gate["limitations"] + (binding.get("limitations", []) if generated else [])}
+        if generated:
+            gate["limitations"] = case["notes"]
         job = {**body.model_dump(), "run_id": rid, "case_id": body.project_id, "created_at": core.now(),
                "project_snapshot": project, "evidence_snapshot": selected, "case_snapshot": case,
                "factor_snapshot": profile, "code_hash": core.code_hash(), "engine_hash": core.sha(engine),
                "idd_hash": core.sha(engine.parent / "Energy+.idd"), "gate": gate}
+        job["expander_hash"] = core.expansion_hash(self.store.root / model["path"], engine)
         self.store.add_job(job)
         return self.view(rid)
 
@@ -164,6 +194,10 @@ class Domain:
             engine = core.engine_path()
             if core.sha(engine) != job["engine_hash"] or core.sha(engine.parent / "Energy+.idd") != job["idd_hash"]:
                 reasons.append("计算引擎或 IDD 版本变化")
+            if job.get("expander_hash"):
+                source = self.store.root / job["case_snapshot"]["schemes"][0]["model"]
+                if core.expansion_hash(source, engine) != job["expander_hash"]:
+                    reasons.append("HVAC 模板展开器版本变化")
         except (core.ValidationError, OSError) as exc:
             reasons.append(str(exc))
         return reasons
@@ -220,6 +254,8 @@ class Domain:
                 raise core.ValidationError("Manifest/input evidence binding mismatch")
             expected_fingerprints = {"code": job["code_hash"], "engine": job["engine_hash"],
                                      "case": core.hash_json(job["case_snapshot"]), "factor": core.hash_json(job["factor_snapshot"])}
+            if job.get("expander_hash"):
+                expected_fingerprints["expander"] = job["expander_hash"]
             if any(fp.get(key) != value for key, value in expected_fingerprints.items()) or manifest.get("engine_idd_hash") != job["idd_hash"]:
                 raise core.ValidationError("Manifest/version snapshot binding mismatch")
             view.update(finished_at=result["finished_at"], engine_calls_executed=manifest["engine_calls_executed"], warnings_count=manifest.get("warnings"))
@@ -236,6 +272,7 @@ class Domain:
                 else:
                     from .trust import Trust
                     view.update(metrics=result["metrics"], carbon=Trust(self).carbon_view(job, result["carbon"]))
+                    view['metrics']['hvac_scope'] = self.energy_scope(run_id)
         except (core.ValidationError, OSError, KeyError, ValueError) as exc:
             view.update(status="failed", metrics=None, carbon=None, error=job["error"] or str(exc))
         return view
@@ -279,7 +316,7 @@ class Domain:
                 study = self.robustness.view(job['project_id'], studies[0]['search_id'])
                 report['robustness'] = study
                 report['certificate']['stability_status'] = study['stability_status']
-                report['certificate']['counterexamples'] = [p for p in study['points'] if p['flipped']]
+                report['certificate']['counterexamples'] = [p for p in study['points'] if p['flipped']] if study['status'] == 'succeeded' else None
                 report['certificate']['conditions'].append('仅限记录中的离散搜索点及预算；不代表连续域稳定或综合工程最优')
                 report['certificate']['unresolved_uncertainties'] = ['未做模型校准', '搜索域外、未覆盖点和测量误差尚未排除', '未完成费用和舒适性工程验收']
                 plans = [p for p in self.store.list('actionplan', job['project_id']) if p['search_id'] == study['search_id'] and p['search_revision'] == study['revision']]
@@ -296,18 +333,27 @@ class Domain:
         nodes = {n['id']: n for graph in graphs for n in graph['nodes']}
         energy = [rid + ':energy' for rid in latest.values()]
         carbon = [rid + ':carbon' for rid in latest.values()]
+        compatible_scope = len({self.energy_scope(rid) for rid in latest.values()}) <= 1
         for suffix, label, deps in [('energy-ranking', '能耗排序', energy), ('carbon-ranking', '运行碳排序', carbon)]:
             statuses = {nodes[d]['state'] for d in deps}
             status = 'STALE' if 'STALE' in statuses else 'VALID' if len(deps) >= 2 and statuses == {'VALID'} and 'baseline' in latest else 'UNKNOWN'
             if suffix == 'carbon-ranking' and len({(self.view(r).get('carbon') or {}).get('profile_hash') for r in latest.values()}) != 1:
                 status = 'UNKNOWN'
+            if not compatible_scope:
+                status = 'UNKNOWN'
             nodes[project_id + ':' + suffix] = {'id': project_id + ':' + suffix, 'kind': 'Comparison', 'label': label, 'state': status, 'depends_on': deps}
         return {'project_id': project_id, 'nodes': list(nodes.values()), 'selected_runs': latest}
+
+    def energy_scope(self, run_id):
+        value = self.store.job(run_id)['evidence_snapshot']['idf'].get('value')
+        return value.get('scope', 'external_idf') if isinstance(value, dict) else 'external_idf'
 
     def compare(self, run_ids):
         views = [self.view(rid) for rid in run_ids]
         if any(v["status"] != "succeeded" for v in views):
             raise core.ValidationError("Failed/stale/incomplete runs cannot be compared")
+        if len({self.energy_scope(rid) for rid in run_ids}) != 1:
+            raise core.ValidationError("能耗口径不同：理想冷热需求、热泵耗电和外部 IDF 不可混合排名")
         if len({v["project_id"] for v in views}) != 1 or len({v["scheme_id"] for v in views}) != len(views):
             raise core.ValidationError("Comparison requires unique schemes from one project")
         bases = [v for v in views if v["scheme_id"] == "baseline"]
