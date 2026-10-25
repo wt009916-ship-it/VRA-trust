@@ -306,6 +306,8 @@ def create_app(data_dir=None, *, start_worker=True):
     register_weather(app, domain)
     from .intake import register_intake
     register_intake(app, domain, auth, maximum)
+    from .workspace import register_workspace
+    register_workspace(app, domain, auth)
     dist = core.ROOT / 'frontend/dist'
     if dist.is_dir():
 

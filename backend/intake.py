@@ -15,7 +15,7 @@ from pathlib import Path
 
 from fastapi import BackgroundTasks, File, HTTPException, Request, UploadFile
 from fastapi.responses import Response
-from pydantic import Field, StrictInt
+from pydantic import Field, StrictInt, field_validator
 
 from . import core
 from .domain import identifier
@@ -37,6 +37,19 @@ class InboxCreate(Contract):
 class InboxCommit(Contract):
     project: ProjectCreate | None = None
     reviewed: bool
+
+
+class InboxDraft(Contract):
+    expected_revision: StrictInt = Field(ge=0)
+    fields: dict[str, str] = Field(max_length=5)
+
+    @field_validator('fields')
+    @classmethod
+    def bounded_fields(cls, fields):
+        limits = {'name': 160, 'use': 100, 'location': 200, 'region': 40, 'area_m2': 32}
+        if any(k not in limits or len(v) > limits[k] for k, v in fields.items()):
+            raise ValueError('草稿仅包含项目名称、用途、地点、地区和面积，且不能超过字段长度限制')
+        return fields
 
 
 class TextCorrection(Contract):
@@ -347,6 +360,21 @@ def register_intake(app, domain, auth, maximum):
     @app.get('/api/intakes/{intake_id}')
     def detail(intake_id: str, request: Request):
         return inbox.get(intake_id, request.state.user['id'])
+
+    @app.put('/api/intakes/{intake_id}/draft')
+    def draft(intake_id: str, body: InboxDraft, request: Request):
+        uid = request.state.user['id']
+        with inbox.lock:
+            batch = inbox.get(intake_id, uid)
+            if batch['status'] != 'review' or batch.get('project_id'):
+                raise HTTPException(409, '仅可保存尚未归档的新项目确认字段')
+            old = batch.get('draft', {})
+            if old.get('revision', 0) != body.expected_revision:
+                raise HTTPException(409, '此草稿已在另一页面修改；请重新打开批次核对，当前填写内容仍留在页面中')
+            batch['draft'] = {'fields': body.fields, 'revision': body.expected_revision + 1,
+                              'saved_at': core.now(), 'actor': uid}
+            inbox.save(batch)
+            return batch['draft']
 
     @app.get('/api/intakes/{intake_id}/files/{file_id}/pages/{page}')
     def page_preview(intake_id: str, file_id: str, page: int, request: Request):

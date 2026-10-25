@@ -117,3 +117,5 @@ runtime、runs、validation、密钥、依赖和私人建筑资料不提交。
 运行专项真实验收：`python scripts/verify_trust_slice.py`。它在 validation 下建立隔离账户，运行 3 个参考方案和 3 次预算内反例仿真，并核验选择性重算不调用 EnergyPlus。
 
 Provider 协议依据：[DeepSeek 官方 Tool Calls 文档](https://api-docs.deepseek.com/guides/tool_calls/)。默认模型 deepseek-flash，可在管理员设置中修改。未填 Key 时不会模拟 LLM 成功；协议测试不等于付费服务商在线验收。
+
+项目中心与任务恢复、核对草稿及实际验收见 [工作区体验更新](docs/WORKSPACE_OPERATIONS.md)。

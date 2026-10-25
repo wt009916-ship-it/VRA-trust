@@ -1,3 +1,4 @@
+import { mountWorkspace, readRoute } from './workspace-ui.js';
 import { thermalResults } from './thermal-results.js';
 import { uploadLimitMB } from './api.js';
 import './style.css';
@@ -11,17 +12,28 @@ import { intakeWorkspace } from './intake-ui.js';
 import { reviewDocument } from './document-review.js';
 const adminWorkspace=async root=>{root.textContent='Private console excluded';};
 import './intake.css';
+import './enterprise.css';
 import { robustnessWorkspace } from './robustness-ui.js';
 import { decisionWorkspace } from './decision-ui.js';
-import { bindWorkflow, runAgent, factorEditor } from './trust-ui.js';
+import { runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
-import { appShell, homeView, projectView, authView, icon, projectMetricsMarkup } from './layout.js';
+import { appShell, projectView, authView, icon, projectMetricsMarkup } from './layout.js';
 
 const root = document.querySelector('#app');
 const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [], user: null, view: 'readiness', syncError: false };
 const poller = createPoller(refreshRuns, { onError: markDisconnected });
-let selection = 0;
+let selection = 0, disposeWorkspace = () => {};
+function writeRoute(view='projects') {
+  const hash=state.project?'#project/'+state.project.project_id+'/'+view:view==='tasks'?'#tasks':'#projects';
+  if(location.hash!==hash)history.pushState(null,'',hash);
+}
+async function restoreRoute() {
+  const route=readRoute(location.hash);
+  if(route.projectId&&state.projects.some(p=>p.project_id===route.projectId))await selectProject(route.projectId,route.view);
+  else if(route.projectId){selection++;poller.stop();state.project=null;home();notice('该项目不存在或当前账号无访问权限。',true);}
+  else {selection++;poller.stop();state.project=null;home(route.view==='tasks');}
+}
 let runsRequest = 0, traceRequest = 0;
 const label = { queued: '排队中', running: '仿真中', succeeded: '核验通过', failed: '失败 · 结果不可用', stale: '已失效 · 需复核' };
 const badge = (text, type = '') => '<span class="badge ' + type + '">' + esc(text) + '</span>';
@@ -39,9 +51,11 @@ async function action(fn, button) {
   finally { if (button?.isConnected) button.disabled = state.syncError && ['run', 'compare'].includes(button.id); }
 }
 function shell() {
+  disposeWorkspace();disposeWorkspace=()=>{};
   root.innerHTML = appShell(state);
   document.querySelector('#new-project').onclick = () => openIntake();
   document.querySelector('#all-projects').onclick = () => { selection++; poller.stop(); state.project = null; home(); };
+  document.querySelector('#workspace-tasks').onclick=()=>{selection++;poller.stop();state.project=null;home(true);};
   document.querySelector('#load-reference').onclick = e => loadReference(e.currentTarget);
   document.querySelector('#search-projects').onclick = () => searchProjects();
   document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
@@ -57,37 +71,23 @@ function bindProjectLinks() {
 function loadReference(button) {
   return action(async () => { const p = await post('/reference-projects', {}); await refreshProjects(); await selectProject(p.project_id); notice('已导入参考资料。请先复核文件，再运行仿真。'); }, button);
 }
-function home() {
-  shell();
-  document.querySelector('#workspace').innerHTML = homeView(state);
-  bindWorkflow();
-  document.querySelector('#create-project').onclick = () => openIntake();
-  const emptyCreate = document.querySelector('#empty-create-project');
-  if (emptyCreate) emptyCreate.onclick = () => openIntake();
-  document.querySelector('#browse-projects').onclick = () => searchProjects();
-  document.querySelectorAll('[data-entry-view]').forEach(button => {
-    button.onclick = () => {
-      const view = button.dataset.entryView;
-      if (!state.projects.length) openIntake(null, [], view);
-      else if (state.projects.length === 1) action(() => selectProject(state.projects[0].project_id, view), button);
-      else searchProjects(view, '选择项目 · ' + esc(button.dataset.entryTitle));
-    };
+function home(tasks=false) {
+  shell();writeRoute(tasks?'tasks':'projects');
+  document.querySelector('#workspace-tasks').classList.toggle('active',tasks);
+  document.querySelector('#all-projects').classList.toggle('active',!tasks);
+  disposeWorkspace=mountWorkspace(document.querySelector('#workspace'),{
+    state,tasks,
+    openProject:(id,view)=>action(async()=>{await selectProject(id,view==='intake'?'readiness':view);if(view==='intake')openIntake(state.project);}),
+    openIntake:(id,files=[],resume=null)=>action(async()=>{
+      const project=id?await request('/projects/'+id):null;openIntake(project,files,'evidence',resume);
+    }),
+    reference:e=>loadReference(e?.currentTarget),manual:()=>projectForm()
   });
-  document.querySelector('#reference-project').onclick = e => loadReference(e.currentTarget);
-  const intakeDrop=document.querySelector('#home-intake-drop');
-  intakeDrop.onclick=()=>openIntake();
-  intakeDrop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openIntake();}};
-  intakeDrop.ondragover=e=>{e.preventDefault();intakeDrop.classList.add('dragging');};
-  intakeDrop.ondragleave=()=>intakeDrop.classList.remove('dragging');
-  intakeDrop.ondrop=e=>{e.preventDefault();e.stopPropagation();openIntake(null,Array.from(e.dataTransfer.files));};
-  document.querySelector('#manual-project').onclick=()=>projectForm();
-  document.querySelector('#how-it-works').onclick = () => modal('从资料到可复核结果', '<ol class="workflow-steps"><li><strong>拖入项目资料</strong><p>批量上传文档、模型、台账和天气，自动分类并提取明确标注的项目信息。</p></li><li><strong>核对缺口与来源</strong><p>确认自动提取字段，补齐缺失或冲突项。IFC / DXF 进入候选识别，EPW 进入天气分析；扫描图和未知比例尺仍需补证。</p></li><li><strong>运行并比较方案</strong><p>使用真实仿真结果，保留警告与不确定性。</p></li><li><strong>查看依据，导出报告</strong><p>每个结果绑定独立运行与证据版本。</p></li></ol>');
-  bindProjectLinks();
 }
-function openIntake(project = null, files = [], destination = 'evidence') {
+function openIntake(project = null, files = [], destination = 'evidence', resume = null) {
   selection++; poller.stop(); state.project=project; shell();
   action(()=>intakeWorkspace(document.querySelector('#workspace'), {
-    project, initialFiles:files, destination,
+    project, initialFiles:files, destination, resume,
     onCommitted:async()=>{
       try{
         await refreshProjects();
@@ -146,7 +146,7 @@ async function selectProject(id, view = null) {
   schedulePoll();
 }
 function switchView(view) {
-  state.view = view;
+  state.view = view;writeRoute(view);
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
@@ -173,6 +173,7 @@ function renderProject() {
   document.querySelector('#toggle-inspector').onclick = () => { inspector.hidden = !inspector.hidden; };
   document.querySelector('#close-inspector').onclick = () => { inspector.hidden = true; };
   document.querySelector('#edit-building').onclick = () => projectForm(true);
+  document.querySelector('#overview-edit-building').onclick = () => projectForm(true);
   document.querySelector('#task-import').onclick = () => openIntake(state.project);
   document.querySelector('#composer-upload').onclick = () => openIntake(state.project);
   document.querySelector('#task-next').onclick = () => switchView(state.gate.can_simulate ? 'simulation' : 'evidence');
@@ -308,7 +309,7 @@ function markDisconnected(error) {
   if (health) health.textContent = '连接中断 · 正在自动重连';
 }
 function clearSession() {
-  selection++; poller.stop(); setCsrfToken('');
+  selection++; poller.stop(); disposeWorkspace();disposeWorkspace=()=>{};setCsrfToken('');
   Object.assign(state, {user:null, projects:[], project:null, evidence:[], runs:[], selectedRun:null, comparedIds:[]});
 }
 async function enterWorkspace(session) {
@@ -317,7 +318,7 @@ async function enterWorkspace(session) {
     await adminWorkspace(root,state.user,async()=>{await post('/auth/logout',{});clearSession();authScreen(false);});return;
   }
   [state.health, state.profiles] = await Promise.all([request('/health'), request('/factor-profiles')]);
-  await refreshProjects(); home();
+  await refreshProjects(); await restoreRoute();
 }
 function authScreen(setup, register = false) {
   root.innerHTML = authView({setup, register, admin:location.pathname.startsWith('/admin'), registrationMode:state.registrationMode});
@@ -330,6 +331,7 @@ function authScreen(setup, register = false) {
     catch (err) { error.textContent=err.message; error.hidden=false; button.disabled=false; }
   };
 }
+window.addEventListener('popstate',()=>{if(state.user&&!location.pathname.startsWith('/admin'))action(restoreRoute);});
 document.addEventListener('session-expired', () => { clearSession(); authScreen(false); });
 document.addEventListener('keydown', e => {
   if (!state.user || location.pathname.startsWith('/admin') || document.querySelector('dialog[open]')) return;

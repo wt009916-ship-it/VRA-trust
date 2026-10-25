@@ -4806,6 +4806,65 @@
         ]
       }
     },
+    "/api/intakes/{intake_id}/draft": {
+      "put": {
+        "summary": "Draft",
+        "operationId": "draft_api_intakes__intake_id__draft_put",
+        "parameters": [
+          {
+            "name": "intake_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Intake Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboxDraft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
     "/api/intakes/{intake_id}/files/{file_id}/pages/{page}": {
       "get": {
         "summary": "Page Preview",
@@ -5103,6 +5162,33 @@
           {
             "sessionCookie": [],
             "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/workspace": {
+      "get": {
+        "summary": "Overview",
+        "operationId": "overview_api_workspace_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
           }
         ]
       }
@@ -6548,6 +6634,30 @@
         "additionalProperties": false,
         "type": "object",
         "title": "InboxCreate"
+      },
+      "InboxDraft": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "fields": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "maxProperties": 5,
+            "title": "Fields"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "fields"
+        ],
+        "title": "InboxDraft"
       },
       "JsonValue": {},
       "MaterialCard": {
