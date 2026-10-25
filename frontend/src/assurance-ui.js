@@ -4,7 +4,7 @@ export function importDiagnostics(t, base) {
   const d = t.diagnostics || t.candidate?.diagnostics;
   if (!d) return '';
   const blocked = (d.spaces || []).filter(s => s.status === 'blocked');
-  return `<section class="import-diagnostics"><div class="assurance-counts"><span>源空间 <b>${num(d.total,0)}</b></span><span>已解析 <b>${num(d.extracted,0)}</b></span><span>待补全 <b>${num(d.blocked,0)}</b></span></div>
+  return `<section class="import-diagnostics">${d.scope==='selected_storeys'?`<p>显式楼层范围：本次 ${d.total} / 源文件 ${d.source_total} 个空间；${d.excluded_by_scope} 个范围外空间未尝试。</p>`:''}<div class="assurance-counts"><span>源空间 <b>${num(d.total,0)}</b></span><span>已解析 <b>${num(d.extracted,0)}</b></span><span>待补全 <b>${num(d.blocked,0)}</b></span></div>
     <ul>${(d.actions||[]).map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
     ${blocked.length?`<details open><summary>逐空间补证清单 · ${blocked.length} 项</summary><div class="diagnostic-scroll"><table><thead><tr><th>空间 / GlobalId</th><th>现有表示</th><th>修复动作</th></tr></thead><tbody>${blocked.map(s=>`<tr><td>${esc(s.name)} ${esc(s.long_name)}<code>${esc(s.global_id)}</code></td><td>${(s.representations||[]).map(r=>esc(r.identifier)+' / '+esc(r.type)).join('<br>')||'无'}<small>${esc(s.code)}</small></td><td>${esc(s.action)}<details><summary>解析详情</summary><p>${esc(s.error)}</p></details></td></tr>`).join('')}</tbody></table></div></details>`:''}
     <a href="/api${esc(base)}/imports/${esc(t.import_id)}/report.json" download>下载完整诊断与来源记录 JSON</a><p class="source-fingerprint">源文件 SHA256 <code>${esc(t.source?.hash||t.candidate?.source?.hash||'—')}</code></p></section>`;

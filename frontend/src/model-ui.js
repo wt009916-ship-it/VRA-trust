@@ -94,7 +94,18 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   <p class="subtle">发布会以新版本替代此方案的有效 IDF，旧资料和计算记录保留。还需在「资料」中登记并确认项目对应的全年 EPW。</p>
   <div id="model-runs"></div><details><summary>版本与来源</summary><pre id="model-history"></pre></details>
   </section></div></div>`;
-  const calibration=planCalibration(host.querySelector("#model-import"),base,action);
+  const importForm=host.querySelector('#model-import');
+  const calibration=planCalibration(importForm,base,action);
+  let ifcOrigin=null;
+  const floorPanel=document.createElement('details');floorPanel.className='model-card';
+  floorPanel.innerHTML='<summary>IFC 楼层范围</summary><button type="button" data-storeys>读取所选 IFC 楼层</button><p>不选择楼层时解析整份文件；勾选后仅尝试选定楼层，范围外空间不计入本次模型。单次最多 100 个空间。楼层边界须人工核对。</p><div data-storey-list></div>';
+  importForm.querySelector('[name="reconstruct_footprints"]').closest('label').before(floorPanel);
+  importForm.elements.file.addEventListener('change',()=>{floorPanel.querySelector('[data-storey-list]').innerHTML='';ifcOrigin=null;});
+  floorPanel.querySelector('[data-storeys]').onclick=e=>action(async()=>{
+    const file=await calibration.upload(), info=await request(base+'/files/'+file.file_id+'/ifc-storeys');
+    ifcOrigin=info.suggested_origin_m;
+    floorPanel.querySelector('[data-storey-list]').innerHTML=(ifcOrigin?`<label class="check-option"><input type="checkbox" data-local-origin>将源站点原点 ${ifcOrigin.map(v=>num(v)).join(', ')} m 平移为本地原点（保留方向及转换记录）</label>`:'')+`<p>共 ${info.total_spaces} 个空间 · ${info.unassigned_spaces} 个无楼层归属</p>`+info.storeys.map(f=>`<label class="check-option"><input type="checkbox" data-storey value="${esc(f.id)}">${esc(f.name)} · ${f.spaces} 个空间 · 标高 ${num(f.elevation_m)} m</label>`).join('');
+  },e.currentTarget);
   if(model?.thermal)host.querySelector('#thermal-basis').value=model.thermal.basis;
   const boundaryPolicy=document.createElement('label');
   boundaryPolicy.innerHTML='<span>IFC 未配对边界</span><select id="ifc-boundary-policy"><option value="reject">阻止发布，等待补全邻接</option><option value="adiabatic_scenario">假设情景：未配对内部/未知边界按绝热处理</option></select><small>绝热处理会改变冷热需求，只能用于明确标注的假设情景；不代表完整建筑性能。</small>';
@@ -218,7 +229,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
       const task=await post(base+'/imports',{...calibration.options(),file_id:f.file_id,mode:form.get('mode'),
         scale_to_m:form.get('scale_to_m')?Number(form.get('scale_to_m')):null,
         height_m:Number(form.get('height_m')),elevation_m:Number(form.get('elevation_m')),
-        reconstruct_footprints:form.has('reconstruct_footprints'),page:Number(form.get('page')),layer:form.get('layer')||null,send_to_provider:form.has('send_to_provider')});
+        ifc_origin_m:floorPanel.querySelector('[data-local-origin]')?.checked?ifcOrigin:null,ifc_storey_ids:[...floorPanel.querySelectorAll('[data-storey]:checked')].map(el=>el.value),reconstruct_footprints:form.has('reconstruct_footprints'),page:Number(form.get('page')),layer:form.get('layer')||null,send_to_provider:form.has('send_to_provider')});
       imports.unshift(task);paintImports();if(task.candidate?.rooms.some(r=>r.drawing))await calibration.overlay(task);host.querySelector('#import-progress').textContent='识别完成，请展开任务并合并候选后复核。';
     }catch(error){if(host.isConnected&&state.project?.project_id===pid){host.querySelector('#import-progress').textContent=error.message;try{imports=await request(base+'/imports');if(host.isConnected&&state.project?.project_id===pid)paintImports();}catch{ /* Preserve the original import failure. */ }}throw error;}
   },e.submitter);};
@@ -263,7 +274,7 @@ async function renderBuilding(rooms,host,onPick){
   if(!rooms.length){target.innerHTML='<p class="empty">导入或添加房间，开始建立模型。</p>';return ()=>{};}
   const points=rooms.flatMap(r=>roomSegments(r).flatMap(s=>s.polygon)),minX=Math.min(...points.map(p=>p[0])),minY=Math.min(...points.map(p=>p[1]));
   const maxX=Math.max(...points.map(p=>p[0])),maxY=Math.max(...points.map(p=>p[1]));
-  plan.innerHTML=`<svg viewBox="${minX-1} ${minY-1} ${maxX-minX+2} ${maxY-minY+2}" role="img" aria-label="房间平面轮廓">${rooms.map((r,i)=>`<polygon data-pick="${i}" points="${r.polygon.map(p=>p.join(',')).join(' ')}"><title>${esc(r.name)} · ${num(polygonArea(r.polygon))} m²</title></polygon>`).join('')}</svg>`;
+  plan.innerHTML=`<svg viewBox="${minX-1} ${minY-1} ${maxX-minX+2} ${maxY-minY+2}" role="img" aria-label="房间平面轮廓">${rooms.map((r,i)=>`<path data-pick="${i}" fill-rule="evenodd" d="${[r.polygon,...(r.holes||[])].map(ring=>'M'+ring.map(p=>p.join(',')).join('L')+'Z').join(' ')}"><title>${esc(r.name)} · ${num(roomArea(r))} m² · ${r.holes?.length||0} 个孔洞</title></path>`).join('')}</svg>`;
   plan.querySelectorAll('[data-pick]').forEach(p=>{p.onclick=()=>onPick(Number(p.dataset.pick));});
   try{
     const THREE=await import('three'),{OrbitControls}=await import('three/addons/controls/OrbitControls.js');

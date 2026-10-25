@@ -2466,6 +2466,57 @@
         ]
       }
     },
+    "/api/projects/{project_id}/agent": {
+      "get": {
+        "summary": "Agent History",
+        "operationId": "agent_history_api_projects__project_id__agent_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/agent/{agent_id}": {
       "get": {
         "summary": "Agent Task",
@@ -3725,6 +3776,66 @@
             "schema": {
               "type": "string",
               "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/files/{file_id}/ifc-storeys": {
+      "get": {
+        "summary": "Ifc Storeys",
+        "operationId": "ifc_storeys_api_projects__project_id__files__file_id__ifc_storeys_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
             }
           }
         ],
@@ -5706,7 +5817,7 @@
           "password": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 10,
+            "minLength": 1,
             "format": "password",
             "title": "Password",
             "writeOnly": true
@@ -6537,6 +6648,38 @@
             "type": "boolean",
             "title": "Reconstruct Footprints",
             "default": false
+          },
+          "ifc_origin_m": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 3,
+                "minItems": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ifc Origin M"
+          },
+          "ifc_storey_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Ifc Storey Ids"
           },
           "crop_px": {
             "anyOf": [
@@ -7376,7 +7519,7 @@
           "current_password": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 10,
+            "minLength": 1,
             "format": "password",
             "title": "Current Password",
             "writeOnly": true
@@ -7616,7 +7759,7 @@
           "password": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 10,
+            "minLength": 12,
             "format": "password",
             "title": "Password",
             "writeOnly": true
@@ -7668,7 +7811,7 @@
               "minItems": 2
             },
             "type": "array",
-            "maxItems": 100,
+            "maxItems": 256,
             "minItems": 3,
             "title": "Polygon"
           },
@@ -7703,6 +7846,27 @@
             "minLength": 1,
             "title": "Source Locator",
             "default": "人工输入"
+          },
+          "holes": {
+            "items": {
+              "items": {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "title": "Holes"
           },
           "segments": {
             "items": {
@@ -8017,7 +8181,7 @@
               "minItems": 2
             },
             "type": "array",
-            "maxItems": 100,
+            "maxItems": 256,
             "minItems": 3,
             "title": "Polygon"
           },

@@ -7,11 +7,11 @@ from shapely.geometry.polygon import orient
 from shapely.ops import unary_union
 
 from .schema import Contract
-from .model_geometry import parts
+from .model_geometry import parts, simple_pieces
 
 
 class Segment(Contract):
-    polygon: list[tuple[StrictFloat, StrictFloat]] = Field(min_length=3, max_length=100)
+    polygon: list[tuple[StrictFloat, StrictFloat]] = Field(min_length=3, max_length=256)
     elevation_m: StrictFloat = Field(default=0, ge=-100, le=1500)
     height_m: StrictFloat = Field(default=3, gt=.000001, le=30)
 
@@ -77,6 +77,7 @@ class Room(Segment):
     name: str = Field(min_length=1, max_length=120)
     height_m: StrictFloat = Field(default=3, gt=.5, le=30)
     source_locator: str = Field(default="人工输入", min_length=1, max_length=500)
+    holes: list[list[tuple[StrictFloat, StrictFloat]]] = Field(default_factory=list, max_length=16)
     segments: list[Segment] = Field(default_factory=list, max_length=128)
     reconstruction: Reconstruction | None = None
     drawing: DrawingTrace | None = None
@@ -88,7 +89,19 @@ class Room(Segment):
     @model_validator(mode="after")
     def solid(self):
         minimum = .05 if self.ifc_source else .5
-        if Polygon(self.polygon).area < minimum:
+        if any(not 3 <= len(ring) <= 100 or any(abs(v) > 10000 for pt in ring for v in pt) for ring in self.holes):
+            raise ValueError("孔洞须有 3–100 个有界顶点")
+        footprint = Polygon(self.polygon, self.holes)
+        if not footprint.is_valid:
+            raise ValueError("孔洞须在空间内部且互不相交，不能与外轮廓相交")
+        self.holes = [list(ring.coords)[:-1] for ring in orient(footprint, sign=1).interiors]
+        if self.holes and not self.segments:
+            pieces = simple_pieces(footprint)
+            if len(pieces) > 128:
+                raise ValueError("带孔空间分解超过 128 段，请简化源几何")
+            self.segments = [Segment(polygon=list(p.exterior.coords)[:-1], elevation_m=self.elevation_m,
+                                     height_m=self.height_m) for p in pieces]
+        if footprint.area < minimum:
             raise ValueError(f"房间底面积须不小于 {minimum:g} m²（IFC 保留小型设备间）")
         if self.segments:
             low = min(s.elevation_m for s in self.segments)
@@ -96,7 +109,7 @@ class Room(Segment):
             if abs(low-self.elevation_m) > 1e-6 or abs(high-low-self.height_m) > 1e-6:
                 raise ValueError("房间高度与分段范围不一致")
             base = unary_union([Polygon(s.polygon) for s in self.segments if abs(s.elevation_m-low) < 1e-7])
-            if base.symmetric_difference(Polygon(self.polygon)).area > 1e-6:
+            if base.symmetric_difference(footprint).area > 1e-6:
                 raise ValueError("房间底面与最低分段不一致")
             for i, a in enumerate(self.segments):
                 for b in self.segments[i+1:]:
@@ -251,6 +264,8 @@ class ImportOptions(Contract):
     page: StrictInt = Field(default=1, ge=1, le=500)
     send_to_provider: bool = False
     reconstruct_footprints: bool = False
+    ifc_origin_m: tuple[StrictFloat, StrictFloat, StrictFloat] | None = None
+    ifc_storey_ids: list[str] = Field(default_factory=list, max_length=50)
     crop_px: tuple[StrictInt, StrictInt, StrictInt, StrictInt] | None = None
     scale_basis: str = Field(default="", max_length=500)
     closure_m: StrictFloat = Field(default=0, ge=0, le=1.5)

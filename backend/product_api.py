@@ -78,6 +78,15 @@ def register_product(app, domain, auth):
         text, _ = model_export.idf(model)
         return Response(text, media_type='text/plain', headers={'Content-Disposition': f'''attachment; filename="building-v{model['revision']}.idf"'''})
 
+    @app.get('/api/projects/{project_id}/files/{file_id}/ifc-storeys')
+    def ifc_storeys(project_id: str, file_id: str):
+        import ifcopenshell
+        from .model_import import storey_inventory
+        _, path = domain.file_record(project_id, file_id)
+        if path.suffix.lower() != '.ifc':
+            raise core.ValidationError('请先选择 IFC 文件')
+        return storey_inventory(ifcopenshell.open(str(path)))
+
     @app.post('/api/projects/{project_id}/imports', status_code=201)
     def import_source(project_id: str, body: ImportOptions, request: Request):
         return modeling.start_import(project_id, body, request.state.user['display_name'])

@@ -15,17 +15,18 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr
 class Credentials(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=False)
     username: str = Field(pattern=r"^[A-Za-z0-9_\-]{3,32}$")
-    password: SecretStr = Field(min_length=10, max_length=128)
+    password: SecretStr = Field(min_length=1, max_length=128)
 
 
 class Registration(Credentials):
+    password: SecretStr = Field(min_length=12, max_length=128)
     display_name: str = Field(min_length=1, max_length=40)
     invitation: SecretStr | None = Field(default=None, max_length=200)
 
 
 class PasswordChange(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    current_password: SecretStr = Field(min_length=10, max_length=128)
+    current_password: SecretStr = Field(min_length=1, max_length=128)
     new_password: SecretStr = Field(min_length=12, max_length=128)
 
 

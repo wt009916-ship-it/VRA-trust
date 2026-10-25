@@ -176,14 +176,25 @@ def ifc(model):
             space = run("root.create_entity", doc, ifc_class="IfcSpace", name=room["name"])
             run("aggregate.assign_object", doc, products=[space], relating_object=story)
             solids = []
+            from shapely.geometry import Polygon
+            from shapely.ops import unary_union
+            layers = {}
             for section in model_geometry.parts(room):
-                pts = [doc.createIfcCartesianPoint((float(x), float(y))) for x, y in section["polygon"]]
-                curve = doc.createIfcPolyline(pts + [pts[0]])
-                profile = doc.createIfcArbitraryClosedProfileDef("AREA", None, curve)
-                position = doc.createIfcAxis2Placement3D(doc.createIfcCartesianPoint(
-                    (0., 0., float(section["elevation_m"]-elevation))), None, None)
-                solids.append(doc.createIfcExtrudedAreaSolid(profile, position,
-                    doc.createIfcDirection((0., 0., 1.)), float(section["height_m"])))
+                key = (section["elevation_m"], section["height_m"])
+                layers.setdefault(key, []).append(Polygon(section["polygon"]))
+            def curve_for(ring):
+                pts = [doc.createIfcCartesianPoint((float(x), float(y))) for x, y in list(ring.coords)[:-1]]
+                return doc.createIfcPolyline(pts + [pts[0]])
+            for (bottom, height), footprints in layers.items():
+                for footprint in model_geometry.polygons(unary_union(footprints)):
+                    curve = curve_for(footprint.exterior)
+                    profile = (doc.createIfcArbitraryProfileDefWithVoids("AREA", None, curve,
+                               [curve_for(ring) for ring in footprint.interiors]) if footprint.interiors else
+                               doc.createIfcArbitraryClosedProfileDef("AREA", None, curve))
+                    position = doc.createIfcAxis2Placement3D(doc.createIfcCartesianPoint(
+                        (0., 0., float(bottom-elevation))), None, None)
+                    solids.append(doc.createIfcExtrudedAreaSolid(profile, position,
+                        doc.createIfcDirection((0., 0., 1.)), float(height)))
             solid = solids[0]
             for other in solids[1:]:
                 solid = doc.createIfcBooleanResult("UNION", solid, other)

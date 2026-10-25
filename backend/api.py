@@ -47,6 +47,8 @@ class BodyLimit:
 
 def create_app(data_dir=None, *, start_worker=True):
     root = Path(data_dir or os.environ.get('VRA_DATA_DIR', core.ROOT / 'runtime')).resolve()
+    if (root / '.restore-incomplete').exists():
+        raise core.ValidationError('恢复尚未校验通过，拒绝启动此目录')
     domain = Domain(Store(root))
     auth = Auth(domain.store)
 
@@ -63,6 +65,8 @@ def create_app(data_dir=None, *, start_worker=True):
         if domain.worker:
             domain.worker.join(timeout=5)
     app = FastAPI(title='VRA-Trust Evidence API', version='1.0.0', lifespan=lifespan)
+    from .runtime_backup import Operations
+    app.state.operations = Operations()
     app.state.domain = domain
     app.state.auth = auth
     app.state.tokens = Tokens(auth)
@@ -101,7 +105,14 @@ def create_app(data_dir=None, *, start_worker=True):
         declared = request.headers.get('content-length')
         if declared and (not declared.isdigit() or int(declared) > maximum + 65536):
             return JSONResponse({'detail': f'请求超过大小限制；单文件上限 {maximum // 1024 // 1024} MB，请拆分资料'}, status_code=413)
-        response = await call_next(request)
+        tracked = path.startswith('/api/') and path != '/api/health'
+        if tracked and (not app.state.operations.enter()):
+            return JSONResponse({'detail': '正在创建完整备份，请稍后重试'}, status_code=503, headers={'Retry-After': '5'})
+        try:
+            response = await call_next(request)
+        finally:
+            if tracked:
+                app.state.operations.leave()
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy'] = 'no-referrer'
         response.headers['Cache-Control'] = 'no-store'
@@ -127,7 +138,7 @@ def create_app(data_dir=None, *, start_worker=True):
             available = True
         except core.ValidationError:
             available = False
-        return {'status': 'ok', 'engine_available': available, 'worker_alive': bool(domain.worker and domain.worker.is_alive()), 'upload_policy': {'max_file_bytes': maximum, 'max_file_mb': maximum // 1024 // 1024}, 'demo_mode': os.environ.get('DEMO_MODE', 'false').lower() == 'true', 'deployment': 'local_authenticated', 'capabilities': {'project_intake': True, 'evidence_gate': True, 'real_energyplus': available, 'llm_tools': all((app.state.gateway.public()[k] for k in ('enabled', 'key_configured'))), 'agent_tools_installed': True, 'claim_dag': True, 'selective_recomputation': True, 'drawing_ai': bool(app.state.gateway.public().get('vision_model') and app.state.gateway.public()['enabled'] and app.state.gateway.public()['key_configured']), 'local_dxf_pdf_ifc': True, 'model_to_idf': True, 'ifc_export': True, 'persistent_model_workflow': True, 'mcp_adapter': True, 'weather_analysis': True, 'nasa_daily_connector': True, 'epw_quality_gate': True, 'manual_geometry': True, 'robustness': True}}
+        return {'status': 'ok', 'maintenance': app.state.operations.maintenance, 'engine_available': available, 'worker_alive': bool(domain.worker and domain.worker.is_alive()), 'upload_policy': {'max_file_bytes': maximum, 'max_file_mb': maximum // 1024 // 1024}, 'demo_mode': os.environ.get('DEMO_MODE', 'false').lower() == 'true', 'deployment': 'local_authenticated', 'capabilities': {'project_intake': True, 'evidence_gate': True, 'real_energyplus': available, 'llm_tools': all((app.state.gateway.public()[k] for k in ('enabled', 'key_configured'))), 'agent_tools_installed': True, 'claim_dag': True, 'selective_recomputation': True, 'drawing_ai': bool(app.state.gateway.public().get('vision_model') and app.state.gateway.public()['enabled'] and app.state.gateway.public()['key_configured']), 'local_dxf_pdf_ifc': True, 'model_to_idf': True, 'ifc_export': True, 'persistent_model_workflow': True, 'mcp_adapter': True, 'weather_analysis': True, 'nasa_daily_connector': True, 'epw_quality_gate': True, 'manual_geometry': True, 'robustness': True}}
 
     @app.get('/api/auth/status')
     def auth_status():

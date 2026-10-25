@@ -28,6 +28,8 @@ def polygons(shape):
         return []
     if shape.geom_type == "Polygon":
         return [shape] if shape.area > EPS else []
+    if shape.geom_type not in {"MultiPolygon", "GeometryCollection"}:
+        return []
     return [p for child in shape.geoms for p in polygons(child)]
 
 
@@ -303,6 +305,8 @@ def thermal_geometry_model(model):
         for section in [room, *room.get("segments", [])]:
             points.extend([x, y, section["elevation_m"]] for x, y in section["polygon"])
             points.extend([x, y, section["elevation_m"]+section["height_m"]] for x, y in section["polygon"])
+        for ring in room.get("holes", []):
+            points.extend([x, y, room["elevation_m"]] for x, y in ring)
         for hint in room.get("boundary_hints", []):
             points.extend(hint["points"])
     maps = []
@@ -338,6 +342,7 @@ def thermal_geometry_model(model):
                 raise core.ValidationError("几何公差产生无效空间，请减小公差")
             section.update(polygon=list(shape.simplify(1e-8).exterior.coords)[:-1],
                            elevation_m=low, height_m=high-low)
+        room["holes"] = [[(snapped(x, 0), snapped(y, 1)) for x, y in ring] for ring in room.get("holes", [])]
         hints = []
         for hint in room.get("boundary_hints", []):
             hint["points"] = [[snapped(value, axis) for axis, value in enumerate(p)] for p in hint["points"]]

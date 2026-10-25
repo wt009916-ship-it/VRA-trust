@@ -22,10 +22,9 @@ def _candidates(polygons, options, locator):
     for index, polygon in enumerate(polygons):
         if polygon.area < .5:
             continue
-        if polygon.interiors:
-            continue
         result.append(Room(id=f"R{index + 1}", name=f"空间 {index + 1}",
                            polygon=list(polygon.exterior.coords)[:-1],
+                           holes=[list(r.coords)[:-1] for r in polygon.interiors],
                            height_m=options.height_m, elevation_m=options.elevation_m,
                            source_locator=locator).model_dump())
         if len(result) > 100:
@@ -135,18 +134,62 @@ def pdf(path, options):
                              "scale_to_m": factor, "text": (page.extract_text() or "")[:6000]}}
 
 
+def space_storey(space):
+    current, seen = space, set()
+    while current and current.id() not in seen:
+        seen.add(current.id())
+        if current.is_a("IfcBuildingStorey"):
+            return current
+        parents = [r.RelatingObject for r in getattr(current, "Decomposes", ())]
+        parents += [r.RelatingStructure for r in getattr(current, "ContainedInStructure", ())]
+        current = parents[0] if parents else None
+    return None
+
+
+def storey_inventory(document):
+    from ifcopenshell.util.unit import calculate_unit_scale
+    factor = calculate_unit_scale(document)
+    items = {}
+    unassigned = 0
+    for space in document.by_type("IfcSpace"):
+        floor = space_storey(space)
+        if floor is None:
+            unassigned += 1
+            continue
+        row = items.setdefault(floor.GlobalId, {"id": floor.GlobalId, "name": floor.Name or floor.GlobalId,
+            "elevation_m": float(floor.Elevation)*factor if floor.Elevation is not None else None, "spaces": 0})
+        row["spaces"] += 1
+    from ifcopenshell.util.placement import get_local_placement
+    sites = document.by_type("IfcSite") or document.by_type("IfcBuilding")
+    origin = (get_local_placement(sites[0].ObjectPlacement)[:3, 3]*factor).tolist() if sites else None
+    return {"suggested_origin_m": origin, "origin_basis": "First IfcSite/IfcBuilding world placement; translation only, axes unchanged",
+            "storeys": sorted(items.values(), key=lambda r: (r["elevation_m"] or 0, r["name"])),
+            "unassigned_spaces": unassigned, "total_spaces": len(document.by_type("IfcSpace"))}
+
+
 def ifc(path, options):
     import ifcopenshell
     import ifcopenshell.geom
     document = ifcopenshell.open(str(path))
     spaces = document.by_type("IfcSpace")
-    diagnostics = {"format": "IFC", "schema": document.schema, "total": len(spaces),
+    inventory = storey_inventory(document)
+    selected = set(options.ifc_storey_ids)
+    if selected - {s["id"] for s in inventory["storeys"]}:
+        raise core.ValidationError("选择的 IFC 楼层不存在，请重新读取楼层清单")
+    origin = options.ifc_origin_m or (0., 0., 0.)
+    source_count = len(spaces)
+    if selected:
+        spaces = [s for s in spaces if space_storey(s) is not None and space_storey(s).GlobalId in selected]
+    diagnostics = {"inventory": inventory, "source_total": source_count,
+                   "scope": "selected_storeys" if selected else "whole_file",
+                   "selected_storey_ids": sorted(selected), "excluded_by_scope": source_count-len(spaces),
+                   "format": "IFC", "schema": document.schema, "total": len(spaces),
                    "extracted": 0, "blocked": len(spaces), "spaces": [], "actions": []}
     if not spaces:
         diagnostics["actions"] = ["请在原建模软件创建并导出 IfcSpace 空间及其实体几何；构件包围盒不能代替房间。"]
         raise ImportDiagnosticError("IFC 没有 IfcSpace，无法建立空间模型", diagnostics)
     if len(spaces) > 100:
-        diagnostics["actions"] = ["单次最多解析 100 个空间，请在原软件按楼层导出并分别导入。"]
+        diagnostics["actions"] = ["单次最多解析 100 个空间，请在导入界面读取楼层清单并选择不超过 100 个空间的范围。"]
         raise ImportDiagnosticError("IFC 空间超过 100，请按楼层拆分", diagnostics)
     settings = ifcopenshell.geom.settings()
     settings.set(settings.USE_WORLD_COORDS, True)
@@ -166,19 +209,31 @@ def ifc(path, options):
             else:
                 shape = ifcopenshell.geom.create_shape(settings, space)
                 sections = model_geometry.mesh_segments(shape.geometry.verts, shape.geometry.faces)
+            if options.ifc_origin_m:
+                for section in sections:
+                    section['polygon'] = [(x-origin[0], y-origin[1]) for x, y in section['polygon']]
+                    section['elevation_m'] -= origin[2]
             low = min(s["elevation_m"] for s in sections)
             high = max(s["elevation_m"]+s["height_m"] for s in sections)
             floor = unary_union([Polygon(s["polygon"]) for s in sections if abs(s["elevation_m"]-low) < 1e-7])
-            if floor.geom_type != "Polygon" or floor.interiors:
-                raise ValueError("非单一无孔水平底面")
+            if floor.geom_type != "Polygon":
+                raise ValueError("非单一水平底面，分离体须在源模型中拆分空间")
             hints, skipped = model_geometry.ifc_boundary_hints(document, space)
+            if options.ifc_origin_m:
+                for hint in hints:
+                    # Plane offset must shift with its points, including wall projection ranges.
+                    normal = model_geometry.frame(hint['points'])['normal']
+                    delta = sum(normal[i]*origin[i] for i in range(3))
+                    hint['points'] = [[p[i]-origin[i] for i in range(3)] for p in hint['points']]
+                    if hint.get('element_plane_range_m'):
+                        hint['element_plane_range_m'] = [v-delta for v in hint['element_plane_range_m']]
             name = " · ".join(n for n in (space.Name, space.LongName) if n) or f"空间 {index + 1}"
             rooms.append(Room(id=f"R{index + 1}", name=name,
-                              polygon=list(floor.exterior.coords)[:-1], elevation_m=low,
+                              polygon=list(floor.exterior.coords)[:-1], holes=[list(r.coords)[:-1] for r in floor.interiors], elevation_m=low,
                               height_m=high-low, segments=sections if len(sections) > 1 else [],
                               ifc_source=space.GlobalId, boundary_hints=hints, reconstruction=reconstruction,
                               conditioned=None, include_floor_area=None,
-                              source_locator="IFC GlobalId=" + space.GlobalId + ("; INFERRED FootPrint+Height+NetArea+NetVolume" if reconstruction else "")).model_dump())
+                              source_locator="IFC GlobalId=" + space.GlobalId + ("; origin_m=" + str(list(origin)) if options.ifc_origin_m else "") + ("; INFERRED FootPrint+Height+NetArea+NetVolume" if reconstruction else "")).model_dump())
             if skipped:
                 warnings.append(f"{space.GlobalId}: {skipped} 条空间边界暂无法解析；未匹配区域默认阻止发布。")
         except Exception as exc:
@@ -186,13 +241,17 @@ def ifc(path, options):
             detail.update(status="blocked", code="MISSING_BODY" if missing_body else "UNSUPPORTED_GEOMETRY",
                           error=f"{type(exc).__name__}: {str(exc)[:500]}",
                           action="在源软件中导出此 IfcSpace 的三维 Body 实体；仅 Box/FootPrint 不能确定空间体积。" if missing_body
-                          else "检查此空间是否为无孔、水平分段空间；修复源几何或在人工建模中依据图纸重建。")
+                          else "检查此空间是否为水平分段空间；修复源几何或在人工建模中依据图纸重建。")
         diagnostics["spaces"].append(detail)
     diagnostics.update(extracted=len(rooms), blocked=len(spaces)-len(rooms))
     if len(rooms) != len(spaces):
         diagnostics["actions"] = ["按清单中的 GlobalId 在原软件定位并修复，重新导出后再次导入。",
                                   "本次未生成可采纳的部分建筑；已解析空间不等于完整模型。"]
         raise ImportDiagnosticError(f"IFC 未完整导入：共 {len(spaces)} 个空间，解析 {len(rooms)} 个，阻断 {len(spaces)-len(rooms)} 个。请查看逐空间补证清单。", diagnostics)
+    if options.ifc_origin_m:
+        warnings.append(f"显式坐标平移：本地坐标 = IFC 世界坐标 - {list(origin)} m；未旋转坐标轴，原文件及转换参数保留。")
+    if selected:
+        warnings.append(f"仅导入显式选择的 {len(selected)} 个楼层、{len(spaces)}/{source_count} 个空间；其余未尝试，不代表整栋建筑。楼层上下边界仍需核对。")
     if any(r.get("reconstruction") for r in rooms):
         warnings.append("已根据 FootPrint 与一致的高度/面积/体积工程量重建缺失 Body；属于推导柱体，须核对斜顶、楼板和源模型，不能标为完整原生三维实体。")
     warnings += ["IFC 保留水平分段空间；斜面拒绝近似。墙层与实际门窗仍需热工建模，不自动替代。",
@@ -200,7 +259,8 @@ def ifc(path, options):
                  "内部及缺失边界未配对时默认拒绝发布；只有显式假设情景才能按绝热处理。",
                  "IfcSpace 缺失时不会用实体包围盒冒充房间。"]
     return {"rooms": rooms, "warnings": warnings, "diagnostics": diagnostics,
-            "metadata": {"schema": document.schema, "spaces": len(spaces)}}
+            "metadata": {"schema": document.schema, "spaces": len(spaces), "scope": diagnostics["scope"],
+                         "selected_storey_ids": sorted(selected), "source_total": source_count, "inventory": inventory, "coordinate_origin_m": list(origin)}}
 
 
 def vision(path, options, gateway):

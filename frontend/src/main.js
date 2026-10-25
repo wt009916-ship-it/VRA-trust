@@ -77,7 +77,7 @@ function home(tasks=false) {
   document.querySelector('#all-projects').classList.toggle('active',!tasks);
   disposeWorkspace=mountWorkspace(document.querySelector('#workspace'),{
     state,tasks,
-    openProject:(id,view)=>action(async()=>{await selectProject(id,view==='intake'?'readiness':view);if(view==='intake')openIntake(state.project);}),
+    openProject:(id,view)=>action(async()=>{await refreshProjects();await selectProject(id,view==='intake'?'readiness':view);if(view==='intake')openIntake(state.project);}),
     openIntake:(id,files=[],resume=null)=>action(async()=>{
       const project=id?await request('/projects/'+id):null;openIntake(project,files,'evidence',resume);
     }),
@@ -178,6 +178,14 @@ function renderProject() {
   document.querySelector('#composer-upload').onclick = () => openIntake(state.project);
   document.querySelector('#task-next').onclick = () => switchView(state.gate.can_simulate ? 'simulation' : 'evidence');
   document.querySelector('#task-command').onsubmit = e => {e.preventDefault();const input=document.querySelector('#command');if(!input.value.trim())return;const target=document.querySelector('#task-response');action(()=>runAgent(state,input.value.trim(),target,document.querySelector('#agent-mode').value,document.querySelector('#allow-compute').checked,null,document.querySelector('#agent-task').value,switchView),e.submitter);};
+  const history=document.createElement('div');history.className='actions agent-history';
+  history.innerHTML='<label>持久任务记录<select aria-label="历史助手任务"><option value="">选择已保存任务</option></select></label><button>刷新记录</button>';
+  document.querySelector('#task-response').before(history);
+  let savedTasks=[];
+  const loadHistory=async()=>{savedTasks=await request('/projects/'+p.project_id+'/agent');if(!history.isConnected)return;history.querySelector('select').innerHTML='<option value="">选择已保存任务</option>'+savedTasks.map(t=>`<option value="${esc(t.agent_id)}">${esc(t.created_at)} · ${esc(t.status)} · ${esc(t.question.slice(0,40))}</option>`).join('');};
+  history.querySelector('button').onclick=e=>action(loadHistory,e.currentTarget);
+  history.querySelector('select').onchange=e=>{const t=savedTasks.find(t=>t.agent_id===e.target.value);if(t)action(()=>runAgent(state,'',document.querySelector('#task-response'),t.mode,false,null,t.task,switchView,t));};
+  action(loadHistory);
   document.querySelector('#edit-factors').onclick=()=>factorEditor(state,modal,action,refreshRuns);
   document.querySelector('#add-evidence').onclick = () => openIntake(state.project);
   document.querySelector('#manual-evidence').onclick = evidenceForm;
