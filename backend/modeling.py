@@ -163,14 +163,14 @@ class Modeling:
             blockers.append("至少一个空间须计入项目面积")
         geometry_review = None
         try:
-            surfaces = model_export.geometry(model)
+            surfaces, numerical = model_export.geometry(model, return_report=True)
             _, adjustment = model_geometry.thermal_geometry_model(model)
             from .honeybee_bridge import audit
             independent = audit(model, surfaces)
             if not independent["passed"]:
                 blockers.append("Honeybee 校验失败：" + "; ".join(i["message"] for i in independent["issues"])[:1500])
             geometry_review = {
-                "independent_audit": independent,
+                "independent_audit": independent, "numerical_precision": numerical,
                 "coverage": {
                     "thermal_mass_assemblies": list((model.get("thermal") or {}).get("constructions", {})),
                     "hourly_operation": bool((model.get("thermal") or {}).get("operation")),
@@ -212,6 +212,7 @@ class Modeling:
                        "ifc_unpaired_policy": model["thermal"].get("ifc_unpaired_policy", "reject"),
                        "geometry_adjustment": adjustment,
                        "independent_audit": check["geometry_review"]["independent_audit"],
+                       "numerical_precision": check["geometry_review"]["numerical_precision"],
                        "scope": model_export.scope(model), "limitations": model_export.LIMITATIONS}
             existing = [ev for ev in self.store.list("evidence", project_id)
                         if ev["type"] == "idf" and ev["scheme_id"] == body.scheme_id and ev["review_state"] != "rejected"]

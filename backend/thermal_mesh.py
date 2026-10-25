@@ -4,6 +4,8 @@ Adds existing junction vertices and triangulates affected polygons. No coordinat
 snapping, lost slivers, moved room boundaries or changed boundary conditions.
 Reciprocal surfaces use the same triangulation even across an explicit wall gap.
 """
+from collections import defaultdict
+from itertools import product
 import numpy as np
 from shapely import constrained_delaunay_triangles
 
@@ -11,7 +13,94 @@ from . import core
 from .model_geometry import frame, face_points
 
 
-def conform(surfaces):
+# IDF coordinates are emitted at six decimal places. Intersection/projection
+# residuals must share vertices before checking the geometry sent to the engine.
+PRECISION_M = 1e-6
+WELD_LIMIT_M = 1e-5
+
+
+def measures(points):
+    xyz = np.asarray(points, dtype=float)
+    normal = np.zeros(3)
+    volume = 0.
+    for i in range(1, len(xyz)-1):
+        normal += np.cross(xyz[i]-xyz[0], xyz[i+1]-xyz[0])
+        volume += float(xyz[0] @ np.cross(xyz[i], xyz[i+1]))/6
+    return float(np.linalg.norm(normal)/2), volume
+
+
+def engine_vertices(surfaces):
+    """Bounded numerical welding, never a source-footprint or boundary-policy edit."""
+    points = sorted({tuple(p) for s in surfaces for p in s['points']})
+    parents = list(range(len(points)))
+    buckets = defaultdict(list)
+    def find(i):
+        while parents[i] != i:
+            parents[i] = parents[parents[i]]
+            i = parents[i]
+        return i
+    for i, point in enumerate(points):
+        cell = tuple(int(np.floor(v/WELD_LIMIT_M)) for v in point)
+        for offset in product((-1, 0, 1), repeat=3):
+            for j in buckets[tuple(cell[k]+offset[k] for k in range(3))]:
+                if np.linalg.norm(np.asarray(point)-points[j]) <= WELD_LIMIT_M:
+                    parents[find(i)] = find(j)
+        buckets[cell].append(i)
+    groups = defaultdict(list)
+    for i, point in enumerate(points):
+        groups[find(i)].append(point)
+    mapping, maximum = {}, 0.
+    for group in groups.values():
+        representative = np.mean(group, axis=0).round(6).tolist()
+        displacement = max(np.linalg.norm(np.asarray(p)-representative) for p in group)
+        if displacement > WELD_LIMIT_M:
+            raise core.ValidationError('数值顶点归并超过10微米，拒绝代替工程几何修复')
+        maximum = max(maximum, float(displacement))
+        for point in group:
+            mapping[point] = representative
+    before, after = defaultdict(lambda: [0., 0.]), defaultdict(lambda: [0., 0.])
+    output, collapsed = [], []
+    for surface in surfaces:
+        zone = surface['zone']
+        area, volume = measures(surface['points'])
+        before[zone][0] += area
+        before[zone][1] += volume
+        ring = []
+        for point in surface['points']:
+            point = mapping[tuple(point)]
+            if not ring or point != ring[-1]:
+                ring.append(point)
+        if len(ring) > 1 and ring[-1] == ring[0]:
+            ring.pop()
+        new_area, new_volume = measures(ring)
+        if len(ring) < 3 or new_area < 5e-11:
+            if area > .0001:
+                raise core.ValidationError('归并会消除具有实际面积的热面，拒绝发布')
+            collapsed.append({'name': surface['name'], 'zone': zone, 'original_area_m2': area})
+            continue
+        frame(ring)  # Preserve self-intersection and planarity refusals.
+        after[zone][0] += new_area
+        after[zone][1] += new_volume
+        output.append({**surface, 'points': ring})
+    names = {s['name'] for s in output}
+    if any(s['boundary'] == 'Surface' and s['other'] not in names for s in output):
+        raise core.ValidationError('数值归并导致成对热面不一致，拒绝单侧删除')
+    changes = []
+    for zone, (area, volume) in before.items():
+        new_area, new_volume = after[zone]
+        if (abs(new_area-area) > max(.0001, area*1e-6) or
+                abs(new_volume-volume) > max(.0001, abs(volume)*1e-6)):
+            raise core.ValidationError('数值归并面积或体积变化超过绝对/相对限额，拒绝发布：'+zone)
+        changes.append({'zone': zone, 'area_before_m2': area, 'area_after_m2': new_area,
+                        'volume_before_m3': volume, 'volume_after_m3': new_volume})
+    return output, {'coordinate_precision_m': PRECISION_M, 'weld_limit_m': WELD_LIMIT_M,
+                    'max_displacement_m': maximum, 'collapsed_faces': collapsed, 'zones': changes,
+                    'relative_change_limit': 1e-6, 'absolute_area_change_limit_m2': .0001,
+                    'absolute_volume_change_limit_m3': .0001,
+                    'basis': 'Numerical intersections and IDF serialization only; source geometry and boundary classes unchanged.'}
+
+
+def conform(surfaces, *, return_report=False):
     faces = [{**s, 'points': [list(p) for p in s['points']]} for s in surfaces]
     lookup = {s['name']: s for s in faces}
     original = {s['name']: len(s['points']) for s in faces}
@@ -75,6 +164,7 @@ def conform(surfaces):
             if other:
                 result.append({**other, 'name': b_name, 'other': a_name,
                                'points': face_points(triangle, frame(other['points']))})
+    result, precision = engine_vertices(result)
     # Merge numerical small triangles with a compatible neighbour only when the
     # result is a convex quad retaining every exterior vertex (no T-junction loss).
     for face in list(result):
@@ -104,4 +194,5 @@ def conform(surfaces):
             break
     if len(result) > 10000:
         raise core.ValidationError('一致热网格超过 10000 面，请拆分项目')
-    return result
+    precision["output_faces"] = len(result)
+    return (result, precision) if return_report else result

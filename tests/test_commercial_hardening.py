@@ -87,8 +87,9 @@ def test_provider_failure_keeps_real_weather_and_permissions(client, monkeypatch
     weather = r.json()
     agent = client.app.state.agent
     monkeypatch.setattr(agent.gateway, 'public', lambda: dict(enabled=True, key_configured=True, provider='fixture', model='fixture'))
-    def complete(messages, tools):
-        assert {t['function']['name'] for t in tools} == {'weather_summary', 'project_get'}
+    def complete(messages, tools, **kwargs):
+        if tools:  # A bounded explanation-only repair exposes no tool.
+            assert {t['function']['name'] for t in tools} == {'weather_summary', 'project_get'}
         if response == 'timeout':
             raise core.ValidationError('timeout fixture')
         return {'role': 'assistant', 'content': response}
@@ -113,7 +114,7 @@ def test_weather_task_cannot_escape_tool_scope_even_with_compute_checked(client,
     pid = create_project(client)['project_id']
     agent = client.app.state.agent
     monkeypatch.setattr(agent.gateway, 'public', lambda: dict(enabled=True, key_configured=True, provider='fixture', model='fixture'))
-    monkeypatch.setattr(agent.gateway, 'complete', lambda *args: {'role': 'assistant', 'content': None,
+    monkeypatch.setattr(agent.gateway, 'complete', lambda *args, **kwargs: {'role': 'assistant', 'content': None,
         'tool_calls': [{'id': 'x', 'function': {'name': 'simulation_create', 'arguments': '{}'}}]})
     result = agent.start(pid, Chat(message='读取天气', task='weather', mode='provider', allow_compute=True), background=False)
     assert result['status'] == 'partial'

@@ -21,9 +21,9 @@ def compiler_hash():
                            "thermal_mesh": core.sha(thermal_mesh.__file__), "honeybee_bridge": core.sha(honeybee_bridge.__file__), "libraries": honeybee_bridge.library_versions()})
 
 
-def geometry(model):
+def geometry(model, *, return_report=False):
     derived, _ = model_geometry.thermal_geometry_model(model)
-    return thermal_mesh.conform(model_geometry.geometry(derived))
+    return thermal_mesh.conform(model_geometry.geometry(derived), return_report=return_report)
 
 
 def idf(model):
@@ -86,8 +86,9 @@ def idf(model):
             obj("Construction", name, name+"Layer")
             if name+"Reverse" in used_constructions:
                 obj("Construction", name+"Reverse", name+"Layer")
-    obj("WindowMaterial:SimpleGlazingSystem", "Glass", t["window_u"], t["window_shgc"], .6)
-    obj("Construction", "Window", "Glass")
+    if t["window_wall_ratio"] and any(s["kind"] == "Wall" and s["boundary"] == "Outdoors" for s in surfaces):
+        obj("WindowMaterial:SimpleGlazingSystem", "Glass", t["window_u"], t["window_shgc"], .6)
+        obj("Construction", "Window", "Glass")
     validated_volumes = {r["room_id"]: r["volume_m3"] for r in independent["rooms"]}
     for r in model["rooms"]:
         name = r["id"]

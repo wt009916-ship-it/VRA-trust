@@ -3,10 +3,12 @@ import base64
 import ctypes
 import os
 import threading
+import json
+import time
 from urllib.parse import urlsplit
 
 import httpx
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, StrictInt, model_validator
 
 from . import core
 from .schema import Contract
@@ -19,6 +21,9 @@ class ProviderSettings(Contract):
     vision_model: str | None = Field(default=None, pattern=r'^[a-zA-Z0-9_./:-]{1,100}$')
     api_key: SecretStr | None = None
     clear_key: bool = False
+    request_timeout_s: StrictInt = Field(default=120, ge=10, le=180)
+    max_output_tokens: StrictInt = Field(default=1000, ge=128, le=6000)
+    local_qwen_no_thinking: bool = True
 
     @model_validator(mode='after')
     def endpoint_contract(self):
@@ -73,6 +78,9 @@ class Gateway:
         endpoint = settings.get('endpoint', self.endpoint)
         return {'provider': 'OpenAI-compatible', 'model': settings['model'], 'enabled': settings['enabled'],
                 'vision_model': settings.get('vision_model'),
+                'request_timeout_s': settings.get('request_timeout_s', 120),
+                'max_output_tokens': settings.get('max_output_tokens', 1000),
+                'local_qwen_no_thinking': settings.get('local_qwen_no_thinking', True),
                 'key_configured': bool(settings.get('sealed_key') or self.environment_key(settings)),
                 'endpoint': endpoint, 'key_storage': 'Windows DPAPI' if os.name == 'nt' else 'environment',
                 'data_scope': '聊天发送提问、项目摘要与工具结果；仅在显式勾选视觉识别时发送选定图页。'}
@@ -94,11 +102,13 @@ class Gateway:
                 if not 10 <= len(value) <= 500 or any(c.isspace() for c in value):
                     raise core.ValidationError('密钥格式无效')
                 config['sealed_key'] = protect(value)
-            config.update(enabled=body.enabled, model=body.model, endpoint=body.endpoint, vision_model=body.vision_model)
+            config.update(enabled=body.enabled, model=body.model, endpoint=body.endpoint, vision_model=body.vision_model,
+                          request_timeout_s=body.request_timeout_s, max_output_tokens=body.max_output_tokens,
+                          local_qwen_no_thinking=body.local_qwen_no_thinking)
             core.write_json(self.path, config)
         return self.public()
 
-    def complete(self, messages, tools, *, transport=None, vision=False):
+    def complete(self, messages, tools, *, transport=None, vision=False, timeout_s=None):
         settings = self.settings()
         if not settings['enabled']:
             raise core.ValidationError('AI Provider 尚未启用，请在开发者设置中配置')
@@ -107,29 +117,75 @@ class Gateway:
         key = protect(settings['sealed_key'], True) if settings.get('sealed_key') else self.environment_key(settings)
         if not key:
             raise core.ValidationError('尚未配置 API Key')
-        try:
-            with httpx.Client(timeout=60, follow_redirects=False, transport=transport, trust_env=False) as client:
-                endpoint = settings.get('endpoint', self.endpoint)
-                payload = {'model': settings['vision_model'] if vision else settings['model'],
-                           'messages': messages, 'max_tokens': 6000 if vision else 1400}
-                if endpoint == self.endpoint:
-                    payload['thinking'] = {'type': 'disabled'}
-                if tools:
-                    payload.update(tools=tools, tool_choice='auto')
-                with client.stream('POST', endpoint, headers={'Authorization': 'Bearer ' + key}, json=payload) as response:
-                    if response.status_code != 200:
-                        raise core.ValidationError('Provider 请求失败，HTTP ' + str(response.status_code) + '；请检查配置、余额和模型权限')
-                    raw = bytearray()
-                    for chunk in response.iter_bytes():
-                        raw.extend(chunk)
-                        if len(raw) > 1024 * 1024:
-                            raise core.ValidationError('Provider response too large')
-                    import json
-                    data = json.loads(raw)
-            message = data['choices'][0]['message']
-            # Never store/display the provider's hidden reasoning_content.
-            return {k: message[k] for k in ('role', 'content', 'tool_calls') if k in message}
-        except (httpx.HTTPError, KeyError, ValueError) as exc:
-            if isinstance(exc, core.ValidationError):
+        endpoint = settings.get('endpoint', self.endpoint)
+        model = settings['vision_model'] if vision else settings['model']
+        payload = {'model': model, 'messages': messages,
+                   'max_tokens': 6000 if vision else settings.get('max_output_tokens', 1000)}
+        if endpoint == self.endpoint:
+            payload['thinking'] = {'type': 'disabled'}
+        if (not vision and settings.get('local_qwen_no_thinking', True) and 'qwen' in model.lower()
+                and urlsplit(endpoint).hostname in {'localhost', '127.0.0.1', '::1'}):
+            payload['chat_template_kwargs'] = {'enable_thinking': False}
+            payload['temperature'] = 0.
+        if tools:
+            payload.update(tools=tools, tool_choice='auto')
+        budget = min(settings.get('request_timeout_s', 120), timeout_s if timeout_s is not None else 180)
+        deadline = time.monotonic()+budget
+        attempts = []
+        for attempt in range(2):
+            remaining = deadline-time.monotonic()
+            if remaining <= 0:
+                raise ProviderError('TIME_BUDGET', attempts)
+            start, received = time.monotonic(), False
+            try:
+                timeout = httpx.Timeout(remaining, connect=min(10., remaining), write=min(30., remaining), pool=min(10., remaining))
+                with httpx.Client(timeout=timeout, follow_redirects=False, transport=transport, trust_env=False) as client:
+                    with client.stream('POST', endpoint, headers={'Authorization': 'Bearer '+key}, json=payload) as response:
+                        if response.status_code != 200:
+                            code = 'HTTP_'+str(response.status_code)
+                            attempts.append({'attempt': attempt+1, 'status': 'failed', 'code': code,
+                                             'duration_ms': round((time.monotonic()-start)*1000)})
+                            if response.status_code in {502, 503, 504} and attempt == 0 and deadline-time.monotonic() > 2:
+                                continue
+                            raise ProviderError(code, attempts)
+                        raw = bytearray()
+                        for chunk in response.iter_bytes():
+                            received = received or bool(chunk)
+                            raw.extend(chunk)
+                            if len(raw) > 1024*1024:
+                                raise ProviderError('RESPONSE_TOO_LARGE', attempts)
+                            if time.monotonic() > deadline:
+                                raise ProviderError('TIME_BUDGET', attempts)
+                        data = json.loads(raw)
+                message = data['choices'][0]['message']
+                if not isinstance(message, dict):
+                    raise ValueError('Message must be an object')
+                attempts.append({'attempt': attempt+1, 'status': 'succeeded',
+                                 'duration_ms': round((time.monotonic()-start)*1000)})
+                # Never retain a provider's hidden reasoning_content.
+                answer = {k: message[k] for k in ('role', 'content', 'tool_calls') if k in message}
+                answer['_request'] = {'attempts': attempts, 'finish_reason': data['choices'][0].get('finish_reason'),
+                                      'timeout_s': budget, 'local_no_thinking': 'chat_template_kwargs' in payload}
+                return answer
+            except ProviderError as exc:
+                if not attempts or attempts[-1]['attempt'] != attempt+1:
+                    attempts.append({'attempt': attempt+1, 'status': 'failed', 'code': exc.code,
+                                     'duration_ms': round((time.monotonic()-start)*1000)})
                 raise
-            raise core.ValidationError('Provider 网络或响应格式错误；未生成工程结果') from None
+            except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
+                code = ('READ_TIMEOUT' if isinstance(exc, httpx.ReadTimeout) else
+                        'CONNECT_TIMEOUT' if isinstance(exc, httpx.ConnectTimeout) else
+                        'NETWORK_ERROR' if isinstance(exc, httpx.HTTPError) else 'INVALID_RESPONSE')
+                attempts.append({'attempt': attempt+1, 'status': 'failed', 'code': code,
+                                 'duration_ms': round((time.monotonic()-start)*1000)})
+                if (isinstance(exc, (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout))
+                        and not received and attempt == 0 and deadline-time.monotonic() > 2):
+                    continue
+                raise ProviderError(code, attempts) from None
+        raise ProviderError('RETRY_BUDGET', attempts)
+
+
+class ProviderError(core.ValidationError):
+    def __init__(self, code, attempts):
+        self.code, self.attempts = code, attempts
+        super().__init__('Provider '+code.replace('HTTP_', 'HTTP ')+'；AI说明未完成，已核验工具结果仍保留')

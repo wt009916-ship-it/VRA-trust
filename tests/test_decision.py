@@ -179,7 +179,7 @@ def test_provider_cannot_invent_material_study_plan(client, monkeypatch):
     agent = client.app.state.agent
     monkeypatch.setattr(agent.gateway, 'public', lambda: {
         'enabled': True, 'key_configured': True, 'provider': 'OpenAI-compatible', 'model': 'protocol-fixture'})
-    monkeypatch.setattr(agent.gateway, 'complete', lambda *args: {'role': 'assistant', 'content': None,
+    monkeypatch.setattr(agent.gateway, 'complete', lambda *args, **kwargs: {'role': 'assistant', 'content': None,
         'tool_calls': [{'id': 'invented', 'function': {'name': 'material_study_create', 'arguments': '{"study":{}}'}}]})
     result = agent.start(pid, Chat(message='帮我找最优方案', mode='provider', allow_compute=True), background=False)
     assert result['status'] == 'failed'
