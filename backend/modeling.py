@@ -168,7 +168,8 @@ class Modeling:
             from .honeybee_bridge import audit
             independent = audit(model, surfaces)
             if not independent["passed"]:
-                blockers.append("Honeybee 校验失败：" + "; ".join(i["message"] for i in independent["issues"])[:1500])
+                prefix = 'EnergyPlus 几何预检失败：' if not independent.get('engine_compatibility', {}).get('passed', True) else 'Honeybee 校验失败：'
+                blockers.append(prefix + "; ".join(i["message"] for i in independent["issues"])[:1500])
             geometry_review = {
                 "independent_audit": independent, "numerical_precision": numerical,
                 "coverage": {

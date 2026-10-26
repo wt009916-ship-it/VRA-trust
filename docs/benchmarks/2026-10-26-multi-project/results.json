@@ -1,0 +1,4846 @@
+{
+  "measured_at": "2026-10-26",
+  "counting": "6 distinct public IFC reference inputs + 1 authored control; Taipei RWIND format separately. Floors/variants are not independent buildings.",
+  "first_pass": {
+    "protocol": {
+      "first_pass": "full model, source inventory and explicit suggested origin; no silent omission",
+      "scope_fallback": "only if more than 100 spaces, test the lowest nonempty storey separately; never count as a new project",
+      "geometry_tolerance_m": 0.0,
+      "adjacency_gap_m": 0.0,
+      "strict_boundary": "reject unknown IFC boundaries",
+      "hypothetical_secondary": "same geometry with explicit adiabatic unknown-boundary scenario, only if strict boundary validation blocks",
+      "weather": "same official Golden EPW for software control, not source-building actual weather",
+      "materials_operation": "explicit shared hypothetical office test conditions",
+      "real_building_accuracy": "not evaluated",
+      "commercial_licenses": "not resolved; originals stay private"
+    },
+    "frozen_at_utc": "2026-10-26T13:44:02Z",
+    "code_commit": "bf68c28b04afc65a934b24f82129acdfa6d2706f",
+    "manifest_sha256": "529e5587c63317bb2676ef81e84c37138cb7ac9c647f9df37f9e39edf995afb2",
+    "ifcopenshell": "0.9.0.post1",
+    "engine": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+    "finished_at": "2026-10-26T13:52:27.458980+00:00",
+    "scope": "Public source geometry and hypothetical reference scenarios, not calibrated source-building energy",
+    "private_original_result_sha256": "fe1281969635b348238ebe1c6fa8abf5439a1ac8f0f627a8c6ae62c613cd71cc",
+    "cases": [
+      {
+        "id": "fzk_haus",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AC20-FZK-Haus.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AC20-FZK-Haus.ifc",
+        "sha256": "ea6f04eaf92fac4d7ad0038bc3d2dfea4c094dd3f516ecc33c50bf1835ca108d",
+        "bytes": 2526544,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 7,
+          "storeys": 2,
+          "walls": 13,
+          "windows": 11,
+          "doors": 5,
+          "project_ids": [
+            "0lY6P5Ur90TAQnnnI6wtnb"
+          ],
+          "building_ids": [
+            "2hQBAVPOr5VxhS3Jl0O47h"
+          ]
+        },
+        "status": "blocked_import",
+        "seconds": 0.875,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 7,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 7 个空间，解析 6 个，阻断 1 个。请查看逐空间补证清单。"
+            }
+          }
+        ]
+      },
+      {
+        "id": "smiley_west",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AC-20-Smiley-West-10-Bldg.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AC-20-Smiley-West-10-Bldg.ifc",
+        "sha256": "7a6ee4400b0396219086be754c67c1845074cdf6b1f42942ceb210704154670c",
+        "bytes": 5999027,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 140,
+          "storeys": 5,
+          "walls": 281,
+          "windows": 80,
+          "doors": 170,
+          "project_ids": [
+            "344O7vICcwH8qAEnwJDjSU"
+          ],
+          "building_ids": [
+            "00tMo7QcxqWdIGvc4sMN2A"
+          ]
+        },
+        "status": "annual_succeeded",
+        "seconds": 17.593,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 140,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 空间超过 100，请按楼层拆分"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "0eLD6321X73BGqB5WeSKCe"
+            ],
+            "source_space_count": 30,
+            "import_http": 201,
+            "candidate_rooms": 30,
+            "review_http": 200,
+            "saved_rooms": 30,
+            "area_m2": 444.38384927499993,
+            "status": "annual_succeeded",
+            "run_id": "run_abfecd2516374ccfb00a0b77584ae761",
+            "metrics": {
+              "annual_energy_kwh": 42930.32,
+              "area_m2": 444.38,
+              "eui_kwh_m2a": 96.60722804806697,
+              "energy_by_carrier_kwh": {
+                "Electricity": 22708.01,
+                "Natural Gas": 0.0,
+                "Additional Fuel": 0.0,
+                "District Cooling": 20219.4,
+                "District Heating": 2.9
+              },
+              "end_uses_kwh": {
+                "Heating": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 2.9
+                },
+                "Cooling": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 20219.4,
+                  "District Heating": 0.0
+                },
+                "Interior Lighting": {
+                  "Electricity": 9732.01,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Lighting": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Interior Equipment": {
+                  "Electricity": 12976.01,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Equipment": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Fans": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Pumps": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Rejection": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Humidification": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Recovery": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Water Systems": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Refrigeration": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Generators": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                }
+              },
+              "annual_days": 365,
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.10.26 21:51",
+              "locators": {
+                "total_energy": {
+                  "table": "Site and Source Energy",
+                  "row": "Total Site Energy",
+                  "column": "Total Energy",
+                  "unit": "kWh",
+                  "raw_value": "42930.32"
+                },
+                "area": {
+                  "table": "Building Area",
+                  "row": "Total Building Area",
+                  "column": "Area",
+                  "unit": "m2",
+                  "raw_value": "444.38"
+                },
+                "Electricity": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "22708.01"
+                },
+                "Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "District Cooling": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "20219.40"
+                },
+                "District Heating": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "2.90"
+                },
+                "End Uses / Heating / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Electricity": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "9732.01"
+                },
+                "End Uses / Exterior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "12976.01"
+                },
+                "End Uses / Exterior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Electricity": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Electricity": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Electricity": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Electricity": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Electricity": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Electricity": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "20219.40"
+                },
+                "End Uses / Interior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "2.90"
+                },
+                "End Uses / Cooling / District Heating": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Heating": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Heating": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Heating": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Heating": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Heating": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Heating": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                }
+              },
+              "comfort_hours": {
+                "Time Setpoint Not Met During Occupied Heating / Facility": 0.0,
+                "Time Setpoint Not Met During Occupied Cooling / Facility": 0.0,
+                "Time Not Comfortable Based on Simple ASHRAE 55-2004 / Facility": 1208.83
+              },
+              "scope": "annual_site_energy_not_source_energy",
+              "parser_version": "native-sql-0.3.0",
+              "hvac_scope": "ideal_thermal_loads"
+            },
+            "warnings_count": 0,
+            "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "pdf_http": 200,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": true,
+              "blockers": []
+            }
+          }
+        ]
+      },
+      {
+        "id": "e3d_revit",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/RE16_E3D_Building_2x3_Testversion.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/RE16_E3D_Building_2x3_Testversion.ifc",
+        "sha256": "f27955facfa6484f75a11873de6554f637f26e1d233ea37e24d94b5c854e8d7c",
+        "bytes": 3548647,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 104,
+          "storeys": 4,
+          "walls": 150,
+          "windows": 151,
+          "doors": 110,
+          "project_ids": [
+            "3oOySJyjT4uPlyJKoIegRD"
+          ],
+          "building_ids": [
+            "3oOySJyjT4uPlyJKoIegRC"
+          ]
+        },
+        "status": "annual_failed",
+        "seconds": 17.797,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 104,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 空间超过 100，请按楼层拆分"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "3oOySJyjT4uPlyJKnjNLWA"
+            ],
+            "source_space_count": 31,
+            "import_http": 201,
+            "candidate_rooms": 31,
+            "review_http": 200,
+            "saved_rooms": 31,
+            "area_m2": 697.7603743256601,
+            "status": "annual_failed",
+            "run_id": "run_25896ab0c58844eea37db35727c8462a",
+            "metrics": null,
+            "warnings_count": null,
+            "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "error": "EnergyPlus exited with code 1",
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 内部边界尚未配对；须补充邻接，或明确选择未配对边界绝热的假设情景"
+              ]
+            },
+            "assumed": {
+              "can_publish": true,
+              "blockers": []
+            }
+          }
+        ]
+      },
+      {
+        "id": "office_linear",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "Use Cases/LiNear building - Ifc2x3/Office Building Architectural.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/Use%20Cases/LiNear%20building%20-%20Ifc2x3/Office%20Building%20Architectural.ifc",
+        "sha256": "a2e79230de7d7b95dd7f44b7ba1e05bdaadcf26afc23ab1a17a981bcf12942eb",
+        "bytes": 6105315,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 86,
+          "storeys": 5,
+          "walls": 251,
+          "windows": 375,
+          "doors": 104,
+          "project_ids": [
+            "1fk5MdXq9FAu_ZarjFinin"
+          ],
+          "building_ids": [
+            "1fk5MdXq9FAu_ZarjFinim"
+          ]
+        },
+        "status": "blocked_import",
+        "seconds": 2.187,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 86,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 86 个空间，解析 75 个，阻断 11 个。请查看逐空间补证清单。"
+            }
+          }
+        ]
+      },
+      {
+        "id": "kit_institute",
+        "repository": "ara3d/IFC-toolkit",
+        "commit": "9ad378ae8db3203dbedfc6ffc7fb56ded56590ea",
+        "path": "test-files/C20-Institute-Var-2.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ara3d/IFC-toolkit/blob/9ad378ae8db3203dbedfc6ffc7fb56ded56590ea/test-files/C20-Institute-Var-2.ifc",
+        "sha256": "a06b9cf1922cc0a1e200719189054510dd3e1d188292325f66614f7c1fdb37b4",
+        "bytes": 10786515,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 82,
+          "storeys": 5,
+          "walls": 121,
+          "windows": 206,
+          "doors": 77,
+          "project_ids": [
+            "1dzyWEOh99jRUBVYP$exmF"
+          ],
+          "building_ids": [
+            "2yeSWdixz5hBpMywNJnu8J"
+          ]
+        },
+        "status": "blocked_import",
+        "seconds": 2.25,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 82,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 82 个空间，解析 79 个，阻断 3 个。请查看逐空间补证清单。"
+            }
+          }
+        ]
+      },
+      {
+        "id": "two_building_control",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AP14-Two-Building.ifc",
+        "kind": "authored_control_scene",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AP14-Two-Building.ifc",
+        "sha256": "c187684e4f52b0f711e2517ad970197db151f2b3fdf9a6ff0fca2c53c4e5559f",
+        "bytes": 70412,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 2,
+          "storeys": 2,
+          "walls": 10,
+          "windows": 0,
+          "doors": 0,
+          "project_ids": [
+            "10NqxzFzGHuu0F01cPRNIR"
+          ],
+          "building_ids": [
+            "0dQvEN1ND3vRTHVSjsQH7o",
+            "0Av6MWIFb9zPlbKR6TdC5W",
+            "1rnSviTTf7LRJ0Go_pznRr"
+          ]
+        },
+        "status": "blocked_thermal_validation",
+        "seconds": 2.093,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 2,
+            "import_http": 201,
+            "candidate_rooms": 2,
+            "review_http": 200,
+            "saved_rooms": 2,
+            "area_m2": 71.5703926046613,
+            "status": "blocked_thermal_validation",
+            "refused_publish_http": 409,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": false,
+              "blockers": [
+                "热边界分段未收敛；须拆分复杂邻接后重试"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "same_inputs_after_preflight": {
+    "protocol": {
+      "first_pass": "full model, source inventory and explicit suggested origin; no silent omission",
+      "scope_fallback": "only if more than 100 spaces, test the lowest nonempty storey separately; never count as a new project",
+      "geometry_tolerance_m": 0.0,
+      "adjacency_gap_m": 0.0,
+      "strict_boundary": "reject unknown IFC boundaries",
+      "hypothetical_secondary": "same geometry with explicit adiabatic unknown-boundary scenario, only if strict boundary validation blocks",
+      "weather": "same official Golden EPW for software control, not source-building actual weather",
+      "materials_operation": "explicit shared hypothetical office test conditions",
+      "real_building_accuracy": "not evaluated",
+      "commercial_licenses": "not resolved; originals stay private"
+    },
+    "frozen_at_utc": "2026-10-26T13:44:02Z",
+    "code_commit": "bf68c28b04afc65a934b24f82129acdfa6d2706f",
+    "manifest_sha256": "529e5587c63317bb2676ef81e84c37138cb7ac9c647f9df37f9e39edf995afb2",
+    "ifcopenshell": "0.9.0.post1",
+    "engine": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+    "finished_at": "2026-10-26T14:03:28.344820+00:00",
+    "scope": "Public source geometry and hypothetical reference scenarios, not calibrated source-building energy",
+    "private_original_result_sha256": "44866e2e3790a00832bcf7274dbb6a6b79db8d93e14652d9f7a3141c2c02522d",
+    "cases": [
+      {
+        "id": "fzk_haus",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AC20-FZK-Haus.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AC20-FZK-Haus.ifc",
+        "sha256": "ea6f04eaf92fac4d7ad0038bc3d2dfea4c094dd3f516ecc33c50bf1835ca108d",
+        "bytes": 2526544,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 7,
+          "storeys": 2,
+          "walls": 13,
+          "windows": 11,
+          "doors": 5,
+          "project_ids": [
+            "0lY6P5Ur90TAQnnnI6wtnb"
+          ],
+          "building_ids": [
+            "2hQBAVPOr5VxhS3Jl0O47h"
+          ]
+        },
+        "status": "blocked_import",
+        "seconds": 0.859,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 7,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 7 个空间，解析 6 个，阻断 1 个。请查看逐空间补证清单。"
+            }
+          }
+        ]
+      },
+      {
+        "id": "smiley_west",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AC-20-Smiley-West-10-Bldg.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AC-20-Smiley-West-10-Bldg.ifc",
+        "sha256": "7a6ee4400b0396219086be754c67c1845074cdf6b1f42942ceb210704154670c",
+        "bytes": 5999027,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 140,
+          "storeys": 5,
+          "walls": 281,
+          "windows": 80,
+          "doors": 170,
+          "project_ids": [
+            "344O7vICcwH8qAEnwJDjSU"
+          ],
+          "building_ids": [
+            "00tMo7QcxqWdIGvc4sMN2A"
+          ]
+        },
+        "status": "annual_succeeded",
+        "seconds": 14.579,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 140,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 空间超过 100，请按楼层拆分"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "0eLD6321X73BGqB5WeSKCe"
+            ],
+            "source_space_count": 30,
+            "import_http": 201,
+            "candidate_rooms": 30,
+            "review_http": 200,
+            "saved_rooms": 30,
+            "area_m2": 444.38384927499993,
+            "status": "annual_succeeded",
+            "run_id": "run_cee76c490d4d4433a67d8d08b1d18c03",
+            "metrics": {
+              "annual_energy_kwh": 42930.32,
+              "area_m2": 444.38,
+              "eui_kwh_m2a": 96.60722804806697,
+              "energy_by_carrier_kwh": {
+                "Electricity": 22708.01,
+                "Natural Gas": 0.0,
+                "Additional Fuel": 0.0,
+                "District Cooling": 20219.4,
+                "District Heating": 2.9
+              },
+              "end_uses_kwh": {
+                "Heating": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 2.9
+                },
+                "Cooling": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 20219.4,
+                  "District Heating": 0.0
+                },
+                "Interior Lighting": {
+                  "Electricity": 9732.01,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Lighting": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Interior Equipment": {
+                  "Electricity": 12976.01,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Equipment": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Fans": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Pumps": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Rejection": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Humidification": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Recovery": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Water Systems": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Refrigeration": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Generators": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                }
+              },
+              "annual_days": 365,
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.10.26 22:02",
+              "locators": {
+                "total_energy": {
+                  "table": "Site and Source Energy",
+                  "row": "Total Site Energy",
+                  "column": "Total Energy",
+                  "unit": "kWh",
+                  "raw_value": "42930.32"
+                },
+                "area": {
+                  "table": "Building Area",
+                  "row": "Total Building Area",
+                  "column": "Area",
+                  "unit": "m2",
+                  "raw_value": "444.38"
+                },
+                "Electricity": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "22708.01"
+                },
+                "Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "District Cooling": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "20219.40"
+                },
+                "District Heating": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "2.90"
+                },
+                "End Uses / Heating / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Electricity": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "9732.01"
+                },
+                "End Uses / Exterior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "12976.01"
+                },
+                "End Uses / Exterior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Electricity": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Electricity": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Electricity": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Electricity": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Electricity": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Electricity": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "20219.40"
+                },
+                "End Uses / Interior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "2.90"
+                },
+                "End Uses / Cooling / District Heating": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Heating": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Heating": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Heating": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Heating": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Heating": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Heating": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                }
+              },
+              "comfort_hours": {
+                "Time Setpoint Not Met During Occupied Heating / Facility": 0.0,
+                "Time Setpoint Not Met During Occupied Cooling / Facility": 0.0,
+                "Time Not Comfortable Based on Simple ASHRAE 55-2004 / Facility": 1208.83
+              },
+              "scope": "annual_site_energy_not_source_energy",
+              "parser_version": "native-sql-0.3.0",
+              "hvac_scope": "ideal_thermal_loads"
+            },
+            "warnings_count": 0,
+            "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "pdf_http": 200,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": true,
+              "blockers": [],
+              "engine_compatibility": {
+                "engine": "EnergyPlus 9.0.1",
+                "passed": true,
+                "checked_faces_and_windows": 195,
+                "issue_count": 0,
+                "issues": [],
+                "issues_truncated": false,
+                "minimum_area_m2": 1e-06,
+                "minimum_triangle_edge_m": 0.01,
+                "coordinate_decimals": 6,
+                "scope": "Two known fatal rules; not a complete engine or physical validation"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "e3d_revit",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/RE16_E3D_Building_2x3_Testversion.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/RE16_E3D_Building_2x3_Testversion.ifc",
+        "sha256": "f27955facfa6484f75a11873de6554f637f26e1d233ea37e24d94b5c854e8d7c",
+        "bytes": 3548647,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 104,
+          "storeys": 4,
+          "walls": 150,
+          "windows": 151,
+          "doors": 110,
+          "project_ids": [
+            "3oOySJyjT4uPlyJKoIegRD"
+          ],
+          "building_ids": [
+            "3oOySJyjT4uPlyJKoIegRC"
+          ]
+        },
+        "status": "blocked_thermal_validation",
+        "seconds": 12.14,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 104,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 空间超过 100，请按楼层拆分"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "3oOySJyjT4uPlyJKnjNLWA"
+            ],
+            "source_space_count": 31,
+            "import_http": 201,
+            "candidate_rooms": 31,
+            "review_http": 200,
+            "saved_rooms": 31,
+            "area_m2": 697.7603743256601,
+            "status": "blocked_thermal_validation",
+            "refused_publish_http": 409,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 内部边界尚未配对；须补充邻接，或明确选择未配对边界绝热的假设情景"
+              ]
+            },
+            "assumed": {
+              "can_publish": false,
+              "blockers": [
+                "Honeybee 校验失败：EnergyPlus 9.0.1 不可接受的细小热面/窗共19处：R3_S68_M0_T0, R4_S103_M2_Glz0, R4_S103_M6_Glz0, R5_S144_M4, R12_S345_M4_Glz0, R12_S345_M5_Glz0, R13_S378_M1_T0, R13_S378_M9, R14_S454_M5_T1, R16_S506_M1, R16_S506_M1_Glz0, R16_S506_M5, R19_S616_M1_T3, R29_S895_M25, R29_S895_M26_T1, R29_S1023_M0_T0, R29_S1023_M0_T2, R31_S1216_M1_T1, R31_S1216_M1_T2。请修复几何分段；未删除热面或修改边界。"
+              ],
+              "engine_compatibility": {
+                "engine": "EnergyPlus 9.0.1",
+                "passed": false,
+                "checked_faces_and_windows": 1466,
+                "issue_count": 19,
+                "issues": [
+                  {
+                    "face": "R3_S68_M0_T0",
+                    "parent_face": "R3_S68_M0_T0",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0036599762939998337,
+                    "minimum_edge_m": 0.004900386617400426
+                  },
+                  {
+                    "face": "R4_S103_M2_Glz0",
+                    "parent_face": "R4_S103_M2",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0007349985712487931,
+                    "minimum_edge_m": 0.007826252295958474
+                  },
+                  {
+                    "face": "R4_S103_M6_Glz0",
+                    "parent_face": "R4_S103_M6",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0007175029842411757,
+                    "minimum_edge_m": 0.007826252295958474
+                  },
+                  {
+                    "face": "R5_S144_M4",
+                    "parent_face": "R5_S144_M4",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 5.499998913318072e-07,
+                    "minimum_edge_m": 0.5499998913327162
+                  },
+                  {
+                    "face": "R12_S345_M4_Glz0",
+                    "parent_face": "R12_S345_M4",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0008920360462377163,
+                    "minimum_edge_m": 0.004701170492547064
+                  },
+                  {
+                    "face": "R12_S345_M5_Glz0",
+                    "parent_face": "R12_S345_M5",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.001022164060859818,
+                    "minimum_edge_m": 0.0047011704925474145
+                  },
+                  {
+                    "face": "R13_S378_M1_T0",
+                    "parent_face": "R13_S378_M1_T0",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.00011357361970984021,
+                    "minimum_edge_m": 0.001799898886051346
+                  },
+                  {
+                    "face": "R13_S378_M9",
+                    "parent_face": "R13_S378_M9",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0020698837284583702,
+                    "minimum_edge_m": 0.001799898886051346
+                  },
+                  {
+                    "face": "R14_S454_M5_T1",
+                    "parent_face": "R14_S454_M5_T1",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 9.369349758259204e-07,
+                    "minimum_edge_m": 3.823938597232176
+                  },
+                  {
+                    "face": "R16_S506_M1",
+                    "parent_face": "R16_S506_M1",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0026903592192929465,
+                    "minimum_edge_m": 0.0030272314083993794
+                  },
+                  {
+                    "face": "R16_S506_M1_Glz0",
+                    "parent_face": "R16_S506_M1",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0005381431337733672,
+                    "minimum_edge_m": 0.001353999261447306
+                  },
+                  {
+                    "face": "R16_S506_M5",
+                    "parent_face": "R16_S506_M5",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0001613696957592409,
+                    "minimum_edge_m": 0.0030272314083993794
+                  },
+                  {
+                    "face": "R19_S616_M1_T3",
+                    "parent_face": "R19_S616_M1_T3",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 2.100000002158707e-07,
+                    "minimum_edge_m": 0.41999999999999993
+                  },
+                  {
+                    "face": "R29_S895_M25",
+                    "parent_face": "R29_S895_M25",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.00306233999699998,
+                    "minimum_edge_m": 0.009958819608768814
+                  },
+                  {
+                    "face": "R29_S895_M26_T1",
+                    "parent_face": "R29_S895_M26_T1",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0003970444515000332,
+                    "minimum_edge_m": 0.001291204863683637
+                  },
+                  {
+                    "face": "R29_S1023_M0_T0",
+                    "parent_face": "R29_S1023_M0_T0",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0017883187362018372,
+                    "minimum_edge_m": 0.001291204863683637
+                  },
+                  {
+                    "face": "R29_S1023_M0_T2",
+                    "parent_face": "R29_S1023_M0_T2",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.013792965158144807,
+                    "minimum_edge_m": 0.009958819608768814
+                  },
+                  {
+                    "face": "R31_S1216_M1_T1",
+                    "parent_face": "R31_S1216_M1_T1",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 4.832462142330839e-07,
+                    "minimum_edge_m": 0.19695821900596103
+                  },
+                  {
+                    "face": "R31_S1216_M1_T2",
+                    "parent_face": "R31_S1216_M1_T2",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 3.2651131913967917e-07,
+                    "minimum_edge_m": 0.2532861358167858
+                  }
+                ],
+                "issues_truncated": false,
+                "minimum_area_m2": 1e-06,
+                "minimum_triangle_edge_m": 0.01,
+                "coordinate_decimals": 6,
+                "scope": "Two known fatal rules; not a complete engine or physical validation"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "office_linear",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "Use Cases/LiNear building - Ifc2x3/Office Building Architectural.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/Use%20Cases/LiNear%20building%20-%20Ifc2x3/Office%20Building%20Architectural.ifc",
+        "sha256": "a2e79230de7d7b95dd7f44b7ba1e05bdaadcf26afc23ab1a17a981bcf12942eb",
+        "bytes": 6105315,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 86,
+          "storeys": 5,
+          "walls": 251,
+          "windows": 375,
+          "doors": 104,
+          "project_ids": [
+            "1fk5MdXq9FAu_ZarjFinin"
+          ],
+          "building_ids": [
+            "1fk5MdXq9FAu_ZarjFinim"
+          ]
+        },
+        "status": "blocked_import",
+        "seconds": 1.953,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 86,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 86 个空间，解析 75 个，阻断 11 个。请查看逐空间补证清单。"
+            }
+          }
+        ]
+      },
+      {
+        "id": "kit_institute",
+        "repository": "ara3d/IFC-toolkit",
+        "commit": "9ad378ae8db3203dbedfc6ffc7fb56ded56590ea",
+        "path": "test-files/C20-Institute-Var-2.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ara3d/IFC-toolkit/blob/9ad378ae8db3203dbedfc6ffc7fb56ded56590ea/test-files/C20-Institute-Var-2.ifc",
+        "sha256": "a06b9cf1922cc0a1e200719189054510dd3e1d188292325f66614f7c1fdb37b4",
+        "bytes": 10786515,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 82,
+          "storeys": 5,
+          "walls": 121,
+          "windows": 206,
+          "doors": 77,
+          "project_ids": [
+            "1dzyWEOh99jRUBVYP$exmF"
+          ],
+          "building_ids": [
+            "2yeSWdixz5hBpMywNJnu8J"
+          ]
+        },
+        "status": "blocked_import",
+        "seconds": 2.625,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 82,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 82 个空间，解析 79 个，阻断 3 个。请查看逐空间补证清单。"
+            }
+          }
+        ]
+      },
+      {
+        "id": "two_building_control",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AP14-Two-Building.ifc",
+        "kind": "authored_control_scene",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AP14-Two-Building.ifc",
+        "sha256": "c187684e4f52b0f711e2517ad970197db151f2b3fdf9a6ff0fca2c53c4e5559f",
+        "bytes": 70412,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 2,
+          "storeys": 2,
+          "walls": 10,
+          "windows": 0,
+          "doors": 0,
+          "project_ids": [
+            "10NqxzFzGHuu0F01cPRNIR"
+          ],
+          "building_ids": [
+            "0dQvEN1ND3vRTHVSjsQH7o",
+            "0Av6MWIFb9zPlbKR6TdC5W",
+            "1rnSviTTf7LRJ0Go_pznRr"
+          ]
+        },
+        "status": "blocked_thermal_validation",
+        "seconds": 2.468,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 2,
+            "import_http": 201,
+            "candidate_rooms": 2,
+            "review_http": 200,
+            "saved_rooms": 2,
+            "area_m2": 71.5703926046613,
+            "status": "blocked_thermal_validation",
+            "refused_publish_http": 409,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": false,
+              "blockers": [
+                "热边界分段未收敛；须拆分复杂邻接后重试"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "explicit_scoped_followup_not_blind": {
+    "protocol": {
+      "first_pass": "full model, source inventory and explicit suggested origin; no silent omission",
+      "scope_fallback": "For every failed whole-file multistorey input use exactly the lowest nonempty storey; no floor search; source still counted once",
+      "geometry_tolerance_m": 0.0,
+      "adjacency_gap_m": 0.0,
+      "strict_boundary": "reject unknown IFC boundaries",
+      "hypothetical_secondary": "same geometry with explicit adiabatic unknown-boundary scenario, only if strict boundary validation blocks",
+      "weather": "same official Golden EPW for software control, not source-building actual weather",
+      "materials_operation": "explicit shared hypothetical office test conditions",
+      "real_building_accuracy": "not evaluated",
+      "commercial_licenses": "not resolved; originals stay private",
+      "scope_selection": "all_multistorey_after_full_failure"
+    },
+    "frozen_at_utc": "2026-10-26T14:11:12Z",
+    "code_commit": "bf68c28b04afc65a934b24f82129acdfa6d2706f",
+    "manifest_sha256": "c4bfe267be7d5b70966e97c911196d014419bb9c64bac0052b6410a921dd57de",
+    "ifcopenshell": "0.9.0.post1",
+    "engine": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+    "finished_at": "2026-10-26T14:12:13.639682+00:00",
+    "scope": "Public source geometry and hypothetical reference scenarios, not calibrated source-building energy",
+    "private_original_result_sha256": "4779b3e141b1128c692695b805cbfdeadb6d1fa351d7f8ccc889a514c523a55d",
+    "cases": [
+      {
+        "id": "fzk_haus",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AC20-FZK-Haus.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AC20-FZK-Haus.ifc",
+        "sha256": "ea6f04eaf92fac4d7ad0038bc3d2dfea4c094dd3f516ecc33c50bf1835ca108d",
+        "bytes": 2526544,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 7,
+          "storeys": 2,
+          "walls": 13,
+          "windows": 11,
+          "doors": 5,
+          "project_ids": [
+            "0lY6P5Ur90TAQnnnI6wtnb"
+          ],
+          "building_ids": [
+            "2hQBAVPOr5VxhS3Jl0O47h"
+          ]
+        },
+        "status": "annual_succeeded",
+        "seconds": 9.078,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 7,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 7 个空间，解析 6 个，阻断 1 个。请查看逐空间补证清单。"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "2eyxpyOx95m90jmsXLOuR0"
+            ],
+            "source_space_count": 6,
+            "import_http": 201,
+            "candidate_rooms": 6,
+            "review_http": 200,
+            "saved_rooms": 6,
+            "area_m2": 101.38559999999998,
+            "status": "annual_succeeded",
+            "run_id": "run_a973171d28014bf99c9b7fc1533fbf6c",
+            "metrics": {
+              "annual_energy_kwh": 9601.48,
+              "area_m2": 101.39,
+              "eui_kwh_m2a": 94.69849097544136,
+              "energy_by_carrier_kwh": {
+                "Electricity": 5180.8,
+                "Natural Gas": 0.0,
+                "Additional Fuel": 0.0,
+                "District Cooling": 4420.33,
+                "District Heating": 0.35
+              },
+              "end_uses_kwh": {
+                "Heating": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.35
+                },
+                "Cooling": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 4420.33,
+                  "District Heating": 0.0
+                },
+                "Interior Lighting": {
+                  "Electricity": 2220.34,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Lighting": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Interior Equipment": {
+                  "Electricity": 2960.46,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Equipment": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Fans": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Pumps": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Rejection": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Humidification": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Recovery": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Water Systems": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Refrigeration": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Generators": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                }
+              },
+              "annual_days": 365,
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.10.26 22:11",
+              "locators": {
+                "total_energy": {
+                  "table": "Site and Source Energy",
+                  "row": "Total Site Energy",
+                  "column": "Total Energy",
+                  "unit": "kWh",
+                  "raw_value": "9601.48"
+                },
+                "area": {
+                  "table": "Building Area",
+                  "row": "Total Building Area",
+                  "column": "Area",
+                  "unit": "m2",
+                  "raw_value": "101.39"
+                },
+                "Electricity": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "5180.80"
+                },
+                "Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "District Cooling": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "4420.33"
+                },
+                "District Heating": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.35"
+                },
+                "End Uses / Heating / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Electricity": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "2220.34"
+                },
+                "End Uses / Exterior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "2960.46"
+                },
+                "End Uses / Exterior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Electricity": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Electricity": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Electricity": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Electricity": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Electricity": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Electricity": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "4420.33"
+                },
+                "End Uses / Interior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.35"
+                },
+                "End Uses / Cooling / District Heating": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Heating": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Heating": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Heating": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Heating": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Heating": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Heating": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                }
+              },
+              "comfort_hours": {
+                "Time Setpoint Not Met During Occupied Heating / Facility": 0.0,
+                "Time Setpoint Not Met During Occupied Cooling / Facility": 0.0,
+                "Time Not Comfortable Based on Simple ASHRAE 55-2004 / Facility": 1127.17
+              },
+              "scope": "annual_site_energy_not_source_energy",
+              "parser_version": "native-sql-0.3.0",
+              "hvac_scope": "ideal_thermal_loads"
+            },
+            "warnings_count": 0,
+            "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "pdf_http": 200,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": true,
+              "blockers": [],
+              "engine_compatibility": {
+                "engine": "EnergyPlus 9.0.1",
+                "passed": true,
+                "checked_faces_and_windows": 124,
+                "issue_count": 0,
+                "issues": [],
+                "issues_truncated": false,
+                "minimum_area_m2": 1e-06,
+                "minimum_triangle_edge_m": 0.01,
+                "coordinate_decimals": 6,
+                "scope": "Two known fatal rules; not a complete engine or physical validation"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "smiley_west",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AC-20-Smiley-West-10-Bldg.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AC-20-Smiley-West-10-Bldg.ifc",
+        "sha256": "7a6ee4400b0396219086be754c67c1845074cdf6b1f42942ceb210704154670c",
+        "bytes": 5999027,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 140,
+          "storeys": 5,
+          "walls": 281,
+          "windows": 80,
+          "doors": 170,
+          "project_ids": [
+            "344O7vICcwH8qAEnwJDjSU"
+          ],
+          "building_ids": [
+            "00tMo7QcxqWdIGvc4sMN2A"
+          ]
+        },
+        "status": "annual_succeeded",
+        "seconds": 13.797,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 140,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 空间超过 100，请按楼层拆分"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "0eLD6321X73BGqB5WeSKCe"
+            ],
+            "source_space_count": 30,
+            "import_http": 201,
+            "candidate_rooms": 30,
+            "review_http": 200,
+            "saved_rooms": 30,
+            "area_m2": 444.38384927499993,
+            "status": "annual_succeeded",
+            "run_id": "run_d3721d7e2c234bd7affdc68d55fa8d43",
+            "metrics": {
+              "annual_energy_kwh": 42930.32,
+              "area_m2": 444.38,
+              "eui_kwh_m2a": 96.60722804806697,
+              "energy_by_carrier_kwh": {
+                "Electricity": 22708.01,
+                "Natural Gas": 0.0,
+                "Additional Fuel": 0.0,
+                "District Cooling": 20219.4,
+                "District Heating": 2.9
+              },
+              "end_uses_kwh": {
+                "Heating": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 2.9
+                },
+                "Cooling": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 20219.4,
+                  "District Heating": 0.0
+                },
+                "Interior Lighting": {
+                  "Electricity": 9732.01,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Lighting": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Interior Equipment": {
+                  "Electricity": 12976.01,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Equipment": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Fans": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Pumps": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Rejection": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Humidification": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Recovery": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Water Systems": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Refrigeration": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Generators": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                }
+              },
+              "annual_days": 365,
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.10.26 22:11",
+              "locators": {
+                "total_energy": {
+                  "table": "Site and Source Energy",
+                  "row": "Total Site Energy",
+                  "column": "Total Energy",
+                  "unit": "kWh",
+                  "raw_value": "42930.32"
+                },
+                "area": {
+                  "table": "Building Area",
+                  "row": "Total Building Area",
+                  "column": "Area",
+                  "unit": "m2",
+                  "raw_value": "444.38"
+                },
+                "Electricity": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "22708.01"
+                },
+                "Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "District Cooling": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "20219.40"
+                },
+                "District Heating": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "2.90"
+                },
+                "End Uses / Heating / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Electricity": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "9732.01"
+                },
+                "End Uses / Exterior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "12976.01"
+                },
+                "End Uses / Exterior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Electricity": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Electricity": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Electricity": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Electricity": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Electricity": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Electricity": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "20219.40"
+                },
+                "End Uses / Interior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "2.90"
+                },
+                "End Uses / Cooling / District Heating": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Heating": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Heating": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Heating": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Heating": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Heating": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Heating": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                }
+              },
+              "comfort_hours": {
+                "Time Setpoint Not Met During Occupied Heating / Facility": 0.0,
+                "Time Setpoint Not Met During Occupied Cooling / Facility": 0.0,
+                "Time Not Comfortable Based on Simple ASHRAE 55-2004 / Facility": 1208.83
+              },
+              "scope": "annual_site_energy_not_source_energy",
+              "parser_version": "native-sql-0.3.0",
+              "hvac_scope": "ideal_thermal_loads"
+            },
+            "warnings_count": 0,
+            "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "pdf_http": 200,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": true,
+              "blockers": [],
+              "engine_compatibility": {
+                "engine": "EnergyPlus 9.0.1",
+                "passed": true,
+                "checked_faces_and_windows": 195,
+                "issue_count": 0,
+                "issues": [],
+                "issues_truncated": false,
+                "minimum_area_m2": 1e-06,
+                "minimum_triangle_edge_m": 0.01,
+                "coordinate_decimals": 6,
+                "scope": "Two known fatal rules; not a complete engine or physical validation"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "e3d_revit",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/RE16_E3D_Building_2x3_Testversion.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/RE16_E3D_Building_2x3_Testversion.ifc",
+        "sha256": "f27955facfa6484f75a11873de6554f637f26e1d233ea37e24d94b5c854e8d7c",
+        "bytes": 3548647,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 104,
+          "storeys": 4,
+          "walls": 150,
+          "windows": 151,
+          "doors": 110,
+          "project_ids": [
+            "3oOySJyjT4uPlyJKoIegRD"
+          ],
+          "building_ids": [
+            "3oOySJyjT4uPlyJKoIegRC"
+          ]
+        },
+        "status": "blocked_thermal_validation",
+        "seconds": 12.641,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 104,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 空间超过 100，请按楼层拆分"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "3oOySJyjT4uPlyJKnjNLWA"
+            ],
+            "source_space_count": 31,
+            "import_http": 201,
+            "candidate_rooms": 31,
+            "review_http": 200,
+            "saved_rooms": 31,
+            "area_m2": 697.7603743256601,
+            "status": "blocked_thermal_validation",
+            "refused_publish_http": 409,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 内部边界尚未配对；须补充邻接，或明确选择未配对边界绝热的假设情景"
+              ]
+            },
+            "assumed": {
+              "can_publish": false,
+              "blockers": [
+                "EnergyPlus 几何预检失败：EnergyPlus 9.0.1 不可接受的细小热面/窗共19处：R3_S68_M0_T0, R4_S103_M2_Glz0, R4_S103_M6_Glz0, R5_S144_M4, R12_S345_M4_Glz0, R12_S345_M5_Glz0, R13_S378_M1_T0, R13_S378_M9, R14_S454_M5_T1, R16_S506_M1, R16_S506_M1_Glz0, R16_S506_M5, R19_S616_M1_T3, R29_S895_M25, R29_S895_M26_T1, R29_S1023_M0_T0, R29_S1023_M0_T2, R31_S1216_M1_T1, R31_S1216_M1_T2。请修复几何分段；未删除热面或修改边界。"
+              ],
+              "engine_compatibility": {
+                "engine": "EnergyPlus 9.0.1",
+                "passed": false,
+                "checked_faces_and_windows": 1466,
+                "issue_count": 19,
+                "issues": [
+                  {
+                    "face": "R3_S68_M0_T0",
+                    "parent_face": "R3_S68_M0_T0",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0036599762939998337,
+                    "minimum_edge_m": 0.004900386617400426
+                  },
+                  {
+                    "face": "R4_S103_M2_Glz0",
+                    "parent_face": "R4_S103_M2",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0007349985712487931,
+                    "minimum_edge_m": 0.007826252295958474
+                  },
+                  {
+                    "face": "R4_S103_M6_Glz0",
+                    "parent_face": "R4_S103_M6",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0007175029842411757,
+                    "minimum_edge_m": 0.007826252295958474
+                  },
+                  {
+                    "face": "R5_S144_M4",
+                    "parent_face": "R5_S144_M4",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 5.499998913318072e-07,
+                    "minimum_edge_m": 0.5499998913327162
+                  },
+                  {
+                    "face": "R12_S345_M4_Glz0",
+                    "parent_face": "R12_S345_M4",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0008920360462377163,
+                    "minimum_edge_m": 0.004701170492547064
+                  },
+                  {
+                    "face": "R12_S345_M5_Glz0",
+                    "parent_face": "R12_S345_M5",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.001022164060859818,
+                    "minimum_edge_m": 0.0047011704925474145
+                  },
+                  {
+                    "face": "R13_S378_M1_T0",
+                    "parent_face": "R13_S378_M1_T0",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.00011357361970984021,
+                    "minimum_edge_m": 0.001799898886051346
+                  },
+                  {
+                    "face": "R13_S378_M9",
+                    "parent_face": "R13_S378_M9",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0020698837284583702,
+                    "minimum_edge_m": 0.001799898886051346
+                  },
+                  {
+                    "face": "R14_S454_M5_T1",
+                    "parent_face": "R14_S454_M5_T1",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 9.369349758259204e-07,
+                    "minimum_edge_m": 3.823938597232176
+                  },
+                  {
+                    "face": "R16_S506_M1",
+                    "parent_face": "R16_S506_M1",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0026903592192929465,
+                    "minimum_edge_m": 0.0030272314083993794
+                  },
+                  {
+                    "face": "R16_S506_M1_Glz0",
+                    "parent_face": "R16_S506_M1",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0005381431337733672,
+                    "minimum_edge_m": 0.001353999261447306
+                  },
+                  {
+                    "face": "R16_S506_M5",
+                    "parent_face": "R16_S506_M5",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0001613696957592409,
+                    "minimum_edge_m": 0.0030272314083993794
+                  },
+                  {
+                    "face": "R19_S616_M1_T3",
+                    "parent_face": "R19_S616_M1_T3",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 2.100000002158707e-07,
+                    "minimum_edge_m": 0.41999999999999993
+                  },
+                  {
+                    "face": "R29_S895_M25",
+                    "parent_face": "R29_S895_M25",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.00306233999699998,
+                    "minimum_edge_m": 0.009958819608768814
+                  },
+                  {
+                    "face": "R29_S895_M26_T1",
+                    "parent_face": "R29_S895_M26_T1",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0003970444515000332,
+                    "minimum_edge_m": 0.001291204863683637
+                  },
+                  {
+                    "face": "R29_S1023_M0_T0",
+                    "parent_face": "R29_S1023_M0_T0",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0017883187362018372,
+                    "minimum_edge_m": 0.001291204863683637
+                  },
+                  {
+                    "face": "R29_S1023_M0_T2",
+                    "parent_face": "R29_S1023_M0_T2",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.013792965158144807,
+                    "minimum_edge_m": 0.009958819608768814
+                  },
+                  {
+                    "face": "R31_S1216_M1_T1",
+                    "parent_face": "R31_S1216_M1_T1",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 4.832462142330839e-07,
+                    "minimum_edge_m": 0.19695821900596103
+                  },
+                  {
+                    "face": "R31_S1216_M1_T2",
+                    "parent_face": "R31_S1216_M1_T2",
+                    "code": "AREA_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 3.2651131913967917e-07,
+                    "minimum_edge_m": 0.2532861358167858
+                  }
+                ],
+                "issues_truncated": false,
+                "minimum_area_m2": 1e-06,
+                "minimum_triangle_edge_m": 0.01,
+                "coordinate_decimals": 6,
+                "scope": "Two known fatal rules; not a complete engine or physical validation"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "office_linear",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "Use Cases/LiNear building - Ifc2x3/Office Building Architectural.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/Use%20Cases/LiNear%20building%20-%20Ifc2x3/Office%20Building%20Architectural.ifc",
+        "sha256": "a2e79230de7d7b95dd7f44b7ba1e05bdaadcf26afc23ab1a17a981bcf12942eb",
+        "bytes": 6105315,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 86,
+          "storeys": 5,
+          "walls": 251,
+          "windows": 375,
+          "doors": 104,
+          "project_ids": [
+            "1fk5MdXq9FAu_ZarjFinin"
+          ],
+          "building_ids": [
+            "1fk5MdXq9FAu_ZarjFinim"
+          ]
+        },
+        "status": "blocked_thermal_validation",
+        "seconds": 3.61,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 86,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 86 个空间，解析 75 个，阻断 11 个。请查看逐空间补证清单。"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "1fk5MdXq9FAu_ZarkmJ$IH"
+            ],
+            "source_space_count": 6,
+            "import_http": 201,
+            "candidate_rooms": 6,
+            "review_http": 200,
+            "saved_rooms": 6,
+            "area_m2": 459.0155000000001,
+            "status": "blocked_thermal_validation",
+            "refused_publish_http": 409,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": false,
+              "blockers": [
+                "EnergyPlus 几何预检失败：EnergyPlus 9.0.1 不可接受的细小热面/窗共2处：R4_S68_M2, R4_S76_M2。请修复几何分段；未删除热面或修改边界。"
+              ],
+              "engine_compatibility": {
+                "engine": "EnergyPlus 9.0.1",
+                "passed": false,
+                "checked_faces_and_windows": 158,
+                "issue_count": 2,
+                "issues": [
+                  {
+                    "face": "R4_S68_M2",
+                    "parent_face": "R4_S68_M2",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0008659499999994937,
+                    "minimum_edge_m": 0.0007529999999995596
+                  },
+                  {
+                    "face": "R4_S76_M2",
+                    "parent_face": "R4_S76_M2",
+                    "code": "TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM",
+                    "serialized_area_m2": 0.0008659499999994937,
+                    "minimum_edge_m": 0.0007529999999995596
+                  }
+                ],
+                "issues_truncated": false,
+                "minimum_area_m2": 1e-06,
+                "minimum_triangle_edge_m": 0.01,
+                "coordinate_decimals": 6,
+                "scope": "Two known fatal rules; not a complete engine or physical validation"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "kit_institute",
+        "repository": "ara3d/IFC-toolkit",
+        "commit": "9ad378ae8db3203dbedfc6ffc7fb56ded56590ea",
+        "path": "test-files/C20-Institute-Var-2.ifc",
+        "kind": "public_building_reference",
+        "source_url": "https://github.com/ara3d/IFC-toolkit/blob/9ad378ae8db3203dbedfc6ffc7fb56ded56590ea/test-files/C20-Institute-Var-2.ifc",
+        "sha256": "a06b9cf1922cc0a1e200719189054510dd3e1d188292325f66614f7c1fdb37b4",
+        "bytes": 10786515,
+        "inventory": {
+          "schema": "IFC4",
+          "spaces": 82,
+          "storeys": 5,
+          "walls": 121,
+          "windows": 206,
+          "doors": 77,
+          "project_ids": [
+            "1dzyWEOh99jRUBVYP$exmF"
+          ],
+          "building_ids": [
+            "2yeSWdixz5hBpMywNJnu8J"
+          ]
+        },
+        "status": "annual_succeeded",
+        "seconds": 12.0,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 82,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 未完整导入：共 82 个空间，解析 79 个，阻断 3 个。请查看逐空间补证清单。"
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "3krrpJBfL2SBWSONoQ68Xx"
+            ],
+            "source_space_count": 17,
+            "import_http": 201,
+            "candidate_rooms": 17,
+            "review_http": 200,
+            "saved_rooms": 17,
+            "area_m2": 451.69999999999993,
+            "status": "annual_succeeded",
+            "run_id": "run_385b6f42b0d54cd8b9bc33128484b6c3",
+            "metrics": {
+              "annual_energy_kwh": 41984.98,
+              "area_m2": 451.7,
+              "eui_kwh_m2a": 92.94881558556565,
+              "energy_by_carrier_kwh": {
+                "Electricity": 23081.87,
+                "Natural Gas": 0.0,
+                "Additional Fuel": 0.0,
+                "District Cooling": 18878.69,
+                "District Heating": 24.42
+              },
+              "end_uses_kwh": {
+                "Heating": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 24.42
+                },
+                "Cooling": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 18878.69,
+                  "District Heating": 0.0
+                },
+                "Interior Lighting": {
+                  "Electricity": 9892.23,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Lighting": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Interior Equipment": {
+                  "Electricity": 13189.64,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Exterior Equipment": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Fans": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Pumps": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Rejection": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Humidification": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Heat Recovery": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Water Systems": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Refrigeration": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                },
+                "Generators": {
+                  "Electricity": 0.0,
+                  "Natural Gas": 0.0,
+                  "Additional Fuel": 0.0,
+                  "District Cooling": 0.0,
+                  "District Heating": 0.0
+                }
+              },
+              "annual_days": 365,
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.10.26 22:12",
+              "locators": {
+                "total_energy": {
+                  "table": "Site and Source Energy",
+                  "row": "Total Site Energy",
+                  "column": "Total Energy",
+                  "unit": "kWh",
+                  "raw_value": "41984.98"
+                },
+                "area": {
+                  "table": "Building Area",
+                  "row": "Total Building Area",
+                  "column": "Area",
+                  "unit": "m2",
+                  "raw_value": "451.70"
+                },
+                "Electricity": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "23081.87"
+                },
+                "Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "District Cooling": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "18878.69"
+                },
+                "District Heating": {
+                  "table": "End Uses",
+                  "row": "Total End Uses",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "24.42"
+                },
+                "End Uses / Heating / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Electricity": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "9892.23"
+                },
+                "End Uses / Exterior Lighting / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "13189.64"
+                },
+                "End Uses / Exterior Equipment / Electricity": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Electricity": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Electricity": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Electricity": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Electricity": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Electricity": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Electricity": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Electricity": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Electricity",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Natural Gas": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Natural Gas",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / Additional Fuel": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "Additional Fuel",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Cooling / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "18878.69"
+                },
+                "End Uses / Interior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Cooling": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Cooling",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heating / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heating",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "24.42"
+                },
+                "End Uses / Cooling / District Heating": {
+                  "table": "End Uses",
+                  "row": "Cooling",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Lighting / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Lighting",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Interior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Interior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Exterior Equipment / District Heating": {
+                  "table": "End Uses",
+                  "row": "Exterior Equipment",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Fans / District Heating": {
+                  "table": "End Uses",
+                  "row": "Fans",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Pumps / District Heating": {
+                  "table": "End Uses",
+                  "row": "Pumps",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Rejection / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Rejection",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Humidification / District Heating": {
+                  "table": "End Uses",
+                  "row": "Humidification",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Heat Recovery / District Heating": {
+                  "table": "End Uses",
+                  "row": "Heat Recovery",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Water Systems / District Heating": {
+                  "table": "End Uses",
+                  "row": "Water Systems",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Refrigeration / District Heating": {
+                  "table": "End Uses",
+                  "row": "Refrigeration",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                },
+                "End Uses / Generators / District Heating": {
+                  "table": "End Uses",
+                  "row": "Generators",
+                  "column": "District Heating",
+                  "unit": "kWh",
+                  "raw_value": "0.00"
+                }
+              },
+              "comfort_hours": {
+                "Time Setpoint Not Met During Occupied Heating / Facility": 0.0,
+                "Time Setpoint Not Met During Occupied Cooling / Facility": 0.0,
+                "Time Not Comfortable Based on Simple ASHRAE 55-2004 / Facility": 1170.83
+              },
+              "scope": "annual_site_energy_not_source_energy",
+              "parser_version": "native-sql-0.3.0",
+              "hvac_scope": "ideal_thermal_loads"
+            },
+            "warnings_count": 0,
+            "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "pdf_http": 200,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": true,
+              "blockers": [],
+              "engine_compatibility": {
+                "engine": "EnergyPlus 9.0.1",
+                "passed": true,
+                "checked_faces_and_windows": 102,
+                "issue_count": 0,
+                "issues": [],
+                "issues_truncated": false,
+                "minimum_area_m2": 1e-06,
+                "minimum_triangle_edge_m": 0.01,
+                "coordinate_decimals": 6,
+                "scope": "Two known fatal rules; not a complete engine or physical validation"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "two_building_control",
+        "repository": "ibpsa/project1-wp-2-2-bim",
+        "commit": "90ad1ed2fd1f84643ca866ceda5667cb0d0274f9",
+        "path": "IFC_Files/MISC/AP14-Two-Building.ifc",
+        "kind": "authored_control_scene",
+        "source_url": "https://github.com/ibpsa/project1-wp-2-2-bim/blob/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9/IFC_Files/MISC/AP14-Two-Building.ifc",
+        "sha256": "c187684e4f52b0f711e2517ad970197db151f2b3fdf9a6ff0fca2c53c4e5559f",
+        "bytes": 70412,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 2,
+          "storeys": 2,
+          "walls": 10,
+          "windows": 0,
+          "doors": 0,
+          "project_ids": [
+            "10NqxzFzGHuu0F01cPRNIR"
+          ],
+          "building_ids": [
+            "0dQvEN1ND3vRTHVSjsQH7o",
+            "0Av6MWIFb9zPlbKR6TdC5W",
+            "1rnSviTTf7LRJ0Go_pznRr"
+          ]
+        },
+        "status": "blocked_thermal_validation",
+        "seconds": 3.75,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 2,
+            "import_http": 201,
+            "candidate_rooms": 2,
+            "review_http": 200,
+            "saved_rooms": 2,
+            "area_m2": 71.5703926046613,
+            "status": "blocked_thermal_validation",
+            "refused_publish_http": 409,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": false,
+              "blockers": [
+                "热边界分段未收敛；须拆分复杂邻接后重试"
+              ]
+            }
+          },
+          {
+            "scope": "lowest_nonempty_storey",
+            "selected_storeys": [
+              "3gQlicTR11Pg2dP9bzeVEj"
+            ],
+            "source_space_count": 1,
+            "import_http": 201,
+            "candidate_rooms": 1,
+            "review_http": 200,
+            "saved_rooms": 1,
+            "area_m2": 35.78519630233065,
+            "status": "blocked_thermal_validation",
+            "refused_publish_http": 409,
+            "strict": {
+              "can_publish": false,
+              "blockers": [
+                "IFC 部分热边界缺少可匹配依据；禁止自动当成外墙"
+              ]
+            },
+            "assumed": {
+              "can_publish": false,
+              "blockers": [
+                "热边界分段未收敛；须拆分复杂邻接后重试"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "high_rise_repeat_not_blind": {
+    "protocol": {
+      "first_pass": "full model, source inventory and explicit suggested origin; no silent omission",
+      "scope_fallback": "After whole-file failure, lowest nonempty storey if available; same building, not another sample.",
+      "geometry_tolerance_m": 0.0,
+      "adjacency_gap_m": 0.0,
+      "strict_boundary": "reject unknown IFC boundaries",
+      "hypothetical_secondary": "same geometry with explicit adiabatic unknown-boundary scenario, only if strict boundary validation blocks",
+      "weather": "same official Golden EPW for software control, not source-building actual weather",
+      "materials_operation": "explicit shared hypothetical office test conditions",
+      "real_building_accuracy": "not evaluated",
+      "commercial_licenses": "not resolved; originals stay private",
+      "scope_selection": "all_multistorey_after_full_failure",
+      "extra_scope": "Independent high-rise follow-up frozen before model import; lowest nonempty storey only after whole-file failure.",
+      "prior_observation": "Repeat verification of the previously inspected high-rise; not a blind holdout."
+    },
+    "frozen_at_utc": "2026-10-26T14:27:31.827410+00:00",
+    "code_commit": "bf68c28b04afc65a934b24f82129acdfa6d2706f",
+    "manifest_sha256": "cadc96c78eea1a0159b782d442a9df2a079491cf81d118e4afe08e0c43e4e9e5",
+    "ifcopenshell": "0.9.0.post1",
+    "engine": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+    "compiler_hash": "e7c647a561d2074f32203ba526a12d8e3b4baad06c4d4663beae98f5df4c4892",
+    "source_sha256": {
+      "backend/model_import.py": "60c4387c3bb272a2cc585a6f36ba9fdd933c00a06fcc739a83eeed3a3eb2676b",
+      "backend/modeling.py": "eb49261ceb72e1be5e62d078ea872fbedb09b45e0c9f969ad88c059c2f8dea57",
+      "backend/model_export.py": "8d4a38c2018788fe38c8c8f7bea683430055cbce49f80332ebf1b946d1330568",
+      "backend/thermal_mesh.py": "735fb1192b6b7314d8bd551e13eea134513e592ea5488968359f5a6b84035cd7",
+      "backend/honeybee_bridge.py": "868cebefee44a4fd3d4c7ed2d2d785b53a1514f4d6ce7285a45eaf18d53af424"
+    },
+    "finished_at": "2026-10-26T14:27:46.620884+00:00",
+    "scope": "Public source geometry and hypothetical reference scenarios, not calibrated source-building energy",
+    "private_original_result_sha256": "6c52cdc2c3f9227ea9709be300d4a06986a4e1f078b9264eee1ce6c14c0243f8",
+    "cases": [
+      {
+        "id": "zalmhaven_high_rise",
+        "repository": "Esri Learn ArcGIS / Royal BAM Group",
+        "commit": "ArcGIS item modified 1775508080000",
+        "path": "DigitalModels/Building_1_HR/ZHA-B-BWK-C-HR-R18.ifc",
+        "kind": "public_real_high_rise_reference",
+        "source_url": "https://learn.arcgis.com/en/projects/geolocate-a-3d-digital-building-model/",
+        "sha256": "f32191d4330a610fc43924396e7321eab454ecbd68e3118d37d3dc579151b00b",
+        "bytes": 40250285,
+        "inventory": {
+          "schema": "IFC2X3",
+          "spaces": 0,
+          "storeys": 64,
+          "walls": 2897,
+          "windows": 0,
+          "doors": 0,
+          "project_ids": [
+            "0DX$2g2LL4$QEAw2Z1n_jh"
+          ],
+          "building_ids": [
+            "0DX$2g2LL4$QEAw2Z1n_jg"
+          ]
+        },
+        "status": "blocked_import",
+        "seconds": 6.234,
+        "attempts": [
+          {
+            "scope": "whole_file",
+            "selected_storeys": [],
+            "source_space_count": 0,
+            "import_http": 409,
+            "status": "blocked_import",
+            "error": {
+              "detail": "IFC 没有 IfcSpace，无法建立空间模型"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "taipei_file_admission": {
+    "filename": "taipei101.rws2",
+    "bytes": 40303737,
+    "sha256": "65d56d07b8f6a3fe205c8296b60dccd10d4ed050054273d720ec35f77b41ace9",
+    "upload_http": 409,
+    "response": {
+      "detail": "Unsupported file extension"
+    },
+    "seconds": 0.406,
+    "jobs": 0,
+    "stored_files": 0,
+    "annual_metrics": null,
+    "scope": "File admission only; no conversion or thermal validation",
+    "tested_at": "2026-10-26T14:27:51.325970+00:00"
+  }
+}

@@ -1,5 +1,6 @@
 """Independent Honeybee geometry audit and genuine energy schedule compilation."""
 from importlib.metadata import version
+from math import dist
 
 from . import core
 
@@ -47,6 +48,32 @@ def geometry_model(model, surfaces):
     return result
 
 
+def engine_preflight(hb):
+    """Check emitted geometry against two proven EnergyPlus 9.0.1 fatal rules.
+
+    Source: v9.0.1 SurfaceGeometry.cc GetSurfaceData area < 1e-6 and
+    GetVertices triangle edge < 0.01 m. This diagnoses, never drops or moves faces.
+    Honeybee accepts some shapes that this older engine cannot consume.
+    """
+    from .thermal_mesh import measures
+    issues, checked = [], 0
+    for face in hb.faces:
+        for item in (face, *face.apertures):
+            checked += 1
+            points = [[round(float(v), 6) for v in p] for p in item.geometry.vertices]
+            area, _ = measures(points)
+            edge = min(dist(a, b) for a, b in zip(points, points[1:]+points[:1]))
+            code = 'AREA_BELOW_ENGINE_MINIMUM' if area < 1e-6 else (
+                'TRIANGLE_EDGE_BELOW_ENGINE_MINIMUM' if len(points) == 3 and edge < .01 else None)
+            if code:
+                issues.append({'face': item.identifier, 'parent_face': face.identifier,
+                               'code': code, 'serialized_area_m2': area, 'minimum_edge_m': edge})
+    return {'engine': 'EnergyPlus 9.0.1', 'passed': not issues, 'checked_faces_and_windows': checked,
+            'issue_count': len(issues), 'issues': issues[:100], 'issues_truncated': len(issues) > 100,
+            'minimum_area_m2': 1e-6, 'minimum_triangle_edge_m': .01,
+            'coordinate_decimals': 6, 'scope': 'Two known fatal rules; not a complete engine or physical validation'}
+
+
 def audit(model, surfaces):
     try:
         hb = geometry_model(model, surfaces)
@@ -59,8 +86,14 @@ def audit(model, surfaces):
             message = getattr(hb, check)(raise_exception=False, **kwargs)
             if message:
                 issues.append({'check': check, 'message': message[:4000]})
+        compatibility = engine_preflight(hb)
+        if not compatibility['passed']:
+            ids = ', '.join(i['face'] for i in compatibility['issues'][:20])
+            issues.append({'check': 'vra_energyplus_9_preflight',
+                           'message': f"EnergyPlus 9.0.1 不可接受的细小热面/窗共{compatibility['issue_count']}处：{ids}。请修复几何分段；未删除热面或修改边界。"})
         return {'engine': 'Honeybee', 'versions': library_versions(), 'passed': not issues,
                 'checks': list(checks), 'issues': issues,
+                'engine_compatibility': compatibility,
                 'rooms': [{'room_id': r.identifier, 'volume_m3': r.volume, 'floor_area_m2': r.floor_area} for r in hb.rooms]}
     except (ValueError, AssertionError, KeyError) as exc:
         raise core.ValidationError('Honeybee 几何校验无法建立闭合模型：' + str(exc)[:500]) from exc

@@ -33,7 +33,7 @@ def idf(model):
     surfaces = geometry(model)
     independent = honeybee_bridge.audit(model, surfaces)
     if not independent["passed"]:
-        raise core.ValidationError("Honeybee 独立几何校验失败：" + "; ".join(i["message"] for i in independent["issues"])[:1500])
+        raise core.ValidationError("几何与引擎兼容性校验失败：" + "; ".join(i["message"] for i in independent["issues"])[:1500])
     used_constructions = {surface["construction"] for surface in surfaces}
     objects = ["! VRA compiler " + COMPILER_VERSION, "! HVAC scope: " + scope(model),
                "! Geometry normalization tolerance (m): " + str(t.get("geometry_tolerance_m", 0)),
