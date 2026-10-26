@@ -210,7 +210,9 @@ class MFA:
             con.execute('BEGIN IMMEDIATE')
             valid = self.factor(con, uid, code)
         if not valid:
-            raise HTTPException(401, '双重验证码无效或已使用；请等待下一组验证码，或使用未用过的恢复码')
+            # The signed-in session remains valid; only this sensitive operation
+            # lacks a valid second factor. Do not trigger generic 401 re-login.
+            raise HTTPException(403, '双重验证码无效或已使用；请等待下一组验证码，或使用未用过的恢复码')
 
     def recovery(self, con, uid):
         codes = [secrets.token_hex(10) for _ in range(10)]

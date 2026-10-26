@@ -170,7 +170,8 @@ def test_admin_second_factor_failures_are_rate_limited(identity_client):
     uid = c.get('/api/auth/me').json()['user']['id']
     for _ in range(8):
         r = c.post(f'/api/admin/users/{uid}/revoke-access', json={'current_password': PASSWORD, 'factor_code': 'not-a-code'})
-        assert r.status_code == 401
+        assert r.status_code == 403
+        assert c.get('/api/auth/me').status_code == 200
     assert c.post(f'/api/admin/users/{uid}/revoke-access', json={'current_password': PASSWORD, 'factor_code': 'not-a-code'}).status_code == 429
 
 
