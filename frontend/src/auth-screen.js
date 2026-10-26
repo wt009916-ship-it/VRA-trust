@@ -1,3 +1,4 @@
+import { mfaStep, recoveryHelp } from './identity-login.js';
 import { authView } from './layout.js';
 import { post, escape as esc } from './api.js';
 
@@ -26,12 +27,12 @@ export function passwordFeedback(form, {newPassword=false}={}) {
   input.addEventListener('input',match);confirmation?.addEventListener('input',match);
 }
 
-export function mountAuthScreen(root, {setup,register,admin,registrationMode,onSwitch,onSession}) {
+export function mountAuthScreen(root, {setup,register,admin,registrationMode,onSwitch,onSession,ssoAvailable=false,emailRecoveryAvailable=false}) {
   root.innerHTML=authView({setup,register,admin,registrationMode});
   const form=root.querySelector('#auth-form'), error=form.querySelector('#auth-error');
   const username=form.elements.username, rememberName=form.querySelector('[data-remember-name]');
   const saved=readPreference('vra-login-username');
-  if(!setup&&!register){username.value=saved;rememberName.checked=!!saved;}
+  if(!setup&&!register){if(saved&&!username.value)username.value=saved;rememberName.checked=!!saved;}
   root.querySelector('#switch-auth')?.addEventListener('click',()=>onSwitch(!register));
   root.querySelector('#show-password').onclick=e=>{
     const input=form.elements.password,show=input.type==='password';input.type=show?'text':'password';
@@ -40,6 +41,10 @@ export function mountAuthScreen(root, {setup,register,admin,registrationMode,onS
   passwordFeedback(form,{newPassword:setup||register});
   root.querySelector('[data-auth-help]').onclick=()=>root.querySelector('.auth-help').showModal();
   root.querySelector('.auth-help button').onclick=()=>root.querySelector('.auth-help').close();
+  recoveryHelp(root.querySelector('.auth-help'),emailRecoveryAvailable);
+  if(ssoAvailable&&!setup){const sso=document.createElement('a');sso.className='sso-login-button';sso.textContent='使用企业身份登录';sso.href='/api/auth/sso/start';form.after(sso);}
+  if(location.hash==='#sso-failed'){error.textContent='企业登录未完成或身份未绑定，请重试或联系管理员。';error.hidden=false;}
+  if(location.hash==='#sso-linked')history.replaceState(null,'',location.pathname);
   let submitting=false,authenticatedSession=null;
   form.onsubmit=async e=>{
     e.preventDefault();if(submitting)return;submitting=true;
@@ -49,7 +54,9 @@ export function mountAuthScreen(root, {setup,register,admin,registrationMode,onS
       const body=Object.fromEntries(new FormData(form));body.username=body.username.trim().toLowerCase();
       body.remember_device=!!form.elements.remember_device?.checked;
       if(setup||register){if(body.password!==body.confirm_password)throw Error('两次密码不一致');delete body.confirm_password;}
-      const session=authenticatedSession||await post('/auth/'+(setup||register?'register':'login'),body);authenticatedSession=session;
+      let session=authenticatedSession||await post('/auth/'+(setup||register?'register':'login'),body);
+      if(session.mfa_required)session=await mfaStep(form,session.challenge);
+      authenticatedSession=session;
       writePreference('vra-login-username',rememberName.checked?body.username:null);
       // Leave genuine login fields for the browser's password-manager heuristics.
       await onSession(session);
@@ -70,7 +77,8 @@ export function reauthenticate(user) {
     dialog.querySelector('form').onsubmit=async e=>{
       e.preventDefault();if(busy)return;busy=true;const button=dialog.querySelector('[type=submit]');button.disabled=true;
       try{
-        const session=await post('/auth/login',{username:user.username,password:dialog.querySelector('[name=password]').value,remember_device:dialog.querySelector('[name=remember_device]').checked});
+        let session=await post('/auth/login',{username:user.username,password:dialog.querySelector('[name=password]').value,remember_device:dialog.querySelector('[name=remember_device]').checked});
+        if(session.mfa_required)session=await mfaStep(dialog.querySelector('form'),session.challenge);
         if(session.user.id!==user.id)throw Error('账号已发生变化，请退出后重新登录。');
         finish(session);
       }catch(err){dialog.querySelector('[data-error]').textContent=err.message;}

@@ -1,3 +1,4 @@
+import { mountIdentityPanels } from './identity-ui.js';
 import { post, request, escape as esc, setCsrfToken } from './api.js';
 import { passwordFeedback } from './auth-screen.js';
 
@@ -17,6 +18,7 @@ export function changePassword(modal, action, notice, user=null) {
     dialog.querySelector('[data-sessions]').innerHTML=sessions.map(s=>`<p><strong>${s.current?'当前会话':'其他会话'}</strong><small>${esc(s.id.slice(-8))} · 创建于 ${new Date(s.created_at*1000).toLocaleString()}<br>到期 ${new Date(s.expires_at*1000).toLocaleString()} · ${s.remember_device?'在设备保持登录':'浏览器会话'}</small></p>`).join('')||'暂无会话';
   }
   if(user)dialog.querySelector('[data-revoke-sessions]').insertAdjacentHTML('afterbegin',`<input type="text" hidden name="username" autocomplete="username" value="${esc(user.username)}">`);
+  mountIdentityPanels(dialog,user,action,notice);
   dialog.querySelectorAll('[data-account-tab]').forEach(b=>b.onclick=()=>{
     dialog.querySelectorAll('[data-account-tab]').forEach(x=>{x.classList.toggle('selected',x===b);x.setAttribute('aria-pressed',String(x===b));});
     dialog.querySelectorAll('[data-account-page]').forEach(x=>{x.hidden=x.dataset.accountPage!==b.dataset.accountTab;});
@@ -24,7 +26,7 @@ export function changePassword(modal, action, notice, user=null) {
   action(loadSessions);
   dialog.querySelector('[data-revoke-sessions]').onsubmit=e=>{
     e.preventDefault();const f=e.currentTarget;
-    action(async()=>{try{const r=await post('/auth/sessions/revoke-others',{current_password:f.elements.current_password.value});f.reset();await loadSessions();dialog.querySelector('[data-session-error]').textContent=`已退出 ${r.revoked} 个其他会话。`;}catch(err){dialog.querySelector('[data-session-error]').textContent=err.message;}},e.submitter);
+    action(async()=>{try{const r=await post('/auth/sessions/revoke-others',{current_password:f.elements.current_password.value,...(f.elements.factor_code?{factor_code:f.elements.factor_code.value}:{})});f.reset();await loadSessions();dialog.querySelector('[data-session-error]').textContent=`已退出 ${r.revoked} 个其他会话。`;}catch(err){dialog.querySelector('[data-session-error]').textContent=err.message;}},e.submitter);
   };
   dialog.querySelector('#password-form').onsubmit=e=>{
     e.preventDefault();const f=Object.fromEntries(new FormData(e.currentTarget));

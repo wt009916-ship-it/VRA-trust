@@ -60,29 +60,34 @@ def create_app(data_dir=None, *, start_worker=True):
             app.state.decisions.recover()
             app.state.modeling.recover()
             domain.start_worker()
+            app.state.identity.mail.start()
         yield
+        app.state.identity.mail.close()
         domain.stop.set()
         if domain.worker:
             domain.worker.join(timeout=5)
     app = FastAPI(title='VRA-Trust Evidence API', version='1.0.0', lifespan=lifespan)
     from .runtime_backup import Operations
     app.state.operations = Operations()
+    from .identity_api import Identity, register_identity, factor_value
+    app.state.identity = Identity(auth, app.state.operations)
     app.state.domain = domain
     app.state.auth = auth
     app.state.tokens = Tokens(auth)
-    public_api = {'/api/health', '/api/auth/status', '/api/auth/login', '/api/auth/register'}
+    public_api = {'/api/health', '/api/auth/status', '/api/auth/login', '/api/auth/register', '/api/auth/mfa/verify', '/api/auth/mfa/pending', '/api/auth/email/verify', '/api/auth/recovery/request', '/api/auth/recovery/inspect', '/api/auth/recovery/complete', '/api/auth/sso/start', '/api/auth/sso/callback'}
     maximum = int(os.environ.get('VRA_MAX_UPLOAD_MB', '64')) * 1024 * 1024
     app.add_middleware(BodyLimit, limit=maximum + 65536)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=['localhost', '127.0.0.1', '[::1]', 'testserver'])
 
     @app.middleware('http')
     async def local_boundary(request: Request, call_next):
+        path = request.url.path
         origin = request.headers.get('origin')
         if origin and origin != str(request.base_url).rstrip('/'):
             return JSONResponse({'detail': 'Cross-origin request rejected'}, status_code=403)
-        if request.headers.get('sec-fetch-site') == 'cross-site':
+        oidc_return = request.method == 'GET' and path == '/api/auth/sso/callback'
+        if request.headers.get('sec-fetch-site') == 'cross-site' and (not oidc_return):
             return JSONResponse({'detail': 'Cross-site request rejected'}, status_code=403)
-        path = request.url.path
         if path.startswith('/api/') and path not in public_api:
             authorization = request.headers.get('authorization', '')
             bearer = authorization.startswith('Bearer ')
@@ -147,7 +152,7 @@ def create_app(data_dir=None, *, start_worker=True):
 
     @app.get('/api/auth/status')
     def auth_status():
-        return {'setup_required': auth.setup_required(), 'registration_mode': auth.registration_mode(), 'password_policy': {'min_length': 15, 'max_length': 128, 'common_password_blocklist': True}, 'session_max_hours': auth.ttl // 3600}
+        return {'setup_required': auth.setup_required(), 'registration_mode': auth.registration_mode(), 'password_policy': {'min_length': 15, 'max_length': 128, 'common_password_blocklist': True}, 'session_max_hours': auth.ttl // 3600, 'sso_available': app.state.identity.config.read()[0].oidc_enabled, 'email_recovery_available': app.state.identity.config.read()[0].smtp_enabled}
 
     def session_response(result, old_token=None):
         token, user = result
@@ -157,6 +162,7 @@ def create_app(data_dir=None, *, start_worker=True):
         response.set_cookie(auth.cookie, token, httponly=True, samesite='strict', max_age=auth.ttl if user['remember_device'] else None, secure=os.environ.get('VRA_COOKIE_SECURE', 'false').lower() == 'true')
         response.headers['Cache-Control'] = 'no-store'
         return response
+    register_identity(app, auth, session_response)
 
     @app.post('/api/auth/register')
     def register(body: Registration, request: Request):
@@ -166,7 +172,8 @@ def create_app(data_dir=None, *, start_worker=True):
     @app.post('/api/auth/login')
     def login(body: Credentials, request: Request):
         auth.throttle(body.username, request.client.host if request.client else 'unknown')
-        return session_response(auth.login(body), request.cookies.get(auth.cookie))
+        result = app.state.identity.login(body)
+        return session_response(result, request.cookies.get(auth.cookie)) if isinstance(result, tuple) else JSONResponse(result)
 
     @app.get('/api/auth/me')
     def me(request: Request):
@@ -181,6 +188,7 @@ def create_app(data_dir=None, *, start_worker=True):
     def revoke_other_sessions(body: PasswordConfirm, request: Request):
         user = request.state.user
         auth.throttle(user['username'], request.client.host if request.client else 'unknown')
+        app.state.identity.mfa.check(user['id'], factor_value(body))
         return {'revoked': auth.revoke_other_sessions(user['id'], request.cookies.get(auth.cookie, ''), body.current_password.get_secret_value())}
 
     @app.post('/api/auth/logout')
@@ -194,7 +202,9 @@ def create_app(data_dir=None, *, start_worker=True):
     def change_password(body: PasswordChange, request: Request):
         user = request.state.user
         auth.throttle(user['username'], request.client.host if request.client else 'unknown')
-        return session_response(auth.change_password(user['id'], body))
+        app.state.identity.mfa.check(user['id'], factor_value(body))
+        result = auth.change_password(user['id'], body)
+        return session_response(result)
 
     @app.get('/api/projects', response_model=list[Project])
     def projects(request: Request):
@@ -334,7 +344,7 @@ def create_app(data_dir=None, *, start_worker=True):
     register_intake(app, domain, auth, maximum)
     from .workspace import register_workspace
     register_workspace(app, domain, auth)
-    dist = core.ROOT / 'frontend/dist'
+    dist = Path(os.environ.get('VRA_FRONTEND_DIR', core.ROOT / 'frontend/dist')).resolve()
     if dist.is_dir():
 
         @app.get('/admin', include_in_schema=False)

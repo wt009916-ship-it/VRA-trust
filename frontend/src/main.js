@@ -1,3 +1,4 @@
+import { mfaStep, recoveryRoute } from './identity-login.js';
 import { mountAuthScreen, reauthenticate, readPreference, writePreference } from './auth-screen.js';
 import { confirmNavigation } from './editing-guard.js';
 import { mountWorkspace, readRoute } from './workspace-ui.js';
@@ -333,9 +334,20 @@ async function enterWorkspace(session) {
   [state.health, state.profiles] = await Promise.all([request('/health'), request('/factor-profiles')]);
   await refreshProjects(); await restoreRoute();
 }
+async function resumeSSOFactor(){
+  authScreen(false);
+  try{const pending=await request('/auth/mfa/pending');await enterWorkspace(await mfaStep(root.querySelector('#auth-form'),pending.challenge));}
+  catch(error){history.replaceState(null,'',location.pathname);authScreen(false);const message=root.querySelector('#auth-error');message.textContent=error.message;message.hidden=false;}
+}
 function authScreen(setup, register = false) {
-  mountAuthScreen(root,{setup,register,admin:location.pathname.startsWith('/admin'),registrationMode:state.registrationMode,
-    onSwitch:next=>authScreen(false,next),onSession:enterWorkspace});
+  mountAuthScreen(root,{setup,register,admin:location.pathname.startsWith('/admin'),registrationMode:state.registrationMode,ssoAvailable:state.ssoAvailable,emailRecoveryAvailable:state.emailRecoveryAvailable,
+    onSwitch:next=>authScreen(false,next),onSession:()=>{
+      // A successful password submission navigates the document, giving native
+      // password managers an unambiguous completion signal. Cookie bootstrap
+      // then opens the requested workspace; no password crosses the navigation.
+      if(/^#sso-/.test(location.hash))history.replaceState(null,'',location.pathname);
+      location.reload();
+    }});
 }
 let recoveringSession=false;
 async function recoverSession(){
@@ -350,7 +362,17 @@ async function recoverSession(){
     notice('已重新登录，编辑已保留。请重试刚才的操作。');
   }finally{recoveringSession=false;}
 }
-window.addEventListener('popstate',()=>{if(state.user&&!location.pathname.startsWith('/admin'))action(restoreRoute);});
+let handlingRecovery=false;
+async function handleRecoveryHash(){
+  const route=location.hash.match(/^#(verify-email|reset-password)\/(.+)$/);
+  if(!route){if(root.querySelector('.recovery-page'))location.reload();return false;}
+  if(handlingRecovery)return false;
+  handlingRecovery=true;
+  try{if(!await confirmNavigation()){writeRoute(state.view);return true;}clearSession();await recoveryRoute(root,route[1],route[2]);return true;}
+  finally{handlingRecovery=false;}
+}
+window.addEventListener('popstate',()=>{if(/^#(verify-email|reset-password)\//.test(location.hash)){handleRecoveryHash();return;}if(state.user&&!location.pathname.startsWith('/admin'))action(restoreRoute);});
+window.addEventListener('hashchange',event=>{if(event.newURL===location.href)handleRecoveryHash();});
 document.addEventListener('session-expired',recoverSession);
 let refreshingIdentity=false;
 async function refreshIdentity(){
@@ -373,7 +395,7 @@ document.addEventListener('keydown', e => {
 });
 document.documentElement.dataset.theme = readPreference('vra-theme','light');
 root.innerHTML = '<div class="boot-screen">稀土智暖 <span>正在打开工作区…</span></div>';
-(async () => { try { const status=await request('/auth/status'); state.registrationMode=status.registration_mode; if (status.setup_required) { authScreen(true); return; } try { await enterWorkspace(await request('/auth/me')); } catch(err) { if(err.status===401) authScreen(false); else throw err; } } catch(err) { root.innerHTML='<div class="boot-screen"><strong>暂时无法连接工作区</strong><p>'+esc(err.message)+'</p><button id="retry-connection">重试</button></div>'; document.querySelector('#retry-connection').onclick=()=>location.reload(); } })();
+(async () => { try { const route=location.hash.match(/^#(verify-email|reset-password)\/(.+)$/);if(route){await recoveryRoute(root,route[1],route[2]);return;}const status=await request('/auth/status'); state.registrationMode=status.registration_mode;state.ssoAvailable=status.sso_available;state.emailRecoveryAvailable=status.email_recovery_available;if(location.hash==='#sso-mfa'){await resumeSSOFactor();return;} if (status.setup_required) { authScreen(true); return; } try { await enterWorkspace(await request('/auth/me')); } catch(err) { if(err.status===401) authScreen(false); else throw err; } } catch(err) { root.innerHTML='<div class="boot-screen"><strong>暂时无法连接工作区</strong><p>'+esc(err.message)+'</p><button id="retry-connection">重试</button></div>'; document.querySelector('#retry-connection').onclick=()=>location.reload(); } })();
 
 // Apply one consistent required-field cue to dynamic forms in every workspace.
 new MutationObserver(()=>{

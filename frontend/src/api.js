@@ -37,7 +37,7 @@ async function fetchRequest(path, options, signal) {
       document.dispatchEvent(new Event('session-refresh-required'));
       error.message='登录状态已更新，正在重新校验。请稍后重试本次操作。';
     }
-    if (response.status === 401 && startedCsrf===csrfToken && !['/auth/login','/auth/register','/auth/me','/auth/password','/auth/sessions/revoke-others','/auth/logout'].includes(path)) document.dispatchEvent(new Event('session-expired'));
+    if (response.status === 401 && startedCsrf===csrfToken && (!path.startsWith('/auth/')||path==='/auth/security'||path==='/auth/sessions')) document.dispatchEvent(new Event('session-expired'));
     throw error;
   }
   if (invalidJson) throw new Error('服务返回了无法读取的数据，请稍后重试');

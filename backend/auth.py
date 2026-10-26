@@ -32,12 +32,14 @@ class Registration(Credentials):
 class PasswordChange(BaseModel):
     model_config = ConfigDict(extra='forbid')
     current_password: SecretStr = Field(min_length=1, max_length=128)
+    factor_code: SecretStr | None = Field(default=None, max_length=40)
     new_password: SecretStr = Field(min_length=15, max_length=128)
 
 
 class PasswordConfirm(BaseModel):
     model_config = ConfigDict(extra='forbid')
     current_password: SecretStr = Field(min_length=1, max_length=128)
+    factor_code: SecretStr | None = Field(default=None, max_length=40)
 
 
 @lru_cache(maxsize=1)
@@ -101,7 +103,7 @@ class Auth:
             if 'disabled' not in columns:
                 con.execute('ALTER TABLE users ADD COLUMN disabled INTEGER NOT NULL DEFAULT 0')
             session_columns = {r[1] for r in con.execute('PRAGMA table_info(sessions)')}
-            for name, declaration in [('id', 'TEXT'), ('created_at', 'REAL'), ('remembered', 'INTEGER NOT NULL DEFAULT 0')]:
+            for name, declaration in [('id', 'TEXT'), ('created_at', 'REAL'), ('remembered', 'INTEGER NOT NULL DEFAULT 0'), ('assurance', "TEXT NOT NULL DEFAULT 'pwd'")]:
                 if name not in session_columns:
                     con.execute(f'ALTER TABLE sessions ADD COLUMN {name} {declaration}')
             for row in con.execute('SELECT token_hash,expires FROM sessions WHERE id IS NULL').fetchall():
@@ -125,12 +127,12 @@ class Auth:
         with self.store.connect() as con:
             return con.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0
 
-    def throttle(self, username, address):
+    def throttle(self, username, address, *, user_limit=8):
         now = time.time()
         with self.store.connect() as con:
             con.execute("BEGIN IMMEDIATE")
             con.execute("DELETE FROM auth_attempts WHERE timestamp < ?", (now - 900,))
-            buckets = [("user:" + username.lower(), 8), ("ip:" + address, 40)]
+            buckets = [("user:" + username.lower(), user_limit), ("ip:" + address, 40)]
             for bucket, maximum in buckets:
                 if con.execute("SELECT COUNT(*) FROM auth_attempts WHERE bucket=?", (bucket,)).fetchone()[0] >= maximum:
                     raise HTTPException(429, "尝试次数过多，请 15 分钟后再试", headers={'Retry-After': '900'})
@@ -165,25 +167,34 @@ class Auth:
             raise HTTPException(409, "这个用户名已被使用") from None
         return self.new_session(uid, body.remember_device)
 
-    def login(self, body):
+    def verify_credentials(self, body):
         with self.store.connect() as con:
             row = con.execute("SELECT * FROM users WHERE username=?", (body.username.lower(),)).fetchone()
         salt = row["salt"] if row else "00" * 16
         candidate = password_hash(body.password.get_secret_value(), salt)
         if row is None or not hmac.compare_digest(row["password_hash"], candidate) or row['disabled']:
             raise HTTPException(401, "用户名或密码不正确")
-        return self.new_session(row["id"], body.remember_device)
+        return row
 
-    def new_session(self, uid, remember=False):
+    def login(self, body):
+        row = self.verify_credentials(body)
+        identity = getattr(self, 'identity', None)
+        if identity and identity.mfa.enabled(row['id']):
+            raise HTTPException(403, '此账号须完成双重验证')
+        return self.new_session(row['id'], body.remember_device)
+
+    def new_session(self, uid, remember=False, assurance='pwd', expected_password_hash=None):
         token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
         with self.store.connect() as con:
             con.execute('BEGIN IMMEDIATE')
             if not con.execute('SELECT 1 FROM users WHERE id=? AND disabled=0', (uid,)).fetchone():
                 raise HTTPException(401, '账号不可用，请联系管理员')
+            if expected_password_hash and not con.execute('SELECT 1 FROM users WHERE id=? AND password_hash=?', (uid, expected_password_hash)).fetchone():
+                raise HTTPException(401, '账号验证状态已改变，请重新登录')
             con.execute("DELETE FROM sessions WHERE expires < ?", (time.time(),))
             now = time.time()
-            con.execute('INSERT INTO sessions(token_hash,user_id,csrf,expires,id,created_at,remembered) VALUES (?,?,?,?,?,?,?)',
-                        (digest(token), uid, csrf, now+self.ttl, 'session_'+uuid.uuid4().hex, now, int(remember)))
+            con.execute('INSERT INTO sessions(token_hash,user_id,csrf,expires,id,created_at,remembered,assurance) VALUES (?,?,?,?,?,?,?,?)',
+                        (digest(token), uid, csrf, now+self.ttl, 'session_'+uuid.uuid4().hex, now, int(remember), assurance))
         user = self.session(token)
         if not user:
             raise HTTPException(401, '会话已失效，请重新登录')
@@ -193,7 +204,10 @@ class Auth:
         if not token or len(token) > 256:
             return None
         with self.store.connect() as con:
-            row = con.execute("SELECT u.id,u.username,u.display_name,s.csrf,s.expires AS session_expires_at,s.remembered AS remember_device FROM sessions s JOIN users u ON u.id=s.user_id WHERE token_hash=? AND expires>? AND u.disabled=0", (digest(token), time.time())).fetchone()
+            row = con.execute("SELECT u.id,u.username,u.display_name,s.csrf,s.expires AS session_expires_at,s.remembered AS remember_device,s.assurance FROM sessions s JOIN users u ON u.id=s.user_id WHERE token_hash=? AND expires>? AND u.disabled=0", (digest(token), time.time())).fetchone()
+        identity = getattr(self, 'identity', None)
+        if row and identity and identity.mfa.enabled(row['id']) and 'otp' not in row['assurance']:
+            return None
         return {**dict(row), 'remember_device': bool(row['remember_device']), 'is_admin': self.is_admin(row['id'])} if row else None
 
     def is_admin(self, user_id):
@@ -244,7 +258,8 @@ class Auth:
             con.execute('DELETE FROM sessions WHERE user_id=?', (uid,))
             con.execute('UPDATE api_tokens SET revoked=1 WHERE user_id=?', (uid,))
             con.execute('INSERT INTO admin_audit(actor,action,target,timestamp) VALUES (?,?,?,?)', (uid, 'password_changed', uid, time.time()))
-        return self.new_session(uid)
+        identity = getattr(self, 'identity', None)
+        return self.new_session(uid, assurance='pwd+otp' if identity and identity.mfa.enabled(uid) else 'pwd')
 
     def own(self, project_id, user_id):
         with self.store.connect() as con:
