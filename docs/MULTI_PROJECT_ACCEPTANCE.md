@@ -30,6 +30,8 @@
 
 前三个成功楼层的严格边界检查均未直接放行；表中全年成功发生在显式假设情景中。局部楼层不能算整楼成功。该有目的的小样本也不足以估计市场项目的通用成功率。
 
+按源楼层名称/标高核对：FZK为`Erdgeschoss`、0 m；Smiley为`KG`、−2.81 m；KIT为`Keller`、−3 m。因此Smiley与KIT的本轮成功范围均为地下层，不能将“最低非空层”称为地上首层。
+
 FZK、Smiley、E3D、Office与AP14来自 [IBPSA BIM工作包](https://github.com/ibpsa/project1-wp-2-2-bim/tree/90ad1ed2fd1f84643ca866ceda5667cb0d0274f9)；KIT输入来自 [IFC-toolkit固定样本](https://github.com/ara3d/IFC-toolkit/blob/9ad378ae8db3203dbedfc6ffc7fb56ded56590ea/test-files/C20-Institute-Var-2.ifc)。文件级商业授权尚未核清，原件不再分发。
 
 ## 用户提到的复杂地标

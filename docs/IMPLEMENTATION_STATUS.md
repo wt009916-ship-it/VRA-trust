@@ -1,7 +1,7 @@
 # 产品入口、多样本与复杂高楼 2026-10-26
 
 - IMPLEMENTED：README改为产品定位、真实界面、功能/适用范围与开始使用；新增用户操作指南、文档中心、开发集成、工程就绪度评估及CHANGELOG，开发时间线留在本文件。
-- MEASURED：新增FZK、Smiley、E3D、LiNear Office、KIT Institute和真实De Zalmhaven高层6份公开IFC，另有AP14控制；六份整模均未通过。FZK首层6、Smiley首层30、KIT地下层17空间在显式边界/热工/天气假设下365天、0Warning、PDF200。楼层不重复算独立建筑，不宣称源建筑实耗精度。
+- MEASURED：新增FZK、Smiley、E3D、LiNear Office、KIT Institute和真实De Zalmhaven高层6份公开IFC，另有AP14控制；六份整模均未通过。FZK首层6、Smiley地下层30、KIT地下层17空间在显式边界/热工/天气假设下365天、0Warning、PDF200。楼层不重复算独立建筑，不宣称源建筑实耗精度。
 - MEASURED：高层原IFC40,250,285字节，64楼层对象、2,897墙、0IfcSpace；上传201、建模409。台北101官方RWIND原文件40,303,737字节，真实上传409、不支持格式、存储与计算任务0。广州塔与央视总部未取得可核实的完整工程原件，不列为已测。
 - FIXED：E3D原31空间楼层通过Honeybee但引擎25Severe/39Warning终止；核对原生9.0.1规则后新增按IDF精度的小面与三角短边预检，覆盖生成窗。复测19处定位、发布409、0新计算；未删面、改边界或重写旧失败。复杂几何修复本身仍未完成。
 - CHECKS：完整后端258项+6子测试，前端41项，Ruff/前端检查/契约/构建通过。中庭、Duplex21、Esplanades首层50、诊所屋顶6四组原生全年回归均365天0Warning；93文件/11原件/4年度结果隔离恢复通过。Vite仍提示大分块；不宣称完整前端性能或企业级交付通过。
