@@ -1,3 +1,5 @@
+import { mountAuthScreen, reauthenticate, readPreference, writePreference } from './auth-screen.js';
+import { confirmNavigation } from './editing-guard.js';
 import { mountWorkspace, readRoute } from './workspace-ui.js';
 import { thermalResults } from './thermal-results.js';
 import { uploadLimitMB } from './api.js';
@@ -13,12 +15,13 @@ import { reviewDocument } from './document-review.js';
 const adminWorkspace=async root=>{root.textContent='Private console excluded';};
 import './intake.css';
 import './enterprise.css';
+import './professional-ui.css';
 import { robustnessWorkspace } from './robustness-ui.js';
 import { decisionWorkspace } from './decision-ui.js';
 import { runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
-import { appShell, projectView, authView, icon, projectMetricsMarkup } from './layout.js';
+import { appShell, projectView, icon, projectMetricsMarkup } from './layout.js';
 
 const root = document.querySelector('#app');
 const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [], user: null, view: 'readiness', syncError: false };
@@ -54,15 +57,15 @@ function shell() {
   disposeWorkspace();disposeWorkspace=()=>{};
   root.innerHTML = appShell(state);
   document.querySelector('#new-project').onclick = () => openIntake();
-  document.querySelector('#all-projects').onclick = () => { selection++; poller.stop(); state.project = null; home(); };
-  document.querySelector('#workspace-tasks').onclick=()=>{selection++;poller.stop();state.project=null;home(true);};
+  document.querySelector('#all-projects').onclick = async () => { if(!await confirmNavigation())return; selection++; poller.stop(); state.project = null; home(); };
+  document.querySelector('#workspace-tasks').onclick=async()=>{if(!await confirmNavigation())return;selection++;poller.stop();state.project=null;home(true);};
   document.querySelector('#load-reference').onclick = e => loadReference(e.currentTarget);
   document.querySelector('#search-projects').onclick = () => searchProjects();
   document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
-  document.querySelector('#theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; localStorage.setItem('vra-theme', theme); };
-  document.querySelector('#logout').onclick = e => action(async () => { await post('/auth/logout', {}); clearSession(); authScreen(false); }, e.currentTarget);
+  document.querySelector('#theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; writePreference('vra-theme', theme); };
+  document.querySelector('#logout').onclick = e => action(async () => { if(!await confirmNavigation())return; try{await post('/auth/logout', {});}catch(error){if(error.status!==401)throw error;} clearSession(); authScreen(false); }, e.currentTarget);
 
-  document.querySelector('#account-settings').onclick=()=>changePassword(modal,action,notice);
+  document.querySelector('#account-settings').onclick=()=>changePassword(modal,action,notice,state.user);
   bindProjectLinks();
 }
 function bindProjectLinks() {
@@ -84,7 +87,8 @@ function home(tasks=false) {
     reference:e=>loadReference(e?.currentTarget),manual:()=>projectForm()
   });
 }
-function openIntake(project = null, files = [], destination = 'evidence', resume = null) {
+async function openIntake(project = null, files = [], destination = 'evidence', resume = null) {
+  if(!await confirmNavigation())return;
   selection++; poller.stop(); state.project=project; shell();
   action(()=>intakeWorkspace(document.querySelector('#workspace'), {
     project, initialFiles:files, destination, resume,
@@ -129,6 +133,7 @@ function projectForm(edit = false, view = null) {
 }
 async function refreshProjects() { state.projects = await request('/projects'); }
 async function selectProject(id, view = null) {
+  if(!await confirmNavigation()){writeRoute(state.view);return;}
   poller.stop();
   const token = ++selection;
   let snapshot;
@@ -323,29 +328,50 @@ function clearSession() {
 async function enterWorkspace(session) {
   state.user = session.user; setCsrfToken(session.csrf_token);
   if(location.pathname.replace(/\/$/,'')==='/admin'){
-    await adminWorkspace(root,state.user,async()=>{await post('/auth/logout',{});clearSession();authScreen(false);});return;
+    await adminWorkspace(root,state.user,async()=>{try{await post('/auth/logout',{});}catch(error){if(error.status!==401)throw error;}clearSession();authScreen(false);});return;
   }
   [state.health, state.profiles] = await Promise.all([request('/health'), request('/factor-profiles')]);
   await refreshProjects(); await restoreRoute();
 }
 function authScreen(setup, register = false) {
-  root.innerHTML = authView({setup, register, admin:location.pathname.startsWith('/admin'), registrationMode:state.registrationMode});
-  const toggle = document.querySelector('#switch-auth'); if (toggle) toggle.onclick = () => authScreen(false, !register);
-  document.querySelector('#show-password').onclick = e => { const password = document.querySelector('#password'); password.type = password.type === 'password' ? 'text' : 'password'; e.currentTarget.textContent = password.type === 'password' ? '显示' : '隐藏'; e.currentTarget.setAttribute('aria-label', password.type === 'password' ? '显示密码' : '隐藏密码'); };
-  document.querySelector('#auth-form').onsubmit = async e => {
-    e.preventDefault(); const button=e.submitter, error=document.querySelector('#auth-error');
-    button.disabled=true; error.hidden=true;
-    try { const body=Object.fromEntries(new FormData(e.currentTarget)); if(setup||register){if(body.password!==body.confirm_password)throw new Error('两次密码不一致');delete body.confirm_password;} const session=await post('/auth/'+(setup||register?'register':'login'),body); await enterWorkspace(session); }
-    catch (err) { error.textContent=err.message; error.hidden=false; button.disabled=false; }
-  };
+  mountAuthScreen(root,{setup,register,admin:location.pathname.startsWith('/admin'),registrationMode:state.registrationMode,
+    onSwitch:next=>authScreen(false,next),onSession:enterWorkspace});
+}
+let recoveringSession=false;
+async function recoverSession(){
+  if(recoveringSession)return;
+  if(!state.user){authScreen(false);return;}
+  recoveringSession=true;poller.stop();
+  try{
+    const session=await reauthenticate(state.user);
+    if(!session){clearSession();authScreen(false);return;}
+    state.user=session.user;setCsrfToken(session.csrf_token);
+    if(state.project)poller.start();
+    notice('已重新登录，编辑已保留。请重试刚才的操作。');
+  }finally{recoveringSession=false;}
 }
 window.addEventListener('popstate',()=>{if(state.user&&!location.pathname.startsWith('/admin'))action(restoreRoute);});
-document.addEventListener('session-expired', () => { clearSession(); authScreen(false); });
+document.addEventListener('session-expired',recoverSession);
+let refreshingIdentity=false;
+async function refreshIdentity(){
+  if(!state.user||refreshingIdentity||recoveringSession)return;
+  refreshingIdentity=true;
+  try{
+    const session=await request('/auth/me');
+    if(session.user.id!==state.user.id){clearSession();authScreen(false);notice('浏览器已切换账号，请重新登录后打开对应的项目。',true);return;}
+    state.user=session.user;setCsrfToken(session.csrf_token);
+  }catch(error){if(error.status===401)await recoverSession();}
+  finally{refreshingIdentity=false;}
+}
+document.addEventListener('session-refresh-required',refreshIdentity);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshIdentity();});
+window.addEventListener('pageshow',event=>{if(event.persisted)refreshIdentity();});
+
 document.addEventListener('keydown', e => {
   if (!state.user || location.pathname.startsWith('/admin') || document.querySelector('dialog[open]')) return;
   if ((e.ctrlKey || e.metaKey) && ['k','n'].includes(e.key.toLowerCase())) { e.preventDefault(); if (e.key.toLowerCase()==='k') searchProjects(); else openIntake(); }
 });
-document.documentElement.dataset.theme = localStorage.getItem('vra-theme') || 'light';
+document.documentElement.dataset.theme = readPreference('vra-theme','light');
 root.innerHTML = '<div class="boot-screen">稀土智暖 <span>正在打开工作区…</span></div>';
 (async () => { try { const status=await request('/auth/status'); state.registrationMode=status.registration_mode; if (status.setup_required) { authScreen(true); return; } try { await enterWorkspace(await request('/auth/me')); } catch(err) { if(err.status===401) authScreen(false); else throw err; } } catch(err) { root.innerHTML='<div class="boot-screen"><strong>暂时无法连接工作区</strong><p>'+esc(err.message)+'</p><button id="retry-connection">重试</button></div>'; document.querySelector('#retry-connection').onclick=()=>location.reload(); } })();
 

@@ -136,6 +136,81 @@
         ]
       }
     },
+    "/api/auth/sessions": {
+      "get": {
+        "summary": "Own Sessions",
+        "operationId": "own_sessions_api_auth_sessions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/auth/sessions/revoke-others": {
+      "post": {
+        "summary": "Revoke Other Sessions",
+        "operationId": "revoke_other_sessions_api_auth_sessions_revoke_others_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordConfirm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
     "/api/auth/logout": {
       "post": {
         "summary": "Logout",
@@ -5821,6 +5896,11 @@
             "format": "password",
             "title": "Password",
             "writeOnly": true
+          },
+          "remember_device": {
+            "type": "boolean",
+            "title": "Remember Device",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -7527,7 +7607,7 @@
           "new_password": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 12,
+            "minLength": 15,
             "format": "password",
             "title": "New Password",
             "writeOnly": true
@@ -7540,6 +7620,24 @@
           "new_password"
         ],
         "title": "PasswordChange"
+      },
+      "PasswordConfirm": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "format": "password",
+            "title": "Current Password",
+            "writeOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "current_password"
+        ],
+        "title": "PasswordConfirm"
       },
       "Project": {
         "properties": {
@@ -7759,10 +7857,15 @@
           "password": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 12,
+            "minLength": 15,
             "format": "password",
             "title": "Password",
             "writeOnly": true
+          },
+          "remember_device": {
+            "type": "boolean",
+            "title": "Remember Device",
+            "default": false
           },
           "display_name": {
             "type": "string",

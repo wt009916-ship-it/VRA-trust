@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from . import core
 from .domain import Domain
-from .auth import Auth, Credentials, Registration, PasswordChange
+from .auth import Auth, Credentials, Registration, PasswordChange, PasswordConfirm
 from .api_tokens import Tokens
 from .reports import report_html, report_pdf
 from .schema import BuildingUpdate, ComparisonRequest, Evidence, EvidenceCreate, EvidenceReview, EvidenceMetadata, Project, ProjectCreate, RunCreate, RunView
@@ -113,6 +113,11 @@ def create_app(data_dir=None, *, start_worker=True):
         finally:
             if tracked:
                 app.state.operations.leave()
+        return response
+
+    @app.middleware('http')
+    async def response_security(request: Request, call_next):
+        response = await call_next(request)
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy'] = 'no-referrer'
         response.headers['Cache-Control'] = 'no-store'
@@ -142,14 +147,14 @@ def create_app(data_dir=None, *, start_worker=True):
 
     @app.get('/api/auth/status')
     def auth_status():
-        return {'setup_required': auth.setup_required(), 'registration_mode': auth.registration_mode()}
+        return {'setup_required': auth.setup_required(), 'registration_mode': auth.registration_mode(), 'password_policy': {'min_length': 15, 'max_length': 128, 'common_password_blocklist': True}, 'session_max_hours': auth.ttl // 3600}
 
     def session_response(result, old_token=None):
         token, user = result
         if old_token:
             auth.logout(old_token)
         response = JSONResponse({'user': {k: v for k, v in user.items() if k != 'csrf'}, 'csrf_token': user['csrf']})
-        response.set_cookie(auth.cookie, token, httponly=True, samesite='strict', max_age=auth.ttl, secure=os.environ.get('VRA_COOKIE_SECURE', 'false').lower() == 'true')
+        response.set_cookie(auth.cookie, token, httponly=True, samesite='strict', max_age=auth.ttl if user['remember_device'] else None, secure=os.environ.get('VRA_COOKIE_SECURE', 'false').lower() == 'true')
         response.headers['Cache-Control'] = 'no-store'
         return response
 
@@ -167,6 +172,16 @@ def create_app(data_dir=None, *, start_worker=True):
     def me(request: Request):
         user = request.state.user
         return {'user': {k: v for k, v in user.items() if k != 'csrf'}, 'csrf_token': user['csrf']}
+
+    @app.get('/api/auth/sessions')
+    def own_sessions(request: Request):
+        return auth.sessions(request.state.user['id'], request.cookies.get(auth.cookie, ''))
+
+    @app.post('/api/auth/sessions/revoke-others')
+    def revoke_other_sessions(body: PasswordConfirm, request: Request):
+        user = request.state.user
+        auth.throttle(user['username'], request.client.host if request.client else 'unknown')
+        return {'revoked': auth.revoke_other_sessions(user['id'], request.cookies.get(auth.cookie, ''), body.current_password.get_secret_value())}
 
     @app.post('/api/auth/logout')
     def logout(request: Request):

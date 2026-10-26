@@ -7,16 +7,37 @@ export function checkUpload(file) {
 }
 export function setCsrfToken(value) { csrfToken = value || ''; }
 export async function request(path, options = {}) {
+  const slow=path.endsWith('/imports')||path.includes('/model/validate')||path.includes('/runtime-backup');
+  const {timeoutMs=slow?180000:path.endsWith('/provider/test')?185000:60000,signal,...fetchOptions}=options;
+  const controller=new AbortController(),abort=()=>controller.abort();
+  if(signal?.aborted)abort();else signal?.addEventListener('abort',abort,{once:true});
+  const timer=setTimeout(abort,timeoutMs);
+  try { return await fetchRequest(path,fetchOptions,controller.signal); }
+  catch(error){
+    if(controller.signal.aborted&&!signal?.aborted){
+      const failure=new Error('请求超时。若正在保存或提交任务，结果尚未确认，请先检查最新记录，避免重复提交。');
+      failure.status=0;failure.ambiguous=!['GET','HEAD'].includes(options.method||'GET');throw failure;
+    }
+    throw error;
+  } finally { clearTimeout(timer);signal?.removeEventListener('abort',abort); }
+}
+async function fetchRequest(path, options, signal) {
   if (path.endsWith('/files') && options.body instanceof FormData) checkUpload(options.body.get('file'));
+  const startedCsrf=csrfToken;
   const headers = options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
-  const response = await fetch('/api' + path, { ...options, credentials: 'same-origin', headers: { ...headers, ...(csrfToken ? {'X-CSRF-Token': csrfToken} : {}), ...options.headers }, cache: 'no-store' });
+  const response = await fetch('/api' + path, { ...options, signal, credentials: 'same-origin', headers: { ...headers, ...(csrfToken ? {'X-CSRF-Token': csrfToken} : {}), ...options.headers }, cache: 'no-store' });
   let invalidJson = false;
   const data = await response.json().catch(() => { invalidJson = true; return null; });
   if (!response.ok) {
     const detail = data?.detail;
     const error = new Error(Array.isArray(detail) ? detail.map(x => x.loc.join('.') + ': ' + x.msg).join('; ') : detail || '请求失败 (' + response.status + ')');
     error.status = response.status;
-    if (response.status === 401 && !path.startsWith('/auth/')) document.dispatchEvent(new Event('session-expired'));
+    error.retryAfter = Number(response.headers.get('Retry-After')) || null;
+    if(response.status===403&&detail==='会话校验失败，请刷新后重试'){
+      document.dispatchEvent(new Event('session-refresh-required'));
+      error.message='登录状态已更新，正在重新校验。请稍后重试本次操作。';
+    }
+    if (response.status === 401 && startedCsrf===csrfToken && !['/auth/login','/auth/register','/auth/me','/auth/password','/auth/sessions/revoke-others','/auth/logout'].includes(path)) document.dispatchEvent(new Event('session-expired'));
     throw error;
   }
   if (invalidJson) throw new Error('服务返回了无法读取的数据，请稍后重试');

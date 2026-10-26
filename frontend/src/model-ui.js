@@ -1,3 +1,5 @@
+import { markUnsaved } from './editing-guard.js';
+import { mountModelStudio } from './studio-layout.js';
 import { planCalibration } from './plan-calibration.js';
 import { thermalResults } from './thermal-results.js';
 import { importDiagnostics } from './assurance-ui.js';
@@ -85,11 +87,11 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   <label>当前房间<select id="room-select"></select></label><div id="room-editor"></div></section>
   </div><div class="model-main">
   <section class="model-card model-preview"><div class="model-preview-top"><span id="model-summary"></span><label class="check-option"><input id="model-xray" type="checkbox">透视</label></div><div id="building-canvas" aria-label="建筑空间三维预览"></div><div id="model-plan" aria-label="二维空间轮廓"></div><p class="subtle">蓝色空间为当前编辑内容；三维预览用于检查空间关系，未保存的修改不会进入仿真。</p></section>
-  <details class="model-card"><summary>03 / 热工与运行参数</summary><p>所有参数须注明来源。理想负荷模型计算供热/供冷需求，尚未表示真实设备耗电。</p><button id="teaching-thermal">填入教学假设供试运行</button><div class="form-grid" id="thermal-fields">${thermalFields.map(([k,l])=>`<label>${l}<input data-thermal="${k}" type="number" step="any" value="${esc(model?.thermal?.[k]??'')}"></label>`).join('')}</div><label>参数性质<select id="thermal-basis"><option value="assumed_scenario">明确假设的工程情景</option value="documented">有设计 / 检测文件依据</option></select></label><label>参数来源与适用条件<textarea id="thermal-source" minlength="10">${esc(model?.thermal?.source_note||'')}</textarea></label></details>
-  <section class="model-card"><h2>04 / 复核、保存与计算</h2><label>模型名称<input id="model-name" value="${esc(model?.name||state.project.name)}"></label><label>比例、空间及来源复核说明<textarea id="model-review" minlength="5" placeholder="说明比例依据、核对的房间和仍存在的假设">${esc(model?.review_note||'')}</textarea></label>
+  <details class="model-card"><summary>03 / 热工与运行参数</summary><p>所有参数须注明来源。理想负荷模型计算供热/供冷需求，尚未表示真实设备耗电。</p><button id="teaching-thermal">填入教学假设供试运行</button><p class="subtle">发布前须填齐下列参数及来源。无法从图纸确定的值应保留为空，或明确声明假设。</p><div class="form-grid" id="thermal-fields">${thermalFields.map(([k,l])=>`<label>${l}<input data-thermal="${k}" type="number" step="any" value="${esc(model?.thermal?.[k]??'')}"></label>`).join('')}</div><label>参数性质<select id="thermal-basis"><option value="assumed_scenario">明确假设的工程情景</option value="documented">有设计 / 检测文件依据</option></select></label><label>参数来源与适用条件<textarea id="thermal-source" minlength="10">${esc(model?.thermal?.source_note||'')}</textarea></label></details>
+  <section class="model-card"><h2>04 / 复核、保存与计算</h2><label>模型名称 · 必填<input required id="model-name" value="${esc(model?.name||state.project.name)}"></label><label>复核说明 · 确认空间时必填<textarea id="model-review" minlength="5" placeholder="说明比例依据、核对的房间和仍存在的假设">${esc(model?.review_note||'')}</textarea></label>
   <div class="actions"><button id="save-model">保存草稿</button><button class="primary" id="review-model">确认空间并保存</button><button id="sync-model-area">同步项目面积</button></div>
   <p id="model-status" role="status"></p><div id="model-gate"></div>
-  <div class="form-grid"><label>发布为方案<select id="model-scheme"><option value="baseline">基准 baseline</option><option value="R1">方案 R1</option><option value="R2">方案 R2</option></select></label><label>发布与参数复核依据<input id="publish-note" minlength="10" placeholder="确认空间、参数性质和设备计算口径"></label></div>
+  <div class="form-grid"><label>发布为方案<select id="model-scheme"><option value="baseline">基准 baseline</option><option value="R1">方案 R1</option><option value="R2">方案 R2</option></select></label><label>发布与参数复核依据 · 必填<input id="publish-note" minlength="10" placeholder="确认空间、参数性质和设备计算口径"></label></div>
   <div class="actions"><button id="publish-model">生成并登记 IDF</button><button id="run-model">提交全年仿真</button><a href="/api${base}/model/export.ifc" download>导出 IFC 空间模型</a><a href="/api${base}/model/export.idf" download>导出 IDF</a><a href="/api${base}/model/geometry.hbjson" download>Honeybee 几何交换</a></div>
   <p class="subtle">发布会以新版本替代此方案的有效 IDF，旧资料和计算记录保留。还需在「资料」中登记并确认项目对应的全年 EPW。</p>
   <div id="model-runs"></div><details><summary>版本与来源</summary><pre id="model-history"></pre></details>
@@ -142,7 +144,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     return {...Object.fromEntries([...host.querySelectorAll('[data-operation]')].map(el=>[el.dataset.operation,Number(el.value)])),weekday:[...host.querySelectorAll('[data-hour="weekday"]')].map(el=>Number(el.value)),weekend:[...host.querySelectorAll('[data-hour="weekend"]')].map(el=>Number(el.value)),source_note:host.querySelector('#operation-source').value};
   }
   const setStatus=text=>{host.querySelector('#model-status').textContent=text;};
-  const markDirty=()=>{dirty=true;setStatus('有未保存的编辑，请保存后再发布或计算。');};
+  const markDirty=()=>{dirty=true;markUnsaved(host);setStatus('有未保存的编辑，请保存后再发布或计算。');};
   host.addEventListener('input',e=>{if(e.target.matches('[data-room],[data-point],[data-thermal],[data-operation],[data-hour],[data-pump],#pump-source,#pump-enabled,#operation-source,#operation-enabled,#adjacency-gap,#thermal-source,#thermal-basis,#model-name,#model-review'))markDirty();});
   host.querySelector('#thermal-basis').onchange=markDirty;
   host.querySelector('#ifc-boundary-policy').onchange=markDirty;
@@ -158,15 +160,19 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     host.querySelectorAll('[data-add-layer]').forEach(b=>{b.onclick=()=>{const key=b.dataset.addLayer;constructions[key]??=[];if(constructions[key].length>=8){notice('每组最多八层',true);return;}constructions[key].push({name:'待填写材料',thickness_m:'',conductivity_w_mk:'',density_kg_m3:'',specific_heat_j_kgk:''});markDirty();paintConstructions();};});
   }
   paintConstructions();
+  const studio=mountModelStudio(host,{projectId:pid,area:roomArea,
+    selectRoom:index=>{selected=index;host.querySelector('#room-select').value=String(index);paintRoom();dispose.select?.(index);},
+    fit:()=>dispose.fit?.()});
   const preview=async()=>{
     const area=rooms.filter(r=>r.include_floor_area!==false).reduce((s,r)=>s+roomArea(r),0);
     const unresolved=rooms.filter(r=>r.include_floor_area===null||r.conditioned===null).length;
     host.querySelector('#model-summary').textContent=`${rooms.length} 个空间 · 计入 ${num(area)} m²${unresolved?' · '+unresolved+' 个用途待确认':''} · ${model?'保存版本 v'+model.revision:'未保存'}`;
     host.querySelector('#room-select').innerHTML=rooms.map((r,i)=>`<option value="${i}">${esc(r.name)} · ${num(roomArea(r))} m²</option>`).join('');
     selected=Math.max(0,Math.min(selected,rooms.length-1));host.querySelector('#room-select').value=String(selected);
-    paintRoom();dispose();dispose=await renderBuilding(rooms,host,i=>{selected=i;host.querySelector('#room-select').value=String(i);paintRoom();});
+    paintRoom();dispose();dispose=await renderBuilding(rooms,host,i=>{selected=i;host.querySelector('#room-select').value=String(i);paintRoom();dispose.select?.(i);});dispose.select?.(selected);studio.update({rooms,selected,sources:model?.sources||[],model,canFit:!!dispose.fit});
   };
   function paintRoom(){
+    studio.update({rooms,selected,sources:model?.sources||[],model,canFit:!!dispose.fit});
     const r=rooms[selected], target=host.querySelector('#room-editor');
     if(!r){target.innerHTML='<p class="empty">导入空间候选，或从一个矩形房间开始。</p>';return;}
     target.innerHTML=`<label>名称<input data-room="name" value="${esc(r.name)}"></label><div class="form-grid"><label>标高 m<input data-room="elevation_m" type="number" step=".1" value="${r.elevation_m}"></label><label>层高 m<input data-room="height_m" type="number" step=".1" min=".6" value="${r.height_m}"></label></div><label>来源定位<input data-room="source_locator" value="${esc(r.source_locator)}"></label><details><summary>边界顶点 · 米</summary><div class="model-vertices">${r.polygon.map((p,i)=>`<div><span>${i+1}</span>${p.map((v,j)=>`<input aria-label="顶点 ${i+1} ${j?'y':'x'}" data-point="${i}" data-axis="${j}" type="number" step=".01" value="${v}">`).join('')}<button data-remove-point="${i}" aria-label="删除顶点 ${i+1}">×</button></div>`).join('')}</div><button id="add-point">增加顶点</button></details><button id="remove-room">移除此编辑中的房间</button>`;
@@ -186,13 +192,13 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     target.querySelector('#remove-room').onclick=()=>{rooms.splice(selected,1);markDirty();action(preview);};
   }
   function paintImports(){
-    host.querySelector('#model-imports').innerHTML=imports.slice(0,12).map(t=>`<details><summary>${esc(t.source?.name||t.candidate?.source?.name||t.import_id)} · ${esc(({failed:"导入受阻",awaiting_review:"待人工复核",completed:"已采纳",running:"识别中"})[t.status]||t.status)}</summary><p>${esc(t.error||'')}</p><ul>${(t.candidate?.warnings||[]).map(w=>'<li>'+esc(w)+'</li>').join('')}</ul>${importDiagnostics(t,base)}<p>${t.candidate?.rooms?.length??0} 个可采纳候选</p>${t.candidate?.rooms?.some(r=>r.drawing)?`<button data-overlay="${t.import_id}">原图叠加与面积误差</button>`:''}${t.status==='awaiting_review'?`<button data-adopt="${t.import_id}">合并候选到编辑区</button>`:''}</details>`).join('');
-    host.querySelectorAll('[data-overlay]').forEach(b=>{b.onclick=()=>action(()=>calibration.overlay(imports.find(t=>t.import_id===b.dataset.overlay)),b);});
+    host.querySelector('#model-imports').innerHTML=imports.length?imports.slice(0,12).map(t=>`<details><summary>${esc(t.source?.name||t.candidate?.source?.name||t.import_id)} · ${esc(({failed:"导入受阻",awaiting_review:"待人工复核",completed:"已采纳",running:"识别中"})[t.status]||t.status)}</summary><p>${esc(t.error||'')}</p><ul>${(t.candidate?.warnings||[]).map(w=>'<li>'+esc(w)+'</li>').join('')}</ul>${importDiagnostics(t,base)}<p>${t.candidate?.rooms?.length??0} 个可采纳候选</p>${t.candidate?.rooms?.some(r=>r.drawing)?`<button data-overlay="${t.import_id}">原图叠加与面积误差</button>`:''}${t.status==='awaiting_review'?`<button data-adopt="${t.import_id}">合并候选到编辑区</button>`:''}</details>`).join(''):'<p class="studio-empty">尚无识别任务。导入资料后，可在这里核对候选与来源。</p>';
+    host.querySelectorAll('[data-overlay]').forEach(b=>{b.onclick=()=>action(async()=>{studio.showOverlay();await calibration.overlay(imports.find(t=>t.import_id===b.dataset.overlay));},b);});
     host.querySelectorAll('[data-adopt]').forEach(b=>{b.onclick=()=>action(async()=>{
       const task=imports.find(t=>t.import_id===b.dataset.adopt);
       if(!task.candidate.rooms.length)throw Error('没有可用的闭合空间，请检查比例、图层或切换视觉识别。');
       if(pending)throw Error('请先保存当前导入的复核结果，再合并其他资料。');
-      rooms=mergeRooms(rooms,task.candidate.rooms);pending=task.import_id;markDirty();setStatus('候选已加入编辑区；请复核后确认空间并保存。');await preview();
+      rooms=mergeRooms(rooms,task.candidate.rooms);pending=task.import_id;markDirty();setStatus('候选已加入编辑区；请复核后确认空间并保存。');await preview();studio.adopted();
     },b);});
   }
   async function refresh(){
@@ -215,7 +221,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     host.querySelectorAll('[data-cancel-run]').forEach(b=>{b.onclick=()=>action(async()=>{await post(base+'/runs/'+b.dataset.cancelRun+'/cancel',{});await refreshRuns();},b);});
     await onChange(pid);
   }
-  host.querySelector('#room-select').onchange=e=>{selected=Number(e.target.value);paintRoom();};
+  host.querySelector('#room-select').onchange=e=>{selected=Number(e.target.value);paintRoom();dispose.select?.(selected);};
   host.querySelector('#add-room').onclick=()=>action(async()=>{
     const x=rooms.length?Math.max(...rooms.flatMap(r=>r.polygon.map(p=>p[0])))+1:0;
     rooms=mergeRooms(rooms,[{name:'新房间',polygon:[[x,0],[x+5,0],[x+5,4],[x,4]],elevation_m:0,height_m:3,source_locator:'人工草稿：请修改尺寸及来源'}]);selected=rooms.length-1;markDirty();setStatus('示意尺寸待修改及确认');await preview();
@@ -232,7 +238,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
         scale_to_m:form.get('scale_to_m')?Number(form.get('scale_to_m')):null,
         height_m:Number(form.get('height_m')),elevation_m:Number(form.get('elevation_m')),
         ifc_origin_m:floorPanel.querySelector('[data-local-origin]')?.checked?ifcOrigin:null,ifc_storey_ids:[...floorPanel.querySelectorAll('[data-storey]:checked')].map(el=>el.value),reconstruct_footprints:form.has('reconstruct_footprints'),page:Number(form.get('page')),layer:form.get('layer')||null,send_to_provider:form.has('send_to_provider')});
-      imports.unshift(task);paintImports();if(task.candidate?.rooms.some(r=>r.drawing))await calibration.overlay(task);host.querySelector('#import-progress').textContent='识别完成，请展开任务并合并候选后复核。';
+      imports.unshift(task);paintImports();if(task.candidate?.rooms.some(r=>r.drawing))await calibration.overlay(task);host.querySelector('#import-progress').textContent='识别完成，请展开任务并合并候选后复核。';studio.imported();
     }catch(error){if(host.isConnected&&state.project?.project_id===pid){host.querySelector('#import-progress').textContent=error.message;try{imports=await request(base+'/imports');if(host.isConnected&&state.project?.project_id===pid)paintImports();}catch{ /* Preserve the original import failure. */ }}throw error;}
   },e.submitter);};
   host.querySelector('#teaching-thermal').onclick=()=>{
@@ -251,14 +257,24 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     return {expected_revision:model?.revision||0,name:host.querySelector('#model-name').value,rooms,thermal,reviewed,review_note:host.querySelector('#model-review').value};
   }
   async function save(reviewed){
-    const data=body(reviewed);
-    if(pending){
-      if(!reviewed)throw Error('导入工作流需要「确认空间并保存」；候选任务已持久保存，可稍后继续复核。');
-      const result=await post(base+'/imports/'+pending+'/review',data);model=result.model;pending=null;imports=await request(base+'/imports');paintImports();
-    }else model=await request(base+'/model',{method:'PUT',body:JSON.stringify(data)});
-    rooms=structuredClone(model.rooms);dirty=false;
-    if(model.thermal)host.querySelectorAll('[data-thermal]').forEach(el=>{el.value=model.thermal[el.dataset.thermal];});
-    setStatus('已保存 v'+model.revision+' · '+model.status);await preview();await refresh();
+    const data=body(reviewed),focus=document.activeElement;
+    const workbench=host.querySelector('.model-workbench');
+    const headingButtons=[...host.querySelectorAll('.studio-heading-actions button')];
+    workbench.inert=true;host.setAttribute('aria-busy','true');headingButtons.forEach(b=>{b.disabled=true;});
+    setStatus('正在保存，请等待服务器确认…');
+    let saved=false,adopted=false;
+    try{
+      if(pending){
+        if(!reviewed)throw Error('导入工作流需要「确认空间并保存」；候选任务已持久保存，可稍后继续复核。');
+        const result=await post(base+'/imports/'+pending+'/review',data);model=result.model;pending=null;adopted=true;
+      }else model=await request(base+'/model',{method:'PUT',body:JSON.stringify(data)});
+      rooms=structuredClone(model.rooms);dirty=false;markUnsaved(host,false);saved=true;
+      if(model.thermal)host.querySelectorAll('[data-thermal]').forEach(el=>{el.value=model.thermal[el.dataset.thermal];});
+      setStatus('已保存 v'+model.revision+' · '+model.status);
+      if(adopted){imports=await request(base+'/imports');paintImports();}
+      await preview();await refresh();
+    }catch(error){setStatus((saved?'已保存 v'+model.revision+'，但刷新校验失败：':'保存未确认：')+error.message);throw error;}
+    finally{workbench.inert=false;host.removeAttribute('aria-busy');headingButtons.forEach(b=>{b.disabled=false;});if(focus?.isConnected)focus.focus();}
   }
   host.querySelector('#save-model').onclick=e=>action(()=>save(false),e.currentTarget);
   host.querySelector('#review-model').onclick=e=>action(()=>save(true),e.currentTarget);
@@ -266,8 +282,8 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   host.querySelector('#publish-model').onclick=e=>action(async()=>{if(!model||dirty)throw Error('请先保存当前编辑');const result=await post(base+'/model/publish',{revision:model.revision,scheme_id:host.querySelector('#model-scheme').value,responsible_person:state.user.display_name,review_note:host.querySelector('#publish-note').value});const [evidence,gate]=await Promise.all([request(base+'/evidence'),request(base+'/gate')]);if(!host.isConnected||state.project?.project_id!==pid)return;state.evidence=evidence;state.gate=gate;notice(result.reused?'已存在此模型对应的有效 IDF':'IDF 已生成并登记；请确认天气后运行。');await refresh();},e.currentTarget);
   host.querySelector('#run-model').onclick=e=>action(async()=>{if(dirty)throw Error('请先保存当前编辑并发布，再提交计算');await post(base+'/model-runs',{scheme_id:host.querySelector('#model-scheme').value});notice('已提交真实 EnergyPlus 队列');await refreshRuns();},e.currentTarget);
   host.querySelector('#model-api').onclick=()=>projectTokens(pid,host,action,notice);
-  paintImports();await preview();await refresh();
-  const timer=setInterval(()=>{if(!host.isConnected){clearInterval(timer);dispose();return;}if(!document.hidden)action(refreshRuns);},4000);
+  paintImports();await preview();setStatus(model?'已读取保存版本 v'+model.revision+' · 未保存的编辑不会参与计算':'尚未保存模型 · 先导入资料或添加空间');await refresh();
+  const timer=setInterval(()=>{if(!host.isConnected){clearInterval(timer);dispose();return;}if(!document.hidden&&!document.querySelector('.reauth-dialog[open]'))action(refreshRuns);},4000);
 }
 
 async function renderBuilding(rooms,host,onPick){
@@ -278,6 +294,7 @@ async function renderBuilding(rooms,host,onPick){
   const maxX=Math.max(...points.map(p=>p[0])),maxY=Math.max(...points.map(p=>p[1]));
   plan.innerHTML=`<svg viewBox="${minX-1} ${minY-1} ${maxX-minX+2} ${maxY-minY+2}" role="img" aria-label="房间平面轮廓">${rooms.map((r,i)=>`<path data-pick="${i}" fill-rule="evenodd" d="${[r.polygon,...(r.holes||[])].map(ring=>'M'+ring.map(p=>p.join(',')).join('L')+'Z').join(' ')}"><title>${esc(r.name)} · ${num(roomArea(r))} m² · ${r.holes?.length||0} 个孔洞</title></path>`).join('')}</svg>`;
   plan.querySelectorAll('[data-pick]').forEach(p=>{p.onclick=()=>onPick(Number(p.dataset.pick));});
+  const selectPlan=index=>plan.querySelectorAll('[data-pick]').forEach(p=>p.classList.toggle('selected',Number(p.dataset.pick)===index));
   try{
     const THREE=await import('three'),{OrbitControls}=await import('three/addons/controls/OrbitControls.js');
     if(!host.isConnected)return ()=>{};
@@ -288,6 +305,7 @@ async function renderBuilding(rooms,host,onPick){
     const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(20,40,10);scene.add(sun);
     const meshes=rooms.flatMap((r,i)=>roomSegments(r).map(segment=>{
       const shape=new THREE.Shape(segment.polygon.map(([x,y])=>new THREE.Vector2(x,-y)));
+      (segment.holes||(!r.segments?.length?r.holes:[])||[]).forEach(ring=>shape.holes.push(new THREE.Path(ring.map(([x,y])=>new THREE.Vector2(x,-y)))));
       const mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:segment.height_m,bevelEnabled:false}),
         new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(.56+i*.011,.35,.55),roughness:.75,transparent:true,opacity:.85}));
       mesh.rotation.x=-Math.PI/2;mesh.position.y=segment.elevation_m;mesh.userData.index=i;scene.add(mesh);
@@ -295,16 +313,19 @@ async function renderBuilding(rooms,host,onPick){
       mesh.add(edges);return mesh;
     }));
     const bounds=new THREE.Box3();meshes.forEach(m=>bounds.expandByObject(m));const center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3()),span=Math.max(size.x,size.y,size.z,5);
-    camera.position.copy(center).add(new THREE.Vector3(span,span*.85,span));controls.target.copy(center);controls.update();
+    const fit=()=>{camera.position.copy(center).add(new THREE.Vector3(1,.85,1).normalize().multiplyScalar(size.length()/2/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.05/Math.min(1,camera.aspect)));controls.target.copy(center);controls.update();};fit();
     const grid=new THREE.GridHelper(span*2,20,0xaebdca,0xd4dee6);grid.position.set(center.x,bounds.min.y-.02,center.z);scene.add(grid);
-    const resize=()=>{const width=Math.max(target.clientWidth,200);renderer.setSize(width,360);camera.aspect=width/360;camera.updateProjectionMatrix();};
+    const canvasTheme=()=>{const dark=document.documentElement.dataset.theme==='dark';scene.background.set(dark?'#192534':'#edf2f6');grid.material.color.set(dark?'#667b96':'#ffffff');};
+    canvasTheme();const themeObserver=new MutationObserver(canvasTheme);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+    const resize=()=>{const width=Math.max(target.clientWidth,200);const height=Math.max(target.clientHeight,1);renderer.setSize(width,height);camera.aspect=width/height;camera.updateProjectionMatrix();fit();};
     const observer=new ResizeObserver(resize);observer.observe(target);resize();
     host.querySelector('#model-xray').onchange=e=>{meshes.forEach(m=>{m.material.opacity=e.target.checked?.25:.85;m.material.depthWrite=!e.target.checked;});};
     let down;
     renderer.domElement.onpointerdown=e=>{down=[e.clientX,e.clientY];};
     renderer.domElement.onpointerup=e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;const rect=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2),camera);const hit=ray.intersectObjects(meshes,false)[0];if(hit)onPick(hit.object.userData.index);};
     let alive=true;
-    const dispose=()=>{if(!alive)return;alive=false;observer.disconnect();controls.dispose();scene.traverse(o=>{o.geometry?.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});renderer.dispose();};
-    function frame(){if(!alive)return;if(!host.isConnected){dispose();return;}renderer.render(scene,camera);requestAnimationFrame(frame);}frame();return dispose;
-  }catch(error){target.textContent='三维渲染不可用，可使用下方二维轮廓与尺寸编辑。'+error.message;return ()=>{};}
+    const dispose=()=>{if(!alive)return;alive=false;observer.disconnect();themeObserver.disconnect();controls.dispose();scene.traverse(o=>{o.geometry?.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});renderer.dispose();};
+    dispose.fit=fit;dispose.select=index=>{meshes.forEach(m=>{m.material.color.set(m.userData.index===index?'#4f81cd':new THREE.Color().setHSL(.57+m.userData.index*.005,.17,.68));});selectPlan(index);};
+    function frame(){if(!alive)return;if(!host.isConnected){dispose();return;}if(!document.hidden&&!host.hidden)renderer.render(scene,camera);requestAnimationFrame(frame);}frame();return dispose;
+  }catch(error){target.textContent='三维渲染不可用，可使用下方二维轮廓与尺寸编辑。'+error.message;const fallback=()=>{};fallback.select=selectPlan;return fallback;}
 }
