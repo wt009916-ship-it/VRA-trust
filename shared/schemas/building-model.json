@@ -64,6 +64,30 @@
           ],
           "default": null,
           "title": "Element Plane Range M"
+        },
+        "basis": {
+          "default": "source",
+          "enum": [
+            "source",
+            "inferred_outline",
+            "source_window",
+            "inferred_window"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "source_element_id": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Element Id"
         }
       },
       "required": [
@@ -72,6 +96,89 @@
         "source_id"
       ],
       "title": "BoundaryHint",
+      "type": "object"
+    },
+    "ColumnMassMaterial": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "conductivity_w_mk": {
+          "exclusiveMinimum": 0.005,
+          "maximum": 400,
+          "title": "Conductivity W Mk",
+          "type": "number"
+        },
+        "density_kg_m3": {
+          "maximum": 30000,
+          "minimum": 1,
+          "title": "Density Kg M3",
+          "type": "number"
+        },
+        "specific_heat_j_kgk": {
+          "maximum": 6000,
+          "minimum": 100,
+          "title": "Specific Heat J Kgk",
+          "type": "number"
+        },
+        "source_note": {
+          "maxLength": 2000,
+          "minLength": 10,
+          "title": "Source Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "conductivity_w_mk",
+        "density_kg_m3",
+        "specific_heat_j_kgk",
+        "source_note"
+      ],
+      "title": "ColumnMassMaterial",
+      "type": "object"
+    },
+    "ColumnVoid": {
+      "additionalProperties": false,
+      "properties": {
+        "polygon": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 256,
+          "minItems": 3,
+          "title": "Polygon",
+          "type": "array"
+        },
+        "source_elements": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "title": "Source Elements",
+          "type": "array"
+        }
+      },
+      "required": [
+        "polygon",
+        "source_elements"
+      ],
+      "title": "ColumnVoid",
       "type": "object"
     },
     "DrawingTrace": {
@@ -175,6 +282,73 @@
         "label"
       ],
       "title": "DrawingTrace",
+      "type": "object"
+    },
+    "ElementReconstruction": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "IFC_ELEMENT_SECTION",
+          "title": "Method",
+          "type": "string"
+        },
+        "storey_id": {
+          "maxLength": 100,
+          "title": "Storey Id",
+          "type": "string"
+        },
+        "source_elements": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 2000,
+          "minItems": 1,
+          "title": "Source Elements",
+          "type": "array"
+        },
+        "slice_height_m": {
+          "title": "Slice Height M",
+          "type": "number"
+        },
+        "closed_wall_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Closed Wall Fraction",
+          "type": "number"
+        },
+        "ceiling_basis": {
+          "enum": [
+            "slab_surfaces",
+            "wall_top_assumption"
+          ],
+          "title": "Ceiling Basis",
+          "type": "string"
+        },
+        "assumption": {
+          "maxLength": 2000,
+          "minLength": 10,
+          "title": "Assumption",
+          "type": "string"
+        },
+        "column_voids": {
+          "items": {
+            "$ref": "#/$defs/ColumnVoid"
+          },
+          "maxItems": 256,
+          "title": "Column Voids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "storey_id",
+        "source_elements",
+        "slice_height_m",
+        "closed_wall_fraction",
+        "ceiling_basis",
+        "assumption"
+      ],
+      "title": "ElementReconstruction",
       "type": "object"
     },
     "HeatPump": {
@@ -401,6 +575,85 @@
       "title": "Operation",
       "type": "object"
     },
+    "PerformanceCurve": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "quadratic",
+            "biquadratic"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "coefficients": {
+          "items": {
+            "maximum": 1000000.0,
+            "minimum": -1000000.0,
+            "type": "number"
+          },
+          "maxItems": 6,
+          "minItems": 3,
+          "title": "Coefficients",
+          "type": "array"
+        },
+        "x_min": {
+          "maximum": 1000,
+          "minimum": -1000,
+          "title": "X Min",
+          "type": "number"
+        },
+        "x_max": {
+          "maximum": 1000,
+          "minimum": -1000,
+          "title": "X Max",
+          "type": "number"
+        },
+        "y_min": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": -1000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Y Min"
+        },
+        "y_max": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": -1000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Y Max"
+        },
+        "source_note": {
+          "maxLength": 1000,
+          "minLength": 10,
+          "title": "Source Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "coefficients",
+        "x_min",
+        "x_max",
+        "source_note"
+      ],
+      "title": "PerformanceCurve",
+      "type": "object"
+    },
     "QuantitySource": {
       "additionalProperties": false,
       "properties": {
@@ -520,6 +773,27 @@
           "title": "Height M",
           "type": "number"
         },
+        "holes": {
+          "items": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "maxItems": 256,
+          "title": "Holes",
+          "type": "array"
+        },
         "id": {
           "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
           "title": "Id",
@@ -538,27 +812,6 @@
           "title": "Source Locator",
           "type": "string"
         },
-        "holes": {
-          "items": {
-            "items": {
-              "maxItems": 2,
-              "minItems": 2,
-              "prefixItems": [
-                {
-                  "type": "number"
-                },
-                {
-                  "type": "number"
-                }
-              ],
-              "type": "array"
-            },
-            "type": "array"
-          },
-          "maxItems": 16,
-          "title": "Holes",
-          "type": "array"
-        },
         "segments": {
           "items": {
             "$ref": "#/$defs/Segment"
@@ -573,10 +826,14 @@
               "$ref": "#/$defs/Reconstruction"
             },
             {
+              "$ref": "#/$defs/ElementReconstruction"
+            },
+            {
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "title": "Reconstruction"
         },
         "drawing": {
           "anyOf": [
@@ -608,6 +865,87 @@
           },
           "maxItems": 500,
           "title": "Boundary Hints",
+          "type": "array"
+        },
+        "shell": {
+          "items": {
+            "$ref": "#/$defs/BoundaryHint"
+          },
+          "maxItems": 2000,
+          "title": "Shell",
+          "type": "array"
+        },
+        "storey_id": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Storey Id"
+        },
+        "storey_name": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Storey Name"
+        },
+        "building_id": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Building Id"
+        },
+        "building_name": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Building Name"
+        },
+        "geometry_inferred": {
+          "default": false,
+          "title": "Geometry Inferred",
+          "type": "boolean"
+        },
+        "source_openings": {
+          "items": {
+            "$ref": "#/$defs/SourceOpening"
+          },
+          "maxItems": 1000,
+          "title": "Source Openings",
+          "type": "array"
+        },
+        "source_opening_issues": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 500,
+          "title": "Source Opening Issues",
           "type": "array"
         },
         "conditioned": {
@@ -678,12 +1016,146 @@
           "maximum": 30,
           "title": "Height M",
           "type": "number"
+        },
+        "holes": {
+          "items": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "maxItems": 256,
+          "title": "Holes",
+          "type": "array"
         }
       },
       "required": [
         "polygon"
       ],
       "title": "Segment",
+      "type": "object"
+    },
+    "SourceOpening": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "points": {
+          "items": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 100,
+          "minItems": 3,
+          "title": "Points",
+          "type": "array"
+        },
+        "source_area_m2": {
+          "exclusiveMinimum": 0,
+          "title": "Source Area M2",
+          "type": "number"
+        },
+        "projection_offset_m": {
+          "maximum": 1.5,
+          "minimum": 0,
+          "title": "Projection Offset M",
+          "type": "number"
+        },
+        "geometry_scope": {
+          "default": "IFC_WINDOW_ASSEMBLY_PROJECTION",
+          "enum": [
+            "IFC_WINDOW_ASSEMBLY_PROJECTION",
+            "IFC_OPENING_PROJECTION"
+          ],
+          "title": "Geometry Scope",
+          "type": "string"
+        },
+        "source_is_external": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Is External"
+        },
+        "original_area_m2": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Area M2"
+        },
+        "approximation_tolerance_m": {
+          "default": 0,
+          "maximum": 0.02,
+          "minimum": 0,
+          "title": "Approximation Tolerance M",
+          "type": "number"
+        },
+        "area_error_percent": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Area Error Percent",
+          "type": "number"
+        },
+        "source_opening_id": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Opening Id"
+        }
+      },
+      "required": [
+        "source_id",
+        "points",
+        "source_area_m2",
+        "projection_offset_m"
+      ],
+      "title": "SourceOpening",
       "type": "object"
     },
     "Thermal": {
@@ -861,6 +1333,53 @@
           "minimum": 0,
           "title": "Geometry Tolerance M",
           "type": "number"
+        },
+        "reconstructed_exterior_policy": {
+          "default": "reject",
+          "enum": [
+            "reject",
+            "outline_scenario"
+          ],
+          "title": "Reconstructed Exterior Policy",
+          "type": "string"
+        },
+        "window_geometry": {
+          "default": "ratio",
+          "enum": [
+            "ratio",
+            "source"
+          ],
+          "title": "Window Geometry",
+          "type": "string"
+        },
+        "source_window_exterior_policy": {
+          "default": "reject",
+          "enum": [
+            "reject",
+            "outdoor_scenario"
+          ],
+          "title": "Source Window Exterior Policy",
+          "type": "string"
+        },
+        "column_mass_policy": {
+          "default": "detailed",
+          "enum": [
+            "detailed",
+            "lumped_scenario"
+          ],
+          "title": "Column Mass Policy",
+          "type": "string"
+        },
+        "column_mass_material": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ColumnMassMaterial"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -884,6 +1403,167 @@
       ],
       "title": "Thermal",
       "type": "object"
+    },
+    "ZoneEquipment": {
+      "additionalProperties": false,
+      "properties": {
+        "zone_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
+          "title": "Zone Id",
+          "type": "string"
+        },
+        "system_type": {
+          "const": "PTHP",
+          "title": "System Type",
+          "type": "string"
+        },
+        "manufacturer": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Manufacturer",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "cooling_capacity_w": {
+          "exclusiveMinimum": 0,
+          "maximum": 100000000,
+          "title": "Cooling Capacity W",
+          "type": "number"
+        },
+        "heating_capacity_w": {
+          "exclusiveMinimum": 0,
+          "maximum": 100000000,
+          "title": "Heating Capacity W",
+          "type": "number"
+        },
+        "airflow_m3_s": {
+          "exclusiveMinimum": 0,
+          "maximum": 1000,
+          "title": "Airflow M3 S",
+          "type": "number"
+        },
+        "cooling_cop": {
+          "exclusiveMinimum": 1,
+          "maximum": 8,
+          "title": "Cooling Cop",
+          "type": "number"
+        },
+        "heating_cop": {
+          "exclusiveMinimum": 1,
+          "maximum": 8,
+          "title": "Heating Cop",
+          "type": "number"
+        },
+        "sensible_heat_ratio": {
+          "maximum": 0.95,
+          "minimum": 0.5,
+          "title": "Sensible Heat Ratio",
+          "type": "number"
+        },
+        "fan_pressure_pa": {
+          "exclusiveMinimum": 0,
+          "maximum": 1500,
+          "title": "Fan Pressure Pa",
+          "type": "number"
+        },
+        "fan_total_efficiency": {
+          "exclusiveMinimum": 0.1,
+          "maximum": 1,
+          "title": "Fan Total Efficiency",
+          "type": "number"
+        },
+        "fan_motor_efficiency": {
+          "exclusiveMinimum": 0.1,
+          "maximum": 1,
+          "title": "Fan Motor Efficiency",
+          "type": "number"
+        },
+        "supplemental_capacity_w": {
+          "maximum": 100000000,
+          "minimum": 0,
+          "title": "Supplemental Capacity W",
+          "type": "number"
+        },
+        "minimum_outdoor_c": {
+          "maximum": 5,
+          "minimum": -20,
+          "title": "Minimum Outdoor C",
+          "type": "number"
+        },
+        "minimum_cooling_outdoor_c": {
+          "maximum": 18,
+          "minimum": 0,
+          "title": "Minimum Cooling Outdoor C",
+          "type": "number"
+        },
+        "curve_basis": {
+          "enum": [
+            "source_curves",
+            "native_reference"
+          ],
+          "title": "Curve Basis",
+          "type": "string"
+        },
+        "curves": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PerformanceCurve"
+          },
+          "maxProperties": 10,
+          "title": "Curves",
+          "type": "object"
+        },
+        "source_file_id": {
+          "title": "Source File Id",
+          "type": "string"
+        },
+        "source_file_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source File Hash",
+          "type": "string"
+        },
+        "source_locator": {
+          "maxLength": 500,
+          "minLength": 5,
+          "title": "Source Locator",
+          "type": "string"
+        },
+        "source_note": {
+          "maxLength": 2000,
+          "minLength": 10,
+          "title": "Source Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "system_type",
+        "manufacturer",
+        "model",
+        "cooling_capacity_w",
+        "heating_capacity_w",
+        "airflow_m3_s",
+        "cooling_cop",
+        "heating_cop",
+        "sensible_heat_ratio",
+        "fan_pressure_pa",
+        "fan_total_efficiency",
+        "fan_motor_efficiency",
+        "supplemental_capacity_w",
+        "minimum_outdoor_c",
+        "minimum_cooling_outdoor_c",
+        "curve_basis",
+        "source_file_id",
+        "source_file_hash",
+        "source_locator",
+        "source_note"
+      ],
+      "title": "ZoneEquipment",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -905,7 +1585,7 @@
       "items": {
         "$ref": "#/$defs/Room"
       },
-      "maxItems": 100,
+      "maxItems": 2000,
       "minItems": 1,
       "title": "Rooms",
       "type": "array"
@@ -931,6 +1611,22 @@
       "default": false,
       "title": "Reviewed",
       "type": "boolean"
+    },
+    "scope_exclusions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "maxProperties": 200,
+      "title": "Scope Exclusions",
+      "type": "object"
+    },
+    "equipment": {
+      "items": {
+        "$ref": "#/$defs/ZoneEquipment"
+      },
+      "maxItems": 2000,
+      "title": "Equipment",
+      "type": "array"
     }
   },
   "required": [

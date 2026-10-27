@@ -44,3 +44,13 @@ API 具备账号会话、项目归属及受限 Token 校验，仍绑定本机；
 `/tokens` 创建/列举项目 Token，`DELETE /tokens/{id}` 撤销。Token 有 read/write/compute 三类独立权限，最长 90 天；不可读取开发者设置、创建其他 Token 或访问其他项目。
 `GET /api/developer/runtime` 提供实际安装组件、引擎版本、工具清单和单进程限制。通用 Provider endpoint、文本模型和视觉模型共用管理员配置。
 旧 `/geometry` 保留兼容；当前建模 UI 使用 `/model`，不要把旧墙体草稿和新发布模型混为同一契约。完整步骤和限制见 `BUILDING_WORKBENCH.md`。
+
+## 复杂建筑输入 · 2026-10-28
+
+- `POST /api/projects/{id}/imports` 增加 `reconstruct_elements`、`reconstruction_tolerance_m`、`source_window_tolerance_m`。两个公差默认0；墙板重建仅在没有源IfcSpace时显式启用。`GET /files/{file_id}/ifc-storeys` 包含源建筑、楼层与构件清点，空空间楼层仍保留。
+- `building-model.json` 增加闭合壳面、建筑/楼层归属、源窗、重建依据、设备及范围处置。IFC/模型预算2000空间、20000分段、100000最终热面，超过则拒绝；DXF/PDF线环识别仍限100。源曲面使用折面网格，不能视为精确曲面热实体。
+- `GET /api/projects/{id}/model/equipment-template.csv` 下载UTF-8固定列模板；`POST /model/equipment-import` 接收`{file_id}`，仅解析本项目上传原件，返回待复核清单。功率W、风量m³/s，绝对铭牌与10项源曲线或显式原生参考模式。保存时必须逐空调空间一一匹配；源哈希、行号和参数绑定随版本保存。
+- `thermal.window_geometry=source`采用源外窗/天窗；缺内外分类默认拒绝。墙板外包络、未知内部绝热及柱体等效热容均为独立的显式假设，不能绕过未恢复范围、源文件完整性或引擎校验。
+- 发布和读取计算继续核对模型、编译器和源原件；逐空间PTHP结果标为耗电，理想模型标为冷热需求。`GET /api/developer/runtime`公布本机实际计算预算，生产仍为单服务进程、单原生引擎互斥。
+
+客户端须从更新后的共享Schema取字段和约束。来源、操作与适用范围见[复杂建筑输入](COMPLEX_MODELING.md)，实际验收见[复杂建筑结果](HIGHRISE_MODELING_ACCEPTANCE.md)。

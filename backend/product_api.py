@@ -17,9 +17,23 @@ class ModelRun(Contract):
 class ModelRevision(Contract):
     revision: int = Field(ge=1)
 
+class EquipmentImport(Contract):
+    file_id: str
+
 def register_product(app, domain, auth):
     modeling = Modeling(domain, app.state.gateway)
     domain.modeling = app.state.modeling = modeling
+
+    @app.get('/api/projects/{project_id}/model/equipment-template.csv')
+    def equipment_template(project_id: str):
+        from .equipment_inputs import COLUMNS
+        return Response(','.join(COLUMNS) + '\r\n', media_type='text/csv', headers={'Content-Disposition': 'attachment; filename="pthp-nameplates-W-m3s.csv"'})
+
+    @app.post('/api/projects/{project_id}/model/equipment-import')
+    def equipment_import(project_id: str, body: EquipmentImport):
+        from .equipment_inputs import read_csv
+        record, path = domain.file_record(project_id, body.file_id)
+        return read_csv(record, path)
 
     @app.get('/api/projects/{project_id}/model')
     def model(project_id: str):

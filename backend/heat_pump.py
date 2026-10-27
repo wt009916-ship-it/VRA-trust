@@ -63,6 +63,19 @@ def expand_fixed(text, engine, directory):
             raise core.ValidationError('Missing explicit cooling compressor temperature limit: '+name)
         bind('Coil:Cooling:DX:SingleSpeed', prefix+' Cooling Coil', {6: flow, 15: float(lockouts[0][3])})
         bind('Coil:Heating:DX:SingleSpeed', prefix+' Heating Coil', {5: flow, 23: 0})
+        from .equipment_inputs import CURVES
+        declared = {r[1] for r in parsed if r[0].lower().startswith('curve:')}
+        names = {key: 'VRA_EQ_'+name+'_'+key for key in CURVES}
+        present = [key for key, curve_name in names.items() if curve_name in declared]
+        if present:
+            if len(present) != len(CURVES):
+                raise core.ValidationError('设备源曲线缺项；未回退到原生参考曲线：'+name)
+            bind('Coil:Cooling:DX:SingleSpeed', prefix+' Cooling Coil', {
+                10: names['cooling_capacity_temperature'], 11: names['cooling_capacity_flow'],
+                12: names['cooling_eir_temperature'], 13: names['cooling_eir_flow'], 14: names['cooling_part_load']})
+            bind('Coil:Heating:DX:SingleSpeed', prefix+' Heating Coil', {
+                9: names['heating_capacity_temperature'], 10: names['heating_capacity_flow'],
+                11: names['heating_eir_temperature'], 12: names['heating_eir_flow'], 13: names['heating_part_load']})
     # The source template and native expansion remain archived separately.
     if any(v.lower() == 'autosize' for row in rows for v in row):
         raise core.ValidationError('Unbound autosize field in fixed-capacity PTHP expansion')

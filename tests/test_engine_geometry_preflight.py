@@ -39,3 +39,11 @@ def test_valid_triangle_and_nonfatal_short_quad_are_not_blanket_rejected():
     triangle = Face('valid_triangle', shape([(0, 0, 0), (.01, 0, 0), (0, 1, 0)]))
     quad = Face('short_quad', shape([(0, 0, 0), (.005, 0, 0), (1, 1, 0), (0, 1, 0)]))
     assert engine_preflight(SimpleNamespace(faces=[triangle, quad]))['passed']
+
+
+def test_flat_quad_below_native_projection_area_threshold_is_rejected():
+    # v9 CheckConvexity calls this non-planar although all Z coordinates are 0.
+    face=Face('tiny_flat_quad',shape([(0,0,0),(.005,0,0),(.005,.005,0),(0,.005,0)]))
+    result=engine_preflight(SimpleNamespace(faces=[face]))
+    assert not result['passed']
+    assert result['issues'][0]['code']=='PROJECTED_AREA_BELOW_ENGINE_MINIMUM'

@@ -17,10 +17,32 @@ def parts(room):
 
 
 def floor_area(room):
+    if room.get('shell'):
+        total = 0.
+        for face in room['shell']:
+            plane = frame(face['points'])
+            if (plane['normal']*plane['side'])[2] < -.5:
+                total += Polygon([(x,y) for x,y,_ in face['points']]).area
+        return total
     sections = parts(room)
-    low = min(s["elevation_m"] for s in sections)
-    return unary_union([Polygon(s["polygon"]) for s in sections
-                        if abs(s["elevation_m"] - low) < EPS]).area
+    levels = []
+    for z in sorted(s['elevation_m'] for s in sections):
+        if not levels or z-levels[-1] > EPS:
+            levels.append(z)
+    total = 0.
+    for low in levels:
+        above = unary_union([Polygon(s['polygon'], s.get('holes', [])) for s in sections if abs(s['elevation_m']-low) <= EPS])
+        beneath = unary_union([Polygon(s['polygon'], s.get('holes', [])) for s in sections
+            if s['elevation_m'] < low-EPS and s['elevation_m']+s['height_m'] >= low-EPS])
+        total += above.difference(beneath).area
+    return total
+
+
+def room_volume(room):
+    if room.get('shell'):
+        from .solid_geometry import volume
+        return volume([f['points'] for f in room['shell']])
+    return sum(Polygon(s['polygon'], s.get('holes', [])).area*s['height_m'] for s in parts(room))
 
 
 def polygons(shape):
@@ -40,6 +62,14 @@ def simple_pieces(shape):
         poly = poly.simplify(1e-8, preserve_topology=True)
         if not poly.interiors and len(poly.exterior.coords) <= 5 and poly.convex_hull.area - poly.area < EPS:
             result.append(orient(poly, sign=1))
+        elif not poly.interiors and poly.convex_hull.area-poly.area < 1e-10:
+            # A fan avoids arbitrarily thin ears on faceted curves while
+            # preserving every source edge and the exact polygon area.
+            center = tuple(poly.centroid.coords[0])
+            ring = list(poly.exterior.coords)
+            fan = [orient(Polygon([a, b, center]), sign=1) for a, b in zip(ring, ring[1:])]
+            result.extend(fan if all(t.area > EPS for t in fan) else
+                          [orient(t, sign=1) for t in constrained_delaunay_triangles(poly).geoms if t.area > EPS])
         else:
             result.extend(orient(t, sign=1) for t in constrained_delaunay_triangles(poly).geoms if t.area > EPS)
     return result
@@ -152,24 +182,62 @@ def face_points(poly, plane):
             for x, y in xy]
 
 
-def geometry(model):
+def geometry(model, *, return_report=False):
     """Split partial contacts, remove interfaces inside a room, preserve closed zones."""
+    from shapely import intersection, difference
+    from shapely.errors import GEOSException
+    retries = []
+
+    def overlay(a, b, operation):
+        try:
+            return getattr(a, operation)(b)
+        except GEOSException:
+            if not a.is_valid or not b.is_valid:
+                raise core.ValidationError('热边界输入多边形无效，须修复源几何') from None
+            try:
+                out = (intersection if operation == 'intersection' else difference)(a, b, grid_size=1e-8)
+            except GEOSException as exc:
+                raise core.ValidationError('热边界布尔运算失败，未删除空间或改变边界：'+str(exc)[:300]) from exc
+            retries.append({'operation': operation, 'grid_m': 1e-8, 'input_area_m2': a.area, 'output_area_m2': out.area})
+            return out
     rooms = model["rooms"]
+    hint_cache = defaultdict(list)
+    for room in rooms:
+        for hint in room.get('boundary_hints', []):
+            if hint.get('basis') in ('source_window', 'inferred_window') and (model.get('thermal') or {}).get('window_geometry') != 'source':
+                continue
+            hp = frame(hint['points'])
+            hint_cache[(room['id'], tuple(np.round(hp['normal'], 5)))].append((hint, hp))
     all_parts = [s for room in rooms for s in parts(room)]
-    if len(all_parts) > 1000:
-        raise core.ValidationError("建筑分段超过 1000")
+    if len(all_parts) > 20000:
+        raise core.ValidationError("建筑分段超过 20000")
     minimum = min(s["elevation_m"] for s in all_parts)
+    maximum = max(s['elevation_m']+s['height_m'] for s in all_parts)
     raw = []
     for room in rooms:
+        if room.get('shell'):
+            for face in room['shell']:
+                plane = frame(face['points'])
+                nz = (plane['normal']*plane['side'])[2]
+                raw.append({'zone': room['id'], 'kind': 'Roof' if nz > .5 else 'Floor' if nz < -.5 else 'Wall',
+                            'room': room, 'plane': plane})
+            continue
         for section in parts(room):
             z, high = section["elevation_m"], section["elevation_m"] + section["height_m"]
-            coords = list(orient(Polygon(section["polygon"]), sign=1).exterior.coords)[:-1]
+            shape = orient(Polygon(section['polygon'], section.get('holes', [])), sign=1)
+            coords = list(shape.exterior.coords)[:-1]
             for kind, level, ring in (("Floor", z, list(reversed(coords))), ("Roof", high, coords)):
-                raw.append({"zone": room["id"], "kind": kind, "room": room,
-                            "plane": frame([[x, y, level] for x, y in ring])})
-            for a, b in zip(coords, coords[1:] + coords[:1]):
-                raw.append({"zone": room["id"], "kind": "Wall", "room": room, "plane": frame([
-                    [a[0], a[1], z], [b[0], b[1], z], [b[0], b[1], high], [a[0], a[1], high]])})
+                plane = frame([[x, y, level] for x, y in ring])
+                if shape.interiors:
+                    holes = [[(float(np.dot([x, y, level], plane['axis'])), float(np.dot([x, y, level], plane['second'])))
+                              for x, y in list(hole.coords)[:-1]] for hole in shape.interiors]
+                    plane['poly'] = Polygon(plane['poly'].exterior, holes)
+                raw.append({'zone': room['id'], 'kind': kind, 'room': room, 'plane': plane})
+            for outline in [shape.exterior, *shape.interiors]:
+                coords = list(outline.coords)[:-1]
+                for a, b in zip(coords, coords[1:] + coords[:1]):
+                    raw.append({"zone": room["id"], "kind": "Wall", "room": room, "plane": frame([
+                        [a[0], a[1], z], [b[0], b[1], z], [b[0], b[1], high], [a[0], a[1], high]])})
     groups = defaultdict(list)
     for surface in raw:
         surface["remaining"] = surface["plane"]["poly"]
@@ -189,15 +257,20 @@ def geometry(model):
         return result[-1]
 
     for group in groups.values():
+        from shapely.strtree import STRtree
+        tree = STRtree([s['plane']['poly'] for s in group])
         for i, a in enumerate(group):
-            for b in group[i+1:]:
+            for j in sorted(tree.query(a['plane']['poly'], predicate='intersects')):
+                if j <= i:
+                    continue
+                b = group[j]
                 if a["plane"]["side"] == b["plane"]["side"]:
                     continue
-                overlap = a["remaining"].intersection(b["remaining"])
+                overlap = overlay(a['remaining'], b['remaining'], 'intersection')
                 if overlap.area <= EPS:
                     continue
-                a["remaining"] = a["remaining"].difference(overlap)
-                b["remaining"] = b["remaining"].difference(overlap)
+                a["remaining"] = overlay(a['remaining'], overlap, 'difference')
+                b["remaining"] = overlay(b['remaining'], overlap, 'difference')
                 if a["zone"] == b["zone"]:
                     continue
                 for poly in simple_pieces(overlap):
@@ -214,21 +287,25 @@ def geometry(model):
         contacts = []
         for candidates in orientations.values():
             ordered = sorted(candidates, key=lambda s: s["plane"]["distance"])
+            tree = STRtree([s['plane']['poly'] for s in ordered])
             for i, a in enumerate(ordered):
                 if a["plane"]["side"] != 1:
                     continue
-                for b in ordered[i+1:]:
+                for j in sorted(tree.query(a['plane']['poly'], predicate='intersects')):
+                    if j <= i:
+                        continue
+                    b = ordered[j]
                     gap = b["plane"]["distance"]-a["plane"]["distance"]
                     if gap > gap_limit:
-                        break
+                        continue
                     if gap > 1e-5 and b["plane"]["side"] == -1 and a["zone"] != b["zone"]:
                         contacts.append((gap, a, b))
         for gap, a, b in sorted(contacts, key=lambda c: c[0]):
-            overlap = a["remaining"].intersection(b["remaining"])
+            overlap = overlay(a['remaining'], b['remaining'], 'intersection')
             if overlap.area <= EPS:
                 continue
-            a["remaining"] = a["remaining"].difference(overlap)
-            b["remaining"] = b["remaining"].difference(overlap)
+            a["remaining"] = overlay(a['remaining'], overlap, 'difference')
+            b["remaining"] = overlay(b['remaining'], overlap, 'difference')
             reason = f"ASSUMED: facing parallel room surfaces across {gap:.6f} m; allowed gap {gap_limit:g} m"
             for poly in simple_pieces(overlap):
                 sa = emit(a, poly, "Surface", reason=reason)
@@ -239,20 +316,25 @@ def geometry(model):
         room, plane = surface["room"], surface["plane"]
         if room.get("ifc_source"):
             hints = []
-            for hint in room.get("boundary_hints", []):
-                hp = frame(hint["points"])
+            for hint, hp in hint_cache[(room['id'], tuple(np.round(plane['normal'], 5)))]:
                 offset = abs(hp["distance"] - plane["distance"])
                 bounds = hint.get("element_plane_range_m")
                 supported = bounds and bounds[0]-1e-5 <= plane["distance"] <= bounds[1]+1e-5
                 if np.linalg.norm(hp["normal"] - plane["normal"]) < 1e-6 and (offset <= .05 or supported):
                     # IFC boundary can lie at slab reference elevation, a few mm from finished floor.
                     hints.append((offset, hint, hp))
-            hints.sort(key=lambda x: x[0])
+            hints.sort(key=lambda x: (1 if x[1].get('basis') == 'inferred_window' else
+                                     2 if x[1]['classification'] == 'NOTDEFINED' else 0, x[0]))
             for offset, hint, hp in hints:
-                match = remaining.intersection(hp["poly"])
+                match = overlay(remaining, hp['poly'], 'intersection')
                 if match.area <= EPS:
                     continue
                 classification = hint["classification"]
+                if hint.get('basis') == 'inferred_window' and (model.get('thermal') or {}).get('source_window_exterior_policy') != 'outdoor_scenario':
+                    raise core.ValidationError('源窗缺少内外分类；请复核或明确选择外窗假设情景：'+hint['source_id'])
+                if hint.get('basis') == 'inferred_outline':
+                    if (model.get('thermal') or {}).get('reconstructed_exterior_policy') != 'outline_scenario':
+                        raise core.ValidationError('构件推导的楼板外缘不是已知幕墙；须核对外立面或显式选择外包络假设情景')
                 if classification == "EXTERNAL_EARTH":
                     boundary = "Ground"
                 elif classification == "EXTERNAL":
@@ -262,9 +344,20 @@ def geometry(model):
                 if boundary == "Adiabatic" and (model.get("thermal") or {}).get("ifc_unpaired_policy", "reject") != "adiabatic_scenario":
                     raise core.ValidationError("IFC 内部边界尚未配对；须补充邻接，或明确选择未配对边界绝热的假设情景")
                 for poly in simple_pieces(match):
-                    emit(surface, poly, boundary, reason=f'IFC {hint["source_id"]}; {classification}; offset={offset:.6f}m')
-                remaining = remaining.difference(match)
+                    prefix = 'ASSUMED '+hint['basis']+'; ' if hint.get('basis') in ('inferred_outline', 'inferred_window') else ''
+                    emit(surface, poly, boundary, reason=prefix+f'IFC {hint["source_id"]}; {classification}; offset={offset:.6f}m')
+                remaining = overlay(remaining, match, 'difference')
             if remaining.area > EPS:
+                inferred = (room.get('reconstruction') or {}).get('method') == 'IFC_ELEMENT_SECTION'
+                exterior = (model.get('thermal') or {}).get('reconstructed_exterior_policy') == 'outline_scenario'
+                level = float((plane['normal']*plane['distance'])[2]) if abs(plane['normal'][2]) > .99 else None
+                if inferred and exterior and level is not None and (
+                        (surface['kind'] == 'Floor' and abs(level-minimum) < .05) or
+                        (surface['kind'] == 'Roof' and abs(level-maximum) < .05)):
+                    for poly in simple_pieces(remaining):
+                        emit(surface, poly, 'Ground' if surface['kind'] == 'Floor' else 'Outdoors',
+                             reason='ASSUMED reconstructed building lowest floor/highest roof envelope')
+                    continue
                 if (model.get("thermal") or {}).get("ifc_unpaired_policy", "reject") != "adiabatic_scenario":
                     raise core.ValidationError("IFC 部分热边界缺少可匹配依据；禁止自动当成外墙")
                 for poly in simple_pieces(remaining):
@@ -289,9 +382,12 @@ def geometry(model):
         for i, poly in enumerate(simple_pieces(shape)):
             compacted.append({**source, "name": source["name"]+f"_M{i}", "points": face_points(poly, plane),
                               "boundary_basis": basis})
-    if len(compacted) > 10000:
-        raise core.ValidationError("热边界超过 10000")
-    return compacted
+    if len(compacted) > 100000:
+        counts = Counter(s['zone'] for s in compacted)
+        raise core.ValidationError(f'热边界超过100000（{len(compacted)}）；最多的空间：{counts.most_common(5)}')
+    report = {'overlay_fallbacks': retries, 'overlay_grid_m': 1e-8,
+              'scope': 'Only valid-input GEOS failures retry on a 10 nanometre projected grid; no engineering gap closure'}
+    return (compacted, report) if return_report else compacted
 
 
 def thermal_geometry_model(model):
@@ -302,9 +398,13 @@ def thermal_geometry_model(model):
     normalized = copy.deepcopy(model)
     points = []
     for room in normalized["rooms"]:
+        if room.get('shell'):
+            continue
         for section in [room, *room.get("segments", [])]:
             points.extend([x, y, section["elevation_m"]] for x, y in section["polygon"])
             points.extend([x, y, section["elevation_m"]+section["height_m"]] for x, y in section["polygon"])
+            for ring in section.get('holes', []):
+                points.extend([x, y, section['elevation_m']] for x, y in ring)
         for ring in room.get("holes", []):
             points.extend([x, y, room["elevation_m"]] for x, y in ring)
         for hint in room.get("boundary_hints", []):
@@ -332,17 +432,23 @@ def thermal_geometry_model(model):
 
     report = []
     for original, room in zip(model["rooms"], normalized["rooms"]):
+        if room.get('shell'):
+            report.append({'room_id': room['id'], 'original_area_m2': floor_area(room),
+                           'normalized_area_m2': floor_area(room), 'original_volume_m3': room_volume(room),
+                           'normalized_volume_m3': room_volume(room), 'shell_policy': 'source planes preserved; no axis snapping'})
+            continue
         for section in [room, *room.get("segments", [])]:
             low = snapped(section["elevation_m"], 2)
             high = snapped(section["elevation_m"]+section["height_m"], 2)
             if high-low < 1e-6:
                 raise core.ValidationError("几何公差会消除空间分段，请减小公差或修正源模型")
-            shape = Polygon([(snapped(x, 0), snapped(y, 1)) for x, y in section["polygon"]])
+            holes = [[(snapped(x, 0), snapped(y, 1)) for x, y in ring] for ring in section.get('holes', [])]
+            shape = Polygon([(snapped(x, 0), snapped(y, 1)) for x, y in section["polygon"]], holes)
             if not shape.is_valid or shape.area < EPS:
                 raise core.ValidationError("几何公差产生无效空间，请减小公差")
             section.update(polygon=list(shape.simplify(1e-8).exterior.coords)[:-1],
+                           holes=[list(r.coords)[:-1] for r in shape.interiors],
                            elevation_m=low, height_m=high-low)
-        room["holes"] = [[(snapped(x, 0), snapped(y, 1)) for x, y in ring] for ring in room.get("holes", [])]
         hints = []
         for hint in room.get("boundary_hints", []):
             hint["points"] = [[snapped(value, axis) for axis, value in enumerate(p)] for p in hint["points"]]
@@ -355,8 +461,8 @@ def thermal_geometry_model(model):
         room["boundary_hints"] = hints
         report.append({"room_id": room["id"], "original_area_m2": floor_area(original),
                        "normalized_area_m2": floor_area(room),
-                       "original_volume_m3": sum(Polygon(s["polygon"]).area*s["height_m"] for s in parts(original)),
-                       "normalized_volume_m3": sum(Polygon(s["polygon"]).area*s["height_m"] for s in parts(room)),
+                       "original_volume_m3": room_volume(original),
+                       "normalized_volume_m3": room_volume(room),
                        "degenerate_boundary_hints": discarded})
     from .model_schema import ModelDraft
     # Only validate the public draft fields; persisted metadata is unchanged.
@@ -406,6 +512,8 @@ def ifc_boundary_hints(document, space):
                 hint = {"points": points, "classification": boundary.InternalOrExternalBoundary,
                         "source_id": boundary.GlobalId}
                 element = boundary.RelatedBuildingElement
+                if element:
+                    hint['source_element_id'] = element.GlobalId
                 if element and element.is_a("IfcWall") and boundary.PhysicalOrVirtualBoundary == "PHYSICAL":
                     # Some IFC exporters place first-level boundaries on the wall
                     # centreline. Project only through the associated physical wall.

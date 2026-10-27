@@ -124,6 +124,10 @@ class Domain:
                             raise core.ValidationError("已发布建筑模型的版本或内容不匹配")
                         if binding.get("compiler_hash") != model_export.compiler_hash():
                             raise core.ValidationError("几何编译器版本变化，请重新发布 IDF")
+                        for source in current_model.get('sources', []):
+                            record, _ = self.file_record(project_id, source['file_id'])
+                            if record['hash'] != source['hash']:
+                                raise core.ValidationError('模型或设备来源文件与发布版本不一致')
                     text = re.sub(r"!.*", "", path.read_text(encoding="utf-8-sig", errors="replace"))
                     if not re.search(r"\bVersion\s*,\s*9\.0(?:\.\d+)?\s*;", text, re.IGNORECASE):
                         raise core.ValidationError("当前计算链仅验收 EnergyPlus 9.0 IDF，请使用匹配版本模型")

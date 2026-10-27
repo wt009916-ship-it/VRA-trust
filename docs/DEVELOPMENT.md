@@ -60,6 +60,10 @@ git diff --exit-code -- shared/schemas
 
 `scripts/verify.py --engine` 创建新参考运行，含故意撤回证据的失效检查；先读脚本并在隔离目录执行，不能操作客户生产数据。`scripts/replay.py` 用于已有计算记录重放，条件见 [REPLAY](REPLAY.md)。
 
+`scripts/verify_morphology.py --output <仓库外新目录>`执行16类控制形态的IFC几何往返、独立校验及原生全年计算；`--geometry-only`不运行引擎。控制样本定义在`scripts/morphology_cases.py`。公开原件API复测使用`scripts/benchmark_new_projects.py --manifest <冻结清单> --output <新目录>`，manifest可显式指定`import_options`和`thermal_options`，运行时保留这些假设与文件哈希。不能把控制形态或显式假设情景称为客户建筑实测。
+
+原生单次计算默认预算1800秒，`VRA_ENGINE_TIMEOUT_SECONDS`允许30–7200秒；故障注入测试可使用较短显式预算。队列超时、进程退出或仅有部分SQL不会产生全年成功。编译器哈希改变使旧物理运行保守失效；复跑创建新记录，旧manifest不更新。
+
 ## 提交与发行
 
 功能/修复分支通过 PR 和 CI 交付。修改须说明用户行为、适用范围和验证依据；保留 `AGENTS.md` 中来源、拒答和历史规则。

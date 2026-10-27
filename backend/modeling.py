@@ -34,6 +34,10 @@ class Modeling:
 
     def save(self, project_id, body, actor, source=None, workflow_id=None):
         with self.lock:
+            for equipment in body.equipment:
+                record, _ = self.domain.file_record(project_id, equipment.source_file_id)
+                if record['hash'] != equipment.source_file_hash:
+                    raise core.ValidationError('设备清单原件哈希发生变化，须重新导入和复核')
             old = self.get(project_id)
             if old and workflow_id:
                 for version in self.store.history("model", old["model_id"]):
@@ -44,6 +48,13 @@ class Modeling:
             if body.expected_revision != (old["revision"] if old else 0):
                 raise core.ValidationError("模型版本冲突，请刷新后再编辑")
             sources = source if source is not None else (old or {}).get("sources", [])
+            sources = list(sources)
+            known = {s['file_id'] for s in sources}
+            for equipment in body.equipment:
+                if equipment.source_file_id not in known:
+                    record, _ = self.domain.file_record(project_id, equipment.source_file_id)
+                    sources.append({k: record[k] for k in ('file_id', 'hash', 'name')})
+                    known.add(equipment.source_file_id)
             for ref in sources:
                 record, _ = self.domain.file_record(project_id, ref["file_id"])
                 if record["hash"] != ref["hash"]:
@@ -80,6 +91,8 @@ class Modeling:
             current = self.get(state["project_id"])
             sources = {s["file_id"]: s for s in (current or {}).get("sources", [])}
             source = state["candidate"]["source"]
+            if state['candidate'].get('diagnostics', {}).get('method') == 'IFC_ELEMENT_SECTION':
+                source = {**source, 'reconstruction_coverage': state['candidate']['diagnostics']}
             sources[source["file_id"]] = source
             result = self.save(state["project_id"], ModelDraft.model_validate(state["reviewed_model"]), actor,
                                list(sources.values()), state["workflow_id"])
@@ -155,18 +168,27 @@ class Modeling:
             blockers.append("空间几何尚未复核")
         if not model["thermal"]:
             blockers.append("热工参数不完整")
+        for source in model['sources']:
+            coverage = source.get('reconstruction_coverage') or {}
+            missing = {s['storey'] for s in coverage.get('storeys', [])
+                       if s['status'] != 'candidate' or s.get('excluded_subminimum_area_m2', 0) > .01}
+            unresolved_scope = missing - model.get('scope_exclusions', {}).keys()
+            if unresolved_scope:
+                blockers.append('构件重建尚有未恢复区域或小型空间，须明确楼层范围处置（保留为排除范围，不能算完整覆盖）：'+', '.join(sorted(unresolved_scope)))
         unresolved = [r["name"] for r in model["rooms"]
                       if r.get("conditioned", True) is None or r.get("include_floor_area", True) is None]
         if unresolved:
             blockers.append("须确认空调及计入面积属性：" + "、".join(unresolved)[:1000])
         if model["area_m2"] <= 0:
             blockers.append("至少一个空间须计入项目面积")
+        geometric_area = sum(model_geometry.floor_area(r) for r in model['rooms'] if r.get('include_floor_area') is not False)
+        if abs(geometric_area-model['area_m2']) > max(.0001, geometric_area*1e-6):
+            blockers.append(f'几何楼面投影口径已更新，请重新保存复核版本：旧面积{model["area_m2"]:.4f}、当前{geometric_area:.4f}m²；未改写旧版本')
         geometry_review = None
         try:
             surfaces, numerical = model_export.geometry(model, return_report=True)
             _, adjustment = model_geometry.thermal_geometry_model(model)
-            from .honeybee_bridge import audit
-            independent = audit(model, surfaces)
+            independent = model_export.geometry_audit(model)
             if not independent["passed"]:
                 prefix = 'EnergyPlus 几何预检失败：' if not independent.get('engine_compatibility', {}).get('passed', True) else 'Honeybee 校验失败：'
                 blockers.append(prefix + "; ".join(i["message"] for i in independent["issues"])[:1500])
@@ -175,8 +197,12 @@ class Modeling:
                 "coverage": {
                     "thermal_mass_assemblies": list((model.get("thermal") or {}).get("constructions", {})),
                     "hourly_operation": bool((model.get("thermal") or {}).get("operation")),
-                    "actual_hvac_equipment": bool((model.get("thermal") or {}).get("heat_pump")), "source_window_geometry": False,
-                    "inferred_rooms": sum(bool(r.get("drawing") or r.get("reconstruction")) for r in model["rooms"]),
+                    "actual_hvac_equipment": bool(model.get('equipment')),
+                    'hvac_scope': model_export.scope(model),
+                    "nameplate_equipment_count": len(model.get('equipment', [])),
+                    "source_window_geometry": (model.get('thermal') or {}).get('window_geometry') == 'source',
+                    'column_mass_reduction': numerical.get('column_mass_reduction', []),
+                    "inferred_rooms": sum(bool(r.get("drawing") or r.get("reconstruction") or r.get('geometry_inferred')) for r in model["rooms"]),
                     "adiabatic_area_m2": sum(model_geometry.frame(s["points"])["poly"].area for s in surfaces if s["boundary"] == "Adiabatic"),
                 },
                 "assumed_gap_faces": sum("ASSUMED: facing" in s["boundary_basis"] for s in surfaces),
@@ -214,17 +240,21 @@ class Modeling:
                        "geometry_adjustment": adjustment,
                        "independent_audit": check["geometry_review"]["independent_audit"],
                        "numerical_precision": check["geometry_review"]["numerical_precision"],
-                       "scope": model_export.scope(model), "limitations": model_export.LIMITATIONS}
+                       "scope": model_export.scope(model), 'scope_exclusions': model.get('scope_exclusions', {}),
+                       'equipment': [{'zone_id': e['zone_id'], 'manufacturer': e['manufacturer'], 'model': e['model'],
+                                      'source_file_id': e['source_file_id'], 'source_file_hash': e['source_file_hash'],
+                                      'curve_basis': e['curve_basis']} for e in model.get('equipment', [])],
+                       "limitations": model_export.LIMITATIONS}
             existing = [ev for ev in self.store.list("evidence", project_id)
                         if ev["type"] == "idf" and ev["scheme_id"] == body.scheme_id and ev["review_state"] != "rejected"]
             if len(existing) == 1 and existing[0].get("value") == binding and existing[0]["review_state"] == "confirmed":
                 return {"evidence": existing[0], "binding": binding, "reused": True}
             file = self.domain.add_file(project_id, f"model-v{model['revision']}-{body.scheme_id}.idf", text.encode())
             evidence = self.domain.add_evidence(project_id, EvidenceCreate(
-                type="idf", name=f"空间模型 v{model['revision']} · {'定容热泵' if model['thermal'].get('heat_pump') else '理想负荷'} · {body.scheme_id}",
+                type="idf", name=f"空间模型 v{model['revision']} · {'PTHP耗电' if model_export.scope(model) == 'packaged_heat_pump_electricity' else '理想冷热需求'} · {body.scheme_id}",
                 source_file=file["file_id"], scheme_id=body.scheme_id, source_locator="VRA Building Model "+model["model_id"],
                 value=binding, authority=body.responsible_person, permission="项目内部工程分析",
-                acquisition_method="确定性棱柱空间编译器", responsible_person=body.responsible_person,
+                acquisition_method="确定性空间实体与热边界编译器", responsible_person=body.responsible_person,
                 status="ASSUMED" if model["thermal"]["basis"] == "assumed_scenario" else "DOCUMENTED",
                 uncertainty="；".join(model_export.LIMITATIONS)))
             evidence = self.domain.review(project_id, evidence["evidence_id"], EvidenceReview(

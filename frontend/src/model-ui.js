@@ -1,3 +1,8 @@
+import { polygonArea, geometricFloorArea } from './floor-area.js';
+export { polygonArea };
+import { reviewUseScope } from './scope-review.js';
+import { shellGeometry, storeyKey } from './solid-preview.js';
+import { engineeringInputs } from './engineering-inputs.js';
 import { markUnsaved } from './editing-guard.js';
 import { mountModelStudio } from './studio-layout.js';
 import { planCalibration } from './plan-calibration.js';
@@ -38,31 +43,30 @@ const teachingThermal = {wall_u:.8,roof_u:.5,floor_u:.6,window_u:2.5,window_shgc
   active_start:8,active_end:18,north_deg:0,basis:'assumed_scenario',
   source_note:'教学假设参数，仅用于验证模型及情景计算，不代表本项目实测或设计参数。'};
 
-export function polygonArea(points) {
-  return Math.abs(points.reduce((sum,p,i)=>{const q=points[(i+1)%points.length];return sum+p[0]*q[1]-q[0]*p[1];},0))/2;
-}
-
 export function roomSegments(room) {
   return room.segments?.length ? room.segments : [room];
 }
 
-export function roomArea(room) {
-  const segments=roomSegments(room), low=Math.min(...segments.map(s=>s.elevation_m));
-  return segments.filter(s=>Math.abs(s.elevation_m-low)<1e-7).reduce((a,s)=>a+polygonArea(s.polygon),0);
-}
+export function roomArea(room) { return geometricFloorArea(room); }
 
 export function duplicateRoom(room) {
   const r=structuredClone(room),dz=r.height_m;
   r.name+=' 上层';r.elevation_m+=dz;
   r.segments?.forEach(s=>{s.elevation_m+=dz;});
+  r.shell?.forEach(f=>f.points.forEach(p=>{p[2]+=dz;}));
+  r.source_openings?.forEach(f=>f.points.forEach(p=>{p[2]+=dz;}));
   r.boundary_hints?.forEach(h=>h.points.forEach(p=>{p[2]+=dz;}));
+  r.geometry_inferred=true;r.storey_id=null;r.storey_name=(r.storey_name||'人工楼层')+' 上层副本';
   r.source_locator+=`；人工复制并上移 ${dz} m，须重新复核`;
   return r;
 }
 
 export function mergeRooms(existing, candidates) {
-  const rooms=structuredClone([...existing,...candidates]);
-  rooms.forEach((r,i)=>{r.id='R'+(i+1);});
+  const rooms=structuredClone(existing),used=new Set(rooms.map(r=>r.id));let next=1;
+  for(const candidate of structuredClone(candidates)){
+    if(used.has(candidate.id)){while(used.has('R'+next))next++;candidate.id='R'+next++;}
+    used.add(candidate.id);rooms.push(candidate);
+  }
   return rooms;
 }
 
@@ -70,7 +74,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   const pid=state.project.project_id, base='/projects/'+pid;
   let model=await request(base+'/model'), imports=await request(base+'/imports');
   if(!host.isConnected)return;
-  let rooms=structuredClone(model?.rooms||[]), pending=null, selected=0, dispose=()=>{}, dirty=false;
+  let rooms=structuredClone(model?.rooms||[]), pending=null, selected=0, dispose=()=>{}, dirty=false, previewGeneration=0;
   const constructions=structuredClone(model?.thermal?.constructions||{});
   host.innerHTML=`<div class="view-heading"><div><span class="eyebrow">BUILDING WORKBENCH</span><h1>资料进入，空间成形。</h1><p>DXF · 矢量 PDF · IFC · 图片识别 → 几何复核 → 三维模型 → EnergyPlus</p></div><button id="model-api">项目 API / MCP</button></div>
   <div class="model-workbench"><div class="model-inputs">
@@ -80,7 +84,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   <div class="form-grid"><label>长度换算系数<input name="scale_to_m" type="number" step="any" min=".0000001" placeholder="DXF 可自动读取单位"></label><label>页码<input name="page" type="number" value="1" min="1" max="500"></label><label>候选层高 m<input name="height_m" type="number" value="3" step=".1" min=".6" max="30"></label><label>候选标高 m<input name="elevation_m" type="number" value="0" step=".1"></label></div>
   <label>DXF 图层（可选）<input name="layer" placeholder="建议先选择房间边界图层"></label>
   <p class="subtle">换算系数 = 米 / 图纸单位；PDF 为米 / point，图片为米 / 原图像素。PDF 视觉识别按 72 dpi 渲染；本地图纸模式使用下方预览像素标定。DWG 请先导出 DXF。</p>
-  <label class="check-option"><input name="reconstruct_footprints" type="checkbox">IFC 缺少 Body 时，允许从闭合 FootPrint 与一致的高度/面积/体积工程量生成待复核柱体</label><label class="check-option"><input name="send_to_provider" type="checkbox">允许把本次选中的图页发送给开发者设置中的视觉服务</label>
+  <label class="check-option"><input name="reconstruct_elements" type="checkbox" checked>无IfcSpace时从实际墙板截面生成待复核空间；缺外立面/上界会明确标记</label><label>构件重建修模公差 m<input name="reconstruction_tolerance_m" type="number" value="0" min="0" max=".02" step=".001"><small>0保留细节；非零须同时满足逐源轮廓的位移、0.01m²绝对面积和1%相对面积预算。</small></label><label>源窗修模公差 m<input name="source_window_tolerance_m" type="number" value="0" min="0" max=".02" step=".001"><small>0保留原形；非零为显式候选简化，位移受限且窗面积变化不得超过1%。</small></label><label class="check-option"><input name="reconstruct_footprints" type="checkbox">IFC 缺少 Body 时，允许从闭合 FootPrint 与一致的高度/面积/体积工程量生成待复核柱体</label><label class="check-option"><input name="send_to_provider" type="checkbox">允许把本次选中的图页发送给开发者设置中的视觉服务</label>
   <button class="primary">识别空间候选</button><p id="import-progress" role="status"></p></form>
   <div id="model-imports"></div></details>
   <section class="model-card"><h2>02 / 空间与尺寸</h2><div class="actions"><button id="add-room">＋ 矩形房间</button><button id="duplicate-floor">复制到上一层</button></div>
@@ -100,13 +104,13 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   const calibration=planCalibration(importForm,base,action);
   let ifcOrigin=null;
   const floorPanel=document.createElement('details');floorPanel.className='model-card';
-  floorPanel.innerHTML='<summary>IFC 楼层范围</summary><button type="button" data-storeys>读取所选 IFC 楼层</button><p>不选择楼层时解析整份文件；勾选后仅尝试选定楼层，范围外空间不计入本次模型。单次最多 100 个空间。楼层边界须人工核对。</p><div data-storey-list></div>';
+  floorPanel.innerHTML='<summary>IFC 楼层范围</summary><button type="button" data-storeys>读取所选 IFC 楼层</button><p>不选择楼层时解析整份文件；勾选后仅尝试选定楼层，范围外空间不计入本次模型。单模型预算2000空间，保留逐层来源与范围。楼层边界须人工核对。</p><div data-storey-list></div>';
   importForm.querySelector('[name="reconstruct_footprints"]').closest('label').before(floorPanel);
   importForm.elements.file.addEventListener('change',()=>{floorPanel.querySelector('[data-storey-list]').innerHTML='';ifcOrigin=null;});
   floorPanel.querySelector('[data-storeys]').onclick=e=>action(async()=>{
     const file=await calibration.upload(), info=await request(base+'/files/'+file.file_id+'/ifc-storeys');
     ifcOrigin=info.suggested_origin_m;
-    floorPanel.querySelector('[data-storey-list]').innerHTML=(ifcOrigin?`<label class="check-option"><input type="checkbox" data-local-origin>将源站点原点 ${ifcOrigin.map(v=>num(v)).join(', ')} m 平移为本地原点（保留方向及转换记录）</label>`:'')+`<p>共 ${info.total_spaces} 个空间 · ${info.unassigned_spaces} 个无楼层归属</p>`+info.storeys.map(f=>`<label class="check-option"><input type="checkbox" data-storey value="${esc(f.id)}">${esc(f.name)} · ${f.spaces} 个空间 · 标高 ${num(f.elevation_m)} m</label>`).join('');
+    floorPanel.querySelector('[data-storey-list]').innerHTML=(ifcOrigin?`<label class="check-option"><input type="checkbox" data-local-origin>将源站点原点 ${ifcOrigin.map(v=>num(v)).join(', ')} m 平移为本地原点（保留方向及转换记录）</label>`:'')+`<p>共 ${info.total_spaces} 个空间 · ${info.unassigned_spaces} 个无楼层归属</p>`+info.storeys.map(f=>`<label class="check-option"><input type="checkbox" data-storey value="${esc(f.id)}">${esc(f.name)} · ${f.spaces} 个源空间 · ${f.elements||0} 个构件 · 标高 ${num(f.elevation_m)} m</label>`).join('');
   },e.currentTarget);
   if(model?.thermal)host.querySelector('#thermal-basis').value=model.thermal.basis;
   const boundaryPolicy=document.createElement('label');
@@ -160,16 +164,22 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     host.querySelectorAll('[data-add-layer]').forEach(b=>{b.onclick=()=>{const key=b.dataset.addLayer;constructions[key]??=[];if(constructions[key].length>=8){notice('每组最多八层',true);return;}constructions[key].push({name:'待填写材料',thickness_m:'',conductivity_w_mk:'',density_kg_m3:'',specific_heat_j_kgk:''});markDirty();paintConstructions();};});
   }
   paintConstructions();
+  const engineering=engineeringInputs(host,{base,model,action,markDirty,notice});
   const studio=mountModelStudio(host,{projectId:pid,area:roomArea,
     selectRoom:index=>{selected=index;host.querySelector('#room-select').value=String(index);paintRoom();dispose.select?.(index);},
-    fit:()=>dispose.fit?.()});
+    fit:()=>dispose.fit?.(),filterStorey:key=>dispose.filterStorey?.(key),
+    batchUse:options=>action(async()=>{const result=reviewUseScope(rooms,options),field=host.querySelector('#model-review'),note=[field.value,result.note].filter(Boolean).join('\n');if(note.length>2000)throw Error('复核说明超过2000字符，请整理后再批量确认。');rooms=result.rooms;field.value=note;markDirty();await preview();notice(result.affected.length+'个空间属性已更新到草稿，确认依据将随模型版本保存。');})});
   const preview=async()=>{
+    const generation=++previewGeneration;
     const area=rooms.filter(r=>r.include_floor_area!==false).reduce((s,r)=>s+roomArea(r),0);
     const unresolved=rooms.filter(r=>r.include_floor_area===null||r.conditioned===null).length;
-    host.querySelector('#model-summary').textContent=`${rooms.length} 个空间 · 计入 ${num(area)} m²${unresolved?' · '+unresolved+' 个用途待确认':''} · ${model?'保存版本 v'+model.revision:'未保存'}`;
+    host.querySelector('#model-summary').textContent=`${rooms.length} 个空间 · ${rooms.some(r=>r.include_floor_area===null)?'候选面积':'计入面积'} ${num(area)} m²${unresolved?' · '+unresolved+' 个用途待确认':''} · ${model?'保存版本 v'+model.revision:'未保存'}`;
     host.querySelector('#room-select').innerHTML=rooms.map((r,i)=>`<option value="${i}">${esc(r.name)} · ${num(roomArea(r))} m²</option>`).join('');
     selected=Math.max(0,Math.min(selected,rooms.length-1));host.querySelector('#room-select').value=String(selected);
-    paintRoom();dispose();dispose=await renderBuilding(rooms,host,i=>{selected=i;host.querySelector('#room-select').value=String(i);paintRoom();dispose.select?.(i);});dispose.select?.(selected);studio.update({rooms,selected,sources:model?.sources||[],model,canFit:!!dispose.fit});
+    paintRoom();dispose();dispose=()=>{};
+    const rendered=await renderBuilding(rooms,host,i=>{selected=i;host.querySelector('#room-select').value=String(i);paintRoom();dispose.select?.(i);});
+    if(generation!==previewGeneration||!host.isConnected){rendered();return;}
+    dispose=rendered;dispose.select?.(selected);studio.update({rooms,selected,sources:model?.sources||[],model,canFit:!!dispose.fit});
   };
   function paintRoom(){
     studio.update({rooms,selected,sources:model?.sources||[],model,canFit:!!dispose.fit});
@@ -180,8 +190,8 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     use.innerHTML=[['conditioned','是否设置空调和人员/设备负荷'],['include_floor_area','是否计入项目面积']].map(([k,label])=>`<label>${label}<select data-use="${k}"><option value="">待复核</option><option value="true">是</option><option value="false">否</option></select></label>`).join('');
     target.prepend(use);
     use.querySelectorAll('[data-use]').forEach(el=>{const value=r[el.dataset.use];el.value=value===null?'':String(value??true);el.onchange=()=>{r[el.dataset.use]=el.value===''?null:el.value==='true';markDirty();action(preview);};});
-    if(r.ifc_source||r.segments?.length){
-      const note=document.createElement('p');note.className='subtle';note.textContent=`保留源模型的 ${roomSegments(r).length} 个高度分段。此处不把复杂几何改成普通柱体；尺寸修改请在源 IFC 中完成后重新导入。`;
+    if(r.ifc_source||r.segments?.length||r.shell?.length){
+      const note=document.createElement('p');note.className='subtle';note.textContent=`保留源模型的 ${r.shell?.length?`${r.shell.length}个实体斜面`:roomSegments(r).length+'个高度分段'}。此处不把复杂几何改成普通柱体；尺寸修改请在源 IFC 中完成后重新导入。`;
       target.append(note);
       target.querySelectorAll('[data-point],[data-remove-point],#add-point,[data-room="elevation_m"],[data-room="height_m"]').forEach(el=>{el.disabled=true;});
     }
@@ -198,14 +208,14 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
       const task=imports.find(t=>t.import_id===b.dataset.adopt);
       if(!task.candidate.rooms.length)throw Error('没有可用的闭合空间，请检查比例、图层或切换视觉识别。');
       if(pending)throw Error('请先保存当前导入的复核结果，再合并其他资料。');
-      rooms=mergeRooms(rooms,task.candidate.rooms);pending=task.import_id;markDirty();setStatus('候选已加入编辑区；请复核后确认空间并保存。');await preview();studio.adopted();
+      engineering.imported(task.candidate);rooms=mergeRooms(rooms,task.candidate.rooms);pending=task.import_id;markDirty();setStatus('候选已加入编辑区；请复核后确认空间并保存。');await preview();studio.adopted();
     },b);});
   }
   async function refresh(){
     const check=await request(base+'/model/validate');
     if(!host.isConnected||state.project?.project_id!==pid)return;
     const review=check.geometry_review, boundaries=review?.boundary_faces;
-    const details=review?`<p>Honeybee 独立校验：${review.independent_audit?.passed?'通过':'未通过'} · 检查闭合实体、平面性、自交和邻接面积；跨墙厚假设配对 ${num(review.assumed_gap_faces)} 面。</p><p>热容构造 ${review.coverage?.thermal_mass_assemblies?.length??0}/3 类；逐时运行 ${review.coverage?.hourly_operation?'已配置':'未配置'}；推导空间 ${num(review.coverage?.inferred_rooms)} 个；绝热表面积 ${num(review.coverage?.adiabatic_area_m2)} m²。设备口径：${review.coverage?.actual_hvac_equipment?'定容 PTHP 耗电':'理想冷热需求'}；源门窗几何未接入，开窗仍为假设窗墙比。</p><p>热边界面：外界 ${num(boundaries.Outdoors)}；地面 ${num(boundaries.Ground)}；空间配对 ${num(boundaries.Surface)}；绝热 ${num(boundaries.Adiabatic)}。绝热面不与外界或相邻空间传热。</p><p>本次公差 ${num(review.adjustment.tolerance_m*1000)} mm，实际最大单轴位移 ${num(review.adjustment.max_axis_displacement_m*1000)} mm；逐空间变化记录随 IDF 证据保存。</p>`:'';
+    const details=review?`<p>Honeybee 独立校验：${review.independent_audit?.passed?'通过':'未通过'} · 检查闭合实体、平面性、自交和邻接面积；跨墙厚假设配对 ${num(review.assumed_gap_faces)} 面。</p><p>热容构造 ${review.coverage?.thermal_mass_assemblies?.length??0}/3 类；逐时运行 ${review.coverage?.hourly_operation?'已配置':'未配置'}；推导空间 ${num(review.coverage?.inferred_rooms)} 个；绝热表面积 ${num(review.coverage?.adiabatic_area_m2)} m²。设备口径：${review.coverage?.hvac_scope==='packaged_heat_pump_electricity'?'定容 PTHP 耗电':'理想冷热需求'}；源窗几何 ${review.coverage?.source_window_geometry?'已采用，光学参数仍须核对':'未采用，使用显式窗墙比'}。</p><p>热边界面：外界 ${num(boundaries.Outdoors)}；地面 ${num(boundaries.Ground)}；空间配对 ${num(boundaries.Surface)}；绝热 ${num(boundaries.Adiabatic)}。绝热面不与外界或相邻空间传热。</p><p>本次公差 ${num(review.adjustment.tolerance_m*1000)} mm，实际最大单轴位移 ${num(review.adjustment.max_axis_displacement_m*1000)} mm；逐空间变化记录随 IDF 证据保存。</p>`:'';
     const precision=review?.numerical_precision;
     const precisionNote=precision?`<p>热网格数值精度：最大顶点位移 ${num(precision.max_displacement_m*1e6,3)} µm；${precision.collapsed_faces.length} 个舍入后零面积片已归并。原始空间与边界类别保留，逐空间面积和体积变化随 IDF 证据记录。</p>`:'';
     host.querySelector('#model-gate').innerHTML=`${precisionNote}<p class="${check.can_publish?'':'error-text'}">${check.can_publish?'模型可发布；请核对下列适用范围。':check.blockers.map(esc).join('；')}</p><details><summary>计算范围与简化</summary><ul>${check.limitations.map(l=>'<li>'+esc(l)+'</li>').join('')}</ul>${details}</details>`;
@@ -237,7 +247,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
       const task=await post(base+'/imports',{...calibration.options(),file_id:f.file_id,mode:form.get('mode'),
         scale_to_m:form.get('scale_to_m')?Number(form.get('scale_to_m')):null,
         height_m:Number(form.get('height_m')),elevation_m:Number(form.get('elevation_m')),
-        ifc_origin_m:floorPanel.querySelector('[data-local-origin]')?.checked?ifcOrigin:null,ifc_storey_ids:[...floorPanel.querySelectorAll('[data-storey]:checked')].map(el=>el.value),reconstruct_footprints:form.has('reconstruct_footprints'),page:Number(form.get('page')),layer:form.get('layer')||null,send_to_provider:form.has('send_to_provider')});
+        ifc_origin_m:floorPanel.querySelector('[data-local-origin]')?.checked?ifcOrigin:null,ifc_storey_ids:[...floorPanel.querySelectorAll('[data-storey]:checked')].map(el=>el.value),reconstruct_footprints:form.has('reconstruct_footprints'),reconstruct_elements:form.has('reconstruct_elements'),reconstruction_tolerance_m:Number(form.get('reconstruction_tolerance_m')),source_window_tolerance_m:Number(form.get('source_window_tolerance_m')),page:Number(form.get('page')),layer:form.get('layer')||null,send_to_provider:form.has('send_to_provider')});
       imports.unshift(task);paintImports();if(task.candidate?.rooms.some(r=>r.drawing))await calibration.overlay(task);host.querySelector('#import-progress').textContent='识别完成，请展开任务并合并候选后复核。';studio.imported();
     }catch(error){if(host.isConnected&&state.project?.project_id===pid){host.querySelector('#import-progress').textContent=error.message;try{imports=await request(base+'/imports');if(host.isConnected&&state.project?.project_id===pid)paintImports();}catch{ /* Preserve the original import failure. */ }}throw error;}
   },e.submitter);};
@@ -253,8 +263,8 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     const values=[...host.querySelectorAll('[data-thermal]')],hasThermal=values.some(el=>el.value!=='');
     if(hasThermal&&values.some(el=>el.value===''))throw Error('请补齐热工字段，或全部留空仅保存空间模型。');
     if(!hasThermal&&Object.keys(constructions).length)throw Error('已输入构造层，请补齐其余热工参数。');
-    const thermal=hasThermal?{...Object.fromEntries(values.map(el=>[el.dataset.thermal,Number(el.value)])),constructions,operation:operationBody(),heat_pump:pumpBody(),adjacency_gap_m:Number(host.querySelector('#adjacency-gap').value),basis:host.querySelector('#thermal-basis').value,source_note:host.querySelector('#thermal-source').value,ifc_unpaired_policy:host.querySelector('#ifc-boundary-policy').value,geometry_tolerance_m:Number(host.querySelector('#geometry-tolerance').value)}:null;
-    return {expected_revision:model?.revision||0,name:host.querySelector('#model-name').value,rooms,thermal,reviewed,review_note:host.querySelector('#model-review').value};
+    const thermal=hasThermal?{...engineering.thermal(),...Object.fromEntries(values.map(el=>[el.dataset.thermal,Number(el.value)])),constructions,operation:operationBody(),heat_pump:pumpBody(),adjacency_gap_m:Number(host.querySelector('#adjacency-gap').value),basis:host.querySelector('#thermal-basis').value,source_note:host.querySelector('#thermal-source').value,ifc_unpaired_policy:host.querySelector('#ifc-boundary-policy').value,geometry_tolerance_m:Number(host.querySelector('#geometry-tolerance').value)}:null;
+    return {...engineering.body(),expected_revision:model?.revision||0,name:host.querySelector('#model-name').value,rooms,thermal,reviewed,review_note:host.querySelector('#model-review').value};
   }
   async function save(reviewed){
     const data=body(reviewed),focus=document.activeElement;
@@ -303,7 +313,7 @@ async function renderBuilding(rooms,host,onPick){
     const camera=new THREE.PerspectiveCamera(42,1,.05,10000),controls=new OrbitControls(camera,renderer.domElement);
     scene.add(new THREE.HemisphereLight(0xffffff,0x667d91,2.5));
     const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(20,40,10);scene.add(sun);
-    const meshes=rooms.flatMap((r,i)=>roomSegments(r).map(segment=>{
+    const meshes=rooms.flatMap((r,i)=>{const bases=r.shell?.length?[new THREE.Mesh(shellGeometry(r.shell,THREE),new THREE.MeshStandardMaterial({color:0x91a9b7,roughness:.75,transparent:true,opacity:.85,side:THREE.DoubleSide}))]:roomSegments(r).map(segment=>{
       const shape=new THREE.Shape(segment.polygon.map(([x,y])=>new THREE.Vector2(x,-y)));
       (segment.holes||(!r.segments?.length?r.holes:[])||[]).forEach(ring=>shape.holes.push(new THREE.Path(ring.map(([x,y])=>new THREE.Vector2(x,-y)))));
       const mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:segment.height_m,bevelEnabled:false}),
@@ -311,9 +321,9 @@ async function renderBuilding(rooms,host,onPick){
       mesh.rotation.x=-Math.PI/2;mesh.position.y=segment.elevation_m;mesh.userData.index=i;scene.add(mesh);
       const edges=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry),new THREE.LineBasicMaterial({color:0x32566d}));
       mesh.add(edges);return mesh;
-    }));
+    });const windows=(r.source_openings||[]).map(opening=>{const mesh=new THREE.Mesh(shellGeometry([opening],THREE),new THREE.MeshStandardMaterial({color:0x2b79ba,transparent:true,opacity:.75,side:THREE.DoubleSide}));mesh.userData.sourceWindow=true;return mesh;});return [...bases,...windows].map(mesh=>{mesh.userData.index=i;mesh.userData.storey=storeyKey(r);if(!mesh.parent)scene.add(mesh);return mesh;});});
     const bounds=new THREE.Box3();meshes.forEach(m=>bounds.expandByObject(m));const center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3()),span=Math.max(size.x,size.y,size.z,5);
-    const fit=()=>{camera.position.copy(center).add(new THREE.Vector3(1,.85,1).normalize().multiplyScalar(size.length()/2/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.05/Math.min(1,camera.aspect)));controls.target.copy(center);controls.update();};fit();
+    const fit=()=>{const active=new THREE.Box3();meshes.filter(m=>m.visible).forEach(m=>active.expandByObject(m));if(active.isEmpty())return;const c=active.getCenter(new THREE.Vector3()),s=active.getSize(new THREE.Vector3());camera.position.copy(c).add(new THREE.Vector3(1,.85,1).normalize().multiplyScalar(Math.max(s.length(),5)/2/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.05/Math.min(1,camera.aspect)));controls.target.copy(c);controls.update();};fit();
     const grid=new THREE.GridHelper(span*2,20,0xaebdca,0xd4dee6);grid.position.set(center.x,bounds.min.y-.02,center.z);scene.add(grid);
     const canvasTheme=()=>{const dark=document.documentElement.dataset.theme==='dark';scene.background.set(dark?'#192534':'#edf2f6');grid.material.color.set(dark?'#667b96':'#ffffff');};
     canvasTheme();const themeObserver=new MutationObserver(canvasTheme);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
@@ -322,10 +332,10 @@ async function renderBuilding(rooms,host,onPick){
     host.querySelector('#model-xray').onchange=e=>{meshes.forEach(m=>{m.material.opacity=e.target.checked?.25:.85;m.material.depthWrite=!e.target.checked;});};
     let down;
     renderer.domElement.onpointerdown=e=>{down=[e.clientX,e.clientY];};
-    renderer.domElement.onpointerup=e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;const rect=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2),camera);const hit=ray.intersectObjects(meshes,false)[0];if(hit)onPick(hit.object.userData.index);};
+    renderer.domElement.onpointerup=e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;const rect=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2),camera);const hit=ray.intersectObjects(meshes.filter(m=>m.visible),false)[0];if(hit)onPick(hit.object.userData.index);};
     let alive=true;
     const dispose=()=>{if(!alive)return;alive=false;observer.disconnect();themeObserver.disconnect();controls.dispose();scene.traverse(o=>{o.geometry?.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});renderer.dispose();};
-    dispose.fit=fit;dispose.select=index=>{meshes.forEach(m=>{m.material.color.set(m.userData.index===index?'#4f81cd':new THREE.Color().setHSL(.57+m.userData.index*.005,.17,.68));});selectPlan(index);};
+    dispose.filterStorey=key=>{meshes.forEach(m=>{m.visible=!key||m.userData.storey===key;});plan.querySelectorAll('[data-pick]').forEach(p=>{p.style.display=!key||storeyKey(rooms[Number(p.dataset.pick)])===key?'':'none';});fit();};dispose.fit=fit;dispose.select=index=>{meshes.forEach(m=>{m.material.color.set(m.userData.sourceWindow?'#2b79ba':m.userData.index===index?'#4f81cd':new THREE.Color().setHSL(.57+m.userData.index*.005,.17,.68));});selectPlan(index);};
     function frame(){if(!alive)return;if(!host.isConnected){dispose();return;}if(!document.hidden&&!host.hidden)renderer.render(scene,camera);requestAnimationFrame(frame);}frame();return dispose;
   }catch(error){target.textContent='三维渲染不可用，可使用下方二维轮廓与尺寸编辑。'+error.message;const fallback=()=>{};fallback.select=selectPlan;return fallback;}
 }

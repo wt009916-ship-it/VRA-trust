@@ -176,13 +176,22 @@ def serialized_engine(fn):
             return fn(*args, **kwargs)
     return run
 
+def engine_timeout_seconds():
+    value = int(os.environ.get('VRA_ENGINE_TIMEOUT_SECONDS', '1800'))
+    if not 30 <= value <= 7200:
+        raise ValidationError('VRA_ENGINE_TIMEOUT_SECONDS须为30–7200秒')
+    return value
+
+
 @serialized_engine
-def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_override=None,profile_override=None,file_root=None):
+def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=None,*,case_override=None,profile_override=None,file_root=None):
     rd=Path(run_dir);rd.mkdir(parents=True,exist_ok=True)
     identity={'run_id':rd.name,'case_id':case_id,'scheme_id':scheme_id,'status':'running','started_at':now(),'data_nature':'engineering_reference'}
     manifest={**identity,'engine_calls_executed':0,'artifact_hashes':{},'fingerprints':{}}
     start=time.perf_counter()
     try:
+        timeout = timeout if timeout is not None else engine_timeout_seconds()
+        manifest['timeout_seconds'] = timeout
         case=case_override if case_override is not None else load_case(case_id)
         scheme=get_scheme(case,scheme_id);profile=profile_override if profile_override is not None else get_profile(profile_id);engine=engine_path()
         root=Path(file_root) if file_root else ROOT

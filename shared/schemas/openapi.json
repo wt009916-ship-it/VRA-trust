@@ -3963,6 +3963,119 @@
         ]
       }
     },
+    "/api/projects/{project_id}/model/equipment-template.csv": {
+      "get": {
+        "summary": "Equipment Template",
+        "operationId": "equipment_template_api_projects__project_id__model_equipment_template_csv_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/model/equipment-import": {
+      "post": {
+        "summary": "Equipment Import",
+        "operationId": "equipment_import_api_projects__project_id__model_equipment_import_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipmentImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/model": {
       "get": {
         "summary": "Model",
@@ -6209,6 +6322,29 @@
               }
             ],
             "title": "Element Plane Range M"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "source",
+              "inferred_outline",
+              "source_window",
+              "inferred_window"
+            ],
+            "title": "Basis",
+            "default": "source"
+          },
+          "source_element_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Element Id"
           }
         },
         "additionalProperties": false,
@@ -6436,6 +6572,89 @@
           "message"
         ],
         "title": "Chat"
+      },
+      "ColumnMassMaterial": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "conductivity_w_mk": {
+            "type": "number",
+            "maximum": 400.0,
+            "exclusiveMinimum": 0.005,
+            "title": "Conductivity W Mk"
+          },
+          "density_kg_m3": {
+            "type": "number",
+            "maximum": 30000.0,
+            "minimum": 1.0,
+            "title": "Density Kg M3"
+          },
+          "specific_heat_j_kgk": {
+            "type": "number",
+            "maximum": 6000.0,
+            "minimum": 100.0,
+            "title": "Specific Heat J Kgk"
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Source Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "conductivity_w_mk",
+          "density_kg_m3",
+          "specific_heat_j_kgk",
+          "source_note"
+        ],
+        "title": "ColumnMassMaterial"
+      },
+      "ColumnVoid": {
+        "properties": {
+          "polygon": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "array",
+            "maxItems": 256,
+            "minItems": 3,
+            "title": "Polygon"
+          },
+          "source_elements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Source Elements"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "polygon",
+          "source_elements"
+        ],
+        "title": "ColumnVoid"
       },
       "ComparisonRequest": {
         "properties": {
@@ -6673,6 +6892,73 @@
         ],
         "title": "EPWAnalysis"
       },
+      "ElementReconstruction": {
+        "properties": {
+          "method": {
+            "type": "string",
+            "const": "IFC_ELEMENT_SECTION",
+            "title": "Method"
+          },
+          "storey_id": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Storey Id"
+          },
+          "source_elements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 2000,
+            "minItems": 1,
+            "title": "Source Elements"
+          },
+          "slice_height_m": {
+            "type": "number",
+            "title": "Slice Height M"
+          },
+          "closed_wall_fraction": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Closed Wall Fraction"
+          },
+          "ceiling_basis": {
+            "type": "string",
+            "enum": [
+              "slab_surfaces",
+              "wall_top_assumption"
+            ],
+            "title": "Ceiling Basis"
+          },
+          "assumption": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Assumption"
+          },
+          "column_voids": {
+            "items": {
+              "$ref": "#/components/schemas/ColumnVoid"
+            },
+            "type": "array",
+            "maxItems": 256,
+            "title": "Column Voids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "method",
+          "storey_id",
+          "source_elements",
+          "slice_height_m",
+          "closed_wall_fraction",
+          "ceiling_basis",
+          "assumption"
+        ],
+        "title": "ElementReconstruction"
+      },
       "EmailBinding": {
         "properties": {
           "current_password": {
@@ -6786,6 +7072,20 @@
           "token"
         ],
         "title": "EmailToken"
+      },
+      "EquipmentImport": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "title": "File Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_id"
+        ],
+        "title": "EquipmentImport"
       },
       "Evidence": {
         "properties": {
@@ -7526,6 +7826,25 @@
             "title": "Reconstruct Footprints",
             "default": false
           },
+          "reconstruct_elements": {
+            "type": "boolean",
+            "title": "Reconstruct Elements",
+            "default": false
+          },
+          "source_window_tolerance_m": {
+            "type": "number",
+            "maximum": 0.02,
+            "minimum": 0.0,
+            "title": "Source Window Tolerance M",
+            "default": 0
+          },
+          "reconstruction_tolerance_m": {
+            "type": "number",
+            "maximum": 0.02,
+            "minimum": 0.0,
+            "title": "Reconstruction Tolerance M",
+            "default": 0
+          },
           "ifc_origin_m": {
             "anyOf": [
               {
@@ -7555,7 +7874,7 @@
               "type": "string"
             },
             "type": "array",
-            "maxItems": 50,
+            "maxItems": 200,
             "title": "Ifc Storey Ids"
           },
           "crop_px": {
@@ -8137,7 +8456,7 @@
               "$ref": "#/components/schemas/Room"
             },
             "type": "array",
-            "maxItems": 100,
+            "maxItems": 2000,
             "minItems": 1,
             "title": "Rooms"
           },
@@ -8161,6 +8480,22 @@
             "type": "boolean",
             "title": "Reviewed",
             "default": false
+          },
+          "scope_exclusions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "maxProperties": 200,
+            "title": "Scope Exclusions"
+          },
+          "equipment": {
+            "items": {
+              "$ref": "#/components/schemas/ZoneEquipment"
+            },
+            "type": "array",
+            "maxItems": 2000,
+            "title": "Equipment"
           }
         },
         "additionalProperties": false,
@@ -8491,6 +8826,83 @@
         ],
         "title": "PasswordConfirm"
       },
+      "PerformanceCurve": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "quadratic",
+              "biquadratic"
+            ],
+            "title": "Kind"
+          },
+          "coefficients": {
+            "items": {
+              "type": "number",
+              "maximum": 1000000.0,
+              "minimum": -1000000.0
+            },
+            "type": "array",
+            "maxItems": 6,
+            "minItems": 3,
+            "title": "Coefficients"
+          },
+          "x_min": {
+            "type": "number",
+            "maximum": 1000.0,
+            "minimum": -1000.0,
+            "title": "X Min"
+          },
+          "x_max": {
+            "type": "number",
+            "maximum": 1000.0,
+            "minimum": -1000.0,
+            "title": "X Max"
+          },
+          "y_min": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "minimum": -1000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Y Min"
+          },
+          "y_max": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "minimum": -1000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Y Max"
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Source Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "coefficients",
+          "x_min",
+          "x_max",
+          "source_note"
+        ],
+        "title": "PerformanceCurve"
+      },
       "Project": {
         "properties": {
           "name": {
@@ -8784,24 +9196,6 @@
             "title": "Height M",
             "default": 3
           },
-          "id": {
-            "type": "string",
-            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 120,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "source_locator": {
-            "type": "string",
-            "maxLength": 500,
-            "minLength": 1,
-            "title": "Source Locator",
-            "default": "人工输入"
-          },
           "holes": {
             "items": {
               "items": {
@@ -8820,8 +9214,26 @@
               "type": "array"
             },
             "type": "array",
-            "maxItems": 16,
+            "maxItems": 256,
             "title": "Holes"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "source_locator": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Source Locator",
+            "default": "人工输入"
           },
           "segments": {
             "items": {
@@ -8837,9 +9249,13 @@
                 "$ref": "#/components/schemas/backend__model_schema__Reconstruction"
               },
               {
+                "$ref": "#/components/schemas/ElementReconstruction"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Reconstruction"
           },
           "drawing": {
             "anyOf": [
@@ -8870,6 +9286,83 @@
             "type": "array",
             "maxItems": 500,
             "title": "Boundary Hints"
+          },
+          "shell": {
+            "items": {
+              "$ref": "#/components/schemas/BoundaryHint"
+            },
+            "type": "array",
+            "maxItems": 2000,
+            "title": "Shell"
+          },
+          "storey_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storey Id"
+          },
+          "storey_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storey Name"
+          },
+          "building_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Building Id"
+          },
+          "building_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Building Name"
+          },
+          "geometry_inferred": {
+            "type": "boolean",
+            "title": "Geometry Inferred",
+            "default": false
+          },
+          "source_openings": {
+            "items": {
+              "$ref": "#/components/schemas/SourceOpening"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Source Openings"
+          },
+          "source_opening_issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Source Opening Issues"
           },
           "conditioned": {
             "anyOf": [
@@ -9153,6 +9646,27 @@
             "exclusiveMinimum": 1e-06,
             "title": "Height M",
             "default": 3
+          },
+          "holes": {
+            "items": {
+              "items": {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "maxItems": 256,
+            "title": "Holes"
           }
         },
         "additionalProperties": false,
@@ -9161,6 +9675,116 @@
           "polygon"
         ],
         "title": "Segment"
+      },
+      "SourceOpening": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source Id"
+          },
+          "points": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 3,
+              "minItems": 3
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 3,
+            "title": "Points"
+          },
+          "source_area_m2": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Source Area M2"
+          },
+          "projection_offset_m": {
+            "type": "number",
+            "maximum": 1.5,
+            "minimum": 0.0,
+            "title": "Projection Offset M"
+          },
+          "geometry_scope": {
+            "type": "string",
+            "enum": [
+              "IFC_WINDOW_ASSEMBLY_PROJECTION",
+              "IFC_OPENING_PROJECTION"
+            ],
+            "title": "Geometry Scope",
+            "default": "IFC_WINDOW_ASSEMBLY_PROJECTION"
+          },
+          "source_is_external": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Is External"
+          },
+          "original_area_m2": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Area M2"
+          },
+          "approximation_tolerance_m": {
+            "type": "number",
+            "maximum": 0.02,
+            "minimum": 0.0,
+            "title": "Approximation Tolerance M",
+            "default": 0
+          },
+          "area_error_percent": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Area Error Percent",
+            "default": 0
+          },
+          "source_opening_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Opening Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_id",
+          "points",
+          "source_area_m2",
+          "projection_offset_m"
+        ],
+        "title": "SourceOpening"
       },
       "StudyCreate": {
         "properties": {
@@ -9432,6 +10056,52 @@
             "minimum": 0.0,
             "title": "Geometry Tolerance M",
             "default": 0
+          },
+          "reconstructed_exterior_policy": {
+            "type": "string",
+            "enum": [
+              "reject",
+              "outline_scenario"
+            ],
+            "title": "Reconstructed Exterior Policy",
+            "default": "reject"
+          },
+          "window_geometry": {
+            "type": "string",
+            "enum": [
+              "ratio",
+              "source"
+            ],
+            "title": "Window Geometry",
+            "default": "ratio"
+          },
+          "source_window_exterior_policy": {
+            "type": "string",
+            "enum": [
+              "reject",
+              "outdoor_scenario"
+            ],
+            "title": "Source Window Exterior Policy",
+            "default": "reject"
+          },
+          "column_mass_policy": {
+            "type": "string",
+            "enum": [
+              "detailed",
+              "lumped_scenario"
+            ],
+            "title": "Column Mass Policy",
+            "default": "detailed"
+          },
+          "column_mass_material": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ColumnMassMaterial"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -9658,6 +10328,167 @@
           "status"
         ],
         "title": "Wall"
+      },
+      "ZoneEquipment": {
+        "properties": {
+          "zone_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,59}$",
+            "title": "Zone Id"
+          },
+          "system_type": {
+            "type": "string",
+            "const": "PTHP",
+            "title": "System Type"
+          },
+          "manufacturer": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Manufacturer"
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model"
+          },
+          "cooling_capacity_w": {
+            "type": "number",
+            "maximum": 100000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Cooling Capacity W"
+          },
+          "heating_capacity_w": {
+            "type": "number",
+            "maximum": 100000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Heating Capacity W"
+          },
+          "airflow_m3_s": {
+            "type": "number",
+            "maximum": 1000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Airflow M3 S"
+          },
+          "cooling_cop": {
+            "type": "number",
+            "maximum": 8.0,
+            "exclusiveMinimum": 1.0,
+            "title": "Cooling Cop"
+          },
+          "heating_cop": {
+            "type": "number",
+            "maximum": 8.0,
+            "exclusiveMinimum": 1.0,
+            "title": "Heating Cop"
+          },
+          "sensible_heat_ratio": {
+            "type": "number",
+            "maximum": 0.95,
+            "minimum": 0.5,
+            "title": "Sensible Heat Ratio"
+          },
+          "fan_pressure_pa": {
+            "type": "number",
+            "maximum": 1500.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Fan Pressure Pa"
+          },
+          "fan_total_efficiency": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.1,
+            "title": "Fan Total Efficiency"
+          },
+          "fan_motor_efficiency": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.1,
+            "title": "Fan Motor Efficiency"
+          },
+          "supplemental_capacity_w": {
+            "type": "number",
+            "maximum": 100000000.0,
+            "minimum": 0.0,
+            "title": "Supplemental Capacity W"
+          },
+          "minimum_outdoor_c": {
+            "type": "number",
+            "maximum": 5.0,
+            "minimum": -20.0,
+            "title": "Minimum Outdoor C"
+          },
+          "minimum_cooling_outdoor_c": {
+            "type": "number",
+            "maximum": 18.0,
+            "minimum": 0.0,
+            "title": "Minimum Cooling Outdoor C"
+          },
+          "curve_basis": {
+            "type": "string",
+            "enum": [
+              "source_curves",
+              "native_reference"
+            ],
+            "title": "Curve Basis"
+          },
+          "curves": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PerformanceCurve"
+            },
+            "type": "object",
+            "maxProperties": 10,
+            "title": "Curves"
+          },
+          "source_file_id": {
+            "type": "string",
+            "title": "Source File Id"
+          },
+          "source_file_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Source File Hash"
+          },
+          "source_locator": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5,
+            "title": "Source Locator"
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Source Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "zone_id",
+          "system_type",
+          "manufacturer",
+          "model",
+          "cooling_capacity_w",
+          "heating_capacity_w",
+          "airflow_m3_s",
+          "cooling_cop",
+          "heating_cop",
+          "sensible_heat_ratio",
+          "fan_pressure_pa",
+          "fan_total_efficiency",
+          "fan_motor_efficiency",
+          "supplemental_capacity_w",
+          "minimum_outdoor_c",
+          "minimum_cooling_outdoor_c",
+          "curve_basis",
+          "source_file_id",
+          "source_file_hash",
+          "source_locator",
+          "source_note"
+        ],
+        "title": "ZoneEquipment"
       },
       "backend__model_schema__Reconstruction": {
         "properties": {

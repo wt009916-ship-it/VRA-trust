@@ -134,22 +134,35 @@ def pdf(path, options):
                              "scale_to_m": factor, "text": (page.extract_text() or "")[:6000]}}
 
 
-def space_storey(space):
-    current, seen = space, set()
-    while current and current.id() not in seen:
+def spatial_ancestor(space, kind):
+    pending, seen = [space], set()
+    while pending:
+        current = pending.pop()
+        if current.id() in seen:
+            continue
         seen.add(current.id())
-        if current.is_a("IfcBuildingStorey"):
+        if current.is_a(kind):
             return current
         parents = [r.RelatingObject for r in getattr(current, "Decomposes", ())]
         parents += [r.RelatingStructure for r in getattr(current, "ContainedInStructure", ())]
-        current = parents[0] if parents else None
+        pending.extend(parents)
     return None
+
+
+def space_storey(space):
+    return spatial_ancestor(space, 'IfcBuildingStorey')
 
 
 def storey_inventory(document):
     from ifcopenshell.util.unit import calculate_unit_scale
     factor = calculate_unit_scale(document)
     items = {}
+    for s in document.by_type('IfcBuildingStorey'):
+        building = spatial_ancestor(s, 'IfcBuilding')
+        items[s.GlobalId] = {'id': s.GlobalId, 'name': s.Name or s.GlobalId,
+            'building_id': building.GlobalId if building else None, 'building_name': building.Name if building else None,
+            'elevation_m': float(s.Elevation)*factor if s.Elevation is not None else None,
+            'spaces': 0, 'elements': sum(len(r.RelatedElements) for r in s.ContainsElements)}
     unassigned = 0
     for space in document.by_type("IfcSpace"):
         floor = space_storey(space)
@@ -178,21 +191,32 @@ def ifc(path, options):
         raise core.ValidationError("选择的 IFC 楼层不存在，请重新读取楼层清单")
     origin = options.ifc_origin_m or (0., 0., 0.)
     source_count = len(spaces)
+    settings = ifcopenshell.geom.settings()
+    settings.set(settings.USE_WORLD_COORDS, True)
+    tessellation = {'engine': 'IfcOpenShell/OpenCASCADE',
+        'mesher-linear-deflection': settings.get('mesher-linear-deflection'),
+        'mesher-angular-deflection': settings.get('mesher-angular-deflection'),
+        'basis': 'Curved BRep geometry is tessellated; preserved facets are not exact curved/NURBS surfaces'}
     if selected:
         spaces = [s for s in spaces if space_storey(s) is not None and space_storey(s).GlobalId in selected]
     diagnostics = {"inventory": inventory, "source_total": source_count,
                    "scope": "selected_storeys" if selected else "whole_file",
                    "selected_storey_ids": sorted(selected), "excluded_by_scope": source_count-len(spaces),
                    "format": "IFC", "schema": document.schema, "total": len(spaces),
-                   "extracted": 0, "blocked": len(spaces), "spaces": [], "actions": []}
+                   "extracted": 0, "blocked": len(spaces), "spaces": [], "actions": [], 'tessellation': tessellation}
     if not spaces:
+        if options.reconstruct_elements:
+            from .ifc_reconstruction import reconstruct
+            candidate = reconstruct(document, options, inventory)
+            candidate['metadata']['tessellation'] = tessellation
+            from .source_windows import attach
+            candidate['metadata']['source_windows'] = attach(document, candidate['rooms'], origin, options.source_window_tolerance_m)
+            return candidate
         diagnostics["actions"] = ["请在原建模软件创建并导出 IfcSpace 空间及其实体几何；构件包围盒不能代替房间。"]
         raise ImportDiagnosticError("IFC 没有 IfcSpace，无法建立空间模型", diagnostics)
-    if len(spaces) > 100:
-        diagnostics["actions"] = ["单次最多解析 100 个空间，请在导入界面读取楼层清单并选择不超过 100 个空间的范围。"]
-        raise ImportDiagnosticError("IFC 空间超过 100，请按楼层拆分", diagnostics)
-    settings = ifcopenshell.geom.settings()
-    settings.set(settings.USE_WORLD_COORDS, True)
+    if len(spaces) > 2000:
+        diagnostics["actions"] = ["单模型预算2000空间；请选择明确的建筑或楼层范围。"]
+        raise ImportDiagnosticError("IFC 空间超过 2000，请选择建筑范围", diagnostics)
     rooms, warnings = [], []
     for index, space in enumerate(spaces):
         representations = [{"identifier": r.RepresentationIdentifier, "type": r.RepresentationType}
@@ -202,13 +226,29 @@ def ifc(path, options):
                   "status": "extracted", "code": None, "error": None, "action": None}
         try:
             reconstruction = None
+            shell = []
             if options.reconstruct_footprints and not any(r["identifier"] == "Body" for r in representations):
                 from .ifc_footprint import reconstruct
                 sections, reconstruction = reconstruct(document, space)
                 detail["reconstruction"] = reconstruction
             else:
                 shape = ifcopenshell.geom.create_shape(settings, space)
-                sections = model_geometry.mesh_segments(shape.geometry.verts, shape.geometry.faces)
+                try:
+                    sections = model_geometry.mesh_segments(shape.geometry.verts, shape.geometry.faces)
+                except ValueError as exc:
+                    if '斜面' not in str(exc):
+                        raise
+                    from .solid_geometry import from_mesh, footprint
+                    shell = from_mesh(shape.geometry.verts, shape.geometry.faces)
+                    for face in shell:
+                        face.update(classification='NOTDEFINED', source_id=space.GlobalId)
+                        face['points'] = [[p[i]-origin[i] for i in range(3)] for p in face['points']]
+                    floor = footprint(shell)
+                    zs = [p[2] for f in shell for p in f['points']]
+                    low, high = min(zs), max(zs)
+                    sections = [{'polygon': list(floor.exterior.coords)[:-1], 'elevation_m': low+origin[2], 'height_m': high-low}]
+                    # The common section path below translates its planar proxy.
+                    sections[0]['polygon'] = [(x+origin[0], y+origin[1]) for x, y in sections[0]['polygon']]
             if options.ifc_origin_m:
                 for section in sections:
                     section['polygon'] = [(x-origin[0], y-origin[1]) for x, y in section['polygon']]
@@ -216,6 +256,8 @@ def ifc(path, options):
             low = min(s["elevation_m"] for s in sections)
             high = max(s["elevation_m"]+s["height_m"] for s in sections)
             floor = unary_union([Polygon(s["polygon"]) for s in sections if abs(s["elevation_m"]-low) < 1e-7])
+            if shell:
+                floor = footprint(shell)
             if floor.geom_type != "Polygon":
                 raise ValueError("非单一水平底面，分离体须在源模型中拆分空间")
             hints, skipped = model_geometry.ifc_boundary_hints(document, space)
@@ -228,9 +270,13 @@ def ifc(path, options):
                     if hint.get('element_plane_range_m'):
                         hint['element_plane_range_m'] = [v-delta for v in hint['element_plane_range_m']]
             name = " · ".join(n for n in (space.Name, space.LongName) if n) or f"空间 {index + 1}"
+            storey = space_storey(space)
+            building = spatial_ancestor(space, 'IfcBuilding')
             rooms.append(Room(id=f"R{index + 1}", name=name,
                               polygon=list(floor.exterior.coords)[:-1], holes=[list(r.coords)[:-1] for r in floor.interiors], elevation_m=low,
-                              height_m=high-low, segments=sections if len(sections) > 1 else [],
+                              height_m=high-low, segments=sections if len(sections) > 1 else [], shell=shell,
+                              storey_id=storey.GlobalId if storey else None, storey_name=storey.Name if storey else None,
+                              building_id=building.GlobalId if building else None, building_name=building.Name if building else None,
                               ifc_source=space.GlobalId, boundary_hints=hints, reconstruction=reconstruction,
                               conditioned=None, include_floor_area=None,
                               source_locator="IFC GlobalId=" + space.GlobalId + ("; origin_m=" + str(list(origin)) if options.ifc_origin_m else "") + ("; INFERRED FootPrint+Height+NetArea+NetVolume" if reconstruction else "")).model_dump())
@@ -254,13 +300,16 @@ def ifc(path, options):
         warnings.append(f"仅导入显式选择的 {len(selected)} 个楼层、{len(spaces)}/{source_count} 个空间；其余未尝试，不代表整栋建筑。楼层上下边界仍需核对。")
     if any(r.get("reconstruction") for r in rooms):
         warnings.append("已根据 FootPrint 与一致的高度/面积/体积工程量重建缺失 Body；属于推导柱体，须核对斜顶、楼板和源模型，不能标为完整原生三维实体。")
-    warnings += ["IFC 保留水平分段空间；斜面拒绝近似。墙层与实际门窗仍需热工建模，不自动替代。",
+    warnings += ["IFC保留水平分段或闭合斜面实体；未用柱体近似斜顶。墙层与实际门窗仍需热工复核。",
                  "须逐间确认是否空调空间、是否计入面积；Roof、楼梯等名称不作为自动分类依据。",
                  "内部及缺失边界未配对时默认拒绝发布；只有显式假设情景才能按绝热处理。",
                  "IfcSpace 缺失时不会用实体包围盒冒充房间。"]
+    from .source_windows import attach
+    window_report = attach(document, rooms, origin, options.source_window_tolerance_m)
     return {"rooms": rooms, "warnings": warnings, "diagnostics": diagnostics,
             "metadata": {"schema": document.schema, "spaces": len(spaces), "scope": diagnostics["scope"],
-                         "selected_storey_ids": sorted(selected), "source_total": source_count, "inventory": inventory, "coordinate_origin_m": list(origin)}}
+                         "selected_storey_ids": sorted(selected), "source_total": source_count, "inventory": inventory,
+                         "source_windows": window_report, "coordinate_origin_m": list(origin), 'tessellation': tessellation}}
 
 
 def vision(path, options, gateway):

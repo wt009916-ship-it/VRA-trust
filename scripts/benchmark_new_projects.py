@@ -88,12 +88,14 @@ def main():
                 inventory = require(source['id']+'_storeys', c.get(base+f'/files/{fid}/ifc-storeys'))
                 row['storey_inventory'] = inventory
                 options = {'file_id': fid}
+                options.update(manifest['protocol'].get('import_options', {}))
                 if inventory['suggested_origin_m'] is not None:
                     options['ifc_origin_m'] = [float(v) for v in inventory['suggested_origin_m']]
                 attempts = [('whole_file', options)]
                 scoped_followup = manifest['protocol'].get('scope_selection') == 'all_multistorey_after_full_failure'
-                if (inventory['total_spaces'] > 100 or (scoped_followup and len(inventory['storeys']) > 1)) and inventory['storeys']:
-                    first = next(s for s in inventory['storeys'] if s['spaces'])
+                nonempty = [s for s in inventory['storeys'] if s['spaces']]
+                if (inventory['total_spaces'] > 2000 or (scoped_followup and len(nonempty) > 1)) and nonempty:
+                    first = nonempty[0]
                     attempts.append(('lowest_nonempty_storey', {**options, 'ifc_storey_ids': [first['id']]}))
                 for scope, opts in attempts:
                     if scope != 'whole_file' and row['attempts'][0].get('status') == 'annual_succeeded':
@@ -113,7 +115,9 @@ def main():
                         continue
                     rooms = copy.deepcopy(task['candidate']['rooms'])
                     current.update(candidate_rooms=len(rooms), warnings=task['candidate'].get('warnings', []))
-                    if len(rooms) != current['source_space_count']:
+                    reconstructed = task['candidate'].get('diagnostics', {}).get('method') == 'IFC_ELEMENT_SECTION'
+                    current['reconstructed_from_elements'] = reconstructed
+                    if not reconstructed and len(rooms) != current['source_space_count']:
                         raise ValueError('Candidate room count differs from explicitly selected source scope')
                     for room in rooms: room.update(conditioned=True, include_floor_area=True)
                     previous = require(source['id']+'_current_model', c.get(base+'/model'))
@@ -121,6 +125,8 @@ def main():
                         'expected_revision': previous['revision'] if previous else 0, 'review_note': 'Software API acceptance only; all spaces assumed conditioned/countable, shared hypothetical office parameters and Golden weather, not field verification.',
                         'thermal': {**helper['THERMAL'], 'constructions': helper['ASSEMBLIES'],
                                     'geometry_tolerance_m': 0.0, 'adjacency_gap_m': 0.0, 'ifc_unpaired_policy': 'reject'}}
+                    body['thermal'].update(manifest['protocol'].get('thermal_options', {}))
+                    body['scope_exclusions'] = manifest['protocol'].get('scope_exclusions', {})
                     status, reviewed = call(source['id']+'_review', c.post(base+'/imports/'+task['import_id']+'/review', json=body))
                     current['review_http'] = status
                     if status != 200:
@@ -157,7 +163,7 @@ def main():
                     require(source['id']+'_publish', c.post(base+'/model/publish', json={'revision': model['revision'],
                         'responsible_person': 'Isolated acceptance', 'review_note': 'Explicit hypothetical software scenario, not customer building performance.'}))
                     run = require(source['id']+'_queue', c.post(base+'/model-runs', json={}), 202)
-                    deadline = time.monotonic()+360
+                    deadline = time.monotonic()+core.engine_timeout_seconds()+120
                     while run['status'] in {'queued', 'running'} and time.monotonic() < deadline:
                         time.sleep(.5)
                         run = c.get('/api/runs/'+run['run_id']).json()
