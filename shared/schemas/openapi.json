@@ -6288,6 +6288,290 @@
         ]
       }
     },
+    "/api/projects/{project_id}/measurements/columns/{file_id}": {
+      "get": {
+        "summary": "Columns",
+        "operationId": "columns_api_projects__project_id__measurements_columns__file_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/measurements": {
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__measurements_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__measurements_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeriesImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/measurements/comparisons": {
+      "get": {
+        "summary": "Comparisons",
+        "operationId": "comparisons_api_projects__project_id__measurements_comparisons_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/measurements/compare": {
+      "post": {
+        "summary": "Compare",
+        "operationId": "compare_api_projects__project_id__measurements_compare_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeriesComparison"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/intakes": {
       "get": {
         "summary": "List Intakes",
@@ -7891,9 +8175,36 @@
               "minItems": 2
             },
             "type": "array",
-            "maxItems": 100,
+            "maxItems": 256,
             "minItems": 3,
             "title": "Polygon Px"
+          },
+          "interior_islands_px": {
+            "items": {
+              "items": {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "maxItems": 256,
+            "title": "Interior Islands Px"
+          },
+          "interior_review_note": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Interior Review Note",
+            "default": ""
           },
           "scale_to_m": {
             "type": "number",
@@ -10826,6 +11137,146 @@
           "polygon"
         ],
         "title": "Segment"
+      },
+      "SeriesComparison": {
+        "properties": {
+          "observed_id": {
+            "type": "string",
+            "title": "Observed Id"
+          },
+          "prediction_id": {
+            "type": "string",
+            "title": "Prediction Id"
+          },
+          "holdout_start": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 10,
+            "title": "Holdout Start"
+          },
+          "fitted_parameters": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Fitted Parameters",
+            "default": 0
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Source Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "observed_id",
+          "prediction_id",
+          "holdout_start",
+          "source_note"
+        ],
+        "title": "SeriesComparison"
+      },
+      "SeriesImport": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "title": "File Id"
+          },
+          "building_ref": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Building Ref"
+          },
+          "meter_boundary": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Meter Boundary"
+          },
+          "quantity": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "gas",
+              "heating",
+              "cooling"
+            ],
+            "title": "Quantity"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "observed",
+              "prediction"
+            ],
+            "title": "Role"
+          },
+          "timestamp_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Timestamp Column"
+          },
+          "value_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Value Column"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "kWh",
+              "Wh",
+              "kW",
+              "W"
+            ],
+            "title": "Unit"
+          },
+          "interval_seconds": {
+            "type": "integer",
+            "maximum": 86400.0,
+            "minimum": 60.0,
+            "title": "Interval Seconds"
+          },
+          "utc_offset_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 840.0,
+                "minimum": -720.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Utc Offset Minutes"
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Source Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_id",
+          "building_ref",
+          "meter_boundary",
+          "quantity",
+          "role",
+          "timestamp_column",
+          "value_column",
+          "unit",
+          "interval_seconds",
+          "source_note"
+        ],
+        "title": "SeriesImport"
       },
       "SourceOpening": {
         "properties": {

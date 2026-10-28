@@ -91,6 +91,7 @@ def prepare(rgb, options, offset=(0, 0)):
     for angle, mask in masks:
         if gap_px > 1:
             walls |= cv2.morphologyEx(mask, cv2.MORPH_CLOSE, line_kernel(gap_px, angle))
+    automatic_walls = walls.copy()
     manual = []
     for x1, y1, x2, y2 in options.manual_bridges_px:
         local = np.array([[x1-offset[0], y1-offset[1]], [x2-offset[0], y2-offset[1]]], dtype=float)
@@ -106,7 +107,7 @@ def prepare(rgb, options, offset=(0, 0)):
         manual.append({'kind': 'engineer_drawn_bridge', 'source_endpoints_px': [[x1,y1],[x2,y2]],
             'length_m': distance*factor, 'basis': options.manual_bridge_basis,
             'status': 'ASSUMED_REQUIRES_REVIEW', 'does_not_prove_wall_or_opening_type': True})
-    added = ((walls > 0) & (observed == 0)).astype('uint8')
+    added = ((automatic_walls > 0) & (observed == 0)).astype('uint8')
     count, _, stats, _ = cv2.connectedComponentsWithStats(added, connectivity=8)
     proposals = []
     for index in range(1, count):

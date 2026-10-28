@@ -5,10 +5,34 @@ facade's aggregate target area; report excluded tiny fragments and redistributio
 This applies only to hypothetical ratio geometry, never to source apertures.
 """
 from collections import defaultdict
-from math import dist
+from math import sqrt
 
 from . import core
 from .model_geometry import frame
+
+
+def _ratio_apertures(face, ratio):
+    """Keep narrow numerical rectangles: they are fragments, not design windows.
+
+    Honeybee's inset operation can fail on narrow but engine-representable
+    convex faces. Homothety is exact for convex polygons and preserves the
+    target ratio without a fixed minimum architectural width.
+    """
+    face.remove_apertures()
+    try:
+        face.apertures_by_ratio(ratio, tolerance=.001)
+    except (ValueError, AssertionError):
+        face.remove_apertures()
+    actual = sum(a.area for a in face.apertures)
+    if abs(actual-face.area*ratio) <= max(1e-8, face.area*1e-7):
+        return
+    face.remove_apertures()
+    plane = frame([list(p) for p in face.geometry.vertices])
+    if plane['poly'].convex_hull.symmetric_difference(plane['poly']).area > 1e-10:
+        raise ValueError('Nonconvex fragment requires topology-preserving decomposition')
+    from honeybee.aperture import Aperture
+    face.add_aperture(Aperture(face.identifier+'_ratio',
+        face.geometry.scale(sqrt(ratio), face.geometry.centroid)))
 
 
 def assign(faces_by_zone, ratio):
@@ -24,22 +48,24 @@ def assign(faces_by_zone, ratio):
         target = sum(face.area for face, _ in entries)*ratio
         candidates, rejected = [], []
         for face, plane in entries:
-            ring = list(plane['poly'].minimum_rotated_rectangle.exterior.coords)
-            width = min(dist(a, b) for a, b in zip(ring, ring[1:]))
-            if width < .05 or face.area < .01:
-                rejected.append({'face': face.identifier, 'reason': 'Thermal fragment narrower than 0.05 m or smaller than 0.01 m2'})
+            # Projected triangle area, not arbitrary 5 cm facade-fragment width.
+            projected = face.area*max(abs(v) for v in plane['normal'])
+            if projected*.6 <= .00005:
+                rejected.append({'face': face.identifier, 'reason': 'Even maximum scenario ratio is below EnergyPlus projected area minimum'})
             else:
                 candidates.append(face)
         while True:
             area = sum(face.area for face in candidates)
             local_ratio = target/area if area else float('inf')
             if local_ratio > .6+1e-9:
-                raise core.ValidationError('可表达外墙不足以保留总开窗面积，未删窗或改变窗墙比：'+key[0])
+                raise core.ValidationError(f'可表达外墙不足以保留总开窗面积，未删窗或改变窗墙比：{key[0]}；'
+                    f'本平面目标玻璃{target:.9g}m²，可用外墙{area:.9g}m²，排除{len(rejected)}片；'
+                    f'首个片段：{rejected[0]["face"] if rejected else "无"}')
             failures = []
             for face in candidates:
                 face.remove_apertures()
                 try:
-                    face.apertures_by_ratio(local_ratio, tolerance=.001)
+                    _ratio_apertures(face, local_ratio)
                     actual = sum(a.area for a in face.apertures)
                     if abs(actual-face.area*local_ratio) > max(.0001, face.area*.0001):
                         failures.append(face)

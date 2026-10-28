@@ -56,7 +56,9 @@ class BoundaryHint(Contract):
 class DrawingTrace(Contract):
     page: StrictInt = Field(ge=1, le=500)
     pixels: tuple[StrictInt, StrictInt]
-    polygon_px: list[tuple[StrictFloat, StrictFloat]] = Field(min_length=3, max_length=100)
+    polygon_px: list[tuple[StrictFloat, StrictFloat]] = Field(min_length=3, max_length=256)
+    interior_islands_px: list[list[tuple[StrictFloat, StrictFloat]]] = Field(default_factory=list, max_length=256)
+    interior_review_note: str = Field(default='', max_length=1000)
     scale_to_m: StrictFloat = Field(gt=0, le=100)
     scale_basis: str = Field(min_length=10, max_length=500)
     closure_m: StrictFloat = Field(ge=0, le=1.5)
@@ -64,6 +66,13 @@ class DrawingTrace(Contract):
     annotated_area_m2: StrictFloat | None = Field(default=None, gt=0)
     area_error_percent: StrictFloat | None = None
     damage_analysis_hash: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
+
+    @field_validator('interior_islands_px')
+    @classmethod
+    def bounded_islands(cls, rings):
+        if any(not 3 <= len(ring) <= 256 or any(not 0 <= v <= 2400 for p in ring for v in p) for ring in rings):
+            raise ValueError('内部线岛须为原图2400像素范围内的3–256顶点轮廓')
+        return rings
 
 
 class QuantitySource(Contract):
@@ -331,6 +340,11 @@ class ModelDraft(Contract):
 
     @model_validator(mode="after")
     def nonoverlap(self):
+        if self.reviewed:
+            pending = [r.id for r in self.rooms if r.drawing and r.drawing.interior_islands_px
+                       and len(r.drawing.interior_review_note.strip()) < 10]
+            if pending:
+                raise ValueError('图纸内部线岛/孔洞尚未复核，须逐空间注明保留排除区的依据：'+', '.join(pending))
         if self.equipment:
             expected = {r.id for r in self.rooms if r.conditioned is not False}
             actual = {e.zone_id for e in self.equipment}

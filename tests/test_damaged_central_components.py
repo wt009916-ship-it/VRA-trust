@@ -158,8 +158,8 @@ def test_ratio_glazing_preserves_facade_total_with_tiny_numerical_fragments():
            Face('tiny',Face3D(tuple(Point3D(*p) for p in [(4,0,0),(4.001,0,0),(4.001,0,3),(4,0,3)])),face_types.wall)]
     report=assign({'R1':faces},.2)
     assert report[0]['actual_glazing_m2']==pytest.approx((12+.003)*.2,abs=1e-6)
-    assert report[0]['excluded_fragments'][0]['face']=='tiny'
-    assert not faces[1].apertures
+    assert faces[1].apertures  # Narrow numerical rectangles remain expressible.
+    assert report[0]['actual_glazing_m2']==pytest.approx(sum(a.area for f in faces for a in f.apertures))
 
 
 def test_central_import_binds_actual_source_and_project(client):

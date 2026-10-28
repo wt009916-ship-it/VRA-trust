@@ -1,3 +1,4 @@
+import { measurementWorkspace } from './measurements-ui.js';
 import { mfaStep, recoveryRoute } from './identity-login.js';
 import { mountAuthScreen, reauthenticate, readPreference, writePreference } from './auth-screen.js';
 import { confirmNavigation } from './editing-guard.js';
@@ -163,6 +164,7 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
+  if(host&&view==='measurements'&&!host.dataset.loaded){measurementWorkspace(state,host,action);host.dataset.loaded='true';}
   if(host&&view==='components')action(()=>componentWorkspace(state,host,action,notice));
   if(host&&view==='review')action(()=>engineeringReviewWorkspace(state,host,action,modal,id=>{state.reviewRoomId=id;switchView('spatial');document.querySelector('#spatial')?.reviewFocus?.(id);}));
   if(host && ['spatial','robustness','decision','weather'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='weather'?weatherWorkspace(state,host,action,notice,modal,syncModelViews):view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,syncModelViews):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}

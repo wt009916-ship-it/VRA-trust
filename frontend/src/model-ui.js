@@ -191,9 +191,15 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
     const use=document.createElement('div');use.className='form-grid';
     use.innerHTML=[['conditioned','是否设置空调和人员/设备负荷'],['include_floor_area','是否计入项目面积']].map(([k,label])=>`<label>${label}<select data-use="${k}"><option value="">待复核</option><option value="true">是</option><option value="false">否</option></select></label>`).join('');
     target.prepend(use);
+    if(r.drawing?.interior_islands_px?.length){
+      const review=document.createElement('section');review.className='model-card';
+      review.innerHTML=`<h3>内部线岛待复核 · ${r.drawing.interior_islands_px.length} 处</h3><p>已保留房间轮廓，并从面积和体积中排除这些区域。线岛可能是柱、孔洞或图上标注；目前没有自动判定为真实竖井。确认前请对照原图，说明保留这些排除区的工程依据。若它们实际是标注，请修订源几何后再导入，不能只填说明消除几何问题。</p><label>内部排除区复核依据 · 确认时必填，至少10字<textarea data-interior-review minlength="10" maxlength="1000">${esc(r.drawing.interior_review_note||'')}</textarea></label>`;
+      target.prepend(review);
+      review.querySelector('textarea').oninput=e=>{r.drawing.interior_review_note=e.target.value;markDirty();};
+    }
     use.querySelectorAll('[data-use]').forEach(el=>{const value=r[el.dataset.use];el.value=value===null?'':String(value??true);el.onchange=()=>{r[el.dataset.use]=el.value===''?null:el.value==='true';markDirty();action(preview);};});
     if(r.ifc_source||r.segments?.length||r.shell?.length){
-      const note=document.createElement('p');note.className='subtle';note.textContent=`保留源模型的 ${r.shell?.length?`${r.shell.length}个实体斜面`:roomSegments(r).length+'个高度分段'}。此处不把复杂几何改成普通柱体；尺寸修改请在源 IFC 中完成后重新导入。`;
+      const note=document.createElement('p');note.className='subtle';note.textContent=r.drawing?`保留图纸区域及内部排除区的 ${roomSegments(r).length} 个几何分片。复杂轮廓不可在此仅改外边界而破坏孔洞；须结合原图复核。`:`保留源模型的 ${r.shell?.length?`${r.shell.length}个实体斜面`:roomSegments(r).length+'个高度分段'}。此处不把复杂几何改成普通柱体；尺寸修改请在源 IFC 中完成后重新导入。`;
       target.append(note);
       target.querySelectorAll('[data-point],[data-remove-point],#add-point,[data-room="elevation_m"],[data-room="height_m"]').forEach(el=>{el.disabled=true;});
     }

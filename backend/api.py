@@ -342,6 +342,8 @@ def create_app(data_dir=None, *, start_worker=True):
     register_reviews(app, domain)
     from .weather_api import register_weather
     register_weather(app, domain)
+    from .measurements import register_measurements
+    register_measurements(app, domain)
     from .intake import register_intake
     register_intake(app, domain, auth, maximum)
     from .workspace import register_workspace

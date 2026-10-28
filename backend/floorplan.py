@@ -20,8 +20,8 @@ def extract(path, options):
     if path.suffix.lower() not in {'.pdf', '.png', '.jpg', '.jpeg'}:
         raise core.ValidationError('本地图纸建模支持 PDF、PNG、JPEG')
     started = time.perf_counter()
-    from . import drawing_damage, document_reader, document_worker, model_schema
-    fingerprints = {m.__name__: core.sha(m.__file__) for m in (drawing_damage, document_reader, document_worker, model_schema)}
+    from . import drawing_damage, document_reader, document_worker, model_schema, raster_region
+    fingerprints = {m.__name__: core.sha(m.__file__) for m in (drawing_damage, document_reader, document_worker, model_schema, raster_region)}
     if options.ocr_labels:
         fingerprints['ocr_models'] = {key: core.sha(p) for key, p in document_reader.model_paths().items()}
     source_hash = core.sha(path)
@@ -102,6 +102,8 @@ def recognize(path, options):
         if x == 0 or y == 0 or x+w >= x1-x0 or y+h >= y1-y0:
             continue  # Connected to crop border: not an enclosed room.
         mask = (labels == index).astype('uint8')
+        cell_report = None
+        interior_pixels = []
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         exterior = max(contours, key=cv2.contourArea)
         if len(exterior) < 3:
@@ -110,16 +112,30 @@ def recognize(path, options):
             continue
         raw = Polygon(exterior.reshape(-1, 2))
         clean = raw.buffer(0)  # Remove zero-width pixel spurs; never invent missing area.
+        if damage:
+            from .raster_region import polygon as pixel_polygon
+            try:
+                clean, cell_report = pixel_polygon(mask[y:y+h, x:x+w], factor)
+                from shapely.affinity import translate
+                clean = translate(clean, xoff=x, yoff=y)
+                raw = clean
+            except ValueError as exc:
+                regions.append({'status': 'blocked', 'reason': str(exc),
+                                'pixel_bounds': [x+x0, y+y0, x+w+x0, y+h+y0]})
+                continue
         if clean.geom_type != 'Polygon' or abs(clean.area-raw.area)*factor**2 > .01:
             regions.append({'status': 'blocked', 'reason': '像素轮廓自交且无法无损修复', 'pixel_bounds': [x+x0, y+y0, x+w+x0, y+h+y0]})
             continue
-        clean = clean.simplify(max(.75, .015/factor), preserve_topology=True)
+        if not damage:
+            clean = clean.simplify(max(.75, .015/factor), preserve_topology=True)
         if damage:
             from .drawing_damage import map_points
             pixels = map_points(list(clean.exterior.coords)[:-1], inverse, (x0, y0))
+            interior_pixels = [map_points(list(r.coords)[:-1], inverse, (x0, y0)) for r in clean.interiors]
         else:
             pixels = [(float(px+x0), float(py+y0)) for px, py in list(clean.exterior.coords)[:-1]]
-        polygon = Polygon([(px*factor, (height-py)*factor) for px, py in pixels])
+        polygon = Polygon([(px*factor, (height-py)*factor) for px, py in pixels],
+                          [[(px*factor, (height-py)*factor) for px, py in ring] for ring in interior_pixels])
         if not polygon.is_valid or polygon.area < .5:
             continue
         included = []
@@ -135,15 +151,18 @@ def recognize(path, options):
                 areas.append((float(match[1].replace(',', '.')), line))
         region = {'pixel_bounds': [x+x0, y+y0, x+w+x0, y+h+y0], 'area_m2': polygon.area,
                   'pixel_cleanup_area_delta_m2': (clean.area-raw.area)*factor**2,
+                  'pixel_cell_geometry': cell_report,
+                  'interior_islands_px': interior_pixels,
+                  'interior_review_required': bool(interior_pixels),
                   'texts': included, 'status': 'candidate', 'reason': None}
         # Never silently fill large internal obstacles/courtyards into room volume.
         holes = [cv2.contourArea(c)*factor**2 for c, hi in zip(contours, hierarchy[0]) if hi[3] >= 0]
-        if any(a > .1 for a in holes):
+        if not damage and any(a > .1 for a in holes):
             region.update(status='blocked', reason='内部孔洞/障碍大于 0.1 m²，须补充轮廓，未填平')
         elif polygon.area < options.min_room_area_m2 or min(w, h)*factor < .5:
             region.update(status='excluded', reason='小于设定面积或净宽 0.5 m；可能为窗洞/图框，须核对')
-        elif len(pixels) > 100:
-            region.update(status='blocked', reason='边界超过 100 顶点，请拆分或修正')
+        elif len(pixels) > (256 if damage else 100):
+            region.update(status='blocked', reason='边界超过顶点上限，请拆分或修正')
         regions.append(region)
         if region['status'] != 'candidate':
             continue
@@ -157,14 +176,22 @@ def recognize(path, options):
         rid = f'R{len(rooms)+1}'
         label = ' / '.join(names)[:120] or f'未标注区域 {len(rooms)+1}'
         region['room_id'] = rid
-        rooms.append(Room(id=rid, name=label, polygon=list(polygon.exterior.coords)[:-1],
+        try:
+            room = Room(id=rid, name=label, polygon=list(polygon.exterior.coords)[:-1],
+            holes=[list(r.coords)[:-1] for r in polygon.interiors],
             height_m=options.height_m, elevation_m=options.elevation_m, conditioned=None, include_floor_area=None,
             source_locator=f'LOCAL_INFERRED page={options.page}; scale={factor}; close={options.closure_m}m; {options.scale_basis}'[:500],
             drawing={'page': options.page, 'pixels': [width, height], 'polygon_px': pixels, 'scale_to_m': factor,
                      'scale_basis': options.scale_basis, 'closure_m': options.closure_m, 'label': label,
                      'annotated_area_m2': annotated,
                      'area_error_percent': 100*(polygon.area-annotated)/annotated if annotated else None,
-                     'damage_analysis_hash': core.hash_json(damage) if damage else None}).model_dump())
+                     'damage_analysis_hash': core.hash_json(damage) if damage else None,
+                     'interior_islands_px': interior_pixels}).model_dump()
+        except ValueError as exc:
+            region.update(status='blocked', reason=str(exc)[:500])
+            region.pop('room_id', None)
+            continue
+        rooms.append(room)
         if len(rooms) > 100:
             raise core.ValidationError('识别空间超过 100 个，请缩小裁剪区域')
     if not rooms:
@@ -177,6 +204,7 @@ def recognize(path, options):
         'LOCAL_INFERRED：本地线形态学候选；斜墙、曲墙、家具及重叠标注可能误识，须在原图上逐区核对。',
         f'门窗缺口按 {options.closure_m:g} m 闭合；该操作不是已证实的墙体，未自动推断门窗面积。',
         '未标注区域、排除区域和孔洞清单均保留；OCR 面积只用于误差对照，未用来缩放轮廓。',
+        '增强模式保留内部线岛为待复核排除区；它们可能是标注、柱或孔洞，未自动判断为贯通竖井。须逐空间复核后才能确认模型。',
         '层高/标高来自导入设置；空调用途、计入面积必须复核。分隔墙间隙需明确邻接依据后才能用于热模型。'],
         'metadata': {'engine': 'OpenCV directional morphology + RapidOCR', 'opencv_version': cv2.__version__,
             'pixels': [width, height], 'crop_px': [x0, y0, x1, y1], 'scale_to_m': factor,
