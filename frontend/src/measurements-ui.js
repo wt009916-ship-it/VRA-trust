@@ -1,4 +1,5 @@
 import {request,post,escape as esc,number as num} from './api.js';
+import {plantCalibrationPanel} from './plant-calibration-ui.js';
 
 export function measurementPanel(anchor,{base,action}){
   const panel=document.createElement('details');panel.className='model-card measurement-panel';
@@ -39,4 +40,5 @@ export function measurementWorkspace(state,host,action){
   host.innerHTML='<div class="view-heading"><div><span class="eyebrow">METER DATA &amp; VALIDATION</span><h1>计量与验证</h1><p>先核对原始计量，再检验预测。可在尚未建立几何模型时独立使用。</p></div></div>';
   measurementPanel(host.firstElementChild,{base:'/projects/'+state.project.project_id,action});
   host.querySelector('.measurement-panel').open=true;
+  plantCalibrationPanel(host.lastElementChild,{base:'/projects/'+state.project.project_id,action});
 }

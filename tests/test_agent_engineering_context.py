@@ -8,6 +8,55 @@ from backend.gateway import ProviderSettings
 from test_model_workbench import project
 
 
+def test_requested_read_cannot_be_replaced_by_invented_empty_result(client,monkeypatch):
+    pid=project(client);agent=client.app.state.agent;gateway=client.app.state.gateway
+    monkeypatch.setenv('VRA_API_KEY','isolated-protocol-control')
+    gateway.save(ProviderSettings(enabled=True,endpoint='http://127.0.0.1:8790/v1/chat/completions',model='controlled'))
+    requests=[]
+    def fabricated(messages,*args,**kwargs):
+        requests.append(messages)
+        return {'role':'assistant','content':'ifc_source_inventory 返回空记录，所以该文件的计数未知。'}
+    monkeypatch.setattr(gateway,'complete',fabricated)
+    result=agent.start(pid,Chat(message='请调用ifc_source_inventory，核对原件',mode='provider',task='components'),background=False)
+    assert result['status']=='partial' and result['explanation_status']=='invalid'
+    assert result['llm_commentary'] is None and len(requests)==2
+    assert '"tool": "component_inventory"' in requests[0][2]['content']
+    assert result['read_attempts'][0]['missing']==['ifc_source_inventory']
+
+
+def test_ifc_semantic_tool_source_scope_and_missing_schema_types(client):
+    import ifcopenshell
+    pid=project(client);d=client.app.state.domain
+    model=ifcopenshell.file(schema='IFC2X3')
+    model.create_entity('IfcSpace',GlobalId=ifcopenshell.guid.new(),Name='Controlled source space')
+    source=d.add_file(pid,'control.ifc',model.to_string().encode())
+    result=client.app.state.agent.call(pid,'ifc_source_inventory',{'file_id':source['file_id']},False)
+    assert result['entity_counts_including_subtypes']['IfcSpace']==1
+    assert 'IfcChiller' in result['classes_not_in_schema']
+    with pytest.raises(core.ValidationError):
+        client.app.state.agent.call(project(client),'ifc_source_inventory',{'file_id':source['file_id']},False)
+    with pytest.raises(core.ValidationError):client.app.state.agent.call(pid,'ifc_source_inventory',{},False)
+
+
+def test_rejected_read_is_returned_to_model_and_failure_is_preserved(client,monkeypatch):
+    pid=project(client);d=client.app.state.domain;agent=client.app.state.agent;gateway=client.app.state.gateway
+    src=d.add_file(pid,'floor.csv',b'type,name,geometry\n')
+    monkeypatch.setenv('VRA_API_KEY','isolated-protocol-control')
+    gateway.save(ProviderSettings(enabled=True,endpoint='http://127.0.0.1:8790/v1/chat/completions',model='controlled'))
+    requests=[]
+    def respond(messages,*args,**kwargs):
+        requests.append(list(messages))
+        if len(requests)==1:
+            return {'role':'assistant','content':None,'tool_calls':[{'id':'bad-read','type':'function',
+                'function':{'name':'ifc_source_inventory','arguments':json.dumps({'file_id':src['file_id']})}}]}
+        return {'role':'assistant','content':'源文件是CSV，IFC只读请求被拒绝，未得到IFC数量。需改用楼层CSV工具继续核对。'}
+    monkeypatch.setattr(gateway,'complete',respond)
+    r=agent.start(pid,Chat(message='核对源构件',mode='provider',task='components'),background=False)
+    assert r['status']=='partial' and r['llm_commentary']
+    assert any(e['tool']=='ifc_source_inventory' and e['status']=='failed' for e in r['events'])
+    assert any(m['role']=='tool' and 'READ_REJECTED' in m['content'] for m in requests[-1])
+
+
 def parsed_evidence(client,pid,content='Rated COP 3.2 from manufacturer; requires engineering review.'):
     d=client.app.state.domain
     source=d.add_file(pid,'equipment-note.txt',content.encode())

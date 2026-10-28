@@ -2,6 +2,105 @@
 import re
 from . import core
 
+IFC_COUNT_CLASSES = ('IfcBuilding', 'IfcBuildingStorey', 'IfcSpace', 'IfcWall', 'IfcSlab',
+                     'IfcDoor', 'IfcWindow', 'IfcStair', 'IfcColumn', 'IfcBeam',
+                     'IfcFurnishingElement', 'IfcDistributionElement', 'IfcChiller', 'IfcPump', 'IfcCoolingTower')
+
+
+def floor_csv_inventory(domain, pid, file_id):
+    """Inspect source WKT footprints without inventing units or vertical geometry."""
+    from collections import Counter
+    from shapely import wkt
+    from .measurements import csv_reader
+    source, path = domain.file_record(pid, file_id)
+    reader = csv_reader(path)
+    if not {'type', 'name', 'geometry'} <= set(reader.fieldnames):
+        raise core.ValidationError('楼层构件CSV需要type、name、geometry(WKT)列；不是计量CSV')
+    types, issues, examples, count, affected = Counter(), Counter(), [], 0, 0
+    distributions = {}
+    for index, row in enumerate(reader, 2):
+        count += 1
+        if count > 20000:
+            raise core.ValidationError('超过20000个楼层构件，未截断清单')
+        flags = []
+        if None in row or any(value is None for value in row.values()):
+            flags.append('malformed_csv_row')
+        kind = row.get('type') or ''
+        if not kind.startswith('Ifc') or len(kind) > 100:
+            flags.append('invalid_source_type')
+        else:
+            types[kind] += 1
+        try:
+            geometry = wkt.loads(row['geometry'])
+            if geometry.geom_type not in {'Polygon', 'MultiPolygon'} or geometry.is_empty:
+                flags.append('missing_or_nonpolygon_geometry')
+            elif not geometry.is_valid:
+                flags.append('invalid_polygon_topology')
+            if geometry.has_z:
+                flags.append('unexpected_vertical_coordinates')
+        except Exception:
+            flags.append('invalid_wkt')
+        issues.update(flags)
+        if flags:
+            affected += 1
+        for flag in flags:
+            distribution = distributions.setdefault(flag, Counter())
+            distribution[kind or '(missing type)'] += 1
+        if flags and len(examples) < 5:
+            examples.append({'row': index, 'source_type': kind, 'flags': flags})
+    if core.sha(path) != source['hash']:
+        raise core.ValidationError('分析期间楼层CSV原件变化')
+    return {'source': {key: source[key] for key in ('file_id', 'hash', 'name')},
+        'rows': count, 'source_type_counts': dict(types), 'geometry_issues': dict(issues),
+        'issue_type_counts': {key: dict(value) for key, value in distributions.items()},
+        'affected_rows': affected, 'issue_examples': examples, 'issue_examples_omitted_rows': max(0, affected-len(examples)),
+        'example_scope': 'First five affected rows only, not the full issue distribution.',
+        'rules_hash': core.sha(__file__), 'repairs_applied': 0,
+        'units': None, 'height_m': None, 'thermal_model_ready': False,
+        'scope': 'Source row counts and WKT diagnostics only. Missing classes do not prove absent installed elements. No inferred units, heights, area in m², or whole-building reconstruction.'}
+
+
+def ifc_source_inventory(domain, pid, file_id):
+    """Exact semantic entity counts, without importing a thermal model or executing code."""
+    import ifcopenshell
+    source, path = domain.file_record(pid, file_id)
+    if path.suffix.lower() != '.ifc' or path.stat().st_size > 80_000_000:
+        raise core.ValidationError('源IFC清单限定80MB以内IFC文件；未执行任意查询代码')
+    try:
+        model = ifcopenshell.open(str(path))
+        counts, unavailable = {}, []
+        for cls in IFC_COUNT_CLASSES:
+            try:
+                counts[cls] = len(model.by_type(cls))
+            except RuntimeError:
+                unavailable.append(cls)
+    except Exception as exc:
+        raise core.ValidationError('IFC语义解析失败；未返回推测数量') from exc
+    if core.sha(path) != source['hash']:
+        raise core.ValidationError('解析期间IFC原件变化')
+    return {'source': {key: source[key] for key in ('file_id', 'hash', 'name')}, 'schema': model.schema,
+            'entity_counts_including_subtypes': counts, 'classes_not_in_schema': unavailable,
+            'rules_hash': core.sha(__file__),
+            'scope': 'Counts in this source file only. Not geometric validity, whole-site completeness, installed performance or room recovery accuracy.'}
+
+
+def plant_calibration_audit(domain, pid):
+    from .plant_calibration import PlantCalibrations
+    service = PlantCalibrations(domain)
+    records = domain.store.list('calibration', pid)
+    items = []
+    for record in records[:20]:
+        error = None
+        try:
+            service.get(pid, record['calibration_id'])
+        except (core.ValidationError, KeyError, OSError) as exc:
+            error = str(exc)[:400]
+        items.append({'calibration_id': record['calibration_id'], 'source': record['source'],
+            'options': record['options'], 'current': error is None, 'stale_reason': error,
+            'result': record['result'] if error is None else None})
+    return {'records': items, 'total_records': len(records), 'calibrated': False,
+            'scope': 'Review source-bound fits and blockers. Never interpret fit error as field acceptance.'}
+
 
 def measurement_audit(domain, pid):
     from .measurements import Measurements

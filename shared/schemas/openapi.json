@@ -6572,6 +6572,247 @@
         ]
       }
     },
+    "/api/projects/{project_id}/calibrations": {
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__calibrations_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__calibrations_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlantFit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/calibrations/{calibration_id}": {
+      "get": {
+        "summary": "Detail",
+        "operationId": "detail_api_projects__project_id__calibrations__calibration_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "calibration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Calibration Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/calibrations/{calibration_id}/rows": {
+      "get": {
+        "summary": "Rows",
+        "operationId": "rows_api_projects__project_id__calibrations__calibration_id__rows_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "calibration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Calibration Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/intakes": {
       "get": {
         "summary": "List Intakes",
@@ -10372,6 +10613,199 @@
           "source_note"
         ],
         "title": "PerformanceCurve"
+      },
+      "PlantFit": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "title": "File Id"
+          },
+          "building_ref": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Building Ref"
+          },
+          "equipment_ref": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Equipment Ref"
+          },
+          "boundary": {
+            "type": "string",
+            "enum": [
+              "chiller_electricity",
+              "chiller_train_electricity",
+              "plant_electricity"
+            ],
+            "title": "Boundary"
+          },
+          "source_nature": {
+            "type": "string",
+            "enum": [
+              "field_processed",
+              "field_raw",
+              "laboratory",
+              "simulation"
+            ],
+            "title": "Source Nature"
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 20,
+            "title": "Source Note"
+          },
+          "timestamp_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Timestamp Column"
+          },
+          "power_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Power Column"
+          },
+          "cooling_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Cooling Column"
+          },
+          "flow_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Flow Column"
+          },
+          "return_temperature_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Return Temperature Column"
+          },
+          "supply_temperature_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Supply Temperature Column"
+          },
+          "condenser_temperature_column": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Condenser Temperature Column"
+          },
+          "power_unit": {
+            "type": "string",
+            "enum": [
+              "W",
+              "kW"
+            ],
+            "title": "Power Unit"
+          },
+          "cooling_unit": {
+            "type": "string",
+            "enum": [
+              "W",
+              "kW",
+              "refrigeration_ton"
+            ],
+            "title": "Cooling Unit"
+          },
+          "flow_unit": {
+            "type": "string",
+            "enum": [
+              "m3/s",
+              "m3/h",
+              "L/s",
+              "US_gpm"
+            ],
+            "title": "Flow Unit"
+          },
+          "temperature_unit": {
+            "type": "string",
+            "enum": [
+              "K",
+              "C",
+              "F"
+            ],
+            "title": "Temperature Unit"
+          },
+          "utc_offset_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 840.0,
+                "minimum": -720.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Utc Offset Minutes"
+          },
+          "interval_seconds": {
+            "type": "integer",
+            "maximum": 86400.0,
+            "minimum": 60.0,
+            "title": "Interval Seconds"
+          },
+          "fluid_density_kg_m3": {
+            "type": "number",
+            "maximum": 1300.0,
+            "minimum": 900.0,
+            "title": "Fluid Density Kg M3"
+          },
+          "fluid_heat_capacity_j_kgk": {
+            "type": "number",
+            "maximum": 4500.0,
+            "minimum": 2000.0,
+            "title": "Fluid Heat Capacity J Kgk"
+          },
+          "balance_tolerance_percent": {
+            "type": "number",
+            "maximum": 30.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Balance Tolerance Percent"
+          },
+          "holdout_start": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 10,
+            "title": "Holdout Start"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_id",
+          "building_ref",
+          "equipment_ref",
+          "boundary",
+          "source_nature",
+          "source_note",
+          "timestamp_column",
+          "power_column",
+          "cooling_column",
+          "flow_column",
+          "return_temperature_column",
+          "supply_temperature_column",
+          "condenser_temperature_column",
+          "power_unit",
+          "cooling_unit",
+          "flow_unit",
+          "temperature_unit",
+          "interval_seconds",
+          "fluid_density_kg_m3",
+          "fluid_heat_capacity_j_kgk",
+          "balance_tolerance_percent",
+          "holdout_start"
+        ],
+        "title": "PlantFit"
       },
       "Project": {
         "properties": {
