@@ -19,6 +19,8 @@ import './enterprise.css';
 import './professional-ui.css';
 import { robustnessWorkspace } from './robustness-ui.js';
 import { decisionWorkspace } from './decision-ui.js';
+import { engineeringReviewWorkspace } from './review-ui.js';
+import './review.css';
 import { runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
@@ -156,6 +158,7 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
+  if(host&&view==='review')action(()=>engineeringReviewWorkspace(state,host,action,modal,id=>{state.reviewRoomId=id;switchView('spatial');document.querySelector('#spatial')?.reviewFocus?.(id);}));
   if(host && ['spatial','robustness','decision','weather'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='weather'?weatherWorkspace(state,host,action,notice,modal,syncModelViews):view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,syncModelViews):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
 }
 async function syncModelViews(projectId) {

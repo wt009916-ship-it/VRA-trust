@@ -338,6 +338,8 @@ def create_app(data_dir=None, *, start_worker=True):
     register_extensions(app, domain, auth)
     from .product_api import register_product
     register_product(app, domain, auth)
+    from .review_api import register_reviews
+    register_reviews(app, domain)
     from .weather_api import register_weather
     register_weather(app, domain)
     from .intake import register_intake

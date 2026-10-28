@@ -4,6 +4,8 @@
 
 ## 未发布 · 产品入口与工程化复盘
 
+- 根据[新一轮竞品核对](docs/competitive/2026-10-28/competitors-report.md)收敛产品侧重点：增加工程复核、逐字段模型差异、版本绑定处置及同题输入/BCF交接，实际流程见[使用与验收](docs/ENGINEERING_REVIEW.md)。不将AI、BCF或校准宣称为独家能力。
+
 - 复杂建模增加墙板空间恢复、闭合斜面、建筑/楼层组织、源外窗与逐空间PTHP铭牌/曲线，预算和适用边界见[操作说明](docs/COMPLEX_MODELING.md)。
 - 源坐标/接触面网格一致化和旧引擎兼容修复；16类控制形态、2公开参考整模完成实际全年计算，真实高楼299候选仍有缺证阻断。原始失败与[本轮验收](docs/HIGHRISE_MODELING_ACCEPTANCE.md)分别保留。
 - 前端采用polygon-clipping进行悬挑/错层楼面布尔运算；Vite升级8.1.6，依赖许可与清单同步。

@@ -74,7 +74,7 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   const pid=state.project.project_id, base='/projects/'+pid;
   let model=await request(base+'/model'), imports=await request(base+'/imports');
   if(!host.isConnected)return;
-  let rooms=structuredClone(model?.rooms||[]), pending=null, selected=0, dispose=()=>{}, dirty=false, previewGeneration=0;
+  let rooms=structuredClone(model?.rooms||[]), pending=null, selected=Math.max(0,(model?.rooms||[]).findIndex(r=>r.id===state.reviewRoomId)), dispose=()=>{}, dirty=false, previewGeneration=0;
   const constructions=structuredClone(model?.thermal?.constructions||{});
   host.innerHTML=`<div class="view-heading"><div><span class="eyebrow">BUILDING WORKBENCH</span><h1>资料进入，空间成形。</h1><p>DXF · 矢量 PDF · IFC · 图片识别 → 几何复核 → 三维模型 → EnergyPlus</p></div><button id="model-api">项目 API / MCP</button></div>
   <div class="model-workbench"><div class="model-inputs">
@@ -292,7 +292,13 @@ export async function spatialWorkspace(state, host, action, notice, onChange=()=
   host.querySelector('#publish-model').onclick=e=>action(async()=>{if(!model||dirty)throw Error('请先保存当前编辑');const result=await post(base+'/model/publish',{revision:model.revision,scheme_id:host.querySelector('#model-scheme').value,responsible_person:state.user.display_name,review_note:host.querySelector('#publish-note').value});const [evidence,gate]=await Promise.all([request(base+'/evidence'),request(base+'/gate')]);if(!host.isConnected||state.project?.project_id!==pid)return;state.evidence=evidence;state.gate=gate;notice(result.reused?'已存在此模型对应的有效 IDF':'IDF 已生成并登记；请确认天气后运行。');await refresh();},e.currentTarget);
   host.querySelector('#run-model').onclick=e=>action(async()=>{if(dirty)throw Error('请先保存当前编辑并发布，再提交计算');await post(base+'/model-runs',{scheme_id:host.querySelector('#model-scheme').value});notice('已提交真实 EnergyPlus 队列');await refreshRuns();},e.currentTarget);
   host.querySelector('#model-api').onclick=()=>projectTokens(pid,host,action,notice);
-  paintImports();await preview();setStatus(model?'已读取保存版本 v'+model.revision+' · 未保存的编辑不会参与计算':'尚未保存模型 · 先导入资料或添加空间');await refresh();
+  host.reviewFocus=id=>{
+    const index=rooms.findIndex(r=>r.id===id);if(index<0){notice('此空间已不在当前模型，请刷新工程复核清单。',true);return;}
+    const floor=host.querySelector('[data-storey-filter]');floor.value='';dispose.filterStorey?.('');
+    selected=index;host.querySelector('#room-select').value=String(index);paintRoom();dispose.select?.(index);
+    host.querySelector('[data-property="space"]').click();delete state.reviewRoomId;
+  };
+  paintImports();await preview();if(state.reviewRoomId)host.reviewFocus(state.reviewRoomId);setStatus(model?'已读取保存版本 v'+model.revision+' · 未保存的编辑不会参与计算':'尚未保存模型 · 先导入资料或添加空间');await refresh();
   const timer=setInterval(()=>{if(!host.isConnected){clearInterval(timer);dispose();return;}if(!document.hidden&&!document.querySelector('.reauth-dialog[open]'))action(refreshRuns);},4000);
 }
 

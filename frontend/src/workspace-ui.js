@@ -12,7 +12,7 @@ export function dateLabel(value) {
   const date=new Date(value);return Number.isNaN(+date)?'—':date.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
 }
 export function readRoute(hash) {
-  const match=hash.match(/^#project\/(project_[a-f0-9]{32})\/(readiness|spatial|weather|evidence|simulation|decision|robustness|trace)$/);
+  const match=hash.match(/^#project\/(project_[a-f0-9]{32})\/(readiness|spatial|weather|evidence|simulation|decision|robustness|trace|review)$/);
   return match?{projectId:match[1],view:match[2]}:{projectId:null,view:hash==='#tasks'?'tasks':'projects'};
 }
 export function projectRows(projects, layout='list') {

@@ -54,3 +54,13 @@ API 具备账号会话、项目归属及受限 Token 校验，仍绑定本机；
 - 发布和读取计算继续核对模型、编译器和源原件；逐空间PTHP结果标为耗电，理想模型标为冷热需求。`GET /api/developer/runtime`公布本机实际计算预算，生产仍为单服务进程、单原生引擎互斥。
 
 客户端须从更新后的共享Schema取字段和约束。来源、操作与适用范围见[复杂建筑输入](COMPLEX_MODELING.md)，实际验收见[复杂建筑结果](HIGHRISE_MODELING_ACCEPTANCE.md)。
+
+## 工程复核与交接 · 2026-10-28
+
+- `GET /api/projects/{id}/engineering-review`：当前活动证据/模型/材料的复核台账、资料快照哈希、相邻模型字段差异。不是独立几何校验或工程签署。
+- `POST /engineering-review/dispositions`：`snapshot_hash`、`finding_id`、`expected_revision`、`decision`、至少10字符`note`；当前登录人写入actor。仅假设类允许`accepted_scenario`，不会解除Gate。旧快照/修订冲突409，非法输入422。
+- `GET /engineering-review/findings/{finding_id}/history`：本项目条目的不可覆盖历史；旧规则/模型/依据下处置不作为当前已复核。
+- `GET /engineering-review/comparison-inputs.json`：源、空间/面积、热工/设备与选中IDF/EPW角色/版本的同题输入协议；不自动证明跨软件模型等价。
+- `GET /engineering-review/report.html`、`issues.bcfzip`、`handoff.zip`：当前快照的未签署交接；BCF2.1只交换问题文字，交接包不含原件/凭据/数据库。导出有源损坏时仍可用于移交问题，但会保留来源无效及阻断，不假装可计算。
+
+所有接口延用会话/项目归属和Token读写范围；写操作须CSRF，读Token可导出但不能写处置。相同源文件若只被已拒绝历史证据引用，不进入当前阻断；模型仍引用时继续校验。新模块变更使复核快照保守失效，物理核心未变时不使原生能耗额外失效。

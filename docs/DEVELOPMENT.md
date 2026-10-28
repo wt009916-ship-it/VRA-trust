@@ -31,6 +31,7 @@ flowchart LR
 - `modeling.py`、`model_import.py`、`model_export.py` 负责持久候选复核与确定性转换。
 - `core.py`、`domain.py` 负责引擎、原生输出核验、版本与任务。
 - `materials.py`、`decision.py` 负责材料证据与限定候选比较。
+- `engineering_review.py`、`review_api.py` 将活动缺口、模型语义变化与处置绑定资料快照，导出JSON/HTML和问题文字BCF；复核记录采用现有SQLite版本表，未改动物理计算或计算准入。
 - `auth.py`、`identity_*.py` 负责账号、会话、MFA、OIDC 和邮件恢复。
 - SQLite 保存账号、版本和任务，运行目录保留原件与结果，不属于 Git 源码。`frontend/legacy` 和 `legacy` 为归档。
 
