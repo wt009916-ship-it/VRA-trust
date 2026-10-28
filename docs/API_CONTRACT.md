@@ -1,5 +1,15 @@
 # Phase 1 contract v1.0
 
+## 残图、源构件与中央系统 · 2026-10-28
+
+- `/api/projects/{id}/imports`新增`mode=damaged_raster`、`damage_gap_m`(0–0.5m)、`deskew`、`ocr_labels`、`manual_bridges_px`及至少10字符`manual_bridge_basis`。原图像素补接最多100条，每条2–400px且不超过5m；比例/裁剪同原图。成功候选或失败诊断均保留分析，`coverage_complete=false`。接受后模型来源保留分析哈希并进入工程复核。
+- `GET/POST /api/projects/{id}/components`列举或提取独立源构件版本；POST包含`file_id`、显式浮点`origin_m=[x,y,z]`、可选`storey_ids`。`GET /components/sources`列举授权IFC原件；`GET /components/{component_id}/geometry`按`storey_id`、`category`、`offset`和`limit`(1–300)分页，返回总量/剩余数与源网格。缺表示/几何失败不丢弃；源/网格文件或规则变化拒绝读取。提取预算为15000构件/200万三角面及120秒检查点，超限拒绝而非截断。
+- `POST /model/central-import`接收本项目`{file_id}`，解析不超过1MB的中央设计JSON，由服务器绑定文件ID/SHA256，返回待核对输入。`thermal.central_system`所有设备/设计日字段见`building-model.json`及[输入示例](../examples/central-system/README.md)。保存时再次核对归属/哈希，禁止与PTHP清单混用，必须有运行档案且新风热回收为0。
+- 四管制中央结果口径为`central_chiller_boiler_energy`，按原生SQL区分电/燃气及风机/水泵/排热。仅支持`native_reference`曲线，发布IDF仍为`ASSUMED`，不会因为上传设计文件就升级为实测。
+- `thermal.geometry_tolerance_policy=bounded_retry`显式收紧公差并保存拒绝/保留源空间记录；`ratio_glazing_policy=coplanar_budget`只允许假设窗墙比，在同空间/同平面外墙上保留开窗总面积，预算不足仍拒绝。默认严格/逐面策略不变。
+
+所有新增路由沿用会话、项目归属、Token范围与写入CSRF；缺来源、跨项目或损坏原件无示例降级。[使用与实测边界](INCOMPLETE_DRAWINGS_AND_SYSTEMS.md)。
+
 账号增量：GET /api/auth/status、POST /api/auth/register、POST /api/auth/login 为公开入口；GET /api/auth/me、POST /api/auth/logout 需要会话。除 health 和三个公开账号入口外，所有业务 API 均须 vra_session Cookie；写请求另须 X-CSRF-Token。注册/登录/me 返回 csrf_token，前端只保存在内存。项目及 run/报告/文件下载按账号归属授权，无权限统一 404，未登录 401，CSRF/跨来源 403。OpenAPI 已标注 cookie 和 CSRF security schemes。
 
 权威定义：backend/schema.py；生成件 shared/schemas/openapi.json、building.json、evidence.json、run.json。执行 python scripts/export_contract.py；CI 检查 schema drift。

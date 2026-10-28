@@ -2,6 +2,8 @@
 
 日期：2026-10-27—28。状态：工程预览，覆盖扩展已实现；任意复杂高楼的完整自动热建模尚未完成。操作说明见[复杂建筑输入](COMPLEX_MODELING.md)。本页替代前一轮能力判断，[原失败记录](MULTI_PROJECT_ACCEPTANCE.md)保留。
 
+后续增量见[老图、室内与中央系统](INCOMPLETE_DRAWINGS_AND_SYSTEMS.md)及[新实测](benchmarks/2026-10-28-drawing-systems/README.md)。FZK/KIT新增四管制中央系统全年情景；299候选高楼经多轮有界修模仍在同平面开窗面积预算处阻断，未执行高楼全年。下文为此前验收快照，不改写当时失败与manifest。
+
 ## 已改变的产品行为
 
 - 无 IfcSpace 的 IFC 可从实际墙、板、柱截面生成待复核空间，保留逐层覆盖、原构件和未恢复区域。候选标为 INFERRED，用途与计面积默认留空。不同建筑、同名同标高楼层按实体归属处理。

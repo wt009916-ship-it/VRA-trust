@@ -98,6 +98,215 @@
       "title": "BoundaryHint",
       "type": "object"
     },
+    "CentralSystem": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "four_pipe_fan_coil",
+          "title": "Kind",
+          "type": "string"
+        },
+        "basis": {
+          "enum": [
+            "design_scenario",
+            "documented_design"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "source_note": {
+          "maxLength": 2000,
+          "minLength": 10,
+          "title": "Source Note",
+          "type": "string"
+        },
+        "source_file_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source File Id"
+        },
+        "source_file_hash": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source File Hash"
+        },
+        "design_days": {
+          "items": {
+            "$ref": "#/$defs/DesignDay"
+          },
+          "maxItems": 8,
+          "minItems": 2,
+          "title": "Design Days",
+          "type": "array"
+        },
+        "chiller_cop": {
+          "exclusiveMinimum": 1,
+          "maximum": 12,
+          "title": "Chiller Cop",
+          "type": "number"
+        },
+        "chiller_capacity_w": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000000000.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Chiller Capacity W"
+        },
+        "condenser": {
+          "enum": [
+            "AirCooled",
+            "WaterCooled"
+          ],
+          "title": "Condenser",
+          "type": "string"
+        },
+        "boiler_efficiency": {
+          "exclusiveMinimum": 0.1,
+          "maximum": 1,
+          "title": "Boiler Efficiency",
+          "type": "number"
+        },
+        "boiler_capacity_w": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000000000.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Boiler Capacity W"
+        },
+        "boiler_fuel": {
+          "enum": [
+            "NaturalGas",
+            "Electricity"
+          ],
+          "title": "Boiler Fuel",
+          "type": "string"
+        },
+        "chilled_water_c": {
+          "maximum": 16,
+          "minimum": 4,
+          "title": "Chilled Water C",
+          "type": "number"
+        },
+        "chilled_water_delta_c": {
+          "maximum": 12,
+          "minimum": 2,
+          "title": "Chilled Water Delta C",
+          "type": "number"
+        },
+        "hot_water_c": {
+          "maximum": 90,
+          "minimum": 35,
+          "title": "Hot Water C",
+          "type": "number"
+        },
+        "hot_water_delta_c": {
+          "maximum": 25,
+          "minimum": 3,
+          "title": "Hot Water Delta C",
+          "type": "number"
+        },
+        "chilled_pump_head_pa": {
+          "exclusiveMinimum": 0,
+          "maximum": 2000000.0,
+          "title": "Chilled Pump Head Pa",
+          "type": "number"
+        },
+        "hot_pump_head_pa": {
+          "exclusiveMinimum": 0,
+          "maximum": 2000000.0,
+          "title": "Hot Pump Head Pa",
+          "type": "number"
+        },
+        "condenser_pump_head_pa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 2000000.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Condenser Pump Head Pa"
+        },
+        "fan_pressure_pa": {
+          "exclusiveMinimum": 0,
+          "maximum": 1500,
+          "title": "Fan Pressure Pa",
+          "type": "number"
+        },
+        "fan_total_efficiency": {
+          "exclusiveMinimum": 0.1,
+          "maximum": 1,
+          "title": "Fan Total Efficiency",
+          "type": "number"
+        },
+        "fan_motor_efficiency": {
+          "exclusiveMinimum": 0.1,
+          "maximum": 1,
+          "title": "Fan Motor Efficiency",
+          "type": "number"
+        },
+        "curve_basis": {
+          "const": "native_reference",
+          "title": "Curve Basis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "basis",
+        "source_note",
+        "design_days",
+        "chiller_cop",
+        "condenser",
+        "boiler_efficiency",
+        "boiler_fuel",
+        "chilled_water_c",
+        "chilled_water_delta_c",
+        "hot_water_c",
+        "hot_water_delta_c",
+        "chilled_pump_head_pa",
+        "hot_pump_head_pa",
+        "fan_pressure_pa",
+        "fan_total_efficiency",
+        "fan_motor_efficiency",
+        "curve_basis"
+      ],
+      "title": "CentralSystem",
+      "type": "object"
+    },
     "ColumnMassMaterial": {
       "additionalProperties": false,
       "properties": {
@@ -179,6 +388,87 @@
         "source_elements"
       ],
       "title": "ColumnVoid",
+      "type": "object"
+    },
+    "DesignDay": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "winter",
+            "summer"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "month": {
+          "maximum": 12,
+          "minimum": 1,
+          "title": "Month",
+          "type": "integer"
+        },
+        "day": {
+          "maximum": 31,
+          "minimum": 1,
+          "title": "Day",
+          "type": "integer"
+        },
+        "dry_bulb_c": {
+          "maximum": 60,
+          "minimum": -60,
+          "title": "Dry Bulb C",
+          "type": "number"
+        },
+        "daily_range_c": {
+          "maximum": 30,
+          "minimum": 0,
+          "title": "Daily Range C",
+          "type": "number"
+        },
+        "wet_bulb_c": {
+          "maximum": 50,
+          "minimum": -60,
+          "title": "Wet Bulb C",
+          "type": "number"
+        },
+        "pressure_pa": {
+          "maximum": 110000,
+          "minimum": 50000,
+          "title": "Pressure Pa",
+          "type": "number"
+        },
+        "wind_speed_m_s": {
+          "maximum": 30,
+          "minimum": 0,
+          "title": "Wind Speed M S",
+          "type": "number"
+        },
+        "wind_direction_deg": {
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "Wind Direction Deg",
+          "type": "number"
+        },
+        "sky_clearness": {
+          "maximum": 1.2,
+          "minimum": 0,
+          "title": "Sky Clearness",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "month",
+        "day",
+        "dry_bulb_c",
+        "daily_range_c",
+        "wet_bulb_c",
+        "pressure_pa",
+        "wind_speed_m_s",
+        "wind_direction_deg",
+        "sky_clearness"
+      ],
+      "title": "DesignDay",
       "type": "object"
     },
     "DrawingTrace": {
@@ -270,6 +560,19 @@
           ],
           "default": null,
           "title": "Area Error Percent"
+        },
+        "damage_analysis_hash": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Damage Analysis Hash"
         }
       },
       "required": [
@@ -1311,6 +1614,17 @@
           ],
           "default": null
         },
+        "central_system": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CentralSystem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "adjacency_gap_m": {
           "default": 0,
           "maximum": 0.6,
@@ -1334,6 +1648,15 @@
           "title": "Geometry Tolerance M",
           "type": "number"
         },
+        "geometry_tolerance_policy": {
+          "default": "strict",
+          "enum": [
+            "strict",
+            "bounded_retry"
+          ],
+          "title": "Geometry Tolerance Policy",
+          "type": "string"
+        },
         "reconstructed_exterior_policy": {
           "default": "reject",
           "enum": [
@@ -1350,6 +1673,15 @@
             "source"
           ],
           "title": "Window Geometry",
+          "type": "string"
+        },
+        "ratio_glazing_policy": {
+          "default": "per_fragment",
+          "enum": [
+            "per_fragment",
+            "coplanar_budget"
+          ],
+          "title": "Ratio Glazing Policy",
           "type": "string"
         },
         "source_window_exterior_policy": {

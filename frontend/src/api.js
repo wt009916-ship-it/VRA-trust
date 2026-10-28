@@ -7,7 +7,7 @@ export function checkUpload(file) {
 }
 export function setCsrfToken(value) { csrfToken = value || ''; }
 export async function request(path, options = {}) {
-  const slow=path.endsWith('/imports')||path.includes('/model/validate')||path.includes('/runtime-backup');
+  const slow=path.endsWith('/imports')||path.endsWith('/components')||path.includes('/model/validate')||path.includes('/runtime-backup');
   const {timeoutMs=slow?180000:path.endsWith('/provider/test')?185000:60000,signal,...fetchOptions}=options;
   const controller=new AbortController(),abort=()=>controller.abort();
   if(signal?.aborted)abort();else signal?.addEventListener('abort',abort,{once:true});

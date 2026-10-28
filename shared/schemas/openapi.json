@@ -3963,6 +3963,345 @@
         ]
       }
     },
+    "/api/projects/{project_id}/components": {
+      "get": {
+        "summary": "List Components",
+        "operationId": "list_components_api_projects__project_id__components_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Build",
+        "operationId": "build_api_projects__project_id__components_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComponentBuild"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/components/sources": {
+      "get": {
+        "summary": "Sources",
+        "operationId": "sources_api_projects__project_id__components_sources_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/components/{component_id}/geometry": {
+      "get": {
+        "summary": "Geometry",
+        "operationId": "geometry_api_projects__project_id__components__component_id__geometry_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "component_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Component Id"
+            }
+          },
+          {
+            "name": "storey_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Storey Id"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 300,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/model/central-import": {
+      "post": {
+        "summary": "Central Import",
+        "operationId": "central_import_api_projects__project_id__model_central_import_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipmentImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/model/equipment-template.csv": {
       "get": {
         "summary": "Equipment Template",
@@ -6878,6 +7217,210 @@
         ],
         "title": "BuildingUpdate"
       },
+      "CentralSystem": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "four_pipe_fan_coil",
+            "title": "Kind"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "design_scenario",
+              "documented_design"
+            ],
+            "title": "Basis"
+          },
+          "source_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Source Note"
+          },
+          "source_file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source File Id"
+          },
+          "source_file_hash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source File Hash"
+          },
+          "design_days": {
+            "items": {
+              "$ref": "#/components/schemas/DesignDay"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 2,
+            "title": "Design Days"
+          },
+          "chiller_cop": {
+            "type": "number",
+            "maximum": 12.0,
+            "exclusiveMinimum": 1.0,
+            "title": "Chiller Cop"
+          },
+          "chiller_capacity_w": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chiller Capacity W"
+          },
+          "condenser": {
+            "type": "string",
+            "enum": [
+              "AirCooled",
+              "WaterCooled"
+            ],
+            "title": "Condenser"
+          },
+          "boiler_efficiency": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.1,
+            "title": "Boiler Efficiency"
+          },
+          "boiler_capacity_w": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boiler Capacity W"
+          },
+          "boiler_fuel": {
+            "type": "string",
+            "enum": [
+              "NaturalGas",
+              "Electricity"
+            ],
+            "title": "Boiler Fuel"
+          },
+          "chilled_water_c": {
+            "type": "number",
+            "maximum": 16.0,
+            "minimum": 4.0,
+            "title": "Chilled Water C"
+          },
+          "chilled_water_delta_c": {
+            "type": "number",
+            "maximum": 12.0,
+            "minimum": 2.0,
+            "title": "Chilled Water Delta C"
+          },
+          "hot_water_c": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": 35.0,
+            "title": "Hot Water C"
+          },
+          "hot_water_delta_c": {
+            "type": "number",
+            "maximum": 25.0,
+            "minimum": 3.0,
+            "title": "Hot Water Delta C"
+          },
+          "chilled_pump_head_pa": {
+            "type": "number",
+            "maximum": 2000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Chilled Pump Head Pa"
+          },
+          "hot_pump_head_pa": {
+            "type": "number",
+            "maximum": 2000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Hot Pump Head Pa"
+          },
+          "condenser_pump_head_pa": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 2000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condenser Pump Head Pa"
+          },
+          "fan_pressure_pa": {
+            "type": "number",
+            "maximum": 1500.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Fan Pressure Pa"
+          },
+          "fan_total_efficiency": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.1,
+            "title": "Fan Total Efficiency"
+          },
+          "fan_motor_efficiency": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.1,
+            "title": "Fan Motor Efficiency"
+          },
+          "curve_basis": {
+            "type": "string",
+            "const": "native_reference",
+            "title": "Curve Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "basis",
+          "source_note",
+          "design_days",
+          "chiller_cop",
+          "condenser",
+          "boiler_efficiency",
+          "boiler_fuel",
+          "chilled_water_c",
+          "chilled_water_delta_c",
+          "hot_water_c",
+          "hot_water_delta_c",
+          "chilled_pump_head_pa",
+          "hot_pump_head_pa",
+          "fan_pressure_pa",
+          "fan_total_efficiency",
+          "fan_motor_efficiency",
+          "curve_basis"
+        ],
+        "title": "CentralSystem"
+      },
       "Chat": {
         "properties": {
           "message": {
@@ -7054,6 +7597,50 @@
         ],
         "title": "ComparisonRequest"
       },
+      "ComponentBuild": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "title": "File Id"
+          },
+          "origin_m": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Origin M",
+            "default": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "storey_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Storey Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_id"
+        ],
+        "title": "ComponentBuild"
+      },
       "Constraints": {
         "properties": {
           "max_cost_cny": {
@@ -7141,6 +7728,87 @@
           "password"
         ],
         "title": "Credentials"
+      },
+      "DesignDay": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "winter",
+              "summer"
+            ],
+            "title": "Kind"
+          },
+          "month": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Month"
+          },
+          "day": {
+            "type": "integer",
+            "maximum": 31.0,
+            "minimum": 1.0,
+            "title": "Day"
+          },
+          "dry_bulb_c": {
+            "type": "number",
+            "maximum": 60.0,
+            "minimum": -60.0,
+            "title": "Dry Bulb C"
+          },
+          "daily_range_c": {
+            "type": "number",
+            "maximum": 30.0,
+            "minimum": 0.0,
+            "title": "Daily Range C"
+          },
+          "wet_bulb_c": {
+            "type": "number",
+            "maximum": 50.0,
+            "minimum": -60.0,
+            "title": "Wet Bulb C"
+          },
+          "pressure_pa": {
+            "type": "number",
+            "maximum": 110000.0,
+            "minimum": 50000.0,
+            "title": "Pressure Pa"
+          },
+          "wind_speed_m_s": {
+            "type": "number",
+            "maximum": 30.0,
+            "minimum": 0.0,
+            "title": "Wind Speed M S"
+          },
+          "wind_direction_deg": {
+            "type": "number",
+            "exclusiveMaximum": 360.0,
+            "minimum": 0.0,
+            "title": "Wind Direction Deg"
+          },
+          "sky_clearness": {
+            "type": "number",
+            "maximum": 1.2,
+            "minimum": 0.0,
+            "title": "Sky Clearness"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "month",
+          "day",
+          "dry_bulb_c",
+          "daily_range_c",
+          "wet_bulb_c",
+          "pressure_pa",
+          "wind_speed_m_s",
+          "wind_direction_deg",
+          "sky_clearness"
+        ],
+        "title": "DesignDay"
       },
       "Disposition": {
         "properties": {
@@ -7272,6 +7940,18 @@
               }
             ],
             "title": "Area Error Percent"
+          },
+          "damage_analysis_hash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Damage Analysis Hash"
           }
         },
         "additionalProperties": false,
@@ -8188,7 +8868,8 @@
             "enum": [
               "geometry",
               "vision",
-              "local_raster"
+              "local_raster",
+              "damaged_raster"
             ],
             "title": "Mode",
             "default": "geometry"
@@ -8346,6 +9027,53 @@
             "minimum": 0.5,
             "title": "Min Room Area M2",
             "default": 1
+          },
+          "damage_gap_m": {
+            "type": "number",
+            "maximum": 0.5,
+            "minimum": 0.0,
+            "title": "Damage Gap M",
+            "default": 0
+          },
+          "deskew": {
+            "type": "boolean",
+            "title": "Deskew",
+            "default": true
+          },
+          "ocr_labels": {
+            "type": "boolean",
+            "title": "Ocr Labels",
+            "default": true
+          },
+          "manual_bridges_px": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array",
+              "maxItems": 4,
+              "minItems": 4
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Manual Bridges Px"
+          },
+          "manual_bridge_basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Manual Bridge Basis",
+            "default": ""
           }
         },
         "additionalProperties": false,
@@ -10457,6 +11185,16 @@
               }
             ]
           },
+          "central_system": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CentralSystem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "adjacency_gap_m": {
             "type": "number",
             "maximum": 0.6,
@@ -10480,6 +11218,15 @@
             "title": "Geometry Tolerance M",
             "default": 0
           },
+          "geometry_tolerance_policy": {
+            "type": "string",
+            "enum": [
+              "strict",
+              "bounded_retry"
+            ],
+            "title": "Geometry Tolerance Policy",
+            "default": "strict"
+          },
           "reconstructed_exterior_policy": {
             "type": "string",
             "enum": [
@@ -10497,6 +11244,15 @@
             ],
             "title": "Window Geometry",
             "default": "ratio"
+          },
+          "ratio_glazing_policy": {
+            "type": "string",
+            "enum": [
+              "per_fragment",
+              "coplanar_budget"
+            ],
+            "title": "Ratio Glazing Policy",
+            "default": "per_fragment"
           },
           "source_window_exterior_policy": {
             "type": "string",

@@ -10,7 +10,8 @@
       "enum": [
         "geometry",
         "vision",
-        "local_raster"
+        "local_raster",
+        "damaged_raster"
       ],
       "title": "Mode",
       "type": "string"
@@ -172,6 +173,53 @@
       "minimum": 0.5,
       "title": "Min Room Area M2",
       "type": "number"
+    },
+    "damage_gap_m": {
+      "default": 0,
+      "maximum": 0.5,
+      "minimum": 0,
+      "title": "Damage Gap M",
+      "type": "number"
+    },
+    "deskew": {
+      "default": true,
+      "title": "Deskew",
+      "type": "boolean"
+    },
+    "ocr_labels": {
+      "default": true,
+      "title": "Ocr Labels",
+      "type": "boolean"
+    },
+    "manual_bridges_px": {
+      "items": {
+        "maxItems": 4,
+        "minItems": 4,
+        "prefixItems": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "type": "array"
+      },
+      "maxItems": 100,
+      "title": "Manual Bridges Px",
+      "type": "array"
+    },
+    "manual_bridge_basis": {
+      "default": "",
+      "maxLength": 1000,
+      "title": "Manual Bridge Basis",
+      "type": "string"
     }
   },
   "required": [

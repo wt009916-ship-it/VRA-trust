@@ -4,6 +4,9 @@
 
 ## 未发布 · 产品入口与工程化复盘
 
+- 增加老旧图纸增强、自动补接诊断、原图人工补接与新任务修订；独立工程构件/室内网格查看；四管制中央冷热源、水泵、盘管及设计JSON导入。可用范围和真实失败见[操作说明](docs/INCOMPLETE_DRAWINGS_AND_SYSTEMS.md)与[实测](docs/benchmarks/2026-10-28-drawing-systems/README.md)。
+- 有界收紧几何公差、保留原空间及同平面窗面积预算；真实高楼仍有整模阻断。修复项目加载中切换工作视图被异步结果覆盖的竞态。
+
 - 根据[新一轮竞品核对](docs/competitive/2026-10-28/competitors-report.md)收敛产品侧重点：增加工程复核、逐字段模型差异、版本绑定处置及同题输入/BCF交接，实际流程见[使用与验收](docs/ENGINEERING_REVIEW.md)。不将AI、BCF或校准宣称为独家能力。
 
 - 复杂建模增加墙板空间恢复、闭合斜面、建筑/楼层组织、源外窗与逐空间PTHP铭牌/曲线，预算和适用边界见[操作说明](docs/COMPLEX_MODELING.md)。

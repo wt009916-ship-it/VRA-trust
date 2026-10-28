@@ -23,6 +23,7 @@ def geometry_model(model, surfaces):
         by_zone[surface['zone']].append(surface)
     rooms = []
     source_mode = (model.get('thermal') or {}).get('window_geometry') == 'source'
+    facade_ratio = (model.get('thermal') or {}).get('ratio_glazing_policy') == 'coplanar_budget'
     assigned = defaultdict(float)
     if source_mode:
         issues = [issue for r in model['rooms'] for issue in r.get('source_opening_issues', [])]
@@ -42,7 +43,7 @@ def geometry_model(model, surfaces):
             if source_mode:
                 from .source_windows import apply
                 apply(model, r, face, assigned)
-            elif s['boundary'] == 'Outdoors' and s['kind'] == 'Wall' and ratio:
+            elif s['boundary'] == 'Outdoors' and s['kind'] == 'Wall' and ratio and not facade_ratio:
                 face.apertures_by_ratio(ratio, tolerance=.001)
                 actual = sum(a.area for a in face.apertures)
                 if abs(actual-face.area*ratio) > max(.0001, face.area*.0001):
@@ -62,10 +63,18 @@ def geometry_model(model, surfaces):
                 area = opening['source_area_m2']
                 if abs(assigned[(r['id'], n)]-area) > max(.0001, area*.001):
                     raise core.ValidationError('源窗面积未在最终热面完整保留：'+opening['source_id'])
+    ratio_report = []
+    if facade_ratio and (model.get('thermal') or {}).get('window_wall_ratio'):
+        from .ratio_glazing import assign
+        ratio_report = assign({r.identifier: r.faces for r in rooms}, model['thermal']['window_wall_ratio'])
+        from .source_windows import engine_compatible_apertures
+        for room in rooms:
+            for face in room.faces:
+                engine_compatible_apertures(face)
     result = Model('VRA_Building', rooms, units='Meters', tolerance=.001)
     result.display_name = model['name']
     result.user_data = {'scope': 'Geometry exchange only; energy inputs remain in VRA reviewed model and IDF',
-                        'model_revision': model.get('revision'), 'libraries': library_versions()}
+                        'model_revision': model.get('revision'), 'libraries': library_versions(), 'ratio_glazing': ratio_report}
     return result
 
 
@@ -174,6 +183,7 @@ def audit(model, surfaces):
                 'checks': list(checks), 'issues': issues,
                 'engine_compatibility': compatibility,
                 'source_containment_resolutions': containment_resolutions,
+                'ratio_glazing': hb.user_data.get('ratio_glazing', []),
                 'interzone_normal_check': {'passed': not normal_mismatches, 'issues': normal_mismatches},
                 'rooms': [{'room_id': r.identifier, 'volume_m3': r.volume, 'floor_area_m2': r.floor_area} for r in hb.rooms]}
     except (ValueError, AssertionError, KeyError) as exc:

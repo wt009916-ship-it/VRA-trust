@@ -366,7 +366,7 @@ def vision(path, options, gateway):
 
 def extract(path, options, gateway):
     try:
-        if options.mode == "local_raster":
+        if options.mode in {"local_raster", "damaged_raster"}:
             from .floorplan import extract as raster_extract
             return raster_extract(path, options)
         if options.mode == "vision":

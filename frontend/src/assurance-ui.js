@@ -1,8 +1,10 @@
 import { escape as esc, number as num } from './api.js';
+import {damageMarkup} from './drawing-damage.js';
 
 export function importDiagnostics(t, base) {
   const d = t.diagnostics || t.candidate?.diagnostics;
   if (!d) return '';
+  if(d.damage_analysis)return damageMarkup(d.damage_analysis)+`<a href="/api${esc(base)}/imports/${esc(t.import_id)}/report.json" download>下载本次破损图纸诊断 JSON</a>`;
   const blocked = (d.spaces || []).filter(s => s.status === 'blocked');
   return `<section class="import-diagnostics">${d.scope==='selected_storeys'?`<p>显式楼层范围：本次 ${d.total} / 源文件 ${d.source_total} 个空间；${d.excluded_by_scope} 个范围外空间未尝试。</p>`:''}<div class="assurance-counts"><span>源空间 <b>${num(d.total,0)}</b></span><span>已解析 <b>${num(d.extracted,0)}</b></span><span>待补全 <b>${num(d.blocked,0)}</b></span></div>
     <ul>${(d.actions||[]).map(a=>`<li>${esc(a)}</li>`).join('')}</ul>

@@ -50,10 +50,12 @@ def measures(points):
     return float(np.linalg.norm(normal)/2), volume
 
 
-def engine_vertices(surfaces):
+def engine_vertices(surfaces, *, bounded_chains=False):
     """Bounded numerical welding, never a source-footprint or boundary-policy edit."""
     points = sorted({tuple(p) for s in surfaces for p in s['points']})
     parents = list(range(len(points)))
+    members = {i: [i] for i in parents}
+    rejected_chains = 0
     buckets = defaultdict(list)
     def find(i):
         while parents[i] != i:
@@ -65,7 +67,20 @@ def engine_vertices(surfaces):
         for offset in product((-1, 0, 1), repeat=3):
             for j in buckets[tuple(cell[k]+offset[k] for k in range(3))]:
                 if np.linalg.norm(np.asarray(point)-points[j]) <= WELD_LIMIT_M:
-                    parents[find(i)] = find(j)
+                    left, right = find(i), find(j)
+                    if not bounded_chains:
+                        parents[left] = right
+                        continue
+                    if left != right:
+                        combined = members[left]+members[right]
+                        values = np.asarray([points[k] for k in combined])
+                        representative = values.mean(axis=0).round(6)
+                        if np.max(np.linalg.norm(values-representative, axis=1)) <= WELD_LIMIT_M:
+                            parents[left] = right
+                            members[right] = combined
+                            del members[left]
+                        else:
+                            rejected_chains += 1
         buckets[cell].append(i)
     groups = defaultdict(list)
     for i, point in enumerate(points):
@@ -138,6 +153,22 @@ def engine_vertices(surfaces):
         output.append({**surface, 'points': ring})
     names = {s['name'] for s in output}
     missing = [s for s in output if s['boundary'] == 'Surface' and s['other'] not in names]
+    if missing and bounded_chains:
+        sources = {s['name']: s for s in surfaces}
+        paired_collapse = set()
+        for surface in missing:
+            source = sources[surface['other']]
+            area, _ = measures(source['points'])
+            kept_area, kept_volume = measures(np.asarray(surface['points'])-origins[surface['zone']])
+            if area <= .0001 and kept_area <= .0001:
+                paired_collapse.add(surface['name'])
+                after[surface['zone']][0] -= kept_area
+                after[surface['zone']][1] -= kept_volume
+                collapsed.append({'name': surface['name'], 'zone': surface['zone'], 'original_area_m2': kept_area,
+                    'reverse_collapsed_name': surface['other'], 'method': 'Symmetric numerical collapse; both sides below existing 0.0001m2 bound, cumulative budgets still checked'})
+        output = [s for s in output if s['name'] not in paired_collapse]
+        names = {s['name'] for s in output}
+        missing = [s for s in output if s['boundary'] == 'Surface' and s['other'] not in names]
     if missing:
         detail = ', '.join(s['name']+' ↔ '+s['other'] for s in missing[:10])
         raise core.ValidationError('数值归并导致成对热面不一致，拒绝单侧删除：'+detail)
@@ -151,6 +182,7 @@ def engine_vertices(surfaces):
         changes.append({'zone': zone, 'area_before_m2': area, 'area_after_m2': new_area,
                         'volume_before_m3': volume, 'volume_after_m3': new_volume})
     return output, {'coordinate_precision_m': PRECISION_M, 'weld_limit_m': WELD_LIMIT_M,
+                    'rejected_overbudget_transitive_links': rejected_chains,
                     'max_displacement_m': maximum, 'collapsed_faces': collapsed, 'zones': changes,
                     'restored_source_convex_faces': repaired,
                     'relative_change_limit': 1e-6, 'absolute_area_change_limit_m2': .0001,
@@ -185,7 +217,7 @@ def engine_fragile_polygon(points):
     return polygon.convex_hull.area-polygon.area > 1e-12
 
 
-def conform(surfaces, *, return_report=False, preserve_window_walls=False, progress_callback=None):
+def conform(surfaces, *, return_report=False, preserve_window_walls=False, progress_callback=None, bounded_chains=False):
     source_surfaces = surfaces
     surfaces, pair_merges = merge_small_pairs(surfaces)
     faces = [{**s, 'points': [list(p) for p in s['points']]} for s in surfaces]
@@ -303,7 +335,7 @@ def conform(surfaces, *, return_report=False, preserve_window_walls=False, progr
                                'points': face_points(triangle, frame(other['points']))})
     result, after_pair_merges = merge_small_pairs(result)
     pair_merges.extend(after_pair_merges)
-    result, precision = engine_vertices(result)
+    result, precision = engine_vertices(result, bounded_chains=bounded_chains)
     # Merge numerical small triangles with a compatible neighbour only when the
     # result is a convex quad retaining every exterior vertex (no T-junction loss).
     compatible = defaultdict(list)

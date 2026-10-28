@@ -236,6 +236,8 @@ def geometry(model, *, return_report=False):
             for outline in [shape.exterior, *shape.interiors]:
                 coords = list(outline.coords)[:-1]
                 for a, b in zip(coords, coords[1:] + coords[:1]):
+                    if a == b:
+                        continue  # Exact duplicate ring vertex has zero area; no physical edge is removed.
                     raw.append({"zone": room["id"], "kind": "Wall", "room": room, "plane": frame([
                         [a[0], a[1], z], [b[0], b[1], z], [b[0], b[1], high], [a[0], a[1], high]])})
     groups = defaultdict(list)
@@ -391,8 +393,24 @@ def geometry(model, *, return_report=False):
 
 
 def thermal_geometry_model(model):
+    tolerance = (model.get('thermal') or {}).get('geometry_tolerance_m', 0)
+    adaptive = (model.get('thermal') or {}).get('geometry_tolerance_policy') == 'bounded_retry'
+    attempts = []
+    for value in ([tolerance/(2**i) for i in range(8)]+[0] if adaptive and tolerance else [tolerance]):
+        try:
+            derived, report = _normalize_geometry_once(model, value)
+            report.update(requested_tolerance_m=tolerance, attempts=attempts,
+                          policy='bounded_retry' if adaptive else 'strict')
+            return derived, report
+        except core.ValidationError as exc:
+            if not adaptive:
+                raise
+            attempts.append({'tolerance_m': value, 'status': 'rejected', 'reason': str(exc)})
+    raise core.ValidationError('有界几何归并未通过，原空间保留：'+str(attempts))
+
+
+def _normalize_geometry_once(model, tolerance):
     """Optional, recorded coordinate normalization for the engine's 1 cm vertex limit."""
-    tolerance = (model.get("thermal") or {}).get("geometry_tolerance_m", 0)
     if not tolerance:
         return model, {"tolerance_m": 0, "max_axis_displacement_m": 0, "rooms": []}
     normalized = copy.deepcopy(model)
@@ -430,13 +448,14 @@ def thermal_geometry_model(model):
     def snapped(value, axis):
         return maps[axis][round(value, 7)]
 
-    report = []
+    report, topology_repairs = [], []
     for original, room in zip(model["rooms"], normalized["rooms"]):
         if room.get('shell'):
             report.append({'room_id': room['id'], 'original_area_m2': floor_area(room),
                            'normalized_area_m2': floor_area(room), 'original_volume_m3': room_volume(room),
                            'normalized_volume_m3': room_volume(room), 'shell_policy': 'source planes preserved; no axis snapping'})
             continue
+        preserved = False
         for section in [room, *room.get("segments", [])]:
             low = snapped(section["elevation_m"], 2)
             high = snapped(section["elevation_m"]+section["height_m"], 2)
@@ -444,11 +463,47 @@ def thermal_geometry_model(model):
                 raise core.ValidationError("几何公差会消除空间分段，请减小公差或修正源模型")
             holes = [[(snapped(x, 0), snapped(y, 1)) for x, y in ring] for ring in section.get('holes', [])]
             shape = Polygon([(snapped(x, 0), snapped(y, 1)) for x, y in section["polygon"]], holes)
+            if not shape.is_valid and (model.get('thermal') or {}).get('geometry_tolerance_policy') == 'bounded_retry':
+                original_shape = Polygon(section['polygon'], section.get('holes', []))
+                repaired = shape.buffer(0)
+                if (repaired.geom_type == 'Polygon' and repaired.is_valid and
+                        len(repaired.interiors) == len(original_shape.interiors) and
+                        original_shape.symmetric_difference(repaired).area <= min(.01, original_shape.area*.001) and
+                        original_shape.boundary.hausdorff_distance(repaired.boundary) <= tolerance+1e-7):
+                    topology_repairs.append({'room_id': room['id'], 'method': 'Bounded zero-width spur cleanup after axis normalization',
+                        'symmetric_difference_m2': original_shape.symmetric_difference(repaired).area,
+                        'hausdorff_m': original_shape.boundary.hausdorff_distance(repaired.boundary),
+                        'source_holes': len(original_shape.interiors), 'derived_holes': len(repaired.interiors)})
+                    shape = repaired
             if not shape.is_valid or shape.area < EPS:
+                if (model.get('thermal') or {}).get('geometry_tolerance_policy') == 'bounded_retry':
+                    room.clear()
+                    room.update(copy.deepcopy(original))
+                    preserved = True
+                    break
                 raise core.ValidationError("几何公差产生无效空间，请减小公差")
             section.update(polygon=list(shape.simplify(1e-8).exterior.coords)[:-1],
                            holes=[list(r.coords)[:-1] for r in shape.interiors],
                            elevation_m=low, height_m=high-low)
+        if preserved:
+            report.append({'room_id': room['id'], 'original_area_m2': floor_area(original),
+                'normalized_area_m2': floor_area(room), 'original_volume_m3': room_volume(original),
+                'normalized_volume_m3': room_volume(room), 'normalization_policy': 'Original room preserved because the requested normalization broke topology'})
+            continue
+        if room.get('segments') and (model.get('thermal') or {}).get('geometry_tolerance_policy') == 'bounded_retry':
+            level = min(part['elevation_m'] for part in room['segments'])
+            bottom = unary_union([Polygon(part['polygon'], part.get('holes', [])) for part in room['segments']
+                                  if abs(part['elevation_m']-level) < 1e-7])
+            if bottom.geom_type != 'Polygon' or not bottom.is_valid:
+                raise core.ValidationError('有界归并后的底面不连通，须收紧公差：'+room['id'])
+            room['polygon'] = list(bottom.exterior.coords)[:-1]
+            room['holes'] = [list(ring.coords)[:-1] for ring in bottom.interiors]
+            room['elevation_m'] = level
+            room['height_m'] = max(part['elevation_m']+part['height_m'] for part in room['segments'])-level
+        if (model.get('thermal') or {}).get('geometry_tolerance_policy') == 'bounded_retry':
+            area, volume = floor_area(original), room_volume(original)
+            if abs(floor_area(room)-area) > max(.01, area*.005) or abs(room_volume(room)-volume) > max(.01, volume*.005):
+                raise core.ValidationError('有界归并超过单空间0.5%面积或体积预算，须收紧公差：'+room['id'])
         hints = []
         for hint in room.get("boundary_hints", []):
             hint["points"] = [[snapped(value, axis) for axis, value in enumerate(p)] for p in hint["points"]]
@@ -472,6 +527,7 @@ def thermal_geometry_model(model):
     except ValueError as exc:
         raise core.ValidationError("几何公差后的模型未通过校验，请减小公差或修正源模型：" + str(exc)[:500]) from exc
     return normalized, {"tolerance_m": tolerance, "max_axis_displacement_m": maximum, "rooms": report,
+                        'bounded_topology_repairs': topology_repairs,
                         "floor_area_basis": "Original reviewed bottom footprints; not the normalized simulation envelope."}
 
 

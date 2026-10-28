@@ -187,6 +187,11 @@ class EngineeringReview:
                 if not thermal.get('operation'):
                     finding('operation:daily', 'ASSUMPTION', '负荷沿用每日起止时段', '用有来源的运行档案复核工作日/周末、空置温度及新风；未恢复现场实际运行。')
             for source in model.get('sources', []):
+                damage = source.get('drawing_damage_analysis')
+                if damage:
+                    finding('drawing-damage:'+source['file_id'], 'ASSUMPTION', source['name']+'：老旧图纸增强与断线补接候选',
+                            '逐项对照原图核对校正、补接及未恢复区域；不能以候选房间数量证明图纸完整。',
+                            locator=source['file_id'], basis=damage)
                 coverage_by_floor = {}
                 for row in (source.get('reconstruction_coverage') or {}).get('storeys', []):
                     if row['status'] != 'candidate' or row.get('excluded_subminimum_area_m2', 0) > .01:
@@ -203,6 +208,11 @@ class EngineeringReview:
                     finding('equipment:'+item['zone_id'], 'ASSUMPTION', item['zone_id']+'：设备使用原生参考性能曲线',
                             '补厂家变工况曲线与使用范围；铭牌及参考曲线不能证明已安装实际性能。',
                             rooms=[r for r in model['rooms'] if r['id'] == item['zone_id']], locator=item['source_locator'])
+            central = thermal.get('central_system')
+            if central:
+                finding('central-system:reference', 'ASSUMPTION', '中央系统采用设计日选型与原生参考性能曲线',
+                        '复核冬夏设计日、冷热源容量/COP、泵压头和实际连接；选型不等于现场性能。',
+                        locator=central.get('source_file_id'), basis=central)
         valid_bill = any(e['type'] == 'bill' and e['review_state'] == 'confirmed' and e['status'] not in {'MISSING', 'AI_INFERRED', 'ASSUMED'} and
                          (not e.get('source_file') or next((s['valid'] for s in sources if s['file_id'] == e['source_file']), False)) for e in evidence)
         finding('calibration', 'EVIDENCE_GAP', '尚未证明模型完成实际账单校准',

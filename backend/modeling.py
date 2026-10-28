@@ -34,6 +34,11 @@ class Modeling:
 
     def save(self, project_id, body, actor, source=None, workflow_id=None):
         with self.lock:
+            central = body.thermal.central_system if body.thermal else None
+            if central and central.source_file_id:
+                record, _ = self.domain.file_record(project_id, central.source_file_id)
+                if record['hash'] != central.source_file_hash:
+                    raise core.ValidationError('中央系统原件哈希已变化，请重新核对设计与设备输入')
             for equipment in body.equipment:
                 record, _ = self.domain.file_record(project_id, equipment.source_file_id)
                 if record['hash'] != equipment.source_file_hash:
@@ -50,6 +55,10 @@ class Modeling:
             sources = source if source is not None else (old or {}).get("sources", [])
             sources = list(sources)
             known = {s['file_id'] for s in sources}
+            if central and central.source_file_id and central.source_file_id not in known:
+                record, _ = self.domain.file_record(project_id, central.source_file_id)
+                sources.append({k: record[k] for k in ('file_id', 'hash', 'name')})
+                known.add(central.source_file_id)
             for equipment in body.equipment:
                 if equipment.source_file_id not in known:
                     record, _ = self.domain.file_record(project_id, equipment.source_file_id)
@@ -91,8 +100,13 @@ class Modeling:
             current = self.get(state["project_id"])
             sources = {s["file_id"]: s for s in (current or {}).get("sources", [])}
             source = state["candidate"]["source"]
+            if state['candidate'].get('metadata', {}).get('coordinate_origin_m') is not None:
+                source = {**source, 'coordinate_origin_m': state['candidate']['metadata']['coordinate_origin_m']}
             if state['candidate'].get('diagnostics', {}).get('method') == 'IFC_ELEMENT_SECTION':
                 source = {**source, 'reconstruction_coverage': state['candidate']['diagnostics']}
+            damage = state['candidate'].get('metadata', {}).get('damage_analysis')
+            if damage:
+                source = {**source, 'drawing_damage_analysis': damage}
             sources[source["file_id"]] = source
             result = self.save(state["project_id"], ModelDraft.model_validate(state["reviewed_model"]), actor,
                                list(sources.values()), state["workflow_id"])
@@ -200,6 +214,7 @@ class Modeling:
                     "actual_hvac_equipment": bool(model.get('equipment')),
                     'hvac_scope': model_export.scope(model),
                     "nameplate_equipment_count": len(model.get('equipment', [])),
+                    'central_system': model_export.central_hvac.topology(model),
                     "source_window_geometry": (model.get('thermal') or {}).get('window_geometry') == 'source',
                     'column_mass_reduction': numerical.get('column_mass_reduction', []),
                     "inferred_rooms": sum(bool(r.get("drawing") or r.get("reconstruction") or r.get('geometry_inferred')) for r in model["rooms"]),
@@ -241,6 +256,7 @@ class Modeling:
                        "independent_audit": check["geometry_review"]["independent_audit"],
                        "numerical_precision": check["geometry_review"]["numerical_precision"],
                        "scope": model_export.scope(model), 'scope_exclusions': model.get('scope_exclusions', {}),
+                       'central_system': model_export.central_hvac.topology(model),
                        'equipment': [{'zone_id': e['zone_id'], 'manufacturer': e['manufacturer'], 'model': e['model'],
                                       'source_file_id': e['source_file_id'], 'source_file_hash': e['source_file_hash'],
                                       'curve_basis': e['curve_basis']} for e in model.get('equipment', [])],
@@ -251,11 +267,11 @@ class Modeling:
                 return {"evidence": existing[0], "binding": binding, "reused": True}
             file = self.domain.add_file(project_id, f"model-v{model['revision']}-{body.scheme_id}.idf", text.encode())
             evidence = self.domain.add_evidence(project_id, EvidenceCreate(
-                type="idf", name=f"空间模型 v{model['revision']} · {'PTHP耗电' if model_export.scope(model) == 'packaged_heat_pump_electricity' else '理想冷热需求'} · {body.scheme_id}",
+                type="idf", name=f"空间模型 v{model['revision']} · {model_export.scope_label(model)} · {body.scheme_id}",
                 source_file=file["file_id"], scheme_id=body.scheme_id, source_locator="VRA Building Model "+model["model_id"],
                 value=binding, authority=body.responsible_person, permission="项目内部工程分析",
                 acquisition_method="确定性空间实体与热边界编译器", responsible_person=body.responsible_person,
-                status="ASSUMED" if model["thermal"]["basis"] == "assumed_scenario" else "DOCUMENTED",
+                status="ASSUMED" if model["thermal"]["basis"] == "assumed_scenario" or model['thermal'].get('central_system') else "DOCUMENTED",
                 uncertainty="；".join(model_export.LIMITATIONS)))
             evidence = self.domain.review(project_id, evidence["evidence_id"], EvidenceReview(
                 expected_revision=evidence["revision"], review_state="confirmed",

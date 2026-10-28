@@ -10,6 +10,7 @@
 |[工程化路线](PRODUCT_READINESS.md)|目标用户、现有差距、试点与交付门槛|
 |[建模工作区](BUILDING_WORKBENCH.md)|导入、空间复核、发布和 API/MCP；历史范围见文中日期|
 |[复杂建筑输入](COMPLEX_MODELING.md)|斜面、墙板重建、建筑/楼层、源窗、绝对设备参数及显式近似|
+|[老图、室内与中央系统](INCOMPLETE_DRAWINGS_AND_SYSTEMS.md)|褪色/倾斜/断线分析、原图补接修订、源工程/家具网格、四管制中央系统|
 |[工程复核与交接](ENGINEERING_REVIEW.md)|按源标识核对缺口与假设、参数变化、版本处置和BCF/输入协议交接|
 |[竞品对标与取舍](competitive/2026-10-28/competitors-report.md)|国内与国际当前产品能力、价格/验证缺口及差异化方向|
 |[图纸与热模型](DRAWING_THERMAL_ACCEPTANCE.md)|图页标定、候选识别、设备情景和适用限制|
@@ -22,6 +23,7 @@
 
 |证据|已测范围|阅读重点|
 |---|---|---|
+|[残图与中央系统验收](benchmarks/2026-10-28-drawing-systems/README.md)|12图像控制、1936真实再版图、FZK/KIT/独立MEP、原生中央系统|作者控制非留出集；真实老图整平面和复杂高楼未通过；设备运行非现场校准|
 |[工程交接验收](benchmarks/2026-10-28-engineering-review/README.md)|FZK/真实高楼台账、版本失效、独立BCF读取与XSD、浏览器|不解除Gate，不把登记材料或账单当作实证；未作商业软件同题运行|
 |[复杂建筑复测](HIGHRISE_MODELING_ACCEPTANCE.md)|16类控制形态、FZK/KIT整模、299高楼候选、设备/恢复|控制几何全通过；2公开参考整模全年成功；完整高楼仍有阻断|
 |[前轮多样本与高楼](MULTI_PROJECT_ACCEPTANCE.md)|6份新增公开IFC、1控制场景、台北101格式准入|保留2026-10-26整模失败与3份局部成功，最新覆盖见上行|

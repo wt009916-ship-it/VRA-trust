@@ -3,17 +3,18 @@ from functools import lru_cache
 import copy
 import json
 
-from . import core, model_geometry, honeybee_bridge, thermal_mesh, heat_pump, solid_geometry, equipment_inputs, source_windows, column_mass
+from . import core, model_geometry, honeybee_bridge, thermal_mesh, heat_pump, solid_geometry, equipment_inputs, source_windows, column_mass, central_hvac, ratio_glazing
 
-COMPILER_VERSION = "reviewed-polyhedral-source-window-pthp-6"
+COMPILER_VERSION = "reviewed-drawing-central-water-7"
 LIMITATIONS = [
     "空间保留水平分段或闭合多面体斜面；构件重建为待复核的推导候选，不表示完整施工 BIM。",
     "IFC 未配对内部及未知边界默认拒绝；仅显式 assumed_scenario 可按绝热计算，并保留逐面来源。该情景不等于完整建筑热模型。",
-    "理想负荷模式的 DistrictHeating/DistrictCooling 是冷热需求；PTHP 模式为逐房间定容单速空气源热泵、风机、电辅热的原生模拟，不含水系统和管网。两种口径不能直接排名。",
+    "理想负荷模式的 DistrictHeating/DistrictCooling 是冷热需求；PTHP 模式为逐房间定容单速空气源热泵、风机、电辅热；中央水系统另计冷热源、泵和末端实际模拟用能。不同系统口径不能直接排名。",
     "PTHP 可按空间导入有来源的绝对铭牌及10项容量/EIR/流量/部分负荷曲线；缺曲线时须显式采用原生参考曲线，不能称为厂家变工况实测。除霜仍为官方模板假设；不含设备热回收、水系统或VRF自动编译。",
     "有分层构造时按材料厚度、导热、密度与比热建模；未提供构造层时按 U 值生成无热容层。未建相变潜热或温变物性。开窗可选择显式窗墙比或IFC源窗/窗洞投影；投影不等于净玻璃，U/SHGC仍须依据。",
     "可显式填写工作日/周末 24 小时使用率、非使用温度、新风和显潜热回收；无运行档案时保持旧每日时段。未配置法定假日日历和湿度控制；土温全年固定。",
     "本结果用于已声明参数的方案情景，未校准、未签署，不等同于建筑节能合规验收。",
+    '中央四管制风机盘管可连接冷水机组、锅炉、冷热水泵及可选水冷塔；末端及水流量按显式冬夏设计日原生选型。参考性能曲线、控制及设计结果不是已安装实测；不自动恢复管长、压损平衡、热损或高楼水力分区。',
 ]
 
 
@@ -23,6 +24,8 @@ def compiler_hash():
                            'solid_geometry': core.sha(solid_geometry.__file__), 'equipment_inputs': core.sha(equipment_inputs.__file__),
                            'source_windows': core.sha(source_windows.__file__),
                            'column_mass': core.sha(column_mass.__file__),
+                           'central_hvac': core.sha(central_hvac.__file__),
+                           'ratio_glazing': core.sha(ratio_glazing.__file__),
                            "libraries": honeybee_bridge.library_versions()})
 
 
@@ -40,7 +43,8 @@ def _geometry_cached(model_json, compiler):
     if (model.get('thermal') or {}).get('window_geometry') == 'source':
         surfaces = source_windows.partition_parents(model, surfaces)
     output, report = thermal_mesh.conform(surfaces, return_report=True,
-        preserve_window_walls=(model.get('thermal') or {}).get('window_geometry') == 'source')
+        preserve_window_walls=(model.get('thermal') or {}).get('window_geometry') == 'source',
+        bounded_chains=(model.get('thermal') or {}).get('geometry_tolerance_policy') == 'bounded_retry')
     report.update(overlay)
     report['column_mass_reduction'] = column_report
     return output, report
@@ -74,7 +78,10 @@ def idf(model):
         objects.append(kind + ",\n  " + ",\n  ".join(str(v) for v in fields) + ";\n")
 
     obj("Version", "9.0")
-    obj("SimulationControl", "No", "No", "No", "No", "Yes")
+    central = t.get('central_system')
+    obj("SimulationControl", *(('Yes', 'Yes', 'Yes') if central else ('No', 'No', 'No')), "No", "Yes")
+    if central:
+        objects.extend(central_hvac.plant(t))
     obj("Building", "VRA", t["north_deg"], "Suburbs", .04, .4, "FullExterior", 25, 6)
     obj("Timestep", 6)
     obj("RunPeriod", "Annual", 1, 1, "", 12, 31, "", "Monday", "Yes", "Yes", "No", "Yes", "Yes")
@@ -146,6 +153,9 @@ def idf(model):
         obj("ElectricEquipment", name+"Equip", name, "Occupied", "Watts/Area", "", t["equipment_w_m2"], "", 0, .5, 0)
         obj("ThermostatSetpoint:DualSetpoint", name+"Set", "Heat", "Cool")
         obj("ZoneControl:Thermostat", name+"Thermostat", name, "Control4", "ThermostatSetpoint:DualSetpoint", name+"Set")
+        if central:
+            objects.append(central_hvac.terminal(name, t))
+            continue
         if zone_thermal.get("heat_pump"):
             objects.append(heat_pump.template(name, area, zone_thermal))
             equipment = next((e for e in model.get('equipment', []) if e['zone_id'] == name), None)
@@ -185,7 +195,10 @@ def idf(model):
     obj("Output:Table:SummaryReports", "AllSummary")
     obj("OutputControl:Table:Style", "HTML", "JtoKWH")
     obj("Output:Variable", "*", "Zone Mean Air Temperature", "Hourly")
-    if t.get("heat_pump") or model.get('equipment'):
+    if central:
+        for variable in central_hvac.outputs(t):
+            obj('Output:Variable', '*', variable, 'Hourly')
+    elif t.get("heat_pump") or model.get('equipment'):
         for variable in ("Heating Coil Electric Energy", "Cooling Coil Electric Energy", "Fan Electric Energy"):
             obj("Output:Variable", "*", variable, "Hourly")
     else:
@@ -195,7 +208,14 @@ def idf(model):
 
 
 def scope(model):
+    if (model.get('thermal') or {}).get('central_system'):
+        return 'central_chiller_boiler_energy'
     return "packaged_heat_pump_electricity" if (model.get("thermal") or {}).get("heat_pump") or model.get('equipment') else "ideal_thermal_loads"
+
+
+def scope_label(model):
+    return {'central_chiller_boiler_energy': '中央冷热源、泵与末端用能',
+            'packaged_heat_pump_electricity': 'PTHP耗电', 'ideal_thermal_loads': '理想冷热需求'}[scope(model)]
 
 
 def ifc(model):

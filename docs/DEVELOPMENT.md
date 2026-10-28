@@ -29,6 +29,9 @@ flowchart LR
 
 - `frontend/src` 为活动前端；`backend/api.py` 管理同源 API、身份与项目边界。
 - `modeling.py`、`model_import.py`、`model_export.py` 负责持久候选复核与确定性转换。
+- `drawing_damage.py`处理有界图像归一/纠斜/补接并返回原像素诊断，`floorplan.py`缓存键绑定原件、规则、选项和OCR模型；手工分区仍为假设。
+- `components.py`提取IFC源网格/属性，独立于热分区，预算超限拒绝；元数据使用现有SQLite版本表，几何作为受权限与哈希保护的项目文件。
+- `central_hvac.py`编译四管制风机盘管和冷热源设计日；原生ExpandObjects展开。`ratio_glazing.py`只对显式假设执行同空间同平面开窗预算，不改源窗。
 - `core.py`、`domain.py` 负责引擎、原生输出核验、版本与任务。
 - `materials.py`、`decision.py` 负责材料证据与限定候选比较。
 - `engineering_review.py`、`review_api.py` 将活动缺口、模型语义变化与处置绑定资料快照，导出JSON/HTML和问题文字BCF；复核记录采用现有SQLite版本表，未改动物理计算或计算准入。

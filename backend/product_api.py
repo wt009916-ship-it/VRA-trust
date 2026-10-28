@@ -23,6 +23,21 @@ class EquipmentImport(Contract):
 def register_product(app, domain, auth):
     modeling = Modeling(domain, app.state.gateway)
     domain.modeling = app.state.modeling = modeling
+    from .components import register_components
+    register_components(app, domain)
+
+    @app.post('/api/projects/{project_id}/model/central-import')
+    def central_import(project_id: str, body: EquipmentImport):
+        from .central_hvac import CentralSystem
+        record, path = domain.file_record(project_id, body.file_id)
+        if path.suffix.lower() != '.json' or record['size'] > 1000000:
+            raise core.ValidationError('中央系统参数导入须为不超过1MB的JSON设计记录')
+        try:
+            raw = core.read_json(path)
+            parsed = CentralSystem.model_validate({**raw, 'source_file_id': body.file_id, 'source_file_hash': record['hash']})
+        except (ValueError, TypeError) as exc:
+            raise core.ValidationError('中央系统设计记录字段不完整或不合格：' + str(exc)[:1000]) from exc
+        return {'central_system': parsed.model_dump(), 'source': {k: record[k] for k in ('file_id', 'hash', 'name')}, 'status': 'REQUIRES_ENGINEER_REVIEW', 'warning': '只读取文件内的设计条件；参考曲线和原生自动选型不代表厂家或现场实测'}
 
     @app.get('/api/projects/{project_id}/model/equipment-template.csv')
     def equipment_template(project_id: str):

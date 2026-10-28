@@ -20,6 +20,7 @@ import './professional-ui.css';
 import { robustnessWorkspace } from './robustness-ui.js';
 import { decisionWorkspace } from './decision-ui.js';
 import { engineeringReviewWorkspace } from './review-ui.js';
+import {componentWorkspace} from './component-ui.js';
 import './review.css';
 import { runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
@@ -29,7 +30,7 @@ import { appShell, projectView, icon, projectMetricsMarkup } from './layout.js';
 const root = document.querySelector('#app');
 const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [], user: null, view: 'readiness', syncError: false };
 const poller = createPoller(refreshRuns, { onError: markDisconnected });
-let selection = 0, disposeWorkspace = () => {};
+let selection = 0, disposeWorkspace = () => {}, pendingProjectNavigation = null;
 function writeRoute(view='projects') {
   const hash=state.project?'#project/'+state.project.project_id+'/'+view:view==='tasks'?'#tasks':'#projects';
   if(location.hash!==hash)history.pushState(null,'',hash);
@@ -139,25 +140,30 @@ async function selectProject(id, view = null) {
   if(!await confirmNavigation()){writeRoute(state.view);return;}
   poller.stop();
   const token = ++selection;
+  const navigation = {id, view};pendingProjectNavigation=navigation;
   let snapshot;
   try {
     snapshot = await Promise.all([request('/projects/' + id), request('/projects/' + id + '/evidence'), request('/projects/' + id + '/runs'), request('/projects/' + id + '/gate')]);
   } catch (error) {
+    if(pendingProjectNavigation===navigation)pendingProjectNavigation=null;
     if (token === selection) { markDisconnected(error); schedulePoll(); }
     throw error;
   }
   const [p, ev, runs, gate] = snapshot;
   if (token !== selection) return;
   const sameProject = state.project?.project_id === id;
-  Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [], syncError: false, view: view || (sameProject ? state.view : 'readiness') });
+  Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [], syncError: false, view: navigation.view || (sameProject ? state.view : 'readiness') });
+  pendingProjectNavigation=null;
   renderProject();
   schedulePoll();
 }
 function switchView(view) {
+  if(pendingProjectNavigation){pendingProjectNavigation.view=view;return;}
   state.view = view;writeRoute(view);
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
+  if(host&&view==='components')action(()=>componentWorkspace(state,host,action,notice));
   if(host&&view==='review')action(()=>engineeringReviewWorkspace(state,host,action,modal,id=>{state.reviewRoomId=id;switchView('spatial');document.querySelector('#spatial')?.reviewFocus?.(id);}));
   if(host && ['spatial','robustness','decision','weather'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='weather'?weatherWorkspace(state,host,action,notice,modal,syncModelViews):view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,syncModelViews):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
 }

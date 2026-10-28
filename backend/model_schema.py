@@ -9,6 +9,7 @@ from shapely.ops import unary_union
 from .schema import Contract
 from .model_geometry import parts, simple_pieces
 from .equipment_inputs import ZoneEquipment
+from .central_hvac import CentralSystem
 
 
 class Segment(Contract):
@@ -62,6 +63,7 @@ class DrawingTrace(Contract):
     label: str = Field(max_length=500)
     annotated_area_m2: StrictFloat | None = Field(default=None, gt=0)
     area_error_percent: StrictFloat | None = None
+    damage_analysis_hash: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
 
 
 class QuantitySource(Contract):
@@ -252,17 +254,27 @@ class Thermal(Contract):
     constructions: dict[Literal["wall", "roof", "floor"], list[MaterialLayer]] = Field(default_factory=dict)
     operation: Operation | None = None
     heat_pump: HeatPump | None = None
+    central_system: CentralSystem | None = None
     adjacency_gap_m: StrictFloat = Field(default=0, ge=0, le=.6)
     ifc_unpaired_policy: Literal["reject", "adiabatic_scenario"] = "reject"
     geometry_tolerance_m: StrictFloat = Field(default=0, ge=0, le=.05)
+    geometry_tolerance_policy: Literal['strict', 'bounded_retry'] = 'strict'
     reconstructed_exterior_policy: Literal['reject', 'outline_scenario'] = 'reject'
     window_geometry: Literal['ratio', 'source'] = 'ratio'
+    ratio_glazing_policy: Literal['per_fragment', 'coplanar_budget'] = 'per_fragment'
     source_window_exterior_policy: Literal['reject', 'outdoor_scenario'] = 'reject'
     column_mass_policy: Literal['detailed', 'lumped_scenario'] = 'detailed'
     column_mass_material: ColumnMassMaterial | None = None
 
     @model_validator(mode="after")
     def ordered(self):
+        if self.ratio_glazing_policy == 'coplanar_budget' and (self.basis != 'assumed_scenario' or self.window_geometry != 'ratio'):
+            raise ValueError('外立面开窗预算仅用于明确窗墙比假设情景，不得重新分配源窗')
+        if self.central_system:
+            if self.heat_pump or not self.operation:
+                raise ValueError('中央水系统须有逐时运行档案，不能同时启用独立热泵')
+            if self.operation.sensible_recovery or self.operation.latent_recovery:
+                raise ValueError('当前四管制风机盘管不含新风热回收器，不能静默忽略回收效率')
         if self.column_mass_policy != 'detailed' and (self.basis != 'assumed_scenario' or self.column_mass_material is None):
             raise ValueError('集总柱体为明确的热模型简化情景，须提供柱体材料导热/密度/比热及来源')
         if self.source_window_exterior_policy != 'reject' and self.basis != 'assumed_scenario':
@@ -324,7 +336,7 @@ class ModelDraft(Contract):
             actual = {e.zone_id for e in self.equipment}
             if actual != expected or len(actual) != len(self.equipment):
                 raise ValueError('设备清单须与每个空调空间一一对应；缺项/重复/未知空间不自动分摊')
-            if not self.thermal or not self.thermal.operation or self.thermal.heat_pump:
+            if not self.thermal or not self.thermal.operation or self.thermal.heat_pump or self.thermal.central_system:
                 raise ValueError('逐空间设备须填写运行档案，且不能同时启用统一按面积热泵')
             if self.thermal.operation.sensible_recovery or self.thermal.operation.latent_recovery:
                 raise ValueError('当前PTHP清单不含新风热回收器，不能忽略非零回收效率')
@@ -352,7 +364,7 @@ class ModelDraft(Contract):
 
 class ImportOptions(Contract):
     file_id: str
-    mode: Literal["geometry", "vision", "local_raster"] = "geometry"
+    mode: Literal["geometry", "vision", "local_raster", "damaged_raster"] = "geometry"
     scale_to_m: StrictFloat | None = Field(default=None, gt=0, le=100)
     height_m: StrictFloat = Field(default=3, gt=.5, le=30)
     elevation_m: StrictFloat = Field(default=0, ge=-100, le=1500)
@@ -369,10 +381,20 @@ class ImportOptions(Contract):
     scale_basis: str = Field(default="", max_length=500)
     closure_m: StrictFloat = Field(default=0, ge=0, le=1.5)
     min_room_area_m2: StrictFloat = Field(default=1, ge=.5, le=20)
+    damage_gap_m: StrictFloat = Field(default=0, ge=0, le=.5)
+    deskew: StrictBool = True
+    ocr_labels: StrictBool = True
+    manual_bridges_px: list[tuple[StrictInt, StrictInt, StrictInt, StrictInt]] = Field(default_factory=list, max_length=100)
+    manual_bridge_basis: str = Field(default='', max_length=1000)
 
     @model_validator(mode="after")
     def raster_options(self):
-        if self.mode == "local_raster" and (self.scale_to_m is None or len(self.scale_basis.strip()) < 10):
+        if self.manual_bridges_px:
+            if self.mode != 'damaged_raster' or len(self.manual_bridge_basis.strip()) < 10:
+                raise ValueError('人工补接仅用于老旧图纸增强模式，须填写至少10字符的原图/现场依据')
+            if any(not 0 <= v <= 2400 for row in self.manual_bridges_px for v in row):
+                raise ValueError('人工补接坐标须位于2400像素内的原图预览')
+        if self.mode in {"local_raster", "damaged_raster"} and (self.scale_to_m is None or len(self.scale_basis.strip()) < 10):
             raise ValueError("本地图纸建模须标定比例并填写至少 10 字的尺寸来源；不会自动猜测米数")
         if self.crop_px:
             x0, y0, x1, y1 = self.crop_px
