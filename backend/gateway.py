@@ -83,7 +83,7 @@ class Gateway:
                 'local_qwen_no_thinking': settings.get('local_qwen_no_thinking', True),
                 'key_configured': bool(settings.get('sealed_key') or self.environment_key(settings)),
                 'endpoint': endpoint, 'key_storage': 'Windows DPAPI' if os.name == 'nt' else 'environment',
-                'data_scope': '聊天发送提问、项目摘要与工具结果；仅在显式勾选视觉识别时发送选定图页。'}
+                'data_scope': '聊天发送提问、项目摘要与工具结果；仅在本次任务勾选允许AI读取资料摘录后发送有页码的有限文字；视觉识别另需明确勾选发送选定图页。'}
 
     def environment_key(self, settings):
         return os.environ.get('VRA_API_KEY') or (os.environ.get('DEEPSEEK_API_KEY')
@@ -121,7 +121,7 @@ class Gateway:
         model = settings['vision_model'] if vision else settings['model']
         payload = {'model': model, 'messages': messages,
                    'max_tokens': 6000 if vision else settings.get('max_output_tokens', 1000)}
-        if endpoint == self.endpoint:
+        if endpoint == self.endpoint or (urlsplit(endpoint).hostname=='tokenhub.tencentmaas.com' and 'deepseek' in model.lower()):
             payload['thinking'] = {'type': 'disabled'}
         if (not vision and settings.get('local_qwen_no_thinking', True) and 'qwen' in model.lower()
                 and urlsplit(endpoint).hostname in {'localhost', '127.0.0.1', '::1'}):
@@ -158,13 +158,27 @@ class Gateway:
                                 raise ProviderError('TIME_BUDGET', attempts)
                         data = json.loads(raw)
                 message = data['choices'][0]['message']
-                if not isinstance(message, dict):
-                    raise ValueError('Message must be an object')
+                if not isinstance(message, dict) or message.get('role','assistant')!='assistant':
+                    raise ValueError('Message must be an assistant object')
+                calls=message.get('tool_calls') or []
+                if not isinstance(calls,list) or len(calls)>4:
+                    raise ValueError('Tool calls must be a bounded list')
+                ids=[]
+                for call in calls:
+                    if not isinstance(call,dict) or not isinstance(call.get('id'),str) or not 1<=len(call['id'])<=200:
+                        raise ValueError('Invalid tool call ID')
+                    fn=call.get('function')
+                    if not isinstance(fn,dict) or not isinstance(fn.get('name'),str) or not isinstance(fn.get('arguments'),str):
+                        raise ValueError('Invalid function call')
+                    ids.append(call['id'])
+                if len(set(ids))!=len(ids):raise ValueError('Duplicate tool call IDs')
+                usage=data.get('usage') if isinstance(data.get('usage'),dict) else {}
                 attempts.append({'attempt': attempt+1, 'status': 'succeeded',
                                  'duration_ms': round((time.monotonic()-start)*1000)})
                 # Never retain a provider's hidden reasoning_content.
                 answer = {k: message[k] for k in ('role', 'content', 'tool_calls') if k in message}
                 answer['_request'] = {'attempts': attempts, 'finish_reason': data['choices'][0].get('finish_reason'),
+                                      'usage':{k:v for k,v in usage.items() if k in {'prompt_tokens','completion_tokens','total_tokens','prompt_cache_hit_tokens','prompt_cache_miss_tokens'} and isinstance(v,int) and not isinstance(v,bool) and v>=0},
                                       'timeout_s': budget, 'local_no_thinking': 'chat_template_kwargs' in payload}
                 return answer
             except ProviderError as exc:
@@ -188,4 +202,5 @@ class Gateway:
 class ProviderError(core.ValidationError):
     def __init__(self, code, attempts):
         self.code, self.attempts = code, attempts
-        super().__init__('Provider '+code.replace('HTTP_', 'HTTP ')+'；AI说明未完成，已核验工具结果仍保留')
+        action={'HTTP_401':'；请在后台重新核对开放平台API Key和接口地址','HTTP_402':'；请在服务商平台核对余额','HTTP_429':'；服务商限流，请稍后重试'}.get(code,'')
+        super().__init__('Provider '+code.replace('HTTP_', 'HTTP ')+action+'；AI说明未完成，已核验工具结果仍保留')

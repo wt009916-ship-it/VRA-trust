@@ -194,7 +194,7 @@ function renderProject() {
   document.querySelector('#task-import').onclick = () => openIntake(state.project);
   document.querySelector('#composer-upload').onclick = () => openIntake(state.project);
   document.querySelector('#task-next').onclick = () => switchView(state.gate.can_simulate ? 'simulation' : 'evidence');
-  document.querySelector('#task-command').onsubmit = e => {e.preventDefault();const input=document.querySelector('#command');if(!input.value.trim())return;const target=document.querySelector('#task-response');action(()=>runAgent(state,input.value.trim(),target,document.querySelector('#agent-mode').value,document.querySelector('#allow-compute').checked,null,document.querySelector('#agent-task').value,switchView),e.submitter);};
+  document.querySelector('#task-command').onsubmit = e => {e.preventDefault();const input=document.querySelector('#command');if(!input.value.trim())return;const target=document.querySelector('#task-response');action(()=>runAgent(state,input.value.trim(),target,document.querySelector('#agent-mode').value,document.querySelector('#allow-compute').checked,null,document.querySelector('#agent-task').value,switchView,null,document.querySelector('#allow-document-text').checked),e.submitter);};
   const history=document.createElement('div');history.className='actions agent-history';
   history.innerHTML='<label>持久任务记录<select aria-label="历史助手任务"><option value="">选择已保存任务</option></select></label><button>刷新记录</button>';
   document.querySelector('#task-response').before(history);
