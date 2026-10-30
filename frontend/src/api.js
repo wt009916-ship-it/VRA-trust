@@ -6,7 +6,17 @@ export function checkUpload(file) {
   if (file.size > maxUploadBytes) throw new Error(`文件 ${(file.size / 1024 / 1024).toFixed(1)} MB，超过服务端 ${uploadLimitMB()} MB 上限；请按楼层或图页拆分。`);
 }
 export function setCsrfToken(value) { csrfToken = value || ''; }
-export async function request(path, options = {}) {
+const writes = new Map();
+export function request(path, options = {}) {
+  const method=(options.method||'GET').toUpperCase();
+  if(['GET','HEAD'].includes(method)||typeof options.body!=='string')return performRequest(path,options);
+  const key=method+' '+path+' '+options.body;
+  if(writes.has(key))return writes.get(key);
+  if(writes.size>=32)return Promise.reject(new Error('提交任务过多，请等待当前请求结束'));
+  const pending=performRequest(path,options).finally(()=>writes.delete(key));
+  writes.set(key,pending);return pending;
+}
+async function performRequest(path, options = {}) {
   const slow=path.endsWith('/imports')||path.endsWith('/components')||path.includes('/model/validate')||path.includes('/runtime-backup');
   const {timeoutMs=slow?180000:path.endsWith('/provider/test')?185000:60000,signal,...fetchOptions}=options;
   const controller=new AbortController(),abort=()=>controller.abort();

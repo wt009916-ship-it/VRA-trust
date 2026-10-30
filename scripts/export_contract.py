@@ -1,4 +1,6 @@
 """Regenerate reviewed OpenAPI; CI checks for drift."""
+import os
+os.environ["VRA_PUBLIC_BUILD"] = "1"
 import json
 import sys
 from pathlib import Path

@@ -170,6 +170,10 @@ def register_identity(app, auth, session_response):
     def reset(body: EmailReset, request: Request):
         auth.throttle('recover-token:' + digest(body.token.get_secret_value())[:20], request.client.host if request.client else 'unknown')
         return identity.mail.reset(body.token.get_secret_value(), body.new_password.get_secret_value(), factor(body))
+    from .private_support import enabled
+    if enabled():
+        from .private_console import register_identity_admin
+        register_identity_admin(app, identity)
 
     def browser_cookie(response, value):
         response.set_cookie(identity.sso.cookie, value, max_age=300, httponly=True, secure=secure, samesite='lax', path='/api/auth/sso')

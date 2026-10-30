@@ -77,6 +77,8 @@ def create_app(data_dir=None, *, start_worker=True):
     public_api = {'/api/health', '/api/auth/status', '/api/auth/login', '/api/auth/register', '/api/auth/mfa/verify', '/api/auth/mfa/pending', '/api/auth/email/verify', '/api/auth/recovery/request', '/api/auth/recovery/inspect', '/api/auth/recovery/complete', '/api/auth/sso/start', '/api/auth/sso/callback'}
     maximum = int(os.environ.get('VRA_MAX_UPLOAD_MB', '64')) * 1024 * 1024
     app.add_middleware(BodyLimit, limit=maximum + 65536)
+    from .traffic import Admission
+    app.add_middleware(Admission)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=['localhost', '127.0.0.1', '[::1]', 'testserver'])
 
     @app.middleware('http')
@@ -346,6 +348,12 @@ def create_app(data_dir=None, *, start_worker=True):
     register_measurements(app, domain)
     from .plant_calibration import register_plant_calibrations
     register_plant_calibrations(app, domain)
+    from .private_support import enabled
+    if enabled():
+        from .evaluation import register_evaluations
+        from .admin_api import register_admin
+        register_evaluations(app, domain, auth)
+        register_admin(app, domain, auth)
     from .intake import register_intake
     register_intake(app, domain, auth, maximum)
     from .workspace import register_workspace

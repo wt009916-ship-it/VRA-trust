@@ -18,3 +18,11 @@ def client(tmp_path):
         login = client.post('/api/auth/register', json={'username': 'test_owner', 'display_name': 'Test owner', 'password': 'Test-only-long-pass-2026'}).json()
         client.headers['X-CSRF-Token'] = login['csrf_token']
         yield client
+
+
+def pytest_runtest_setup(item):
+    from backend.private_support import enabled
+    if not enabled():
+        text = item.path.read_text(encoding='utf-8')
+        if '/api/admin/' in text or '/api/developer/' in text:
+            pytest.skip('Local console integration suite requires the private add-on')

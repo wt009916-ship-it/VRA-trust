@@ -14,7 +14,7 @@ import { spatialWorkspace } from './model-ui.js';
 import { changePassword } from './account-ui.js';
 import { intakeWorkspace } from './intake-ui.js';
 import { reviewDocument } from './document-review.js';
-const adminWorkspace=async root=>{root.textContent='Private console excluded';};
+import { adminWorkspace } from 'virtual:local-console';
 import './intake.css';
 import './enterprise.css';
 import './professional-ui.css';
@@ -53,10 +53,11 @@ function notice(message, error = false) {
   clearTimeout(el.timer); el.timer = setTimeout(() => { el.hidden = true; }, 9000);
 }
 async function action(fn, button) {
+  if(button?.disabled || button?.dataset.busy==='true')return;
   const token = selection;
-  if (button) button.disabled = true;
+  if (button) {button.disabled = true;button.dataset.busy='true';}
   try { await fn(); } catch (err) { if (token === selection) notice(err.message, true); }
-  finally { if (button?.isConnected) button.disabled = state.syncError && ['run', 'compare'].includes(button.id); }
+  finally { if(button)delete button.dataset.busy;if (button?.isConnected) button.disabled = state.syncError && ['run', 'compare'].includes(button.id); }
 }
 function shell() {
   disposeWorkspace();disposeWorkspace=()=>{};
