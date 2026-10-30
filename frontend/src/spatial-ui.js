@@ -3,6 +3,7 @@ import { request, escape as esc } from './api.js';
 export async function spatialWorkspace(state, host, action, notice, evidenceDetail) {
   const pid=state.project.project_id, source=state.evidence.filter(e=>['drawing','manual_input'].includes(e.type));
   const current=await request('/projects/'+pid+'/geometry');
+  if(!host.isConnected)return;
   host.innerHTML=`<div class="view-heading"><div><h1>图纸与构件证据</h1><p>人工标注 → 确认来源 → 简单几何。当前不做自动图纸识别或 IDF 几何同步。</p></div></div><div class="spatial-split"><form id="geometry-form"><label>来源图纸<select name="evidence_id" required><option value="">选择已导入的图纸</option>${source.map(e=>`<option value="${e.evidence_id}">${esc(e.name)} · ${e.review_state==='confirmed'?'已确认':'待确认'}</option>`).join('')}</select></label><div id="drawing-source"></div><div class="form-grid"><label>层高 m<input name="floor_height_m" type="number" min=".1" max="20" step=".01" required value="${current?.schema.floor_height_m||3}"></label><label>层数<input name="floors" type="number" min="1" max="30" required value="${current?.schema.floors||1}"></label></div><p class="subtle">坐标单位为米。逐段填写边界墙；厚度必须来自图纸或测量，未知构件保留 UNKNOWN。</p><div id="wall-rows"></div><button type="button" id="add-wall">＋ 增加墙体</button><label>复核人<input name="responsible_person" required value="${esc(state.user.display_name)}"></label><label>比例、单位与人工确认依据<textarea name="review_note" required minlength="5" placeholder="例如：按 A-17 标注尺寸，原点取建筑西南角。"></textarea></label><button class="primary" type="submit">保存 Building Schema 并生成几何</button><p id="geometry-result" role="status">${current?esc(current.status)+' · v'+current.revision:''}</p></form><div><div class="spatial-controls"><label>楼层<select id="floor-filter"><option value="all">全部</option></select></label><label class="check-option"><input type="checkbox" id="xray">X-ray</label></div><div id="spatial-canvas" aria-label="可旋转的建筑构件三维视图"></div><div id="component-drawer"><p class="empty">保存几何后，点击墙体查看证据。</p></div></div></div>`;
   let walls=current?.schema.walls.map(w=>({...w}))||[];
   const sourceSelect=host.querySelector('[name=evidence_id]');
@@ -18,6 +19,7 @@ export async function spatialWorkspace(state, host, action, notice, evidenceDeta
 
 async function renderScene(data,host,evidenceDetail,state) {
   const THREE=await import('three'), {OrbitControls}=await import('three/addons/controls/OrbitControls.js');
+  if(!host.isConnected)return ()=>{};
   const target=host.querySelector('#spatial-canvas');target.innerHTML='';
   const scene=new THREE.Scene();scene.background=new THREE.Color('#f2f2ee');
   const camera=new THREE.PerspectiveCamera(45,1,.05,10000);
