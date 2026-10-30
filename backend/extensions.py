@@ -8,8 +8,10 @@ from .gateway import Gateway
 from .trust import FactorUpdate, Trust
 from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
+from .decision_api import register_decisions
 
 def register_extensions(app, domain, auth):
+    register_decisions(app, domain)
     trust, gateway = (Trust(domain), Gateway(domain.store))
     agent = Agent(domain, gateway)
     app.state.agent, app.state.gateway = (agent, gateway)
