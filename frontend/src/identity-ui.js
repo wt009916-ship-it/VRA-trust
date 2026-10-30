@@ -48,4 +48,3 @@ export function mountIdentityPanels(dialog, user, action, notice) {
   }
   action(load);
 }
-

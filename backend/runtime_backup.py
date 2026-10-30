@@ -173,5 +173,3 @@ def restore_snapshot(archive_path, destination):
         return {'passed': True, 'file_count': len(files), 'uploaded_files_checked': checked,
                 'database': summary, 'checked_at': core.now(), 'mode': 'isolated_restore',
                 'limitations': [manifest['key_portability'], '此校验不代表异机密钥可用或建筑计算已校准。']}
-
-
