@@ -1,0 +1,49 @@
+{
+  "scope": "Whole-file repeat after implementation; not blinded; original files unchanged. AP14 is authored control, not real building.",
+  "cases": [
+    {
+      "name": "AC-20-Smiley-West-10-Bldg.ifc",
+      "rooms": 140,
+      "shells": 0,
+      "error": "1 validation error for ModelDraft\n  Value error, 房间 R64 与 R68 体积重叠，请修正识别候选 [type=value_error, input_value={'rooms': [{'polygon': [(...'adjacency_gap_m': 0.6}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+    },
+    {
+      "name": "RE16_E3D_Building_2x3_Testversion.ifc",
+      "rooms": 104,
+      "shells": 0,
+      "thermal_faces": 6700,
+      "audit_passed": false,
+      "issues": [
+        {
+          "check": "check_degenerate_rooms",
+          "message": "Room \"00.33 · Floor 1[R103]\" contains degenerate geometry.\n  Face \"R103_S4351_M10\" is degenerate and should be deleted."
+        },
+        {
+          "check": "check_rooms_solid",
+          "message": "Room \"00.15 00.16 · Meeting[R14]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  4 non-manifold edges found\nRoom \"00.21 HR-1 · Boiler room[R19]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  2 non-manifold edges found\nRoom \"01.02 · Office[R31]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  1 non-manifold edges found\nRoom \"01.06 · Office[R34]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  1 non-manifold edges found\nRoom \"01.07 · Office[R35]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  1 non-manifold edges found\nRoom \"01.24 · Office[R52]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  1 non-manifold edges found\nRoom \"01.31 · SC[R59]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  5 non-manifold edges found\nRoom \"01.33 · CIP-Pool[R61]\" is not closed to within 0.001 tolerance.\n  1 naked edges found\n  2 non-manifold edges found\nRoom \"01.34 · Floor 2[R62]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  1 non-manifold edges found\nRoom \"01.36 · Floor tech. area[R63]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  1 non-manifold edges found\nRoom \"02.01 · Office[R65]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  2 non-manifold edges found\nRoom \"02.36 · Floor 2[R96]\" is not closed to within 0.001 tolerance.\n  0 naked edges found\n  3 non-manifold edges found"
+        },
+        {
+          "check": "vra_energyplus_9_preflight",
+          "message": "EnergyPlus 9.0.1 不可接受的细小热面/窗共17处：R29_S1921_M27, R29_S2024_M0_T0, R29_S2024_M0_T2, R61_S2825_M7_T1, R62_S2847_M0_T4, R62_S2897_M9, R64_S3068_M1_T0, R73_S2_T0, R73_S2_T2, R73_S3286_M0_T2, R73_S3292_M0_T2, R96_S3883_M10_T2, R97_S1_T0, R97_S1_T2, R97_S4024_M1_T1, R97_S4055_M1_T1, R103_S4351_M10。请修复几何分段；未删除热面或修改边界。"
+        }
+      ]
+    },
+    {
+      "name": "Office Building Architectural.ifc",
+      "error": "IFC 未完整导入：共 86 个空间，解析 75 个，阻断 11 个。请查看逐空间补证清单。"
+    },
+    {
+      "name": "AP14-Two-Building.ifc",
+      "rooms": 2,
+      "shells": 0,
+      "thermal_faces": 352,
+      "audit_passed": false,
+      "issues": [
+        {
+          "check": "vra_energyplus_9_preflight",
+          "message": "EnergyPlus 9.0.1 不可接受的细小热面/窗共80处：R1_S1_M0_T1, R1_S1_M1_T0, R1_S1_M2_T1, R1_S1_M5, R1_S1_M8, R1_S1_M11, R1_S1_M13_T0, R1_S1_M16_T0, R1_S1_M16_T1, R1_S1_M19, R1_S1_M22, R1_S1_M25, R1_S1_M27_T1, R1_S1_M28_T1, R1_S1_M35, R1_S1_M36, R1_S1_M39_T0, R1_S1_M43, R1_S1_M45, R1_S1_M47_T1。请修复几何分段；未删除热面或修改边界。"
+        }
+      ]
+    }
+  ]
+}

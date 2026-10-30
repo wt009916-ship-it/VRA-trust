@@ -1,98 +1,101 @@
-# 稀土智暖 VRA-Trust
+# 稀土智暖 · VRA-Trust
 
-既有公共建筑可核验节能改造决策智能体。核心原则：可复核、可拒答、可补证、可重放。
+### 既有公共建筑节能改造的工程决策工作台
 
-当前已在 Phase 0/1 基础上接入节点追溯、碳因子选择性重算、受控工具执行与 DeepSeek Adapter、有限域真实仿真搜索，以及人工确认到简单三维的闭环。**这仍不是全部模块或生产环境验收完成。** 详见 docs/TRUST_AGENT_SPATIAL_DELIVERY.md。
+把分散的图纸、气象、材料和计算结果，组织成可以复核的改造方案。帮助工程师看清**已有依据、关键假设、方案取舍和下一步该补什么资料**。
 
-## 启动
+**工程预览版 · Windows 本机部署 · 工程师复核后使用**
 
-最新增量：真实账号与项目隔离，以及项目侧栏、中央任务区、独立工作视图和右侧详情。见 docs/ACCOUNT_WORKSPACE_UPDATE.md。
+[开始使用](docs/QUICKSTART.md) · [功能与适用范围](#能完成什么) · [工程化路线](docs/PRODUCT_READINESS.md) · [文档中心](docs/README.md)
 
-需要 Python 3.12、Node 22+ 和 EnergyPlus 9.0.1。
+![VRA-Trust 建模工作区：公开参考模型的空间目录、三维视图、属性与计算校验](docs/assets/product/model-workbench.png)
+
+*真实界面截图，使用公开 Duplex 参考空间。热工与用途等属于测试假设，图示不代表实际建筑验证。来源与署名见 [截图说明](docs/assets/product/README.md)。*
+
+## 为谁解决什么问题
+
+适用于既有公共建筑改造前期的节能咨询、暖通与建筑性能研究，以及材料应用验证。项目资料不完整时，先整理来源与缺口，再建立可检查的模型、比较有依据的方案，形成工程讨论和补证材料。
+
+目前适合工程师主持的受控试点。复杂项目独立交付、实际节能量认定和正式节能审查仍需进一步验证；完整差距与验收条件见 [产品就绪度评估](docs/PRODUCT_READINESS.md)。
+
+## 能完成什么
+
+|工作环节|你可以做什么|得到什么|
+|---|---|---|
+|项目资料整理|批量拖入图纸、模型、天气等文件，核对自动提取的字段、冲突和缺项|保留原件、定位、修订与待复核状态的资料清单|
+|图纸与空间建模|解析 IFC、DXF、矢量 PDF；校正褪色/倾斜扫描图，在原图上核对自动补接、手工修订并生成候选|原图坐标、比例依据、补接假设与历史保留的空间模型|
+|工程构件与室内|从IFC提取实际墙板柱梁、门窗洞口、楼梯、机电与源家具；按楼层/类别定位属性|源网格、GlobalId、缺几何及提取失败清单；不虚构缺失构件|
+|气候与天气|分析 EPW 完整性、气温、辐射与度日；获取 NASA POWER 日数据用于背景分析|来源明确的气候图表、质量诊断与 CSV|
+|热模型与仿真|核对构造、负荷、时段与边界；配置理想负荷、PTHP或四管制中央冷热源/水泵/风机盘管，运行实际EnergyPlus|原生 SQL/ERR 支撑的需求或分能源设备结果、输入快照及运行记录|
+|复杂建筑复核|保留闭合斜面实体；从无空间的墙板 IFC 恢复候选，按建筑和楼层组织，核对源窗和逐空间 PTHP 清单|保留构件归属、范围缺口、修模变化和设备来源的模型版本|
+|计量与验证|导入有来源的间隔计量CSV，核对时区、单位、缺测与计量边界；与同口径预测分训练/留出期比较|原件哈希、质量问题、NMBE/CVRMSE及历史；不自动签发现场校准通过|
+|材料与方案比较|登记材料参数及检测依据，比较限定材料层、厚度和有来源的增量初始造价|能耗、舒适性、造价和运行碳排的候选取舍|
+|工程助手与证据|连接模型API，调用资料检索、计量、构件与工程复核等工具；按授权执行计划|带页码来源的摘录、持久任务时间线、补证行动和同源结果；[接入与任务指南](docs/AGENT_WORKFLOWS.md)|
+|冷站工况核验|明确电表边界，核对冷量、流量、温差与单位，按时间留出拟合功率|水侧平衡、异常行、拟合系数及留出误差；现场签发和原生模型校准仍需验证|
+|案例与标注|在后台管理来源标签、答案纠正、授权依据和项目组划分|逐例修订与受限训练导出；基准/留出保护，不自动启动微调；[操作指南](docs/PLANT_CALIBRATION_AND_LABELS.md)|
+|工程复核与交接|逐项查看输入缺口、假设、模型参数变化与版本绑定处置，定位到空间|保留未解决项的JSON/HTML/BCF、同题输入清单及哈希交接包|
+|账号与后台|管理成员、数据库、任务、AI/API、OIDC 与 SMTP；按账号启用 MFA、绑定恢复邮箱|独立 `/admin` 管理后台、会话与项目访问控制|
+
+### 一条完整的工作流
+
+**导入资料 → 核对缺项 → 复核空间与热工 → 检查计算准入 → 运行基准与候选 → 对比并导出依据**
+
+需要交给另一位工程师时，在「工程复核」核对当前条目、记录依据并导出交接包。资料或模型更新后旧处置保留并要求重新复核；接受假设不会解除计算阻断。[使用方法](docs/ENGINEERING_REVIEW.md)。
+
+识别结果先作为候选保存；缺失参数可以待补齐。关键输入未经确认、模型校验失败、原件损坏或结果已经失效时，系统保留原因并阻止使用确定结果。工程师可以回到来源修订，再生成新版本。
+
+公开实测计量、老图候选与高楼剩余失败见[可复跑验收](docs/benchmarks/2026-10-28-real-engineering/README.md)。
+
+公开冷站两台冷机、多源IFC、四个实际设计楼层与1,219条来源/派生标签的覆盖和失败见[冷站与案例实测](docs/benchmarks/2026-10-29-calibration-labels/README.md)。标签数量不等于独立工程验收次数。
+
+## 使用前需要知道
+
+- **建模有范围。** IFC 支持水平分段、闭合多面体和墙板重建候选，预算2000空间；楼层筛选只改变显示。曲面以来源网格折面表示，缺失外立面、复杂细碎边界仍会阻断。DWG 须先导出 DXF，DXF/PDF 的闭合线环识别仍限100候选。任意图纸一键得到完整工程热模型尚未实现。[适用输入与操作](docs/COMPLEX_MODELING.md)。
+- **计算口径要一致。** 理想负荷给出冷热需求；PTHP可导入逐空间铭牌/源曲线。中央四管制支持风冷/水冷机组、燃气/电锅炉、泵和冷却塔，依赖明确冬夏设计日，仍采用通用参考性能曲线。复杂水力分区、管损、VRF和现场运行还原未覆盖。[老图、室内与中央系统操作](docs/INCOMPLETE_DRAWINGS_AND_SYSTEMS.md)。
+- **工程收益需要实证。** 当前没有客户建筑的账单校准或稀土材料现场节能证据；材料卡不能自动证明稀土性能优势。当前造价比较不包含完整生命周期现金流。
+- **AI 负责辅助。** 正式指标来自工程工具；助手的文字说明仍需核对。复杂自由任务的可靠性尚未达到独立工程交付要求。
+- **部署为本机预览。** 企业身份及邮件连接需管理员配置；公网、团队协作与生产容量仍待验收。原生密码库保存、重开填充及密码更新仍待手动复验。
+
+## 开始使用
+
+需要 **Windows、Python 3.12、Node.js 22.12+ 或 24，以及 EnergyPlus 9.0.1**。当前功能预览在 `feature/ai-building-workbench` 分支，经 [PR #3](https://github.com/wt009916-ship-it/VRA-trust/pull/3) 交付。
 
 ```powershell
-python -m venv .venv
-.venv/Scripts/python -m pip install -r backend/requirements-dev.txt
-cd frontend
-npm ci
-npm run build
-cd ..
-$env:ENERGYPLUS_EXE = 'F:/EnergyPlusV9-0-1/energyplus.exe'
-./Start.ps1
+git clone --branch feature/ai-building-workbench https://github.com/wt009916-ship-it/VRA-trust.git
+cd VRA-trust
+./Setup.ps1
+./Start.ps1 -Port 8767 -EnergyPlusPath 'C:/EnergyPlusV9-0-1/energyplus.exe'
 ```
 
-访问 http://127.0.0.1:8766 。本机任务也支持已有的 vra-venv 开发环境。Start.ps1 仅监听本机，不自动安装依赖。
+将示例引擎路径换成自己的安装位置，然后访问 **http://127.0.0.1:8767/**。启动脚本默认端口为 8766，上述命令显式指定 8767。已有本机实例时直接打开其地址，多个实例须分别使用独立端口和数据目录。
 
-首次访问自行创建账号（用户名 3–32 位，密码至少 10 个字符）。无默认密码；既有项目归入首个账号，其他账号只能访问自己的项目。账号数据库保存在 runtime，不得提交或公开。当前暂无邮件找回。
+首次访问创建管理员；后续成员通过管理员邀请加入。新用户名须包含字母，新密码为 15–128 个字符，没有默认账密。管理员可在 `/admin#services` 配置 AI、OIDC 和邮件服务；普通用户在「账号设置」管理 MFA、恢复邮箱和会话。
 
-1. 创建项目并填写建筑声明，或显式导入官方参考模型。
-2. 上传 IDF/EPW 和其他资料，登记出处、定位、授权、登记人；PDF/图片当前不自动 OCR。
-3. 人工核对并确认模型/天气；输入不唯一、未确认或文件损坏时 Gate 拒绝计算。
-4. 运行 baseline/R1/R2，查看真实任务状态、能耗、EUI、运行 CO2、Warnings 和 SQL 定位。
-5. 查看依据，下载 JSON/HTML/PDF/原始证据 ZIP。证据变更使受影响结果失效，确定推荐保持拒答。
+第一次建议用随仓库提供的 [两房间教学资料](examples/building-workbench/README.md) 或显式选择参考项目熟悉流程，再换成授权项目资料。[完整操作、必备资料与常见阻断处理](docs/QUICKSTART.md)。
 
-参考模型不是实际建筑。基准已有保温，追加保温参数是教学假设；碳情景不是正式地区核算或 CCER。
+## 验证到哪一步
 
-## 验证
+已有公开输入和实际引擎验收：原始 Duplex 的 21 个空间、Esplanades 首层的 50 个空间，以及其他限定参考情景，完成了真实全年计算；五份 EPW 的逐时字段与独立解析器对照。最新本机负载实测最高 22 并发、4,024 次请求，业务失败 0。
 
-```powershell
-.venv/Scripts/python scripts/verify.py --engine
-.venv/Scripts/python scripts/replay.py runtime/runs/run_<实际ID>
-```
+复杂建模新增16类控制几何，均完成365天、零Warning的原生计算，涵盖内院、退台、悬挑、双塔、连廊、错层和斜顶等。公开建筑参考 IFC 的整模复测、源窗、结构高楼候选与未通过项见[复杂建筑验收](docs/HIGHRISE_MODELING_ACCEPTANCE.md)。控制几何与参考情景不计作客户实测；[前一轮失败记录](docs/MULTI_PROJECT_ACCEPTANCE.md)继续保留。
 
-verify --engine 创建新的真实运行；日志在 validation/final，API 验收在 validation/phase1。最后会故意撤回基准证据确认，以验证 stale 拒答。失败和旧记录保留。
-不带 --engine 时只跑代码检查/测试/构建；若本地已有旧原生运行且代码变更，原生版本检查可能要求重新运行参考算例。
+这些结果证明限定流程、封装与部分可靠性，不代表实际建筑预测精度、稀土节能率、商业竞品优势或生产 SLA。测试次数、假设、失败和原始来源见 [验证证据导航](docs/README.md#验证与适用范围)。
 
-## 架构
+新增真实历史再版图、独立社区MEP和中央水系统验收：1936老图仍只恢复部分候选；KIT可查看253件源家具，MEP样本保留926件源构件；FZK/KIT中央系统完成全年情景计算。老图整平面与复杂高楼仍有未通过项，[结果、控制对照与失败均公开记录](docs/benchmarks/2026-10-28-drawing-systems/README.md)。
 
-```mermaid
-flowchart LR
-  UI[项目 / 证据 / 准入界面] --> API[FastAPI + Pydantic]
-  API --> DB[SQLite 版本记录与持久任务]
-  API --> Gate[Evidence Gate]
-  Gate --> Worker[本地单 worker]
-  Worker --> Core[复用 EnergyPlus 核验内核]
-  Core --> EP[EnergyPlus 9.0.1]
-  EP --> SQL[原生 SQL / ERR]
-  SQL --> Result[项目绑定结果 / provenance]
-  Result --> API
-  API --> Reports[JSON / HTML / PDF / 证据 ZIP]
-```
+## 集成与资料安全
 
-物理能耗不由 LLM 产生。结构化声明目前核对 IDF，尚不负责自动生成模型。节点图区分证据版本、仿真、能耗、面积、EUI、因子和碳排；改变因子仅重算碳排，原仿真保持不变。
+提供受项目权限限制的 HTTP API、项目 Token 和 MCP 适配器，可接入外部智能体。数据保存在部署者控制的本机运行目录；使用外部 AI Provider 时，相关结构化上下文和问题会发送到所配置的服务，使用前须核对项目授权与数据要求。详见 [开发与集成](docs/DEVELOPMENT.md)。
 
-## 资料导航
+## 文档与反馈
 
-- docs/CURRENT_STATE_AUDIT.md：修改前真实状态及原包依据。
-- docs/IMPLEMENTATION_STATUS.md：当前完成度、阻塞和下一步。
-- docs/ROUND1_DELIVERY.md：本轮架构、变更、验收、未实现项。
-- docs/API_CONTRACT.md / shared/schemas：契约及 OpenAPI。
-- docs/REPLAY.md：可复算边界。
-- docs/OPEN_MODELS.md：公开模型来源及许可。
-- docs/DEPLOYMENT.md：本地 / Docker / 阿里云阶段边界。
-- docs/PHASE_BACKLOG.md：拟同步 GitHub 的分阶段 Issues。
-- AGENTS.md / .agents/skills/vra-trust：后续开发上下文。
+- [操作指南](docs/QUICKSTART.md)：从第一次启动到导入、复核和导出。
+- [工程化路线](docs/PRODUCT_READINESS.md)：距离工程师独立交付还缺什么，以及每阶段的验收门槛。
+- [竞品对标与产品取舍](docs/competitive/2026-10-28/competitors-report.md)：当前同类能力、证据等级、差距与本产品侧重点；不作未经实测的胜负排名。
+- [文档中心](docs/README.md)：产品使用、验证报告、部署和 API。
+- [版本记录](CHANGELOG.md)：功能演进与对应验收文档。
+- [提交问题](https://github.com/wt009916-ship-it/VRA-trust/issues/new)：请提供操作步骤、版本、错误信息和脱敏截图；不要公开项目原图、账单、密码、密钥或数据库。
 
-## 保留与隔离
+## 许可与发行
 
-frontend/legacy 保存原 Three.js/图表/适配/报告源码。fixtures/demo 保存历史 JSON 与官方参考输入，活动前端不读取历史结果。
-legacy/backend_submission 和 research/original_guo 在本机保留，因原始交付/研究资料未经公开整理，不纳入 Git。原始压缩包与上一版目录均未修改。
-runtime、runs、validation、密钥、依赖和私人建筑资料不提交。
-
-## 发布状态
-
-本地会话和项目授权已验证；团队共享、邮件找回和公网部署未完成。HTTPS 部署必须设置 VRA_COOKIE_SECURE=true，另行配置域名/TLS/代理。Docker Compose 为准备配置，未运行容器；阿里云和第二台电脑验收按用户最新指示暂缓。GitHub app 写入返回 403 时，本地 Git/CI 文件已就绪不等于已远程发布。
-
-
-## 新增入口
-
-- 首页嵌入八步工作流动画，可暂停和逐步切换，明确标记为流程示意。
-- 首个管理员账号：侧栏 **开发者设置** → 填写 DeepSeek Key / 模型 → 保存 → 测试连接。Key 不进入前端构建或浏览器存储。
-- 项目工作台：选择“本地工程流程”或“AI Provider”，观察真实工具与 Provider 请求时间线；工程结果仍来自工具。
-- 仿真页：修改碳因子 → 观察 Carbon STALE → 仅重算碳排。
-- 反例与补证：填写共同材料导热系数离散点、来源与预算 → 真实仿真 → 条件补证成本候选排序。
-- 图纸与三维：先导入/确认来源，再填写墙体坐标、尺寸、状态和人工依据；生成确定性几何，点击墙查看证据。
-
-运行专项真实验收：`python scripts/verify_trust_slice.py`。它在 validation 下建立隔离账户，运行 3 个参考方案和 3 次预算内反例仿真，并核验选择性重算不调用 EnergyPlus。
-
-Provider 协议依据：[DeepSeek 官方 Tool Calls 文档](https://api-docs.deepseek.com/guides/tool_calls/)。默认模型 deepseek-flash，可在管理员设置中修改。未填 Key 时不会模拟 LLM 成功；协议测试不等于付费服务商在线验收。
+项目整体授权方案尚未在顶层 LICENSE 声明；公开源码不代表已授予任意再分发或商用集成许可。依赖和样例各有许可证，见 [第三方声明](third_party_notices/) 与 [依赖清单](DEPENDENCY_INVENTORY.json)。Honeybee/Ladybug 等包含 AGPL 组件，商业发行前仍需完成整体许可方案、归属与数据授权核对。
