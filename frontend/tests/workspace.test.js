@@ -16,6 +16,7 @@ test('project records escape source names, distinguish reference and never inven
 });
 test('routes restore only known project views and tolerate invalid bookmarks',()=>{
   assert.deepEqual(readRoute('#project/'+p.project_id+'/spatial'),{projectId:p.project_id,view:'spatial'});
+  assert.deepEqual(readRoute('#project/'+p.project_id+'/measurements'),{projectId:p.project_id,view:'measurements'});
   assert.equal(readRoute('#project/'+p.project_id+'/admin').projectId,null);
   assert.equal(readRoute('#tasks').view,'tasks');assert.equal(dateLabel('invalid'),'—');
 });

@@ -166,8 +166,10 @@ function switchView(view) {
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
   if(host&&view==='measurements'&&!host.dataset.loaded){measurementWorkspace(state,host,action);host.dataset.loaded='true';}
-  if(host&&view==='components')action(()=>componentWorkspace(state,host,action,notice));
-  if(host&&view==='review')action(()=>engineeringReviewWorkspace(state,host,action,modal,id=>{state.reviewRoomId=id;switchView('spatial');document.querySelector('#spatial')?.reviewFocus?.(id);}));
+  if(host&&['components','review'].includes(view)&&!host.dataset.loading){
+    host.dataset.loading='true';
+    action(async()=>{try{await (view==='components'?componentWorkspace(state,host,action,notice):engineeringReviewWorkspace(state,host,action,modal,id=>{state.reviewRoomId=id;switchView('spatial');document.querySelector('#spatial')?.reviewFocus?.(id);}));}finally{delete host.dataset.loading;}});
+  }
   if(host && ['spatial','robustness','decision','weather'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(async()=>{try{await (view==='weather'?weatherWorkspace(state,host,action,notice,modal,syncModelViews):view==='decision'?decisionWorkspace(state,host,action,modal,switchView):view==='spatial'?spatialWorkspace(state,host,action,notice,syncModelViews):robustnessWorkspace(state,host,action));}catch(error){delete host.dataset.loaded;throw error;}});}
 }
 async function syncModelViews(projectId) {
