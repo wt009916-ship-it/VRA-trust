@@ -25,6 +25,34 @@ def test_catalog_has_traceable_sources_and_no_guessed_prices():
     assert next(e for e in data['entries'] if e['id'] == 'la2o3-phase')['maturity'] == 'out_of_building_scope'
 
 
+def test_expanded_sources_separate_metadata_full_text_and_product_evidence():
+    data = catalog(include_discovery=True)
+    assert len(data['entries']) >= 40
+    dois = [e['doi'].casefold() for e in data['entries'] if e.get('doi')]
+    assert len(dois) == len(set(dois))
+    records = data['discovery']['records']
+    assert data['collection_stats']['metadata_records'] == len(records)
+    assert data['collection_stats']['product_epds_obtained'] == 0
+    assert data['collection_stats']['engineering_quotes_obtained'] == 0
+    assert all('abstract' not in r and 'body' not in r for r in records)
+    assert all(o['can_autofill_product_factor'] is False for e in data['entries'] for o in e.get('observations', []))
+    cooling = next(e for e in data['entries'] if e['id'] == 'y-hollow-2024')
+    assert {o['nature'] for o in cooling['observations']} == {'measured', 'calculated'}
+    assert next(e for e in data['entries'] if e['id'] == 'ce-cement-negative')['application'] == 'research'
+    assert 'CC BY-NC' in next(e for e in data['entries'] if e['id'] == 'eu-cage-lsc')['license_notice']
+    assert 'discovery' not in catalog()  # avoid flooding the model with an unreviewed pool
+
+
+def test_chemical_abbreviation_not_matched_inside_unrelated_english_word(client):
+    pid = create_project(client)['project_id']
+    result = client.post(f'/api/projects/{pid}/sustainability/selections', json={
+        'intent': 'office retrofit budget for facade', 'budget_cny': 20000.}).json()['result']
+    assert all('Ce' not in e['matched_terms'] for e in result['candidates'])
+    excluded = next(e for e in result['candidates'] if e['id'] == 'lab6-csp-excluded')
+    assert excluded['selection_state'] == 'RESEARCH_ONLY'
+    assert len(client.get(f'/api/projects/{pid}/material-research').json()['discovery']['records']) >= 100
+
+
 def test_budget_and_embodied_units_and_replacement_boundary(client):
     pid = create_project(client)['project_id']
     eid = source(client, pid, status='DOCUMENTED')['evidence_id']
@@ -161,3 +189,15 @@ def test_agent_reads_project_sustainability_without_computation(client):
     client.post(f'/api/projects/{pid}/sustainability/credit-screens', json={})
     result = agent.call(pid, 'sustainability_reports', {}, False)
     assert len(result) == 1 and result[0]['result']['issued_credits_t'] is None
+
+
+def test_agent_can_retrieve_sources_beyond_initial_context_cap(client):
+    pid = create_project(client)['project_id']
+    agent = client.app.state.agent
+    first = agent.call(pid, 'material_research', {}, False)
+    assert len(first['entries']) == 5 and first['has_more']
+    found = agent.call(pid, 'material_research', {'query':'Y2O3', 'limit':5}, False)
+    assert {e['id'] for e in found['entries']} >= {'y-hollow-2024', 'y-hollow-2023', 'y-fdtd-2024'}
+    assert all(e['id'] != 'lab6-review' for e in found['entries'])
+    missing = agent.call(pid, 'material_research', {'query':'nonexistent-exact-product-123'}, False)
+    assert missing['entries'] == [] and missing['total_matches'] == 0

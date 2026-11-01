@@ -80,7 +80,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
-    'material_research': '读取有原始来源与成熟度标记的稀土建筑材料方向；价格、EPD和工程参数缺失时保持未知，不将文献模拟视为实测',
+    'material_research': '按query检索材料名称、化学式、用途或DOI，limit最多5条；保留成熟度、测量/计算、许可与缺口；查询无匹配不等于没有材料',
     'sustainability_reports': '读取本项目材料预算与碳资产预筛记录、失效和补证清单；运行CO2、材料GWP与签发CCER分开，禁止承诺资格或收益',
     'floor_csv_inventory': '读取type/name/geometry楼层CSV的源构件数量及WKT拓扑问题；需file_id，不猜单位、层高或全楼完整性',
     'plant_calibration_audit': '读取冷站实际工况拟合、留出误差、水侧能量平衡及阻断；不能称为现场验收',
@@ -128,7 +128,7 @@ TOOL_FIELDS = {
     'weather_summary': (), 'model_get': (), 'model_validate': (),
     'model_import_status': (), 'project_diagnose': (), 'material_list': (),
     'material_targets': ('run_id',), 'material_study_create': ('study',),
-    'material_research': (), 'sustainability_reports': (),
+    'material_research': ('query', 'limit'), 'sustainability_reports': (),
     'decision_status': ('study_id',), 'decision_report': ('study_id',),
     'project_get': (), 'evidence_list': (), 'evidence_validate': ('scheme_id',),
     'building_get': (), 'simulation_create': ('scheme_id', 'factor_profile_id'),
@@ -251,8 +251,8 @@ class Agent:
         if name == 'material_list':
             return d.decisions.materials.list(project_id)
         if name == 'material_research':
-            from .sustainability import catalog
-            return catalog()
+            from .sustainability import research_lookup
+            return research_lookup(args.query, args.limit)
         if name == 'sustainability_reports':
             return [d.sustainability.view(project_id, r) for r in self.store.list('sustainability', project_id)]
         if name == 'material_targets':

@@ -2,6 +2,7 @@ import {request, post, escape as esc, number as num} from './api.js';
 import {createPoller} from './polling.js';
 import {runAgent} from './trust-ui.js';
 import {mountSustainability} from './sustainability-ui.js';
+import {mountPackages} from './package-ui.js';
 
 const fieldLabel = {
   conductivity_w_mk:'导热系数', density_kg_m3:'密度', specific_heat_j_kgk:'比热',
@@ -49,7 +50,8 @@ export async function decisionWorkspace(state, host, action, modal, navigate) {
   const sourceOptions=(selected='')=>'<option value="">尚未提供</option>'+eligibleEvidence.map(e=>`<option value="${e.evidence_id}" ${e.evidence_id===selected?'selected':''}>${esc(e.name)} · v${e.revision} · ${esc(e.status)}</option>`).join('');
   const baselineRuns=runs.filter(r=>r.scheme_id==='baseline'&&r.status==='succeeded');
   host.innerHTML=`<div class="view-heading"><div><span class="eyebrow">资料 → 材料 → 真实仿真 → 方案决策</span><h1>材料与工程决策</h1><p>把检测参数变成可复算的材料方案，按工程目标与约束看清取舍。</p></div><button id="refresh-diagnosis">更新诊断</button></div>
-    <section id="sustainability-panel" class="decision-section"></section>
+    <section id="package-panel" class="decision-section"></section>
+    <details class="decision-section"><summary>材料研究与碳资产开发准备</summary><section id="sustainability-panel"></section></details>
     <details class="decision-section" open><summary>1 · 项目诊断与补证任务</summary><div id="decision-diagnosis">${diagnosisMarkup(diagnosis)}</div></details>
     <section class="decision-section"><div class="section-title"><h2>2 · 候选材料验证</h2><button id="new-material">登记材料</button></div><p class="subtle">参数经来源复核后用于条件仿真；材料批次、对照和老化记录分别追踪。</p><div id="material-cards"></div></section>
     <section class="decision-section"><h2>3 · 创建材料方案研究</h2><p class="subtle">从已核验基准复制新模型，替换一个现有不透明构造层。原始模型及历史运行保留。</p><form id="decision-form">
@@ -105,6 +107,7 @@ export async function decisionWorkspace(state, host, action, modal, navigate) {
     else await post(base+'/studies',plan);
     if(!host.isConnected)return;if(button.name!=='agent')host.querySelector('#study-submission').textContent='已提交。下方会持续显示真实计算进度与方案判断。';await refreshStudies();poller.start();
   },button);};
+  await mountPackages(pid,host.querySelector('#package-panel'),action,evidence);
   await mountSustainability(pid,host.querySelector('#sustainability-panel'),action,evidence,entry=>editMaterial(null,{
     name:entry.name,contains_rare_earth:entry.elements.length>0,source_locator:entry.url+' · '+entry.locator,
     applicability:entry.finding+'；待补：'+entry.gaps.join('、'),test_conditions:'文献方向待项目样品检测，参数未自动录入'

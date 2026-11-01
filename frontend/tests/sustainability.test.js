@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {estimateMarkup} from '../src/sustainability-ui.js';
+import {estimateMarkup,sourceStatsMarkup} from '../src/sustainability-ui.js';
+
+test('source counters explicitly distinguish records, full texts and absent EPDs',()=>{
+  const html=sourceStatsMarkup({metadata_records:154,distinct_title_groups:151,full_texts_archived:36,
+    indexed_entries:49,product_epds_obtained:0,engineering_quotes_obtained:0});
+  assert.match(html,/154 条DOI/);assert.match(html,/36 篇全文/);assert.match(html,/产品EPD 0/);
+  assert.match(html,/不等于合格材料/);assert.equal(sourceStatsMarkup(null),'');
+});
 
 test('unknown quotations render as missing rather than zero',()=>{
   assert.match(estimateMarkup([]),/尚无已提交报价/);

@@ -2258,6 +2258,195 @@
         ]
       }
     },
+    "/api/projects/{project_id}/sustainability/packages/preview": {
+      "post": {
+        "summary": "Preview",
+        "operationId": "preview_api_projects__project_id__sustainability_packages_preview_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageComparison"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/sustainability/packages": {
+      "post": {
+        "summary": "Save",
+        "operationId": "save_api_projects__project_id__sustainability_packages_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageComparison"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/sustainability/package-quantities": {
+      "post": {
+        "summary": "Quantities",
+        "description": "Excel CSV intake is a draft; existing source IDs must still be reviewed.",
+        "operationId": "quantities_api_projects__project_id__sustainability_package_quantities_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "maxLength": 200000,
+                "title": "Content"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/material-research": {
       "get": {
         "summary": "Research",
@@ -7717,6 +7906,55 @@
         ],
         "title": "Actions"
       },
+      "Amount": {
+        "properties": {
+          "total_cny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Cny"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          },
+          "locator": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Locator",
+            "default": ""
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Until"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Amount"
+      },
       "Axis": {
         "properties": {
           "material": {
@@ -11088,6 +11326,232 @@
         ],
         "title": "Option"
       },
+      "Package": {
+        "properties": {
+          "package_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Package Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PackageItem"
+            },
+            "type": "array",
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "package_id",
+          "name",
+          "items"
+        ],
+        "title": "Package"
+      },
+      "PackageComparison": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "budget_cny": {
+            "type": "number",
+            "maximum": 1000000000000.0,
+            "minimum": 0.0,
+            "title": "Budget Cny"
+          },
+          "horizon_years": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Horizon Years",
+            "default": 20
+          },
+          "discount_rate": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Discount Rate",
+            "default": 0.0
+          },
+          "carbon_boundary": {
+            "type": "string",
+            "enum": [
+              "A1-A3",
+              "A1-A5"
+            ],
+            "title": "Carbon Boundary",
+            "default": "A1-A3"
+          },
+          "scopes": {
+            "items": {
+              "$ref": "#/components/schemas/Scope"
+            },
+            "type": "array",
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Scopes"
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/Package"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Packages"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "budget_cny",
+          "scopes",
+          "packages"
+        ],
+        "title": "PackageComparison"
+      },
+      "PackageItem": {
+        "properties": {
+          "scope_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Scope Id"
+          },
+          "product": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Product"
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Version"
+          },
+          "costs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "propertyNames": {
+              "enum": [
+                "material",
+                "installation",
+                "demolition",
+                "access",
+                "disruption"
+              ]
+            },
+            "type": "object",
+            "maxProperties": 5,
+            "title": "Costs"
+          },
+          "checks": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Declaration"
+            },
+            "propertyNames": {
+              "enum": [
+                "function",
+                "fire",
+                "durability",
+                "construction"
+              ]
+            },
+            "type": "object",
+            "maxProperties": 4,
+            "title": "Checks"
+          },
+          "annual_maintenance": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "service_life_years": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Life Years"
+          },
+          "replacement": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "gwp_per_unit": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Per Unit"
+          },
+          "gwp_unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kg",
+                  "m2",
+                  "m3",
+                  "item"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Unit"
+          },
+          "gwp_evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Evidence Id"
+          },
+          "gwp_locator": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Gwp Locator",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scope_id",
+          "product",
+          "version"
+        ],
+        "title": "PackageItem"
+      },
       "PasswordChange": {
         "properties": {
           "current_password": {
@@ -12096,6 +12560,70 @@
           "created_at"
         ],
         "title": "RunView"
+      },
+      "Scope": {
+        "properties": {
+          "scope_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Scope Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "quantity": {
+            "type": "number",
+            "maximum": 1000000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "kg",
+              "m2",
+              "m3",
+              "item"
+            ],
+            "title": "Unit"
+          },
+          "requirements": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Requirements"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          },
+          "locator": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Locator",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scope_id",
+          "name",
+          "quantity",
+          "unit",
+          "requirements"
+        ],
+        "title": "Scope"
       },
       "Search": {
         "properties": {

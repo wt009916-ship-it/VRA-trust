@@ -1,5 +1,6 @@
 """Evidence-bound material procurement and CCER preparation, never credit issuance."""
 import math
+import re
 import uuid
 from pathlib import Path
 from typing import Literal
@@ -11,6 +12,7 @@ from .materials import evidence_changes, evidence_snapshot
 from .schema import Contract
 
 CATALOG = Path(__file__).resolve().parents[1] / 'cases/material_research.json'
+DISCOVERY = CATALOG.with_name('material_discovery_index.json')
 METHOD_URL = 'https://www.mee.gov.cn/xxgk2018/xxgk/xxgk06/202512/W020251223502007241623.pdf'
 CHECKS = {
     'public_building': ('既有公共建筑或符合定义的建筑单元', '2; 4.1–4.2'),
@@ -33,12 +35,27 @@ MEASURES = {str(i): name for i, name in enumerate([
     '更换透明幕墙和采光顶玻璃', '高效冷水机组', '高效热泵机组', '多联式空调（热泵）机组'], 1)}
 
 
-def catalog():
+def catalog(*, include_discovery=False):
     data = core.read_json(CATALOG)
+    if include_discovery:
+        data['discovery'] = core.read_json(DISCOVERY)
     return {**data, 'sha256': core.sha(CATALOG), 'methodology': {'id': 'CCER-06-001-V01',
             'url': METHOD_URL, 'checks': CHECKS, 'measures': MEASURES},
             'price_cny': None, 'epd_factors': None,
             'notice': '文献方向不是可采购产品；不自动填入热工参数、价格、EPD或节能率。钨、钒不是稀土。'}
+
+
+def research_lookup(query=None, limit=5):
+    """Narrow evidence retrieval before the agent's generic 16-item context cap."""
+    data = catalog()
+    entries = data['entries']
+    if query:
+        term = query.strip().casefold()
+        entries = [e for e in entries if term in ' '.join([
+            e['id'], e['name'], e['title'], e['finding'], e.get('doi') or '', *e['keywords']]).casefold()]
+    return {**data, 'entries': entries[:limit], 'query': query, 'total_matches': len(entries),
+            'has_more': len(entries) > limit,
+            'lookup_hint': 'query可用具体名称、化学式、用途、DOI或题名片段；按需缩小查询。最多返回5条，未返回的条目不等于不存在。'}
 
 
 class Estimate(Contract):
@@ -130,7 +147,9 @@ class Sustainability:
         for entry in data['entries']:
             if body.application != 'all' and entry['application'] != body.application:
                 continue
-            matches = [word for word in entry['keywords'] if word.casefold() in body.intent.casefold()]
+            matches = [word for word in entry['keywords'] if (
+                re.search(r'(?<![A-Za-z0-9])' + re.escape(word) + r'(?![A-Za-z0-9])', body.intent, re.I)
+                if re.fullmatch(r'[A-Za-z][A-Za-z0-9.-]*', word) else word.casefold() in body.intent.casefold())]
             candidates.append({**entry, 'matched_terms': matches, 'match_count': len(matches),
                                'selection_state': 'RESEARCH_ONLY' if entry['application'] == 'research' else 'NEEDS_PRODUCT_EVIDENCE'})
         candidates.sort(key=lambda row: (-row['match_count'], row['id']))
@@ -207,10 +226,11 @@ class Sustainability:
                             '碳价和假设吨数由用户输入，不是行情或可售库存；税费、交易费、折现及履约风险未计。']}, snapshots)
 
     def save(self, pid, kind, body, result, snapshots):
+        extra = {'package_rules_hash': core.sha(Path(__file__).with_name('retrofit_packages.py'))} if kind == 'package' else {}
         return self.store.put('sustainability', {'sustainability_id': 'sustainability_' + uuid.uuid4().hex,
-            'project_id': pid, 'kind': kind, 'input': body.model_dump(), 'result': result,
+            'project_id': pid, 'kind': kind, 'input': body.model_dump(mode='json'), 'result': result,
             'evidence_snapshots': list(snapshots.values()), 'code_hash': core.sha(Path(__file__)),
-            'catalog_hash': core.sha(CATALOG), 'created_at': core.now()})
+            'catalog_hash': core.sha(CATALOG), 'created_at': core.now(), **extra})
 
     def view(self, pid, record):
         if record['project_id'] != pid:
@@ -218,6 +238,16 @@ class Sustainability:
         stale = evidence_changes(self.domain, pid, record['evidence_snapshots'])
         if record['code_hash'] != core.sha(Path(__file__)) or record['catalog_hash'] != core.sha(CATALOG):
             stale.append('材料目录或评估规则版本变化')
+        if record['kind'] == 'package':
+            if record.get('package_rules_hash') != core.sha(Path(__file__).with_name('retrofit_packages.py')):
+                stale.append('整包比选规则版本变化')
+            # Expired quotations invalidate the current view, while retaining the saved record.
+            from datetime import date
+            for package in record['input']['packages']:
+                for item in package['items']:
+                    for value in [*item['costs'].values(), item['annual_maintenance'], item['replacement']]:
+                        if value.get('valid_until') and value['valid_until'] < date.today().isoformat():
+                            stale.append('报价已过有效期')
         if record['kind'] == 'selection' and record['input'].get('study_id'):
             current = self.domain.decisions.view(pid, record['input']['study_id'])
             if current != record['result']['study']:
@@ -233,11 +263,13 @@ def data_method():
 
 def register_sustainability(app, domain):
     service = domain.sustainability = Sustainability(domain)
+    from .retrofit_packages import register_packages
+    register_packages(app, service)
 
     @app.get('/api/projects/{project_id}/material-research')
     def research(project_id: str):
         domain.store.get('project', project_id)
-        return catalog()
+        return catalog(include_discovery=True)
 
     @app.post('/api/projects/{project_id}/sustainability/selections', status_code=201)
     def selection(project_id: str, body: Selection):

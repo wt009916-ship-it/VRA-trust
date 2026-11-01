@@ -4,6 +4,9 @@
 
 ## 未发布 · 产品入口与工程化复盘
 
+- 增加[整包投资比选](docs/RETROFIT_PACKAGE_COMPARISON.md)：共同工程量CSV、产品版本与工程适用性、五类费用查漏、维护更换账本、历史副本及HTML复核报告。
+- [材料证据扩充](docs/benchmarks/2026-11-01-material-sources/README.md)：49条索引、154条DOI检索池、36篇本地全文；区分测量/计算、常规对照、跨域与负面证据、读取和许可范围，提供筛选、分页及元数据导出。
+
 - 项目「计量与验证」增加中央冷站工况拟合、水侧平衡、边界/单位声明和时间留出；后台增加案例复核、项目分组及训练准入导出。增加源IFC语义和楼层CSV/WKT检查工具；修复漏调用、结果错归属、文件格式工具错配和样例泛化问题。操作见[冷站与案例](docs/PLANT_CALIBRATION_AND_LABELS.md)，公开实测与未通过项见[报告](docs/benchmarks/2026-10-29-calibration-labels/README.md)。未训练大模型权重，未签发现场校准通过。
 
 - 增加老旧图纸增强、自动补接诊断、原图人工补接与新任务修订；独立工程构件/室内网格查看；四管制中央冷热源、水泵、盘管及设计JSON导入。可用范围和真实失败见[操作说明](docs/INCOMPLETE_DRAWINGS_AND_SYSTEMS.md)与[实测](docs/benchmarks/2026-10-28-drawing-systems/README.md)。
