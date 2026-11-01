@@ -108,7 +108,8 @@ def test_deadline_prevents_request_and_length_limit_stays_partial(client,monkeyp
 
 def test_tool_json_as_text_is_not_executed_and_explanation_retry_has_no_tools(client,monkeypatch):
     g=gateway(client,monkeypatch);pid=project(client);seen=[]
-    replies=iter([{'role':'assistant','content':'```json\n{"name":"simulation_create","arguments":{}}\n```'},
+    replies=iter([{'role':'assistant','content':None,'tool_calls':[{'id':'weather','type':'function','function':{'name':'weather_summary','arguments':'{}'}}]},
+                  {'role':'assistant','content':'```json\n{"name":"simulation_create","arguments":{}}\n```'},
                   {'role':'assistant','content':'当前没有天气或建筑证据，尚不能仿真；请先补齐来源。'}])
     def complete(messages,tools,**kwargs):
         seen.append(tools)
@@ -116,7 +117,18 @@ def test_tool_json_as_text_is_not_executed_and_explanation_retry_has_no_tools(cl
     monkeypatch.setattr(g,'complete',complete)
     task=client.app.state.agent.start(pid,Chat(message='核对天气',mode='provider',task='weather'),background=False)
     assert task['status']=='succeeded' and task['explanation_status']=='available'
-    assert seen[0] and seen[1]==[] and len(seen)==2
+    assert seen[0] and seen[1] and seen[2]==[] and len(seen)==3
     assert task['explanation_repairs']==1
     assert 'simulation_create' in task['explanation_attempts'][0]['content']
     assert not client.app.state.domain.store.jobs(pid)
+
+
+def test_provider_tool_limit_diagnostic_contains_no_response_body(client,monkeypatch):
+    g=gateway(client,monkeypatch)
+    data={'choices':[{'message':{'role':'assistant','content':'private-model-payload',
+        'tool_calls':[{'id':str(i),'type':'function','function':{'name':'weather_summary','arguments':'{}'}} for i in range(5)]}}]}
+    with pytest.raises(ProviderError) as error:
+        g.complete([],[],transport=httpx.MockTransport(lambda _:httpx.Response(200,json=data)))
+    assert error.value.validation_code=='TOOL_CALL_LIMIT'
+    assert error.value.attempts[0]['validation_code']=='TOOL_CALL_LIMIT'
+    assert 'private-model-payload' not in str(error.value)

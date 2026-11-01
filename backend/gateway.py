@@ -161,8 +161,10 @@ class Gateway:
                 if not isinstance(message, dict) or message.get('role','assistant')!='assistant':
                     raise ValueError('Message must be an assistant object')
                 calls=message.get('tool_calls') or []
-                if not isinstance(calls,list) or len(calls)>4:
+                if not isinstance(calls,list):
                     raise ValueError('Tool calls must be a bounded list')
+                if len(calls)>4:
+                    raise ValueError('Too many tool calls')
                 ids=[]
                 for call in calls:
                     if not isinstance(call,dict) or not isinstance(call.get('id'),str) or not 1<=len(call['id'])<=200:
@@ -192,15 +194,21 @@ class Gateway:
                         'NETWORK_ERROR' if isinstance(exc, httpx.HTTPError) else 'INVALID_RESPONSE')
                 attempts.append({'attempt': attempt+1, 'status': 'failed', 'code': code,
                                  'duration_ms': round((time.monotonic()-start)*1000)})
+                diagnostic = {'Too many tool calls':'TOOL_CALL_LIMIT', 'Tool calls must be a bounded list':'TOOL_CALL_SHAPE',
+                              'Invalid tool call ID':'TOOL_CALL_ID', 'Invalid function call':'FUNCTION_CALL_SHAPE',
+                              'Duplicate tool call IDs':'DUPLICATE_TOOL_CALL_IDS'}.get(str(exc)) if isinstance(exc, ValueError) else None
+                if diagnostic:
+                    attempts[-1]['validation_code'] = diagnostic
                 if (isinstance(exc, (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout))
                         and not received and attempt == 0 and deadline-time.monotonic() > 2):
                     continue
-                raise ProviderError(code, attempts) from None
+                raise ProviderError(code, attempts, validation_code=diagnostic) from None
         raise ProviderError('RETRY_BUDGET', attempts)
 
 
 class ProviderError(core.ValidationError):
-    def __init__(self, code, attempts):
+    def __init__(self, code, attempts, validation_code=None):
         self.code, self.attempts = code, attempts
+        self.validation_code = validation_code
         action={'HTTP_401':'；请在后台重新核对开放平台API Key和接口地址','HTTP_402':'；请在服务商平台核对余额','HTTP_429':'；服务商限流，请稍后重试'}.get(code,'')
         super().__init__('Provider '+code.replace('HTTP_', 'HTTP ')+action+'；AI说明未完成，已核验工具结果仍保留')

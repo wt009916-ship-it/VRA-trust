@@ -111,6 +111,6 @@ export async function decisionWorkspace(state, host, action, modal, navigate) {
   await mountSustainability(pid,host.querySelector('#sustainability-panel'),action,evidence,entry=>editMaterial(null,{
     name:entry.name,contains_rare_earth:entry.elements.length>0,source_locator:entry.url+' · '+entry.locator,
     applicability:entry.finding+'；待补：'+entry.gaps.join('、'),test_conditions:'文献方向待项目样品检测，参数未自动录入'
-  }));
+  }),state.agentShortlist?.project_id===pid?state.agentShortlist:null);
   await refreshStudies();if(host.isConnected)poller.start();
 }

@@ -16,7 +16,7 @@ export function estimateMarkup(rows){
   return `<div class="table-scroll"><table><thead><tr><th>候选与单位</th><th>初始费用 CNY</th><th>预算</th><th>初始材料 kgCO₂e</th><th>寿命期材料 kgCO₂e</th><th>年运行减排 kgCO₂</th><th>部分边界净减排 kg</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)} · ${num(r.quantity)} ${esc(r.unit)}<small>${esc(r.gwp_boundary||'碳边界未知')}</small></td><td>${num(r.initial_cost_cny)}</td><td>${r.within_budget===null?'缺报价':r.within_budget?'预算内':'超预算'}</td><td>${num(r.initial_embodied_kgco2e)}</td><td>${num(r.horizon_material_kgco2e)}</td><td>${num(r.annual_operating_saving_kgco2)}</td><td>${num(r.partial_horizon_net_reduction_kg)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
-export async function mountSustainability(pid,host,action,evidence,onDraft){
+export async function mountSustainability(pid,host,action,evidence,onDraft,proposal=null){
   const base='/projects/'+pid;
   const [knowledge,studies]=await Promise.all([request(base+'/material-research'),request(base+'/studies')]);
   if(!host.isConnected)return;
@@ -43,6 +43,8 @@ export async function mountSustainability(pid,host,action,evidence,onDraft){
   host.querySelector('#discovery-query').oninput=()=>{discoveryLimit=20;renderDiscovery();};host.querySelector('#discovery-more').onclick=()=>{discoveryLimit+=20;renderDiscovery();};
   host.querySelector('#discovery-export').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(knowledge.discovery,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='文献检索池-未复核.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
   renderLibrary();renderDiscovery();
+  host.showAgentProposal=value=>{if(!value||value.project_id!==pid)return;proposal=value;host.querySelector('[data-agent-proposal]')?.remove();const section=document.createElement('section');section.dataset.agentProposal=proposal.product_id;section.className='decision-section';const current=proposal.catalog_hash===knowledge.sha256;section.innerHTML=`<h3>从智能体任务带入的材料提议</h3><p>${esc(proposal.goal)}</p><p>${current?'待复核方向，未自动修改材料或工程参数。':'来源目录已变化，请回到任务重新检索。'}</p>${current?renderCandidates(items.filter(e=>proposal.directions.some(d=>d.research_id===e.id))):''}`;host.prepend(section);bindDrafts();const panel=host.closest('details');if(panel)panel.open=true;section.scrollIntoView({block:'start'});};
+  if(proposal)host.showAgentProposal(proposal);
   const studyField=document.createElement('label');
   studyField.innerHTML=`绑定真实材料研究（可选）<select id="sustainability-study"><option value="">暂不计算运行差值</option>${studies.filter(s=>s.status==='succeeded'&&s.assessment).map(s=>`<option value="${esc(s.study_id)}">${esc(s.target_material)} · ${esc(s.study_id)}</option>`).join('')}</select><small>材料EPD与热模型中的候选应具有相同工程量、构造与参数范围，由工程师核对。</small>`;
   host.querySelector('#selection-brief details').prepend(studyField);

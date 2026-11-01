@@ -36,16 +36,23 @@ def register_extensions(app, domain, auth):
         return agent.start(project_id, body)
 
     @app.get('/api/projects/{project_id}/agent')
-    def agent_history(project_id: str):
+    def agent_history(project_id: str, summary: bool = False):
         # The main boundary checks project ownership. Persisted tasks survive reloads.
-        return domain.store.list('agent', project_id)[:30]
+        if summary:
+            keys = ('agent_id','question','mode','status','created_at','finished_at','task','parent_task_id')
+            fields = ','.join("json_extract(body, '$."+k+"') AS "+k for k in keys)
+            with domain.store.connect() as con:
+                rows = con.execute('SELECT '+fields+" FROM records r WHERE kind='agent' AND project_id=? "
+                    "AND revision=(SELECT MAX(revision) FROM records x WHERE x.kind=r.kind AND x.id=r.id) ORDER BY rowid DESC LIMIT 30", (project_id,)).fetchall()
+            return [dict(row) for row in rows]
+        return [agent.view(t) for t in domain.store.list('agent', project_id)[:30]]
 
     @app.get('/api/projects/{project_id}/agent/{agent_id}')
     def agent_task(project_id: str, agent_id: str):
         task = domain.store.get('agent', agent_id)
         if task['project_id'] != project_id:
             raise HTTPException(404)
-        return task
+        return agent.view(task)
 
     @app.get('/api/projects/{project_id}/carbon-factors')
     def factor(project_id: str):

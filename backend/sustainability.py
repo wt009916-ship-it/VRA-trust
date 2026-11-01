@@ -1,6 +1,7 @@
 """Evidence-bound material procurement and CCER preparation, never credit issuance."""
 import math
 import re
+import unicodedata
 import uuid
 from pathlib import Path
 from typing import Literal
@@ -50,12 +51,35 @@ def research_lookup(query=None, limit=5):
     data = catalog()
     entries = data['entries']
     if query:
-        term = query.strip().casefold()
-        entries = [e for e in entries if term in ' '.join([
-            e['id'], e['name'], e['title'], e['finding'], e.get('doi') or '', *e['keywords']]).casefold()]
+        def normalize(value):
+            return unicodedata.normalize('NFKC', value).translate(str.maketrans({'–':'-', '—':'-', '‑':'-'})).casefold()
+        term = normalize(query.strip())
+        term = term.removeprefix('https://doi.org/').removeprefix('http://doi.org/')
+        exact = [e for e in entries if term in {normalize(e['id']),normalize(e.get('doi') or '')}]
+        if exact or re.fullmatch(r'10\.\d{4,9}/\S+', term):
+            return {**data, 'entries':exact[:limit], 'query':query, 'total_matches':len(exact),
+                    'has_more':len(exact)>limit, 'lookup_method':'exact_identifier',
+                    'lookup_hint':'按DOI或索引ID精确匹配；未匹配不代表材料不存在。'}
+        aliases = [('lab6','六硼化镧','lanthanum hexaboride'), ('ceo2','氧化铈','cerium oxide','ceria'),
+                   ('y2o3','氧化钇','yttrium oxide'), ('low-e','lowe','low e','低辐射')]
+        terms = re.findall(r'[a-z][a-z0-9]*(?:-[a-z0-9]+)*|[\u4e00-\u9fff]+', term) or [term]
+        def hit(word, text):
+            return bool(re.search(r'(?<![a-z0-9])'+re.escape(word)+r'(?![a-z0-9])', text)) if re.fullmatch(r'[a-z0-9-]+', word) else word in text
+        anchors = [group for group in aliases if any(hit(word, term) for word in group)]
+        ranked = []
+        for e in entries:
+            text = normalize(' '.join([e['id'],e['name'],e['title'],e['finding'],e.get('doi') or '',*e['keywords']]))
+            groups = sum(any(hit(w,text) for w in group) for group in anchors)
+            matches = [t for t in terms if hit(t,text)]
+            if (anchors and groups) or (not anchors and matches):
+                score = groups * 10 + len(matches) + (100 if term == normalize(e['id']) or term == normalize(e.get('doi') or '') else 0)
+                ranked.append((score,e))
+        ranked.sort(key=lambda pair: -pair[0])
+        entries = [e for _,e in ranked]
     return {**data, 'entries': entries[:limit], 'query': query, 'total_matches': len(entries),
             'has_more': len(entries) > limit,
-            'lookup_hint': 'query可用具体名称、化学式、用途、DOI或题名片段；按需缩小查询。最多返回5条，未返回的条目不等于不存在。'}
+            'lookup_method': '化学式/常用名称锚定及分词匹配，非语义模型评分；多词不要求原文连续出现。',
+            'lookup_hint': 'query可用具体名称、化学式、用途、DOI或题名片段；最多5条。has_more时请缩小范围，不必反复尝试同义长句。未返回不等于不存在。'}
 
 
 class Estimate(Contract):

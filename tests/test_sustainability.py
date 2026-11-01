@@ -201,3 +201,15 @@ def test_agent_can_retrieve_sources_beyond_initial_context_cap(client):
     assert all(e['id'] != 'lab6-review' for e in found['entries'])
     missing = agent.call(pid, 'material_research', {'query':'nonexistent-exact-product-123'}, False)
     assert missing['entries'] == [] and missing['total_matches'] == 0
+
+
+def test_real_provider_multiword_queries_retrieve_known_directions():
+    from backend.sustainability import research_lookup
+    lab=research_lookup('LaB6 六硼化镧 近红外 遮阳 玻璃 涂层')
+    low=research_lookup('Low-E 低辐射玻璃 建筑 窗 遮阳系数 可见光透过')
+    assert lab['entries'] and lab['total_matches'] > 0
+    assert [e['id'] for e in low['entries']]==['lowe-control']
+    assert research_lookup('low-e glass')['entries'][0]['id']=='lowe-control'
+    assert research_lookup('Y₂O₃ hollow microsphere coating')['entries']
+    assert [e['id'] for e in research_lookup('10.1557/jmr.2010.0075')['entries']]==['lab6-scattering']
+    assert research_lookup('10.9999/nonexistent-doi')['entries']==[]

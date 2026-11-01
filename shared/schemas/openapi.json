@@ -3662,6 +3662,16 @@
               "type": "string",
               "title": "Project Id"
             }
+          },
+          {
+            "name": "summary",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Summary"
+            }
           }
         ],
         "responses": {
@@ -8543,6 +8553,18 @@
                 "type": "null"
               }
             ]
+          },
+          "parent_task_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^agent_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Task Id"
           }
         },
         "additionalProperties": false,

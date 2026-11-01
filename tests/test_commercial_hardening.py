@@ -87,9 +87,14 @@ def test_provider_failure_keeps_real_weather_and_permissions(client, monkeypatch
     weather = r.json()
     agent = client.app.state.agent
     monkeypatch.setattr(agent.gateway, 'public', lambda: dict(enabled=True, key_configured=True, provider='fixture', model='fixture'))
+    provider_turns=[]
     def complete(messages, tools, **kwargs):
+        provider_turns.append(1)
         if tools:  # A bounded explanation-only repair exposes no tool.
-            assert {t['function']['name'] for t in tools} == {'weather_summary', 'project_get'}
+            assert {'weather_summary', 'project_get','project_sources'} <= {t['function']['name'] for t in tools}
+            assert 'weather_epw_analyze' not in {t['function']['name'] for t in tools}
+        if len(provider_turns)==1:
+            return {'role':'assistant','content':None,'tool_calls':[{'id':'read','type':'function','function':{'name':'weather_summary','arguments':'{}'}}]}
         if response == 'timeout':
             raise core.ValidationError('timeout fixture')
         return {'role': 'assistant', 'content': response}

@@ -20,7 +20,7 @@ def test_requested_read_cannot_be_replaced_by_invented_empty_result(client,monke
     result=agent.start(pid,Chat(message='请调用ifc_source_inventory，核对原件',mode='provider',task='components'),background=False)
     assert result['status']=='partial' and result['explanation_status']=='invalid'
     assert result['llm_commentary'] is None and len(requests)==2
-    assert '"tool": "component_inventory"' in requests[0][2]['content']
+    assert 'component_inventory' not in requests[0][2]['content']  # no fixed source prefetch
     assert result['read_attempts'][0]['missing']==['ifc_source_inventory']
 
 
@@ -49,7 +49,10 @@ def test_rejected_read_is_returned_to_model_and_failure_is_preserved(client,monk
         if len(requests)==1:
             return {'role':'assistant','content':None,'tool_calls':[{'id':'bad-read','type':'function',
                 'function':{'name':'ifc_source_inventory','arguments':json.dumps({'file_id':src['file_id']})}}]}
-        return {'role':'assistant','content':'源文件是CSV，IFC只读请求被拒绝，未得到IFC数量。需改用楼层CSV工具继续核对。'}
+        if len(requests)==2:
+            return {'role':'assistant','content':None,'tool_calls':[{'id':'correct-read','type':'function',
+                'function':{'name':'floor_csv_inventory','arguments':json.dumps({'file_id':src['file_id']})}}]}
+        return {'role':'assistant','content':'源文件是CSV，IFC请求被拒绝。已改用楼层CSV工具核对，空表没有源构件。'}
     monkeypatch.setattr(gateway,'complete',respond)
     r=agent.start(pid,Chat(message='核对源构件',mode='provider',task='components'),background=False)
     assert r['status']=='partial' and r['llm_commentary']
@@ -117,7 +120,9 @@ def test_unknown_citation_is_not_accepted_as_valid_explanation(client,monkeypatc
     pid=project(client);g=client.app.state.gateway
     monkeypatch.setenv('VRA_API_KEY','isolated-protocol-control')
     g.save(ProviderSettings(enabled=True,endpoint='http://127.0.0.1:8790/v1/chat/completions',model='controlled'))
-    monkeypatch.setattr(g,'complete',lambda *a,**k:{'role':'assistant','content':'设备效率是来源记录 [cite_invented]，待复核。'})
+    replies=iter([{'role':'assistant','content':None,'tool_calls':[{'id':'read','type':'function','function':{'name':'evidence_list','arguments':'{}'}}]},
+                  {'role':'assistant','content':'设备效率是来源记录 [cite_invented]，待复核。'}])
+    monkeypatch.setattr(g,'complete',lambda *a,**k:next(replies))
     result=client.app.state.agent.start(pid,Chat(message='核对资料',mode='provider',task='evidence'),background=False)
     assert result['status']=='partial' and result['explanation_status']=='invalid'
     assert result['llm_commentary'] is None and result['citation_validation']['unknown']==['cite_invented']
@@ -130,12 +135,15 @@ def test_authorized_excerpt_is_untrusted_data_and_citation_is_displayed(client,m
     seen=[]
     def answer(messages,tools,**kwargs):
         seen.append(json.dumps(messages,ensure_ascii=False))
+        if len(seen)==1:
+            return {'role':'assistant','content':None,'tool_calls':[{'id':'source','type':'function',
+                'function':{'name':'project_document_search','arguments':'{"query":"COP"}'}}]}
         hit=document_search(client.app.state.domain,pid,'COP')['matches'][0]
         return {'role':'assistant','content':'文档声明COP，仍待工程复核 ['+hit['citation_id']+']。'}
     monkeypatch.setattr(g,'complete',answer)
     result=client.app.state.agent.start(pid,Chat(message='COP',mode='provider',task='evidence',allow_document_text=True),background=False)
     assert result['explanation_status']=='available' and result['answer']['citations']
-    assert 'authorized_excerpt' in seen[0] and '不可信数据' in seen[0]
+    assert 'authorized_excerpt' in seen[1] and '不可信数据' in seen[0]
 
 
 def test_connection_probe_roundtrip_executes_no_engineering_tools(client,monkeypatch):
