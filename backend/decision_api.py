@@ -13,6 +13,8 @@ from .materials import MaterialCard, MaterialUpdate
 def register_decisions(app, domain):
     decisions = Decisions(domain)
     domain.decisions = app.state.decisions = decisions
+    from .sustainability import register_sustainability
+    register_sustainability(app, domain)
 
     @app.get('/api/projects/{project_id}/diagnosis')
     def diagnosis(project_id: str):

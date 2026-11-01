@@ -2258,6 +2258,292 @@
         ]
       }
     },
+    "/api/projects/{project_id}/material-research": {
+      "get": {
+        "summary": "Research",
+        "operationId": "research_api_projects__project_id__material_research_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/sustainability/selections": {
+      "post": {
+        "summary": "Selection",
+        "operationId": "selection_api_projects__project_id__sustainability_selections_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Selection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/sustainability/credit-screens": {
+      "post": {
+        "summary": "Screen",
+        "operationId": "screen_api_projects__project_id__sustainability_credit_screens_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreditScreen"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/sustainability": {
+      "get": {
+        "summary": "Reports",
+        "operationId": "reports_api_projects__project_id__sustainability_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/sustainability/{report_id}": {
+      "get": {
+        "summary": "Report",
+        "operationId": "report_api_projects__project_id__sustainability__report_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/diagnosis": {
       "get": {
         "summary": "Diagnosis",
@@ -8262,6 +8548,146 @@
         ],
         "title": "Credentials"
       },
+      "CreditScreen": {
+        "properties": {
+          "checks": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Declaration"
+            },
+            "type": "object",
+            "maxProperties": 14,
+            "title": "Checks"
+          },
+          "monthly_hours": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 24,
+            "title": "Monthly Hours"
+          },
+          "hours_evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hours Evidence Id"
+          },
+          "start_month": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Start Month",
+            "default": 1
+          },
+          "school_kind": {
+            "type": "string",
+            "enum": [
+              "ordinary",
+              "primary_secondary_kindergarten"
+            ],
+            "title": "School Kind",
+            "default": "ordinary"
+          },
+          "measures": {
+            "items": {
+              "$ref": "#/components/schemas/Measure"
+            },
+            "type": "array",
+            "maxItems": 9,
+            "title": "Measures"
+          },
+          "hypothetical_tonnes": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hypothetical Tonnes"
+          },
+          "prices_cny_per_t": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Prices Cny Per T"
+          },
+          "development_cost_cny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Development Cost Cny"
+          },
+          "monitoring_cost_cny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Cost Cny"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CreditScreen"
+      },
+      "Declaration": {
+        "properties": {
+          "satisfied": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Satisfied"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          },
+          "locator": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Locator",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Declaration"
+      },
       "DesignDay": {
         "properties": {
           "kind": {
@@ -8749,6 +9175,164 @@
           "file_id"
         ],
         "title": "EquipmentImport"
+      },
+      "Estimate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "research_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Id"
+          },
+          "study_option_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Study Option Id"
+          },
+          "quantity": {
+            "type": "number",
+            "maximum": 1000000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "kg",
+              "m2",
+              "m3",
+              "item"
+            ],
+            "title": "Unit"
+          },
+          "unit_price_cny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price Cny"
+          },
+          "quote_evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote Evidence Id"
+          },
+          "gwp_per_unit": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Per Unit"
+          },
+          "gwp_unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kg",
+                  "m2",
+                  "m3",
+                  "item"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Unit"
+          },
+          "gwp_boundary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A1-A3",
+                  "A1-A5"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Boundary"
+          },
+          "gwp_evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Evidence Id"
+          },
+          "source_locator": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source Locator"
+          },
+          "service_life_years": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Life Years"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "quantity",
+          "unit",
+          "source_locator"
+        ],
+        "title": "Estimate"
       },
       "Evidence": {
         "properties": {
@@ -10146,6 +10730,46 @@
           "expected_revision"
         ],
         "title": "MaterialUpdate"
+      },
+      "Measure": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9"
+            ],
+            "title": "Code"
+          },
+          "coverage": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Coverage"
+          },
+          "evidence_id": {
+            "type": "string",
+            "title": "Evidence Id"
+          },
+          "performance": {
+            "$ref": "#/components/schemas/Declaration"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "coverage",
+          "evidence_id"
+        ],
+        "title": "Measure"
       },
       "ModelDraft": {
         "properties": {
@@ -11579,6 +12203,69 @@
           "polygon"
         ],
         "title": "Segment"
+      },
+      "Selection": {
+        "properties": {
+          "intent": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 5,
+            "title": "Intent"
+          },
+          "budget_cny": {
+            "type": "number",
+            "maximum": 1000000000000.0,
+            "minimum": 0.0,
+            "title": "Budget Cny"
+          },
+          "application": {
+            "type": "string",
+            "enum": [
+              "all",
+              "glazing",
+              "coating",
+              "cement",
+              "hvac",
+              "insulation",
+              "research"
+            ],
+            "title": "Application",
+            "default": "all"
+          },
+          "horizon_years": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Horizon Years",
+            "default": 20
+          },
+          "estimates": {
+            "items": {
+              "$ref": "#/components/schemas/Estimate"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Estimates"
+          },
+          "study_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Study Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "intent",
+          "budget_cny"
+        ],
+        "title": "Selection"
       },
       "SeriesComparison": {
         "properties": {

@@ -80,6 +80,8 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'material_research': '读取有原始来源与成熟度标记的稀土建筑材料方向；价格、EPD和工程参数缺失时保持未知，不将文献模拟视为实测',
+    'sustainability_reports': '读取本项目材料预算与碳资产预筛记录、失效和补证清单；运行CO2、材料GWP与签发CCER分开，禁止承诺资格或收益',
     'floor_csv_inventory': '读取type/name/geometry楼层CSV的源构件数量及WKT拓扑问题；需file_id，不猜单位、层高或全楼完整性',
     'plant_calibration_audit': '读取冷站实际工况拟合、留出误差、水侧能量平衡及阻断；不能称为现场验收',
     'ifc_source_inventory': '读取指定源IFC语义构件数量（含子类）、版本和原件哈希；需file_id，不推测文件之外的构件',
@@ -126,6 +128,7 @@ TOOL_FIELDS = {
     'weather_summary': (), 'model_get': (), 'model_validate': (),
     'model_import_status': (), 'project_diagnose': (), 'material_list': (),
     'material_targets': ('run_id',), 'material_study_create': ('study',),
+    'material_research': (), 'sustainability_reports': (),
     'decision_status': ('study_id',), 'decision_report': ('study_id',),
     'project_get': (), 'evidence_list': (), 'evidence_validate': ('scheme_id',),
     'building_get': (), 'simulation_create': ('scheme_id', 'factor_profile_id'),
@@ -199,7 +202,7 @@ class Agent:
                     'components': {'project_get', 'component_inventory', 'engineering_review', 'ifc_source_inventory', 'floor_csv_inventory'},
                     'model': {'project_get', 'model_get', 'model_validate', 'model_import_status', 'engineering_review', 'component_inventory', 'project_document_search', 'ifc_source_inventory', 'floor_csv_inventory'},
                     'simulation': {'project_get', 'evidence_validate', 'simulation_status', 'simulation_result'},
-                    'materials': {'project_get', 'material_list', 'project_diagnose', 'decision_status', 'decision_report'},
+                    'materials': {'project_get', 'material_list', 'material_research', 'sustainability_reports', 'project_diagnose', 'decision_status', 'decision_report'},
                     'evidence': {'project_get', 'evidence_list', 'evidence_validate', 'project_document_search'},
                     'diagnose': {'project_get', 'evidence_list', 'evidence_validate', 'project_diagnose',
                                  'model_get', 'model_validate', 'model_import_status', 'engineering_review', 'measurement_audit', 'component_inventory', 'project_document_search', 'ifc_source_inventory', 'floor_csv_inventory', 'plant_calibration_audit'},
@@ -247,6 +250,11 @@ class Agent:
             return d.decisions.diagnosis(project_id)
         if name == 'material_list':
             return d.decisions.materials.list(project_id)
+        if name == 'material_research':
+            from .sustainability import catalog
+            return catalog()
+        if name == 'sustainability_reports':
+            return [d.sustainability.view(project_id, r) for r in self.store.list('sustainability', project_id)]
         if name == 'material_targets':
             if not args.run_id:
                 raise core.ValidationError('材料映射需要 run_id')
@@ -365,7 +373,7 @@ class Agent:
                       ('weather', ('天气', '气候', '气象', 'weather', 'epw', '度日')),
                       ('model', ('建模', '模型', '空间', 'ifc', '图纸')),
                       ('simulation', ('仿真', '能耗', '模拟', 'energyplus')),
-                      ('materials', ('材料', '稀土', '保温')),
+                      ('materials', ('材料', '稀土', '保温', '碳交易', '双碳', 'ccer', '碳资产')),
                       ('evidence', ('资料', '文件', '来源'))]
             tasks = [kind for kind, words in groups if any(w in message for w in words)] if task == 'auto' else [task]
             tasks = tasks or ['diagnose']
@@ -380,7 +388,7 @@ class Agent:
                 'components': ['component_inventory'],
                 'model': ['model_get', 'model_validate', 'model_import_status'],
                 'simulation': ['evidence_validate', 'simulation_status'],
-                'materials': ['project_diagnose', 'material_list'],
+                'materials': ['project_diagnose', 'material_list', 'material_research', 'sustainability_reports'],
                 'evidence': ['evidence_list', 'evidence_validate'],
                 'diagnose': ['evidence_list', 'evidence_validate', 'project_diagnose']}
             facts = {}
@@ -561,7 +569,7 @@ class Agent:
                 'components': '已读取源构件分类和提取失败；缺少的设备和家具不会自动补成现场事实。',
                 'model': '已检查空间模型与导入记录。' + ('模型已保存；请查看发布条件。' if facts.get('model_get') else '尚无已确认空间模型；导入候选和失败原因见下方。'),
                 'simulation': '已核对仿真准入和最近运行；本次只读取状态，没有提交新计算。',
-                'materials': '已读取材料登记与参数证据，方案结论以已运行的研究为依据。',
+                'materials': '已读取材料方向、公开出处及本项目预算/碳资产补证记录；方案性能以有效研究为依据，预筛不签发信用。',
                 'evidence': '已读取项目资料与来源；待审、缺失及冲突不会自动变成有效证据。',
             }
             clarify = body.mode == 'local' and tasks == ['diagnose'] and body.task == 'auto' and not body.study_plan and not any(w in message for w in ('诊断', '检查', '推荐', '方案', '补证', '缺口', '评估'))

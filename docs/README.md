@@ -16,6 +16,7 @@
 |[图纸与热模型](DRAWING_THERMAL_ACCEPTANCE.md)|图页标定、候选识别、设备情景和适用限制|
 |[气候与天气](WEATHER_WORKSPACE.md)|EPW 质量、NASA 日数据及两者用途|
 |[材料与决策](CORE_DECISION_UPGRADE.md)|材料卡、证据、方案比较和造价口径|
+|[材料选型与双碳](MATERIALS_DUAL_CARBON.md)|稀土/常规对照、预算及材料阶段碳账、CCER部分预筛和实际验收边界|
 |[后台数据库](ADMIN_DATABASE_CONSOLE.md)|成员、记录、修订、备份与权限|
 |[冷站与标注工作台](PLANT_CALIBRATION_AND_LABELS.md)|水侧平衡、时间留出拟合、源案例复核、训练准入及适用边界|
 |[身份安全](IDENTITY_SECURITY_ACCEPTANCE.md)|MFA、OIDC、邮件恢复及未通过项|

@@ -1,6 +1,7 @@
 import {request, post, escape as esc, number as num} from './api.js';
 import {createPoller} from './polling.js';
 import {runAgent} from './trust-ui.js';
+import {mountSustainability} from './sustainability-ui.js';
 
 const fieldLabel = {
   conductivity_w_mk:'导热系数', density_kg_m3:'密度', specific_heat_j_kgk:'比热',
@@ -48,6 +49,7 @@ export async function decisionWorkspace(state, host, action, modal, navigate) {
   const sourceOptions=(selected='')=>'<option value="">尚未提供</option>'+eligibleEvidence.map(e=>`<option value="${e.evidence_id}" ${e.evidence_id===selected?'selected':''}>${esc(e.name)} · v${e.revision} · ${esc(e.status)}</option>`).join('');
   const baselineRuns=runs.filter(r=>r.scheme_id==='baseline'&&r.status==='succeeded');
   host.innerHTML=`<div class="view-heading"><div><span class="eyebrow">资料 → 材料 → 真实仿真 → 方案决策</span><h1>材料与工程决策</h1><p>把检测参数变成可复算的材料方案，按工程目标与约束看清取舍。</p></div><button id="refresh-diagnosis">更新诊断</button></div>
+    <section id="sustainability-panel" class="decision-section"></section>
     <details class="decision-section" open><summary>1 · 项目诊断与补证任务</summary><div id="decision-diagnosis">${diagnosisMarkup(diagnosis)}</div></details>
     <section class="decision-section"><div class="section-title"><h2>2 · 候选材料验证</h2><button id="new-material">登记材料</button></div><p class="subtle">参数经来源复核后用于条件仿真；材料批次、对照和老化记录分别追踪。</p><div id="material-cards"></div></section>
     <section class="decision-section"><h2>3 · 创建材料方案研究</h2><p class="subtle">从已核验基准复制新模型，替换一个现有不透明构造层。原始模型及历史运行保留。</p><form id="decision-form">
@@ -66,8 +68,8 @@ export async function decisionWorkspace(state, host, action, modal, navigate) {
   };
   const refreshDiagnosis=async()=>{const value=await request(base+'/diagnosis');if(!host.isConnected)return;cards=value.materials;host.querySelector('#decision-diagnosis').innerHTML=diagnosisMarkup(value);renderCards();bindNavigation();};
   host.querySelector('#refresh-diagnosis').onclick=e=>action(refreshDiagnosis,e.currentTarget);
-  function editMaterial(card) {
-    const c=card||{};
+  function editMaterial(card, seed={}) {
+    const c=card||seed;
     const dialog=modal(card?'修订材料卡':'登记候选材料',`<form id="material-form"><div class="form-grid"><label>材料名称<input name="name" value="${esc(c.name||'')}" required maxlength="160"></label><label>样品批次<input name="batch" value="${esc(c.batch||'')}" maxlength="200"></label></div><label class="check-option"><input name="contains_rare_earth" type="checkbox" ${c.contains_rare_earth?'checked':''}>含稀土功能材料（仅登记，不推断性能）</label><div class="form-grid">${[['conductivity_w_mk','导热系数 W/(m·K)',0.000001,100],['density_kg_m3','密度 kg/m³',0.000001,30000],['specific_heat_j_kgk','比热 J/(kg·K)',100,20000]].map(([key,label,min,max])=>`<label>${label}<input type="number" name="${key}" step="any" min="${min}" max="${max}" value="${c[key]??''}"></label>`).join('')}</div>${['thermal_evidence_id','sample_evidence_id','control_evidence_id','aging_evidence_id'].map(key=>`<label>${fieldLabel[key]}<select name="${key}">${sourceOptions(c[key])}</select></label>`).join('')}<p class="subtle">这里选择已复核证据。没有合适来源时先到“资料”导入并确认；也可保存待补齐材料卡。</p>${[['source_locator','参数所在页码 / 表格 / 测点'],['test_conditions','测试温度、含水率、方法与误差等条件'],['applicability','材料适用构造与工程限制'],['review_note','参数核对依据']].map(([key,label])=>`<label>${label}<textarea name="${key}" maxlength="2000">${esc(c[key]||'')}</textarea></label>`).join('')}<label>复核责任人<input name="responsible_person" value="${esc(c.responsible_person||'')}" required maxlength="100"></label><label class="check-option"><input name="confirmed" type="checkbox" ${c.review_state==='confirmed'?'checked':''}>已核对参数与来源，可用于声明条件下的仿真</label><button class="primary">保存${card?'新版本':'材料卡'}</button></form>`);
     dialog.querySelector('form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.currentTarget);action(async()=>{
       const payload=Object.fromEntries([...f.entries()].filter(([k])=>!['confirmed','contains_rare_earth'].includes(k)).map(([k,v])=>[k,v||null]));
@@ -103,5 +105,9 @@ export async function decisionWorkspace(state, host, action, modal, navigate) {
     else await post(base+'/studies',plan);
     if(!host.isConnected)return;if(button.name!=='agent')host.querySelector('#study-submission').textContent='已提交。下方会持续显示真实计算进度与方案判断。';await refreshStudies();poller.start();
   },button);};
+  await mountSustainability(pid,host.querySelector('#sustainability-panel'),action,evidence,entry=>editMaterial(null,{
+    name:entry.name,contains_rare_earth:entry.elements.length>0,source_locator:entry.url+' · '+entry.locator,
+    applicability:entry.finding+'；待补：'+entry.gaps.join('、'),test_conditions:'文献方向待项目样品检测，参数未自动录入'
+  }));
   await refreshStudies();if(host.isConnected)poller.start();
 }
