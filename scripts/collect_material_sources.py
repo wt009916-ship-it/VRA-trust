@@ -54,7 +54,7 @@ def candidate(row):
     return bool(rare and scope and not excluded)
 
 
-def retrieve(output, source, queries, until):
+def retrieve(output, source, queries, until, use_cache=False):
     records, audit = [], []
     base = 'https://api.crossref.org/works' if source == 'crossref' else 'https://www.ebi.ac.uk/europepmc/webservices/rest/search'
     for n, query in enumerate(queries):
@@ -63,9 +63,16 @@ def retrieve(output, source, queries, until):
         url = base + '?' + urllib.parse.urlencode(params)
         log = {'provider': source, 'query': query, 'url': url, 'retrieved_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'status': 'failed'}
         try:
-            raw = request(url)
             filename = f'{source}-{n+1:02}.json'
-            (output / filename).write_bytes(raw)
+            reused=use_cache and (output/filename).is_file()
+            sidecar=output/(filename+'.request.json')
+            if reused:
+                cached_provenance= json.loads(sidecar.read_text(encoding='utf-8')) if sidecar.exists() else next((r for r in json.loads((output/'manifest.json').read_text(encoding='utf-8'))['requests'] if r.get('raw_file')==filename),{})
+                if cached_provenance.get('url')!=url or cached_provenance.get('sha256')!=hashlib.sha256((output/filename).read_bytes()).hexdigest():
+                    raise ValueError('Cached query or content does not match provenance; use a new output directory')
+            raw = (output/filename).read_bytes() if reused else request(url)
+            if not reused:(output / filename).write_bytes(raw)
+            sidecar.write_text(json.dumps({'url':url,'sha256':hashlib.sha256(raw).hexdigest()}),encoding='utf-8')
             data = json.loads(raw)
             if source == 'crossref':
                 if data.get('status') != 'ok' or not isinstance(data.get('message', {}).get('items'), list):
@@ -86,11 +93,12 @@ def retrieve(output, source, queries, until):
                           'abstract': plain(r.get('abstract') if source == 'crossref' else r.get('abstractText')),
                           'pmcid': r.get('pmcid'), 'open_access_declared': r.get('isOpenAccess') == 'Y',
                           'journal': (r.get('container-title') or [None])[0] if source == 'crossref' else r.get('journalInfo', {}).get('journal', {}).get('title'),
-                          'license_urls': [v['URL'] for v in r.get('license', []) if v.get('URL')],
+                          'license_urls': [v['URL'] for v in (r.get('license') or []) if isinstance(v,dict) and isinstance(v.get('URL'),str)] if isinstance(r.get('license'),list) else [],
+                          'license_text':r.get('license') if isinstance(r.get('license'),str) else None,
                           'query': query, 'raw_file': filename, 'status': 'UNREVIEWED_DISCOVERY'}
                 record['in_scope_by_title_only'] = candidate(record)
                 records.append(record)
-            log.update(status='retrieved', raw_file=filename, sha256=hashlib.sha256(raw).hexdigest(),
+            log.update(status='cached' if reused else 'retrieved', raw_file=filename, sha256=hashlib.sha256(raw).hexdigest(),
                        reported_total=total, retrieved=len(items), truncated_to_first_page=len(items) < total)
         except (ValueError, OSError, urllib.error.URLError) as exc:
             log['error'] = str(exc)
@@ -164,10 +172,25 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--until', default='2026-11-01')
     parser.add_argument('--with-pmc', action='store_true', help='Also retrieve at most 64 NCBI PMC records; check body and license per article')
+    parser.add_argument('--queries',type=Path,help='JSON with bounded crossref/europepmc query arrays, at most20 each; defaults unchanged')
+    parser.add_argument('--resume-cache',action='store_true',help='Reuse original numbered responses for the SAME query file; old summaries are preserved')
     args = parser.parse_args()
-    args.output.mkdir(parents=True, exist_ok=False)
+    if args.resume_cache:
+        if not args.output.is_dir():raise SystemExit('No existing cached output')
+        import shutil
+        for name in ['discovery.json','manifest.json']:
+            if (args.output/name).exists():shutil.copy2(args.output/name,args.output/(str(time.time_ns())+'-'+name))
+    else:args.output.mkdir(parents=True, exist_ok=False)
+    crossref,epmc=CROSSREF,EPMC
+    if args.queries:
+        supplied=json.loads(args.queries.read_text(encoding='utf-8'))
+        for key in ['crossref','europepmc']:
+            items=supplied.get(key,[])
+            if not isinstance(items,list) or len(items)>20 or any(not isinstance(q,str) or not 2<=len(q)<=300 for q in items):
+                raise SystemExit('Invalid bounded query list: '+key)
+        crossref,epmc=supplied.get('crossref',[]),supplied.get('europepmc',[])
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        jobs = [executor.submit(retrieve, args.output, name, queries, args.until) for name, queries in [('crossref', CROSSREF), ('europepmc', EPMC)]]
+        jobs = [executor.submit(retrieve, args.output, name, queries, args.until,args.resume_cache) for name, queries in [('crossref', crossref), ('europepmc', epmc)]]
         results = [j.result() for j in jobs]
     records, logs = {}, []
     for rows, audit in results:

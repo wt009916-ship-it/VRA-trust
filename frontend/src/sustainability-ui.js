@@ -8,7 +8,7 @@ const accessLabel={public_manufacturer:'厂商网页',open_accepted_manuscript:'
 
 export function sourceStatsMarkup(stats){
   if(!stats)return '';
-  return `<p class="form-note">本轮采集 ${num(stats.metadata_records,0)} 条DOI元数据 / ${num(stats.distinct_title_groups,0)} 个题名组；本地归档 ${num(stats.full_texts_archived,0)} 篇全文（含对照、综述及跨域资料）。当前索引 ${num(stats.indexed_entries,0)} 条；已取得产品EPD ${num(stats.product_epds_obtained,0)}，真实工程报价 ${num(stats.engineering_quotes_obtained,0)}。采集数量不等于合格材料、训练标注或实测工程数。</p>`;
+  return `<p class="form-note">检索池累计 ${num(stats.metadata_records,0)} 条DOI元数据 / ${num(stats.distinct_title_groups,0)} 个题名组；本地归档 ${num(stats.full_texts_archived,0)} 篇全文（含对照、综述及跨域资料）。当前索引 ${num(stats.indexed_entries,0)} 条；已取得产品EPD ${num(stats.product_epds_obtained,0)}，真实工程报价 ${num(stats.engineering_quotes_obtained,0)}。采集数量不等于合格材料、训练标注或实测工程数。</p>`;
 }
 
 export function estimateMarkup(rows){

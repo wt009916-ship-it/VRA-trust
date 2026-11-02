@@ -38,8 +38,10 @@ MEASURES = {str(i): name for i, name in enumerate([
 
 def catalog(*, include_discovery=False):
     data = core.read_json(CATALOG)
+    discovery=core.read_json(DISCOVERY)
+    data['collection_stats']={**data.get('collection_stats',{}),**discovery.get('collection_stats',{})}
     if include_discovery:
-        data['discovery'] = core.read_json(DISCOVERY)
+        data['discovery'] = discovery
     return {**data, 'sha256': core.sha(CATALOG), 'methodology': {'id': 'CCER-06-001-V01',
             'url': METHOD_URL, 'checks': CHECKS, 'measures': MEASURES},
             'price_cny': None, 'epd_factors': None,

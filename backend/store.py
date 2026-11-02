@@ -22,6 +22,7 @@ class Store:
                 CREATE TABLE IF NOT EXISTS jobs (
                     id TEXT PRIMARY KEY, project_id TEXT NOT NULL, state TEXT NOT NULL,
                     body TEXT NOT NULL, error TEXT);
+                CREATE INDEX IF NOT EXISTS records_project_latest ON records(kind,project_id,id,revision DESC);
             """)
 
     def connect(self):
