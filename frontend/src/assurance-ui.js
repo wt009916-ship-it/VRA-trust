@@ -23,6 +23,6 @@ export function weatherFacts(records) {
 }
 
 export function agentAssurance(t) {
-  const explanation={pending:'AI 说明生成中',available:'AI 说明可读 · 未核验',invalid:'AI 说明无效',unavailable:'AI 说明不可用',not_requested:'未请求 AI 说明'};
+  const explanation={pending:'AI 说明生成中',available:'AI 说明可读 · 未核验',invalid:'AI 说明无效',unavailable:'AI 说明不可用',not_requested:'未请求 AI 说明',cancelled:'AI 说明已取消'};
   return `<div class="assurance-counts" role="status"><span>工程工具 <b>${({running:'执行中',succeeded:'已完成',partial:'部分完成',failed:'失败'})[t.tool_status]||'—'}</b></span><span>${esc(explanation[t.explanation_status]||'—')}</span></div>${t.explanation_error?`<p class="error-text">${esc(t.explanation_error)} 已完成的工具结果保留如下。</p>`:''}${t.answer?.as_of?`<small>核验时间 ${esc(t.answer.as_of)} · 本次快照，资料修改后请重新核验。</small>`:''}${weatherFacts(t.answer?.weather)}`;
 }

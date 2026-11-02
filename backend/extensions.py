@@ -54,6 +54,10 @@ def register_extensions(app, domain, auth):
             raise HTTPException(404)
         return agent.view(task)
 
+    @app.post('/api/projects/{project_id}/agent/{agent_id}/cancel')
+    def cancel_agent(project_id: str, agent_id: str):
+        return agent.cancel(project_id, agent_id)
+
     @app.get('/api/projects/{project_id}/carbon-factors')
     def factor(project_id: str):
         return trust.factor(project_id)

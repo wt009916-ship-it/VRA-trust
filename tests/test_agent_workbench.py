@@ -155,6 +155,69 @@ def test_invalid_dependency_and_numeric_proposal_are_rejected():
     with pytest.raises(ValidationError):Shortlist.model_validate(s)
 
 
+def test_filter_miss_actually_recovers_once_and_preserves_both_events(client,monkeypatch):
+    pid=create_project(client)['project_id'];d=client.app.state.domain
+    for n in range(7):d.add_file(pid,f'English-{n}.csv',b'public controlled fixture')
+    agent,seen=ready(client,monkeypatch,[call('project_sources',{'query':'原件 上传 文件'}),
+        {'role':'assistant','content':'首次筛选未命中，服务已实际重查首批5份，共7份，剩余分页未读。'}])
+    r=agent.start(pid,Chat(message='列出当前原件',mode='provider'),background=False)
+    ev=[e for e in r['events'] if e['tool']=='project_sources']
+    assert len(ev)==2 and ev[0]['result']['total']==0
+    assert ev[1]['origin']=='recovery' and len(ev[1]['result']['files'])==5
+    assert ev[1]['result']['total']==7 and ev[1]['result']['next_offset']==5
+    assert 'unfiltered_retry' in json.dumps(seen) and r['recoveries'][0]['returned']==5
+    assert r['model_tool_calls']==1
+
+
+@pytest.mark.parametrize('usage,threshold,reason',[(20,5,'reported'),(None,5,'missing'),(20,None,'requests')])
+def test_model_budget_stops_before_next_request(client,monkeypatch,usage,threshold,reason):
+    pid=create_project(client)['project_id'];reply=call('evidence_validate',{})
+    reply['_request']={'usage':{} if usage is None else {'total_tokens':usage}}
+    agent,seen=ready(client,monkeypatch,[reply])
+    r=agent.start(pid,Chat(message='检查资料并说明缺口',mode='provider',
+        max_model_requests=1 if reason=='requests' else 8,reported_token_threshold=threshold),background=False)
+    assert len(seen)==1 and r['status']=='partial' and r['budget_stop']
+    assert r['execution_budget']['requests_started']==1
+    assert r['execution_budget']['reported_tokens']==(usage or 0)
+    assert r['execution_budget']['usage_missing_requests']==int(usage is None)
+
+
+@pytest.mark.parametrize('provider_fails',[False,True])
+def test_cancel_during_provider_wait_does_not_execute_returned_tool(client,monkeypatch,provider_fails):
+    import threading
+    import time
+    pid=create_project(client)['project_id'];entered=threading.Event();release=threading.Event()
+    agent,_=ready(client,monkeypatch,[])
+    def complete(*args,**kwargs):
+        entered.set();assert release.wait(5)
+        if provider_fails:raise RuntimeError('Controlled provider failure while cancellation requested')
+        return call('evidence_validate',{})
+    monkeypatch.setattr(agent.gateway,'complete',complete)
+    r=agent.start(pid,Chat(message='读取资料状态',mode='provider'),background=True)
+    try:
+        assert entered.wait(5)
+        assert agent.store.get('agent',r['agent_id'])['execution_budget']['requests_started']==1
+        url=f'/api/projects/{pid}/agent/{r["agent_id"]}/cancel'
+        csrf=client.headers.pop('X-CSRF-Token')
+        assert client.post(url).status_code==403
+        client.headers['X-CSRF-Token']=csrf
+        with pytest.raises(KeyError):agent.store.get('agentcontrol',r['agent_id'])
+        for _ in range(2):
+            response=client.post(url)
+            assert response.status_code==200 and response.json()['cancel_requested']
+        assert client.get(f'/api/projects/{pid}/agent/{r["agent_id"]}').json()['cancel_requested']
+    finally:
+        release.set()
+    end=time.monotonic()+5
+    while time.monotonic()<end:
+        task=agent.store.get('agent',r['agent_id'])
+        if task['status']!='running':break
+        time.sleep(.02)
+    assert task['status']=='cancelled' and task['execution_budget']['requests_started']==1
+    assert not any(e['tool']=='evidence_validate' for e in task['events'])
+    assert not agent.store.jobs(pid)
+
+
 def test_weather_write_requires_permission_even_when_called_directly(client):
     pid=create_project(client)['project_id']
     with pytest.raises(core.ValidationError):

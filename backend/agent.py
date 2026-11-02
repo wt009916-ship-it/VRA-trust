@@ -6,7 +6,7 @@ import time
 import uuid
 from typing import Literal
 
-from pydantic import Field, ValidationError as SchemaError
+from pydantic import Field, StrictInt, ValidationError as SchemaError
 
 from . import core
 from .schema import Contract, RunCreate
@@ -19,6 +19,10 @@ from .agent_actions import InputQuestion, META_TOOLS, Shortlist, WorkPlan
 
 class PlanAuthorizationError(core.ValidationError):
     """A model may not replace the engineer's submitted computation plan."""
+
+
+class AgentCancelled(Exception):
+    """Cooperative stop at a tool/request boundary; preserve completed work."""
 
 
 def provider_context(value):
@@ -63,6 +67,8 @@ class Chat(Contract):
     cost_plan: Actions | None = None
     study_plan: StudyCreate | None = None
     parent_task_id: str | None = Field(default=None, pattern=r'^agent_[a-f0-9]{32}$')
+    max_model_requests: StrictInt = Field(default=8, ge=1, le=8)
+    reported_token_threshold: StrictInt | None = Field(default=None, ge=1, le=200000)
 
 
 class ToolArgs(Contract):
@@ -199,12 +205,17 @@ class Agent:
     def __init__(self, domain, gateway):
         self.domain, self.store, self.gateway = domain, domain.store, gateway
         self.capacity = threading.BoundedSemaphore(2)
+        self.control_lock = threading.Lock()
 
     def view(self, record):
         from .sustainability import catalog
         products = [{**p, 'current': p['catalog_hash'] == catalog()['sha256']}
                     for p in record.get('work_products', [])]
-        return {**record, 'work_products': products}
+        try:
+            cancelled=self.store.get('agentcontrol', record['agent_id']).get('cancel_requested', False)
+        except KeyError:
+            cancelled=False
+        return {**record, 'work_products': products, 'cancel_requested':cancelled}
 
     def source_counts(self, pid):
         return {'uploaded_files':len(self.store.list('file',pid)),
@@ -217,6 +228,21 @@ class Agent:
             if obj['status'] == 'running':
                 self.store.put('agent', {**obj, 'status': 'failed', 'tool_status': 'failed', 'finished_at': core.now(),
                     'error': 'Worker interrupted; retry explicitly'}, obj['revision'])
+
+    def cancel(self, pid, agent_id):
+        task = self.store.get('agent', agent_id)
+        if task['project_id'] != pid:
+            raise core.ValidationError('任务不属于本项目')
+        if task['status'] != 'running':
+            return {'agent_id': agent_id, 'status': task['status'], 'cancel_requested': False}
+        # Separate entity avoids racing the worker's append-only task revision.
+        with self.control_lock:
+            try:
+                self.store.get('agentcontrol', agent_id)
+            except KeyError:
+                self.store.put('agentcontrol', {'agentcontrol_id': agent_id, 'project_id': pid, 'cancel_requested': True})
+        return {'agent_id': agent_id, 'status': 'running', 'cancel_requested': True,
+                'meaning': '当前服务请求结束后停止后续步骤；不撤回已提交计算、不退还已发生服务费用。'}
 
     def tools(self, task='auto', allow_compute=True, allow_document_text=False):
         return [{'type': 'function', 'function': {'name': name, 'description': desc,
@@ -241,9 +267,11 @@ class Agent:
         args = ToolArgs.model_validate(arguments)
         d = self.domain
         if name == 'project_sources':
-            rows = [f for f in self.store.list('file', project_id) if not args.query or args.query.casefold() in f['name'].casefold()]
+            files = self.store.list('file', project_id)
+            rows = [f for f in files if not args.query or args.query.casefold() in f['name'].casefold()]
             return {'files': [{k:f[k] for k in ('file_id','name','size','hash','timestamp')} for f in rows[args.offset:args.offset+args.limit]],
-                    'total':len(rows), 'next_offset': args.offset+args.limit if len(rows)>args.offset+args.limit else None,
+                    'total':len(rows), 'project_file_total':len(files), 'query':args.query,
+                    'next_offset': args.offset+args.limit if len(rows)>args.offset+args.limit else None,
                     'scope':'原件元数据；不含正文，扩展名不证明文件内容有效。'}
         if name == 'weather_epw_analyze':
             if not allow_compute:
@@ -355,6 +383,9 @@ class Agent:
                 'created_at': core.now(), 'llm_commentary': None, 'llm_raw': None, 'error': None,
                 'task': body.task, 'allow_document_text':body.allow_document_text, 'tool_status': 'running',
                 'parent_task_id': body.parent_task_id, 'work_plans': [], 'work_products': [], 'input_questions': [],
+                'execution_budget': {'max_model_requests':body.max_model_requests, 'reported_token_threshold':body.reported_token_threshold,
+                    'requests_started':0, 'reported_tokens':0, 'usage_missing_requests':0,
+                    'meaning':'模型轮次为硬上限；已报告token为调用间软阈值，不是费用硬上限，单次返回可能超出；启用token阈值时，缺用量会暂停后续请求。'},
                 'explanation_status': 'pending' if body.mode == 'provider' else 'not_requested'})
         except Exception:
             self.capacity.release()
@@ -371,6 +402,14 @@ class Agent:
             record = self.store.put('agent', record, record['revision'])
         mutation_results = {}
         citations = {}
+        source_recovery_used = False
+        def check_cancel():
+            try:
+                requested=self.store.get('agentcontrol', record['agent_id']).get('cancel_requested')
+            except KeyError:
+                requested=False
+            if requested:
+                raise AgentCancelled('已取消后续步骤；当前请求的费用及已完成产物保留，已提交计算需单独处理。')
         def meta_action(name, args):
             values = ToolArgs.model_validate(args)
             if name == 'request_project_input':
@@ -434,6 +473,8 @@ class Agent:
             return {**plan, 'meaning': '状态表示工具执行，不表示工程性能、现场校准或采购合格。'}
 
         def invoke(name, args, origin="workflow"):
+            nonlocal source_recovery_used
+            check_cancel()
             if len(record['events']) >= 36:
                 raise core.ValidationError('Tool event budget exhausted')
             if name == 'material_study_create' and (not body.study_plan or StudyCreate.model_validate(args.get('study')).model_dump() != body.study_plan.model_dump()):
@@ -465,6 +506,14 @@ class Agent:
                 else:
                     result = self.call(record['project_id'],name,args,body.allow_compute)
                 event.update(status='succeeded', result=result, result_hash=core.hash_json(result))
+                if name=='project_sources' and args.get('query') and result['total']==0 and result['project_file_total']>0 and not source_recovery_used:
+                    source_recovery_used = True
+                    save()
+                    retry=invoke('project_sources', {'limit':args.get('limit',5)}, origin='recovery')
+                    record.setdefault('recoveries', []).append({'kind':'source_filter_reset','original_query':args['query'],
+                        'returned':len(retry['files']), 'total':retry['total'], 'scope':'取消文件名过滤，仅读同项目首批元数据；剩余分页未自动读取。'})
+                    return {'initial_query_result':result, 'unfiltered_retry':retry,
+                            'scope_changed':True, 'meaning':'首次筛选未命中；服务已实际执行一次无筛选只读重查，非模型自主重试。'}
                 if name=='project_document_search':
                     citations.update({m['citation_id']:m for m in result['matches']})
                 if mutating:
@@ -571,6 +620,13 @@ class Agent:
                     explanation_only = False
                     deadline = time.monotonic()+180
                     for turn in range(8):
+                        check_cancel()
+                        budget=record['execution_budget']
+                        if budget['requests_started']>=body.max_model_requests or (body.reported_token_threshold is not None and (budget['reported_tokens']>=body.reported_token_threshold or budget['usage_missing_requests'])):
+                            record['budget_stop']='模型调用预算已到；保留已完成工具与产物，未继续请求服务商。'
+                            record['explanation_status']='unavailable'
+                            record['explanation_error']=record['budget_stop']
+                            break
                         if time.monotonic() > deadline:
                             raise core.ValidationError('Agent time budget exhausted')
                         if turn == 7 and not explanation_only:
@@ -584,14 +640,18 @@ class Agent:
                         record['events'].append(provider_event)
                         save()
                         provider_start = time.monotonic()
+                        budget['requests_started']+=1
+                        save()
                         try:
                             answer = self.gateway.complete(messages, [] if explanation_only else provider_tools(), timeout_s=max(0, deadline-time.monotonic()))
                             request_info = answer.pop('_request', {})
                             provider_event['request_info'] = request_info
                             provider_event.update(status='succeeded', result={'tool_calls_returned': len(answer.get('tool_calls') or []), 'engineering_values_accepted': False})
                         except Exception as exc:
+                            budget['usage_missing_requests']+=1
                             provider_event['request_info'] = {'attempts': getattr(exc, 'attempts', [])}
                             provider_event.update(status='failed', error='服务商调用失败；不会降级为假成功')
+                            check_cancel()
                             diagnostic = getattr(exc, 'validation_code', None)
                             if diagnostic and protocol_errors < 2 and not explanation_only:
                                 protocol_errors += 1
@@ -603,6 +663,12 @@ class Agent:
                         finally:
                             provider_event.update(duration_ms=round((time.monotonic() - provider_start) * 1000), finished_at=core.now())
                             save()
+                        usage=request_info.get('usage',{}).get('total_tokens')
+                        if isinstance(usage,int) and not isinstance(usage,bool) and usage>=0:
+                            budget['reported_tokens']+=usage
+                        else:
+                            budget['usage_missing_requests']+=1
+                        check_cancel()
                         messages.append(answer)
                         calls = answer.get('tool_calls') or []
                         if explanation_only and calls:
@@ -712,6 +778,8 @@ class Agent:
                         raise core.ValidationError('Provider iteration budget exhausted')
             except PlanAuthorizationError:
                 raise
+            except AgentCancelled:
+                raise
             except Exception as exc:
                 record['explanation_status'] = 'unavailable'
                 record['explanation_error'] = str(exc)[:1000]
@@ -768,6 +836,13 @@ class Agent:
                 'input_questions':record['input_questions'], 'work_products':record['work_products'],
                 'weather_summary': weather_summary if task == 'weather' else None,
                 'limitations': gate['limitations']})
+        except AgentCancelled as exc:
+            for plan in record['work_plans']:
+                for step in plan['steps']:
+                    if step['status'] in {'running','pending'}:
+                        step.update(status='cancelled',error='任务取消，未确认执行完成；已完成步骤保留。')
+            record.update(status='cancelled', tool_status='partial', error=str(exc), answer=None,
+                          explanation_status='cancelled', llm_commentary=None)
         except Exception as exc:
             record.update(status='failed', tool_status='failed', error=str(exc)[:1000], answer=None)
         finally:

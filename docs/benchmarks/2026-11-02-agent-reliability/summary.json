@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "case": "filter_recovery",
+      "status": "succeeded",
+      "explanation_status": "available",
+      "duration_s": 4.64,
+      "execution_budget": {
+        "max_model_requests": 6,
+        "reported_token_threshold": 80000,
+        "requests_started": 2,
+        "reported_tokens": 11910,
+        "usage_missing_requests": 0,
+        "meaning": "模型轮次为硬上限；已报告token为调用间软阈值，不是费用硬上限，单次返回可能超出；缺用量会暂停后续请求。"
+      },
+      "recoveries": [
+        {
+          "kind": "source_filter_reset",
+          "original_query": "原件 上传 文件",
+          "returned": 2,
+          "total": 4,
+          "scope": "取消文件名过滤，仅读同项目首批元数据；剩余分页未自动读取。"
+        }
+      ],
+      "products": 0,
+      "questions": 0,
+      "calls": [
+        "project_sources"
+      ],
+      "jobs": 0
+    },
+    {
+      "case": "all_sources",
+      "status": "succeeded",
+      "explanation_status": "available",
+      "duration_s": 6.91,
+      "execution_budget": {
+        "max_model_requests": 6,
+        "reported_token_threshold": 80000,
+        "requests_started": 2,
+        "reported_tokens": 12274,
+        "usage_missing_requests": 0,
+        "meaning": "模型轮次为硬上限；已报告token为调用间软阈值，不是费用硬上限，单次返回可能超出；缺用量会暂停后续请求。"
+      },
+      "recoveries": [],
+      "products": 0,
+      "questions": 0,
+      "calls": [
+        "project_sources",
+        "evidence_list"
+      ],
+      "jobs": 0
+    },
+    {
+      "case": "one_request_budget",
+      "status": "partial",
+      "explanation_status": "unavailable",
+      "duration_s": 1.55,
+      "execution_budget": {
+        "max_model_requests": 1,
+        "reported_token_threshold": 80000,
+        "requests_started": 1,
+        "reported_tokens": 5542,
+        "usage_missing_requests": 0,
+        "meaning": "模型轮次为硬上限；已报告token为调用间软阈值，不是费用硬上限，单次返回可能超出；缺用量会暂停后续请求。"
+      },
+      "recoveries": [],
+      "products": 0,
+      "questions": 0,
+      "calls": [
+        "evidence_validate",
+        "project_sources"
+      ],
+      "jobs": 0
+    }
+  ],
+  "budget": {
+    "requests": 6,
+    "reported_tokens": 29739,
+    "request_limit": 16,
+    "soft_token_limit": 150000
+  },
+  "uploaded_files_after_third_source": 4
+}
