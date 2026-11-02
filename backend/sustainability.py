@@ -289,6 +289,8 @@ def data_method():
 
 def register_sustainability(app, domain):
     service = domain.sustainability = Sustainability(domain)
+    from .epd import register_epds
+    register_epds(app, service)
     from .retrofit_packages import register_packages
     register_packages(app, service)
 

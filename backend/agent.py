@@ -13,6 +13,7 @@ from .schema import Contract, RunCreate
 from .trust import Trust
 from .robustness import Search, Actions
 from .decision import StudyCreate
+from .epd import EpdCalculation, EpdReference
 from .agent_policy import SYSTEM_PROMPT, POLICY_VERSION, POLICY_SHA256
 from .agent_actions import InputQuestion, META_TOOLS, Shortlist, WorkPlan
 
@@ -72,6 +73,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    epd: EpdCalculation | None = None
     work_plan: WorkPlan | None = None
     shortlist: Shortlist | None = None
     questions: list[InputQuestion] | None = Field(default=None, min_length=1, max_length=6)
@@ -92,6 +94,8 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'epd_search': '检索已归档官方材料碳声明库，按query/offset/limit读取；区分specific/average/generic和声明单位、地区、有效年；不是采购批准或稀土实测',
+    'epd_calculate': '按明确工程量、单位、阶段及已检索的release_sha256/uuid/version核算材料GWP；缺模块/多情景/过期/单位不符拒绝，不含模块D，不是全LCA或碳信用；需要epd参数，禁止编造工程量',
     'project_sources': '按query/offset/limit读取本项目原件元数据，最多5条及next_offset；不含正文/磁盘路径。需要分析现有原件时由你调用，不凭文件名推测内容',
     'weather_epw_analyze': '实际分析并保存本项目上传EPW的气候/缺测/度日结果，需file_id及本次允许计算；固定分析基准18/26°C是分析口径而非建筑设定温度，不自动确认资料或启动能耗仿真',
     'engineering_work_plan': '编排并执行最多8步只读任务，可声明前序依赖；失败保留并跳过依赖步骤。只接受当前开放的读取工具；天气分析及计算写入请独立调用，不能放进批量计划。读取成功不表示工程合格',
@@ -138,6 +142,7 @@ TOOLS = {
 # ToolArgs schema (including study/search definitions) for every no-arg reader
 # can exhaust a model's context before it makes its first tool call.
 TOOL_FIELDS = {
+    'epd_search': ('query', 'offset', 'limit'), 'epd_calculate': ('epd',),
     'project_sources': ('query', 'offset', 'limit'), 'weather_epw_analyze': ('file_id',),
     'engineering_work_plan': ('work_plan',), 'material_shortlist_propose': ('shortlist',),
     'request_project_input': ('questions',),
@@ -254,7 +259,7 @@ class Agent:
                     'components': {'project_get', 'project_sources', 'component_inventory', 'engineering_review', 'ifc_source_inventory', 'floor_csv_inventory'},
                     'model': {'project_get', 'project_sources', 'model_get', 'model_validate', 'model_import_status', 'engineering_review', 'component_inventory', 'project_document_search', 'ifc_source_inventory', 'floor_csv_inventory'},
                     'simulation': {'project_get', 'evidence_validate', 'simulation_status', 'simulation_result'},
-                    'materials': {'project_get', 'material_list', 'material_research', 'sustainability_reports', 'project_diagnose', 'decision_status', 'decision_report'},
+                    'materials': {'epd_search', 'epd_calculate', 'project_get', 'material_list', 'material_research', 'sustainability_reports', 'project_diagnose', 'decision_status', 'decision_report'},
                     'evidence': {'project_get', 'project_sources', 'evidence_list', 'evidence_validate', 'project_document_search'},
                     'diagnose': {'project_get', 'evidence_list', 'evidence_validate', 'project_diagnose',
                                  'project_sources', 'model_get', 'model_validate', 'model_import_status', 'engineering_review', 'measurement_audit', 'component_inventory', 'project_document_search', 'ifc_source_inventory', 'floor_csv_inventory', 'plant_calibration_audit'},
@@ -321,6 +326,23 @@ class Agent:
         if name == 'material_research':
             from .sustainability import research_lookup
             return research_lookup(args.query, args.limit)
+        if name == 'epd_search':
+            page = d.sustainability.epds.search(args.query or '', args.offset//20+1)
+            start = args.offset % 20
+            items = page['items'][start:start+args.limit]
+            end = args.offset+len(items)
+            return {**page, 'items': items, 'offset': args.offset, 'next_offset': end if end < page['total'] else None,
+                    'notice': '官方声明库；尚未审核本工程适用性，具体产品与平均/通用数据不可混称。'}
+        if name == 'epd_calculate':
+            if not args.epd:
+                raise core.ValidationError('需要明确的EPD标识、来源版本、工程量、单位和阶段')
+            body = args.epd
+            result = d.sustainability.epds.calculate(EpdReference(**body.model_dump(include=set(EpdReference.model_fields))),
+                                                    body.quantity, body.unit, body.boundary)
+            result['source_rows'] = [{'csv_line': row['csv_line'], 'module': row['values']['Modul'],
+                                      'scenario': row['values']['Szenario'], 'GWPtotal (A2)': row['values']['GWPtotal (A2)']}
+                                     for row in result['source_rows']]
+            return result
         if name == 'sustainability_reports':
             return [d.sustainability.view(project_id, r) for r in self.store.list('sustainability', project_id)]
         if name == 'material_targets':
@@ -552,7 +574,7 @@ class Agent:
                 'components': ['component_inventory'],
                 'model': ['model_get', 'model_validate', 'model_import_status'],
                 'simulation': ['evidence_validate', 'simulation_status'],
-                'materials': ['project_diagnose', 'material_list', 'material_research', 'sustainability_reports'],
+                'materials': ['epd_search', 'project_diagnose', 'material_list', 'material_research', 'sustainability_reports'],
                 'evidence': ['evidence_list', 'evidence_validate'],
                 'diagnose': ['evidence_list', 'evidence_validate', 'project_diagnose']}
             facts = {}

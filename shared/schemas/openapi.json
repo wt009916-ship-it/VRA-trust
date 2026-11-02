@@ -2258,6 +2258,164 @@
         ]
       }
     },
+    "/api/projects/{project_id}/sustainability/epds": {
+      "get": {
+        "summary": "Search",
+        "operationId": "search_api_projects__project_id__sustainability_epds_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "default": "",
+              "title": "Query"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "dataset_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80,
+              "default": "",
+              "title": "Dataset Type"
+            }
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 10,
+              "default": "",
+              "title": "Unit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/sustainability/epds/calculate": {
+      "post": {
+        "summary": "Calculate",
+        "operationId": "calculate_api_projects__project_id__sustainability_epds_calculate_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EpdCalculation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          },
+          {
+            "projectToken": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/sustainability/packages/preview": {
       "post": {
         "summary": "Preview",
@@ -9503,6 +9661,89 @@
         ],
         "title": "EmailToken"
       },
+      "EpdCalculation": {
+        "properties": {
+          "release_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Release Sha256"
+          },
+          "uuid": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "title": "Uuid"
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Version"
+          },
+          "quantity": {
+            "type": "number",
+            "maximum": 1000000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "kg",
+              "m2",
+              "m3",
+              "item"
+            ],
+            "title": "Unit"
+          },
+          "boundary": {
+            "type": "string",
+            "enum": [
+              "A1-A3",
+              "A1-A5"
+            ],
+            "title": "Boundary",
+            "default": "A1-A3"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "release_sha256",
+          "uuid",
+          "version",
+          "quantity",
+          "unit"
+        ],
+        "title": "EpdCalculation"
+      },
+      "EpdReference": {
+        "properties": {
+          "release_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Release Sha256"
+          },
+          "uuid": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "title": "Uuid"
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "release_sha256",
+          "uuid",
+          "version"
+        ],
+        "title": "EpdReference"
+      },
       "EquipmentImport": {
         "properties": {
           "file_id": {
@@ -11603,7 +11844,7 @@
               {
                 "type": "number",
                 "maximum": 1000000000.0,
-                "minimum": 0.0
+                "minimum": -1000000000.0
               },
               {
                 "type": "null"
@@ -11644,6 +11885,16 @@
             "maxLength": 1000,
             "title": "Gwp Locator",
             "default": ""
+          },
+          "epd_reference": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EpdReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

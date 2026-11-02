@@ -58,7 +58,8 @@ def database_summary(path):
             raise core.ValidationError('恢复数据库完整性检查失败')
         tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         return {table: con.execute('SELECT COUNT(*) FROM '+table).fetchone()[0]
-                for table in ('users', 'project_owners', 'records', 'jobs', 'inbox') if table in tables}
+                for table in ('users', 'project_owners', 'records', 'jobs', 'inbox',
+                              'epd_releases', 'epd_datasets', 'epd_active') if table in tables}
 
 
 def create_snapshot(store, destination):

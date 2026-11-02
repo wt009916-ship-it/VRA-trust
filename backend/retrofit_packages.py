@@ -9,6 +9,7 @@ from pydantic import Field, model_validator
 from . import core
 from .schema import Contract
 from .sustainability import Declaration
+from .epd import EpdReference
 
 COSTS = {'material': '材料/设备', 'installation': '安装', 'demolition': '拆除清运',
          'access': '脚手/措施', 'disruption': '停用/搬迁'}
@@ -50,10 +51,11 @@ class PackageItem(Contract):
     annual_maintenance: Amount = Field(default_factory=Amount)
     service_life_years: int | None = Field(default=None, ge=1, le=100, strict=True)
     replacement: Amount = Field(default_factory=Amount)
-    gwp_per_unit: float | None = Field(default=None, ge=0, le=1e9, strict=True)
+    gwp_per_unit: float | None = Field(default=None, ge=-1e9, le=1e9, strict=True)
     gwp_unit: Literal['kg', 'm2', 'm3', 'item'] | None = None
     gwp_evidence_id: str | None = None
     gwp_locator: str = Field(default='', max_length=1000)
+    epd_reference: EpdReference | None = None
 
 
 class Package(Contract):
@@ -140,13 +142,22 @@ def evaluate(service, pid, body):
                 cashflows += [{'year': y, 'scope_id': s.scope_id, 'category': 'maintenance', 'cny': maintenance} for y in range(1, body.horizon_years + 1)]
             if replacement is not None:
                 cashflows += [{'year': y, 'scope_id': s.scope_id, 'category': 'replacement', 'cny': replacement} for y in years]
-            service.source(pid, i.gwp_evidence_id, snapshots)
-            carbon = s.quantity * i.gwp_per_unit if i.gwp_per_unit is not None else None
+            carbon_source = service.source(pid, i.gwp_evidence_id, snapshots)
+            epd_result = None
+            factor = i.gwp_per_unit
+            if i.epd_reference:
+                epd_result = service.epds.calculate(i.epd_reference, s.quantity, s.unit, body.carbon_boundary)
+                factor = epd_result['gwp_per_unit']
+                carbon_gaps += [prefix + '：' + gap for gap in epd_result['gaps']]
+                if i.gwp_per_unit is not None and (factor is None or not math.isclose(i.gwp_per_unit, factor, rel_tol=1e-10, abs_tol=1e-10)):
+                    raise core.ValidationError('手填材料碳因子与所绑定EPD原件不一致，请重新选择声明')
+            carbon = s.quantity * factor if factor is not None and carbon_source and len(i.gwp_locator) >= 5 else None
             if carbon is None:
-                carbon_gaps.append(prefix + '：材料碳因子未知')
+                carbon_gaps.append(prefix + '：材料碳因子或本工程适用性复核来源/定位不完整')
             details.append({'scope_id': s.scope_id, 'product': i.product, 'version': i.version,
                             'quantity': s.quantity, 'unit': s.unit, 'costs_cny': costs, 'initial_cost_cny': initial,
-                            'checks': checks, 'initial_material_kgco2e': carbon, 'replacement_years': years})
+                            'checks': checks, 'initial_material_kgco2e': carbon, 'replacement_years': years,
+                            'epd_calculation': epd_result})
         complete_scope = not missing and not quantity_gaps
         initial = math.fsum(d['initial_cost_cny'] for d in details) if complete_scope and not cost_gaps else None
         carbon = math.fsum(d['initial_material_kgco2e'] for d in details) if complete_scope and not carbon_gaps else None
@@ -156,6 +167,7 @@ def evaluate(service, pid, body):
                      'initial_cost_cny': initial, 'within_budget': within, 'initial_material_kgco2e': carbon,
                      'discounted_declared_outlay_cny': discounted, 'cashflows': cashflows,
                      'engineering_gaps': gaps, 'cost_gaps': cost_gaps, 'cashflow_gaps': cash_gaps, 'carbon_gaps': carbon_gaps,
+                     'carbon_state': 'NEEDS_EVIDENCE' if carbon_gaps else 'DECLARED_BOUNDARY_CALCULATED',
                      'state': 'NEEDS_EVIDENCE' if gaps or initial is None else 'OVER_BUDGET' if not within else 'READY_FOR_ENGINEER_REVIEW'})
     return {'name': body.name, 'scope_count': len(scopes), 'rows': rows, 'carbon_boundary': body.carbon_boundary,
             'horizon_years': body.horizon_years, 'discount_rate': body.discount_rate,
