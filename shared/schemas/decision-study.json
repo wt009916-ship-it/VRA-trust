@@ -1,0 +1,201 @@
+{
+  "$defs": {
+    "Constraints": {
+      "additionalProperties": false,
+      "properties": {
+        "max_cost_cny": {
+          "anyOf": [
+            {
+              "maximum": 1000000000,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Cost Cny"
+        },
+        "max_cooling_unmet_h": {
+          "anyOf": [
+            {
+              "maximum": 8784,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Cooling Unmet H"
+        },
+        "max_heating_unmet_h": {
+          "anyOf": [
+            {
+              "maximum": 8784,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Heating Unmet H"
+        },
+        "min_energy_saving_pct": {
+          "anyOf": [
+            {
+              "maximum": 100,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Energy Saving Pct"
+        }
+      },
+      "title": "Constraints",
+      "type": "object"
+    },
+    "Option": {
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,39}$",
+          "title": "Option Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "material_id": {
+          "title": "Material Id",
+          "type": "string"
+        },
+        "thickness_m": {
+          "maximum": 2,
+          "minimum": 0.003,
+          "title": "Thickness M",
+          "type": "number"
+        },
+        "cost_cny": {
+          "anyOf": [
+            {
+              "maximum": 1000000000,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Cny"
+        },
+        "cost_evidence_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Evidence Id"
+        },
+        "cost_scope": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Scope"
+        }
+      },
+      "required": [
+        "option_id",
+        "name",
+        "material_id",
+        "thickness_m"
+      ],
+      "title": "Option",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "source_run_id": {
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "target_material": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Target Material",
+      "type": "string"
+    },
+    "options": {
+      "items": {
+        "$ref": "#/$defs/Option"
+      },
+      "maxItems": 12,
+      "minItems": 1,
+      "title": "Options",
+      "type": "array"
+    },
+    "objectives": {
+      "items": {
+        "enum": [
+          "energy_kwh",
+          "cost_cny",
+          "cooling_unmet_h",
+          "carbon_kg"
+        ],
+        "type": "string"
+      },
+      "maxItems": 4,
+      "minItems": 1,
+      "title": "Objectives",
+      "type": "array"
+    },
+    "constraints": {
+      "$ref": "#/$defs/Constraints"
+    },
+    "budget": {
+      "maximum": 12,
+      "minimum": 1,
+      "title": "Budget",
+      "type": "integer"
+    },
+    "basis": {
+      "maxLength": 2000,
+      "minLength": 5,
+      "title": "Basis",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_run_id",
+    "target_material",
+    "options",
+    "budget",
+    "basis"
+  ],
+  "title": "StudyCreate",
+  "type": "object"
+}

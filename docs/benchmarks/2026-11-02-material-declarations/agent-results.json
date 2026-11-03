@@ -1,0 +1,36 @@
+[
+  {
+    "task": 1,
+    "status": "succeeded",
+    "tools": [
+      "epd_search",
+      "epd_calculate"
+    ],
+    "budget": {
+      "max_model_requests": 4,
+      "reported_token_threshold": null,
+      "requests_started": 3,
+      "reported_tokens": 14796,
+      "usage_missing_requests": 0,
+      "meaning": "模型轮次为硬上限；已报告token为调用间软阈值，不是费用硬上限，单次返回可能超出；启用token阈值时，缺用量会暂停后续请求。"
+    },
+    "explanation": "**发现**\n- 检索命中 1 条：EKM90 smoke control damper（排烟防火阀），UUID `d741f800-3177-4681-8095-c21f67a6d0d8`，version `00.08.001`，release_sha256 `b501bf3c…a488ab`。\n- 计算（`CALCULATED_DECLARATION_ONLY`，A1-A3，13.75 item）：\n  - 单单位因子 **17.4806 kgCO2e/item**\n  - 总材料 GWP **240.358 kgCO2e**（≈0.240 tCO2e）\n\n**依据**\n- 计算结果来自 OEKOBAU.DAT 官方公开声明库导出（dataset_count 4308），取源行 CSV line 7932 的 `GWPtotal (A2)` 模块 A1-A3 值。\n- 声明性质：**specific dataset**（具体产品声明），德方业主 Wildeboer Bauteile GmbH，地区 DE，声明单位 1 pcs.，有效期至 2028，依据 DIN EN 15804+A2 / ISO 14025，注册号 EPD-WIL-20230374-ICA1-DE。\n- 工程量 13.75 item 由你提供，阶段仅 A1-A3，未含 A4 运输、A5 施工、B/C 阶段与模块 D。\n\n**未知或阻断**\n- `project_applicability: NOT_REVIEWED`：该声明对中国本项目的适用性**尚未核定**，不是采购批准，也不是本项目实测或厂家批次数据。\n- `issued_credits_t: null`：**不能作为碳信用**，不能交易，也不代表全生命周期负碳或节能量。\n- 未覆盖的阶段与未做完整 LCA，不能据此推算建筑运行节能或全楼碳排。\n\n**下一步**\n- 若此阀将用于实际项目，需补充中国项目侧的规格匹配、运输/施工阶段参数与产品批次证明；本回答不创建仿真。\n- 如需方案对比，可另外检索常规对照产品的声明（本次未执行）。"
+  },
+  {
+    "task": 2,
+    "status": "succeeded",
+    "tools": [
+      "epd_search",
+      "epd_calculate"
+    ],
+    "budget": {
+      "max_model_requests": 4,
+      "reported_token_threshold": null,
+      "requests_started": 3,
+      "reported_tokens": 14892,
+      "usage_missing_requests": 0,
+      "meaning": "模型轮次为硬上限；已报告token为调用间软阈值，不是费用硬上限，单次返回可能超出；启用token阈值时，缺用量会暂停后续请求。"
+    },
+    "explanation": "**发现**\n核算未完成。工具返回 `state = NEEDS_EVIDENCE`，`gwp_per_unit` 与 `material_kgco2e` 均为 null，未产出 GWP 数值。\n\n**依据**\n- 检索命中唯一声明：UUID `d741f800-3177-4681-8095-c21f67a6d0d8`，version `00.08.001`，EKM90 smoke control damper（排烟防火阀，建筑服务/通风附件），specific dataset，DE，Wildeboer Bauteile GmbH，EPD-WIL-20230374-ICA1-DE，有效期至 2028。\n- 换算所用 release：`b501bf3c9a27b9a33ce613fd2945fd36ea9a788786292ac7f77c3a4484a488ab`（Ökobaudat 导出，4308 数据集）。\n- 阻断原因（工具原文）：“工程量与 EPD 声明单位不同；未根据密度或厚度猜测换算”。声明单位为 `item`/`pcs.`，声明量 1.0；提交工程量 13.75 kg，单位不匹配。\n- 源数据行（csv_line 7932，module A1-A3）给出 `GWPtotal (A2) = 17.4805997520178`，即每件（每 pcs.）A1-A3 的 kgCO2e；但这是单价参考行，工具未据此出具核算结果，我也不能自行乘以件数或做 kg→件换算。\n- 项目适用性：`NOT_REVIEWED`；签发信用 `null`。\n\n**未知或阻断**\n- 13.75 实际对应多少件（pcs.）未知；阀件单件质量未知，且不允许用密度/厚度反推。\n- 该德国具体产品声明是否适用于本工程的产品、规格与采购范围未审核；声明阶段仅覆盖 A1-A3，不含 A4 以后。\n- 单价 17.4806 kgCO2e/pcs. 仅为源行读数，不是已核定的项目碳排结果。\n\n**下一步**\n请提供以件（pcs.）计的工程量（阀件数量），或提供本工程对应规格的可换算依据；届时我按同一 release_sha256 与 version 00.08.001、单位 `item`、阶段 A1-A3 重新执行 `epd_calculate`。若确实只能给质量，需要另行取得该产品单件质量的正式来源数据，不能由我用密度或厚度换算。"
+  }
+]

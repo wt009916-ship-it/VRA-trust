@@ -1,0 +1,17 @@
+{
+  "status": "succeeded",
+  "explanation_status": "available",
+  "policy_version": "engineering-agent-2026-10-29.3",
+  "policy_sha256": "e292afd8fdb6dbb454d9b527362a0ba850143cd06a2c414a97fa958a59961131",
+  "citation_validation": {
+    "referenced": [
+      "cite_7170d6282233063e",
+      "cite_a388e1171c30fb14",
+      "cite_ab9f726cbddfe0a9",
+      "cite_cce03650efd4ae84",
+      "cite_f3d94de6a5e3e7b3"
+    ],
+    "unknown": []
+  },
+  "llm_commentary": "**发现**\n- 该 Fraunhofer 文件确实是 IEA EBC Annex 71 双房试验的建模规范（v1.0，Kersken & Strachan，2020-04-27），并非本项目资料：见 [cite_7170d6282233063e]（第1页）。\n- 与 heating 相关的试验设置集中在第 3.9–3.14 节，目录可见「3.9 Heating / Cooling 31」「3.10 Electrical Heating (N2) 31」「3.11 Heat Pump (O5) 33」「3.13 Underfloor Heating (O5) 34」「3.14 Hydronic Scheme 36」：见 [cite_f3d94de6a5e3e7b3]（第3页）。\n- 正文在 p.31：不设制冷；N2 用电阻加热并由功率控制维持房间设定温度，O5 用空源热泵+地板供暖（主试验阶段），走廊、门洞、楼梯在 coheating 阶段之后不供暖：见 [cite_cce03650efd4ae84]（第31页）。另见 [cite_ab9f726cbddfe0a9]（第4页，coheating 试验时段 2018-12-07 18:00 至 2018-12-19 09:00）与 [cite_a388e1171c30fb14]（第5页，电加热器与风扇布置图）。\n\n**依据**\n- 摘录均为本地文本提取，evidence revision 2，review_state = pending，且带 OCR/提取告警「仅为待审声明」，只能作为文献原文引用，不是工程结论。\n- 该构件 authority 为 Fraunhofer IBP / Strathclyde 公开发表的实验规范（CC BY-SA 4.0），data_nature = engineering_reference，属于外部参考实验，非本项目现场记录。\n\n**未知或阻断**\n- 不能证明本项目中央系统已完成现场校准：它是第三方双房实验台的试验设置说明，不含本项目的现场测量、仪表校准证书或校准系数。\n- 本项目 baseline 方案 readiness = EVIDENCE_INSUFFICIENT，缺 IDF 与 EPW 各 0 份有效证据，can_simulate 与 can_recommend 均为 false；即便准入通过，也仅允许仿真，不证明模型代表真实建筑，校准仍需独立证据。\n\n**下一步**\n1. 若需要本项目中央系统校准结论，请提供本项目的现场仪表清单、校准证书/报告与实测序列，由工具侧核对时区、缺测与计量边界。\n2. 若只是补充文献引用，可继续按 3.10–3.14 节页码定位热泵、地板供暖与水力系统的参数叙述。\n3. 待 IDF/EPW 登记后重跑 evidence_validate，再谈建模与校准。"
+}

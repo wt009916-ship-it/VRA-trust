@@ -1,0 +1,414 @@
+[
+  {
+    "source_sha256": "d2d90738bb56c0f57ce5fe2cbca9e75b6a140bb21f105aaa70a9c9a55fcca5fd",
+    "options": {
+      "file_id": "source-audit-only",
+      "building_ref": "Vanderbilt Engineering Science Building",
+      "equipment_ref": "ESB Chiller 1",
+      "boundary": "chiller_electricity",
+      "source_nature": "field_processed",
+      "source_note": "Author preprocessed operational field data, commit 0ffc3c8234ecca50606cfd9ed1e1d464f998b832. Temperatures K, power and Tons columns W, flow declared m3/s. CDT offset -5. Density997 and cp4180 are declared water approximations, tolerance10% diagnostic budget; no sensor certification. PowIn is one chiller train plus its pumps and fans, not the whole two-chiller plant. Tons is author-derived from water-side measurements, not an independent heat meter.",
+      "timestamp_column": "Time",
+      "power_column": "PowChi",
+      "cooling_column": "Tons",
+      "flow_column": "FlowEvap",
+      "return_temperature_column": "TempEvapIn",
+      "supply_temperature_column": "TempEvapOut",
+      "condenser_temperature_column": "TempCondIn",
+      "power_unit": "W",
+      "cooling_unit": "W",
+      "flow_unit": "m3/s",
+      "temperature_unit": "K",
+      "utc_offset_minutes": -300,
+      "interval_seconds": 300,
+      "fluid_density_kg_m3": 997.0,
+      "fluid_heat_capacity_j_kgk": 4180.0,
+      "balance_tolerance_percent": 10.0,
+      "holdout_start": "2018-05-28T00:00:00-05:00"
+    },
+    "result": {
+      "rows": 4094,
+      "valid_operating_rows": 4094,
+      "excluded_rows": 0,
+      "issues": {
+        "absent_intervals": 6396
+      },
+      "imputed_rows": 0,
+      "balance_failed_rows": 4094,
+      "balance_error_median_percent": 98.33863446490044,
+      "balance_diagnostic": {
+        "declared_flow_unit": "m3/s",
+        "paired_rows": 4094,
+        "cooling_to_water_heat_ratio_p05_p50_p95": [
+          60.191449676368656,
+          60.19144967636961,
+          60.19144967637058
+        ],
+        "source_values_rescaled": false,
+        "meaning": "Check meter channel, time alignment and source unit. A stable ratio does not authorize a conversion or prove independent metering."
+      },
+      "blockers": [
+        "4094个有效工况的水侧冷量不满足声明误差预算；不得自动更改单位或乘60"
+      ],
+      "fit": {
+        "formula": "P_kW = b0 + b1*q + b2*q² + b3*q*lift; q=Q_kW/1000, lift=(T_cond_in_C-T_supply_C)/10",
+        "coefficients": [
+          53.67999146710061,
+          0.0,
+          0.0,
+          48.45721666987424
+        ],
+        "parameter_count": 4,
+        "condition_number": 106.50624881230841,
+        "training_domain": {
+          "cooling_kw": [
+            250.55016213920055,
+            1838.2229794546813
+          ],
+          "lift_k": [
+            8.060000000000002,
+            27.97999999999996
+          ]
+        },
+        "holdout_outside_training_domain": 9,
+        "training": {
+          "n": 2567,
+          "degrees_of_freedom": 2563,
+          "nmbe_percent": 1.362666360801556e-14,
+          "cvrmse_percent": 7.224733309229643,
+          "sign_convention": "prediction minus measurement",
+          "measured_sample_sum_kw": 377795.2,
+          "predicted_sample_sum_kw": 377795.20000000007
+        },
+        "holdout": {
+          "n": 1527,
+          "degrees_of_freedom": 1527,
+          "nmbe_percent": -1.1476758562757914,
+          "cvrmse_percent": 6.326123890936754,
+          "sign_convention": "prediction minus measurement",
+          "measured_sample_sum_kw": 241140.1,
+          "predicted_sample_sum_kw": 238372.5932925007
+        }
+      },
+      "status": "blocked",
+      "calibrated": false,
+      "scope": "Operating-point electric power fit only; not annual energy, sensor certification, native EnergyPlus calibration, or site acceptance.",
+      "warnings": [
+        "同一设备时间留出不等于跨建筑泛化；相邻工况可能自相关。",
+        "系数不直接对应EnergyPlus冷机性能曲线，未写入原生模型。",
+        "原时段有缺口，仅评价实际记录工况，不外推完整时段能耗。",
+        "留出期含训练域外工况，已保留全部误差。"
+      ]
+    }
+  },
+  {
+    "source_sha256": "d2d90738bb56c0f57ce5fe2cbca9e75b6a140bb21f105aaa70a9c9a55fcca5fd",
+    "options": {
+      "file_id": "source-audit-only",
+      "building_ref": "Vanderbilt Engineering Science Building",
+      "equipment_ref": "ESB Chiller 1",
+      "boundary": "chiller_train_electricity",
+      "source_nature": "field_processed",
+      "source_note": "Author preprocessed operational field data, commit 0ffc3c8234ecca50606cfd9ed1e1d464f998b832. Temperatures K, power and Tons columns W, flow declared m3/s. CDT offset -5. Density997 and cp4180 are declared water approximations, tolerance10% diagnostic budget; no sensor certification. PowIn is one chiller train plus its pumps and fans, not the whole two-chiller plant. Tons is author-derived from water-side measurements, not an independent heat meter.",
+      "timestamp_column": "Time",
+      "power_column": "PowIn",
+      "cooling_column": "Tons",
+      "flow_column": "FlowEvap",
+      "return_temperature_column": "TempEvapIn",
+      "supply_temperature_column": "TempEvapOut",
+      "condenser_temperature_column": "TempCondIn",
+      "power_unit": "W",
+      "cooling_unit": "W",
+      "flow_unit": "m3/s",
+      "temperature_unit": "K",
+      "utc_offset_minutes": -300,
+      "interval_seconds": 300,
+      "fluid_density_kg_m3": 997.0,
+      "fluid_heat_capacity_j_kgk": 4180.0,
+      "balance_tolerance_percent": 10.0,
+      "holdout_start": "2018-05-28T00:00:00-05:00"
+    },
+    "result": {
+      "rows": 4094,
+      "valid_operating_rows": 4094,
+      "excluded_rows": 0,
+      "issues": {
+        "absent_intervals": 6396
+      },
+      "imputed_rows": 0,
+      "balance_failed_rows": 4094,
+      "balance_error_median_percent": 98.33863446490044,
+      "balance_diagnostic": {
+        "declared_flow_unit": "m3/s",
+        "paired_rows": 4094,
+        "cooling_to_water_heat_ratio_p05_p50_p95": [
+          60.191449676368656,
+          60.19144967636961,
+          60.19144967637058
+        ],
+        "source_values_rescaled": false,
+        "meaning": "Check meter channel, time alignment and source unit. A stable ratio does not authorize a conversion or prove independent metering."
+      },
+      "blockers": [
+        "4094个有效工况的水侧冷量不满足声明误差预算；不得自动更改单位或乘60"
+      ],
+      "fit": {
+        "formula": "P_kW = b0 + b1*q + b2*q² + b3*q*lift; q=Q_kW/1000, lift=(T_cond_in_C-T_supply_C)/10",
+        "coefficients": [
+          79.96758310876967,
+          0.0,
+          0.0,
+          58.33439108727171
+        ],
+        "parameter_count": 4,
+        "condition_number": 106.50624881230841,
+        "training_domain": {
+          "cooling_kw": [
+            250.55016213920055,
+            1838.2229794546813
+          ],
+          "lift_k": [
+            8.060000000000002,
+            27.97999999999996
+          ]
+        },
+        "holdout_outside_training_domain": 9,
+        "training": {
+          "n": 2567,
+          "degrees_of_freedom": 2563,
+          "nmbe_percent": -1.7303301650497083e-14,
+          "cvrmse_percent": 6.387379491674617,
+          "sign_convention": "prediction minus measurement",
+          "measured_sample_sum_kw": 494195.0681119,
+          "predicted_sample_sum_kw": 494195.06811189995
+        },
+        "holdout": {
+          "n": 1527,
+          "degrees_of_freedom": 1527,
+          "nmbe_percent": -0.7985515075731052,
+          "cvrmse_percent": 5.293152172322165,
+          "sign_convention": "prediction minus measurement",
+          "measured_sample_sum_kw": 312892.47872290004,
+          "predicted_sample_sum_kw": 310393.87111697544
+        }
+      },
+      "status": "blocked",
+      "calibrated": false,
+      "scope": "Operating-point electric power fit only; not annual energy, sensor certification, native EnergyPlus calibration, or site acceptance.",
+      "warnings": [
+        "同一设备时间留出不等于跨建筑泛化；相邻工况可能自相关。",
+        "系数不直接对应EnergyPlus冷机性能曲线，未写入原生模型。",
+        "原时段有缺口，仅评价实际记录工况，不外推完整时段能耗。",
+        "留出期含训练域外工况，已保留全部误差。"
+      ]
+    }
+  },
+  {
+    "source_sha256": "f493321e8f2aca2f9ecacdc8592025ccfbcf54591b09d08c5036e745964d2e7d",
+    "options": {
+      "file_id": "source-audit-only",
+      "building_ref": "Vanderbilt Engineering Science Building",
+      "equipment_ref": "ESB Chiller 2",
+      "boundary": "chiller_electricity",
+      "source_nature": "field_processed",
+      "source_note": "Author preprocessed operational field data, commit 0ffc3c8234ecca50606cfd9ed1e1d464f998b832. Temperatures K, power and Tons columns W, flow declared m3/s. CDT offset -5. Density997 and cp4180 are declared water approximations, tolerance10% diagnostic budget; no sensor certification. PowIn is one chiller train plus its pumps and fans, not the whole two-chiller plant. Tons is author-derived from water-side measurements, not an independent heat meter.",
+      "timestamp_column": "Time",
+      "power_column": "PowChi",
+      "cooling_column": "Tons",
+      "flow_column": "FlowEvap",
+      "return_temperature_column": "TempEvapIn",
+      "supply_temperature_column": "TempEvapOut",
+      "condenser_temperature_column": "TempCondIn",
+      "power_unit": "W",
+      "cooling_unit": "W",
+      "flow_unit": "m3/s",
+      "temperature_unit": "K",
+      "utc_offset_minutes": -300,
+      "interval_seconds": 300,
+      "fluid_density_kg_m3": 997.0,
+      "fluid_heat_capacity_j_kgk": 4180.0,
+      "balance_tolerance_percent": 10.0,
+      "holdout_start": "2018-05-28T00:00:00-05:00"
+    },
+    "result": {
+      "rows": 7754,
+      "valid_operating_rows": 7753,
+      "excluded_rows": 1,
+      "issues": {
+        "missing_or_nonnumeric_measurement": 1,
+        "absent_intervals": 3563
+      },
+      "imputed_rows": 0,
+      "balance_failed_rows": 7753,
+      "balance_error_median_percent": 98.33863446490044,
+      "balance_diagnostic": {
+        "declared_flow_unit": "m3/s",
+        "paired_rows": 7753,
+        "cooling_to_water_heat_ratio_p05_p50_p95": [
+          60.19144967636877,
+          60.19144967636958,
+          60.19144967637039
+        ],
+        "source_values_rescaled": false,
+        "meaning": "Check meter channel, time alignment and source unit. A stable ratio does not authorize a conversion or prove independent metering."
+      },
+      "blockers": [
+        "7753个有效工况的水侧冷量不满足声明误差预算；不得自动更改单位或乘60",
+        "存在损坏或无效观测；拟合仅供诊断，须提供有依据的修订原件"
+      ],
+      "fit": {
+        "formula": "P_kW = b0 + b1*q + b2*q² + b3*q*lift; q=Q_kW/1000, lift=(T_cond_in_C-T_supply_C)/10",
+        "coefficients": [
+          58.48330047967167,
+          0.0,
+          0.0,
+          49.973976839722816
+        ],
+        "parameter_count": 4,
+        "condition_number": 107.20357012700445,
+        "training_domain": {
+          "cooling_kw": [
+            390.0313401364784,
+            1929.5005611009612
+          ],
+          "lift_k": [
+            11.149999999999977,
+            26.659999999999968
+          ]
+        },
+        "holdout_outside_training_domain": 179,
+        "training": {
+          "n": 4226,
+          "degrees_of_freedom": 4222,
+          "nmbe_percent": -1.809505209604816e-14,
+          "cvrmse_percent": 4.035068469860929,
+          "sign_convention": "prediction minus measurement",
+          "measured_sample_sum_kw": 776970.2000000001,
+          "predicted_sample_sum_kw": 776970.1999999998
+        },
+        "holdout": {
+          "n": 3527,
+          "degrees_of_freedom": 3527,
+          "nmbe_percent": -0.5289776095366509,
+          "cvrmse_percent": 5.64564515537789,
+          "sign_convention": "prediction minus measurement",
+          "measured_sample_sum_kw": 745455.4,
+          "predicted_sample_sum_kw": 741512.1078449182
+        }
+      },
+      "status": "blocked",
+      "calibrated": false,
+      "scope": "Operating-point electric power fit only; not annual energy, sensor certification, native EnergyPlus calibration, or site acceptance.",
+      "warnings": [
+        "同一设备时间留出不等于跨建筑泛化；相邻工况可能自相关。",
+        "系数不直接对应EnergyPlus冷机性能曲线，未写入原生模型。",
+        "原时段有缺口，仅评价实际记录工况，不外推完整时段能耗。",
+        "留出期含训练域外工况，已保留全部误差。"
+      ]
+    }
+  },
+  {
+    "source_sha256": "f493321e8f2aca2f9ecacdc8592025ccfbcf54591b09d08c5036e745964d2e7d",
+    "options": {
+      "file_id": "source-audit-only",
+      "building_ref": "Vanderbilt Engineering Science Building",
+      "equipment_ref": "ESB Chiller 2",
+      "boundary": "chiller_train_electricity",
+      "source_nature": "field_processed",
+      "source_note": "Author preprocessed operational field data, commit 0ffc3c8234ecca50606cfd9ed1e1d464f998b832. Temperatures K, power and Tons columns W, flow declared m3/s. CDT offset -5. Density997 and cp4180 are declared water approximations, tolerance10% diagnostic budget; no sensor certification. PowIn is one chiller train plus its pumps and fans, not the whole two-chiller plant. Tons is author-derived from water-side measurements, not an independent heat meter.",
+      "timestamp_column": "Time",
+      "power_column": "PowIn",
+      "cooling_column": "Tons",
+      "flow_column": "FlowEvap",
+      "return_temperature_column": "TempEvapIn",
+      "supply_temperature_column": "TempEvapOut",
+      "condenser_temperature_column": "TempCondIn",
+      "power_unit": "W",
+      "cooling_unit": "W",
+      "flow_unit": "m3/s",
+      "temperature_unit": "K",
+      "utc_offset_minutes": -300,
+      "interval_seconds": 300,
+      "fluid_density_kg_m3": 997.0,
+      "fluid_heat_capacity_j_kgk": 4180.0,
+      "balance_tolerance_percent": 10.0,
+      "holdout_start": "2018-05-28T00:00:00-05:00"
+    },
+    "result": {
+      "rows": 7754,
+      "valid_operating_rows": 7753,
+      "excluded_rows": 1,
+      "issues": {
+        "missing_or_nonnumeric_measurement": 1,
+        "absent_intervals": 3563
+      },
+      "imputed_rows": 0,
+      "balance_failed_rows": 7753,
+      "balance_error_median_percent": 98.33863446490044,
+      "balance_diagnostic": {
+        "declared_flow_unit": "m3/s",
+        "paired_rows": 7753,
+        "cooling_to_water_heat_ratio_p05_p50_p95": [
+          60.19144967636877,
+          60.19144967636958,
+          60.19144967637039
+        ],
+        "source_values_rescaled": false,
+        "meaning": "Check meter channel, time alignment and source unit. A stable ratio does not authorize a conversion or prove independent metering."
+      },
+      "blockers": [
+        "7753个有效工况的水侧冷量不满足声明误差预算；不得自动更改单位或乘60",
+        "存在损坏或无效观测；拟合仅供诊断，须提供有依据的修订原件"
+      ],
+      "fit": {
+        "formula": "P_kW = b0 + b1*q + b2*q² + b3*q*lift; q=Q_kW/1000, lift=(T_cond_in_C-T_supply_C)/10",
+        "coefficients": [
+          83.4134462671398,
+          0.0,
+          0.0,
+          57.24984120062224
+        ],
+        "parameter_count": 4,
+        "condition_number": 107.20357012700445,
+        "training_domain": {
+          "cooling_kw": [
+            390.0313401364784,
+            1929.5005611009612
+          ],
+          "lift_k": [
+            11.149999999999977,
+            26.659999999999968
+          ]
+        },
+        "holdout_outside_training_domain": 179,
+        "training": {
+          "n": 4226,
+          "degrees_of_freedom": 4222,
+          "nmbe_percent": -1.6067649233712133e-14,
+          "cvrmse_percent": 4.343245103557574,
+          "sign_convention": "prediction minus measurement",
+          "measured_sample_sum_kw": 959463.0795931,
+          "predicted_sample_sum_kw": 959463.0795930999
+        },
+        "holdout": {
+          "n": 3527,
+          "degrees_of_freedom": 3527,
+          "nmbe_percent": -2.152417861735801,
+          "cvrmse_percent": 4.111029966013026,
+          "sign_convention": "prediction minus measurement",
+          "measured_sample_sum_kw": 927328.159462,
+          "predicted_sample_sum_kw": 907368.182520834
+        }
+      },
+      "status": "blocked",
+      "calibrated": false,
+      "scope": "Operating-point electric power fit only; not annual energy, sensor certification, native EnergyPlus calibration, or site acceptance.",
+      "warnings": [
+        "同一设备时间留出不等于跨建筑泛化；相邻工况可能自相关。",
+        "系数不直接对应EnergyPlus冷机性能曲线，未写入原生模型。",
+        "原时段有缺口，仅评价实际记录工况，不外推完整时段能耗。",
+        "留出期含训练域外工况，已保留全部误差。"
+      ]
+    }
+  }
+]

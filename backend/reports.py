@@ -47,7 +47,8 @@ def report_pdf(report):
     def section(title):
         story.append(para(title, sub))
     def rows(items):
-        table = Table([[para(a), para(b)] for a, b in items], colWidths=[120, 403], hAlign="LEFT")
+        table = Table([[para(a), para(b)] for a, b in items],
+                      colWidths=[120, A4[0]-72-12-120], hAlign="LEFT", splitInRow=1)
         table.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LINEBELOW", (0, 0), (-1, -1), .3, colors.HexColor("#d7e0d5")), ("BOTTOMPADDING", (0, 0), (-1, -1), 7), ("TOPPADDING", (0, 0), (-1, -1), 7)]))
         story.append(table)
     run, project, cert = report["run"], report["project"], report["certificate"]

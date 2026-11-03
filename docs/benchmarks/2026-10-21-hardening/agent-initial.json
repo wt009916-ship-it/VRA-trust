@@ -1,0 +1,3167 @@
+[
+  {
+    "agent_id": "agent_f815df60ab3a465a855924e68ca55755",
+    "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+    "question": "核对站点、记录数、年均温、HDD18、CDD26、太阳辐射和来源 SHA256，不运行仿真。",
+    "mode": "local",
+    "status": "succeeded",
+    "events": [
+      {
+        "tool": "project_get",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:16.402614+00:00",
+        "result": {
+          "name": "商业打磨验收 · Schependomlaan / Golden",
+          "building": {
+            "use": "office",
+            "location": "Test inputs; not a real combined building",
+            "region": "TEST",
+            "area_m2": 1.0,
+            "floors": null,
+            "floor_height_m": null,
+            "window_wall_ratio": null,
+            "envelope": null,
+            "hvac": null,
+            "schedules": null,
+            "notes": null
+          },
+          "data_nature": "user_project",
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "revision": 1,
+          "created_at": "2026-10-21T13:06:11.580270+00:00",
+          "updated_at": "2026-10-21T13:06:11.580270+00:00"
+        },
+        "result_hash": "00384a976c14fa2f4fcac0af1f9f8609f0ce0a27f0a83430e975813501b210c5",
+        "duration_ms": 16,
+        "finished_at": "2026-10-21T13:06:16.420595+00:00"
+      },
+      {
+        "tool": "evidence_list",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:16.423589+00:00",
+        "result": [],
+        "result_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "duration_ms": 0,
+        "finished_at": "2026-10-21T13:06:16.441118+00:00"
+      },
+      {
+        "tool": "evidence_validate",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:16.446639+00:00",
+        "result": {
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "scheme_id": "baseline",
+          "can_simulate": false,
+          "can_recommend": false,
+          "readiness": "EVIDENCE_INSUFFICIENT",
+          "blockers": [
+            {
+              "code": "MISSING_INPUT",
+              "field": "idf",
+              "message": "IDF 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+            },
+            {
+              "code": "MISSING_INPUT",
+              "field": "epw",
+              "message": "EPW 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+            }
+          ],
+          "selected_evidence": {},
+          "limitations": [
+            "通过准入仅允许仿真，不证明模型代表真实建筑。",
+            "项目声明不会直接修改 IDF；建模工作区通过显式发布生成有版本的计算输入。",
+            "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+            "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+          ]
+        },
+        "result_hash": "f16ebe5b2d87e348995bcd332dccb5975fb290795b9d8d6aa861ebebeb26ad13",
+        "duration_ms": 16,
+        "finished_at": "2026-10-21T13:06:16.470372+00:00"
+      },
+      {
+        "tool": "project_diagnose",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:16.474369+00:00",
+        "result": {
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "generated_at": "2026-10-21T13:06:16.496303+00:00",
+          "can_simulate": false,
+          "tasks": [
+            {
+              "task_key": "MISSING_INPUT:epw",
+              "priority": 1,
+              "title": "EPW 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "MISSING_INPUT:idf",
+              "priority": 1,
+              "title": "IDF 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:envelope",
+              "priority": 2,
+              "title": "核对围护结构与残图构造",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:hvac",
+              "priority": 2,
+              "title": "核对设备台账与系统",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:schedules",
+              "priority": 2,
+              "title": "核对运行时段与负荷",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "evidence:bill",
+              "priority": 2,
+              "title": "补充并复核能耗账单与模型校准",
+              "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "evidence:drawing",
+              "priority": 2,
+              "title": "补充并复核图纸、测量与构件定位",
+              "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+              "target_view": "spatial",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "material:new",
+              "priority": 2,
+              "title": "登记候选材料与热工参数",
+              "action": "填写检测定位、测试条件和适用范围；经复核后生成材料方案。",
+              "target_view": "decision",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "run:baseline",
+              "priority": 2,
+              "title": "建立当前有效基准仿真",
+              "action": "完成输入复核后运行 baseline，用作材料方案的同题比较基准。",
+              "target_view": "simulation",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "study:new",
+              "priority": 2,
+              "title": "比较材料方案与工程约束",
+              "action": "指定改造材料层、候选厚度、造价来源、预算和舒适性上限，运行真实方案研究。",
+              "target_view": "decision",
+              "evidence_ids": []
+            }
+          ],
+          "materials": [],
+          "latest_study_status": null,
+          "current_study_id": null,
+          "current_assessment": null,
+          "next_step": {
+            "task_key": "MISSING_INPUT:epw",
+            "priority": 1,
+            "title": "EPW 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          "priority_basis": "1=阻断当前计算；2=影响方案判断；3=材料性能与工程外推验证。未估计补证概率或虚构费用。"
+        },
+        "result_hash": "883f8d70e13f2b3e4c272958a5bba4640d18adad6596ff5774e3979cd5de06fb",
+        "duration_ms": 15,
+        "finished_at": "2026-10-21T13:06:16.496303+00:00"
+      },
+      {
+        "tool": "weather_summary",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:16.500304+00:00",
+        "result": [
+          {
+            "monthly": [
+              {
+                "month": 1,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.127,
+                "minimum_c": -17.0,
+                "maximum_c": 17.0,
+                "humidity_pct": 50.349,
+                "wind_m_s": 3.601,
+                "expected_days": 31,
+                "solar_kwh_m2": 71.816,
+                "heating_degree_days": 523.073,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 2,
+                "days": 28,
+                "valid_temperature_days": 28,
+                "temperature_c": -1.293,
+                "minimum_c": -22.0,
+                "maximum_c": 14.0,
+                "humidity_pct": 63.272,
+                "wind_m_s": 3.236,
+                "expected_days": 28,
+                "solar_kwh_m2": 85.369,
+                "heating_degree_days": 540.212,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 3,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 3.157,
+                "minimum_c": -18.0,
+                "maximum_c": 23.0,
+                "humidity_pct": 62.391,
+                "wind_m_s": 4.56,
+                "expected_days": 31,
+                "solar_kwh_m2": 145.741,
+                "heating_degree_days": 460.127,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 4,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 8.393,
+                "minimum_c": -4.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 57.429,
+                "wind_m_s": 4.343,
+                "expected_days": 30,
+                "solar_kwh_m2": 170.561,
+                "heating_degree_days": 288.208,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 5,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 13.111,
+                "minimum_c": -2.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.69,
+                "wind_m_s": 4.102,
+                "expected_days": 31,
+                "solar_kwh_m2": 189.537,
+                "heating_degree_days": 168.227,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 6,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 18.827,
+                "minimum_c": 6.7,
+                "maximum_c": 35.0,
+                "humidity_pct": 55.385,
+                "wind_m_s": 4.666,
+                "expected_days": 30,
+                "solar_kwh_m2": 187.857,
+                "heating_degree_days": 32.262,
+                "cooling_degree_days": 0.579
+              },
+              {
+                "month": 7,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 20.791,
+                "minimum_c": 10.0,
+                "maximum_c": 36.0,
+                "humidity_pct": 52.372,
+                "wind_m_s": 3.537,
+                "expected_days": 31,
+                "solar_kwh_m2": 191.439,
+                "heating_degree_days": 11.625,
+                "cooling_degree_days": 1.304
+              },
+              {
+                "month": 8,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 21.516,
+                "minimum_c": 11.0,
+                "maximum_c": 33.0,
+                "humidity_pct": 46.933,
+                "wind_m_s": 3.92,
+                "expected_days": 31,
+                "solar_kwh_m2": 182.66,
+                "heating_degree_days": 4.116,
+                "cooling_degree_days": 0.042
+              },
+              {
+                "month": 9,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 16.995,
+                "minimum_c": 3.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.232,
+                "wind_m_s": 3.827,
+                "expected_days": 30,
+                "solar_kwh_m2": 147.863,
+                "heating_degree_days": 75.62,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 10,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 9.355,
+                "minimum_c": -3.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 58.039,
+                "wind_m_s": 3.152,
+                "expected_days": 31,
+                "solar_kwh_m2": 107.937,
+                "heating_degree_days": 267.993,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 11,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 2.571,
+                "minimum_c": -15.0,
+                "maximum_c": 21.0,
+                "humidity_pct": 60.817,
+                "wind_m_s": 3.367,
+                "expected_days": 30,
+                "solar_kwh_m2": 86.438,
+                "heating_degree_days": 462.877,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 12,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.759,
+                "minimum_c": -25.0,
+                "maximum_c": 19.0,
+                "humidity_pct": 42.179,
+                "wind_m_s": 5.129,
+                "expected_days": 31,
+                "solar_kwh_m2": 52.73,
+                "heating_degree_days": 503.474,
+                "cooling_degree_days": 0
+              }
+            ],
+            "annual": {
+              "temperature_c": 9.761,
+              "heating_degree_days": 3337.814,
+              "cooling_degree_days": 1.925,
+              "solar_kwh_m2": 1619.948
+            },
+            "insights": [
+              "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+              "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+              "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+            ],
+            "kind": "epw",
+            "name": "Denver Centennial  Golden   Nr",
+            "location": {
+              "name": "Denver Centennial  Golden   Nr",
+              "region": "CO",
+              "country": "USA",
+              "station": "724666",
+              "latitude": 39.74,
+              "longitude": -105.18,
+              "timezone_hours": -7.0,
+              "elevation_m": 1829.0
+            },
+            "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+            "quality": {
+              "records": 8760,
+              "expected_records": 8760,
+              "missing_records": 0,
+              "duplicate_records": 0,
+              "invalid_fields": {},
+              "full_year": true,
+              "simulation_candidate": true,
+              "issues": []
+            },
+            "limitations": [
+              "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+              "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+              "通过检查后仍须人工登记和复核 EPW 证据。"
+            ],
+            "weather_id": "weather_678db8a817654780a19188f67f136f93",
+            "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+            "file_id": "file_fbf2953ba6ed4821844041140082b410",
+            "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+            "analyzer_version": "weather-quality-1",
+            "created_at": "2026-10-21T13:06:16.047655+00:00",
+            "options": {
+              "heating_base_c": 18,
+              "cooling_base_c": 26
+            },
+            "provenance": {
+              "provider": "uploaded_epw",
+              "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+              "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+            },
+            "revision": 1
+          }
+        ],
+        "result_hash": "fd5a218d80f21b61d6a6e825a58e3e41fa03e186edf759693abd979c722c947d",
+        "duration_ms": 94,
+        "finished_at": "2026-10-21T13:06:16.602370+00:00"
+      },
+      {
+        "tool": "weather_summary",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:16.617722+00:00",
+        "result": [
+          {
+            "monthly": [
+              {
+                "month": 1,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.127,
+                "minimum_c": -17.0,
+                "maximum_c": 17.0,
+                "humidity_pct": 50.349,
+                "wind_m_s": 3.601,
+                "expected_days": 31,
+                "solar_kwh_m2": 71.816,
+                "heating_degree_days": 523.073,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 2,
+                "days": 28,
+                "valid_temperature_days": 28,
+                "temperature_c": -1.293,
+                "minimum_c": -22.0,
+                "maximum_c": 14.0,
+                "humidity_pct": 63.272,
+                "wind_m_s": 3.236,
+                "expected_days": 28,
+                "solar_kwh_m2": 85.369,
+                "heating_degree_days": 540.212,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 3,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 3.157,
+                "minimum_c": -18.0,
+                "maximum_c": 23.0,
+                "humidity_pct": 62.391,
+                "wind_m_s": 4.56,
+                "expected_days": 31,
+                "solar_kwh_m2": 145.741,
+                "heating_degree_days": 460.127,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 4,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 8.393,
+                "minimum_c": -4.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 57.429,
+                "wind_m_s": 4.343,
+                "expected_days": 30,
+                "solar_kwh_m2": 170.561,
+                "heating_degree_days": 288.208,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 5,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 13.111,
+                "minimum_c": -2.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.69,
+                "wind_m_s": 4.102,
+                "expected_days": 31,
+                "solar_kwh_m2": 189.537,
+                "heating_degree_days": 168.227,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 6,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 18.827,
+                "minimum_c": 6.7,
+                "maximum_c": 35.0,
+                "humidity_pct": 55.385,
+                "wind_m_s": 4.666,
+                "expected_days": 30,
+                "solar_kwh_m2": 187.857,
+                "heating_degree_days": 32.262,
+                "cooling_degree_days": 0.579
+              },
+              {
+                "month": 7,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 20.791,
+                "minimum_c": 10.0,
+                "maximum_c": 36.0,
+                "humidity_pct": 52.372,
+                "wind_m_s": 3.537,
+                "expected_days": 31,
+                "solar_kwh_m2": 191.439,
+                "heating_degree_days": 11.625,
+                "cooling_degree_days": 1.304
+              },
+              {
+                "month": 8,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 21.516,
+                "minimum_c": 11.0,
+                "maximum_c": 33.0,
+                "humidity_pct": 46.933,
+                "wind_m_s": 3.92,
+                "expected_days": 31,
+                "solar_kwh_m2": 182.66,
+                "heating_degree_days": 4.116,
+                "cooling_degree_days": 0.042
+              },
+              {
+                "month": 9,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 16.995,
+                "minimum_c": 3.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.232,
+                "wind_m_s": 3.827,
+                "expected_days": 30,
+                "solar_kwh_m2": 147.863,
+                "heating_degree_days": 75.62,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 10,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 9.355,
+                "minimum_c": -3.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 58.039,
+                "wind_m_s": 3.152,
+                "expected_days": 31,
+                "solar_kwh_m2": 107.937,
+                "heating_degree_days": 267.993,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 11,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 2.571,
+                "minimum_c": -15.0,
+                "maximum_c": 21.0,
+                "humidity_pct": 60.817,
+                "wind_m_s": 3.367,
+                "expected_days": 30,
+                "solar_kwh_m2": 86.438,
+                "heating_degree_days": 462.877,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 12,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.759,
+                "minimum_c": -25.0,
+                "maximum_c": 19.0,
+                "humidity_pct": 42.179,
+                "wind_m_s": 5.129,
+                "expected_days": 31,
+                "solar_kwh_m2": 52.73,
+                "heating_degree_days": 503.474,
+                "cooling_degree_days": 0
+              }
+            ],
+            "annual": {
+              "temperature_c": 9.761,
+              "heating_degree_days": 3337.814,
+              "cooling_degree_days": 1.925,
+              "solar_kwh_m2": 1619.948
+            },
+            "insights": [
+              "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+              "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+              "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+            ],
+            "kind": "epw",
+            "name": "Denver Centennial  Golden   Nr",
+            "location": {
+              "name": "Denver Centennial  Golden   Nr",
+              "region": "CO",
+              "country": "USA",
+              "station": "724666",
+              "latitude": 39.74,
+              "longitude": -105.18,
+              "timezone_hours": -7.0,
+              "elevation_m": 1829.0
+            },
+            "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+            "quality": {
+              "records": 8760,
+              "expected_records": 8760,
+              "missing_records": 0,
+              "duplicate_records": 0,
+              "invalid_fields": {},
+              "full_year": true,
+              "simulation_candidate": true,
+              "issues": []
+            },
+            "limitations": [
+              "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+              "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+              "通过检查后仍须人工登记和复核 EPW 证据。"
+            ],
+            "weather_id": "weather_678db8a817654780a19188f67f136f93",
+            "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+            "file_id": "file_fbf2953ba6ed4821844041140082b410",
+            "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+            "analyzer_version": "weather-quality-1",
+            "created_at": "2026-10-21T13:06:16.047655+00:00",
+            "options": {
+              "heating_base_c": 18,
+              "cooling_base_c": 26
+            },
+            "provenance": {
+              "provider": "uploaded_epw",
+              "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+              "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+            },
+            "revision": 1
+          }
+        ],
+        "result_hash": "fd5a218d80f21b61d6a6e825a58e3e41fa03e186edf759693abd979c722c947d",
+        "duration_ms": 78,
+        "finished_at": "2026-10-21T13:06:16.698753+00:00"
+      }
+    ],
+    "answer": {
+      "can_simulate": false,
+      "can_recommend": false,
+      "basis": [
+        "project_get",
+        "evidence_list",
+        "evidence_validate",
+        "project_diagnose",
+        "weather_summary",
+        "weather_summary"
+      ],
+      "gaps": [
+        {
+          "code": "MISSING_INPUT",
+          "field": "idf",
+          "message": "IDF 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+        },
+        {
+          "code": "MISSING_INPUT",
+          "field": "epw",
+          "message": "EPW 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+        }
+      ],
+      "summary": "当前输入阻断计算；已列出可执行补证顺序。",
+      "diagnosis": {
+        "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+        "generated_at": "2026-10-21T13:06:16.712583+00:00",
+        "can_simulate": false,
+        "tasks": [
+          {
+            "task_key": "MISSING_INPUT:epw",
+            "priority": 1,
+            "title": "EPW 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "MISSING_INPUT:idf",
+            "priority": 1,
+            "title": "IDF 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:envelope",
+            "priority": 2,
+            "title": "核对围护结构与残图构造",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:hvac",
+            "priority": 2,
+            "title": "核对设备台账与系统",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:schedules",
+            "priority": 2,
+            "title": "核对运行时段与负荷",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "evidence:bill",
+            "priority": 2,
+            "title": "补充并复核能耗账单与模型校准",
+            "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "evidence:drawing",
+            "priority": 2,
+            "title": "补充并复核图纸、测量与构件定位",
+            "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+            "target_view": "spatial",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "material:new",
+            "priority": 2,
+            "title": "登记候选材料与热工参数",
+            "action": "填写检测定位、测试条件和适用范围；经复核后生成材料方案。",
+            "target_view": "decision",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "run:baseline",
+            "priority": 2,
+            "title": "建立当前有效基准仿真",
+            "action": "完成输入复核后运行 baseline，用作材料方案的同题比较基准。",
+            "target_view": "simulation",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "study:new",
+            "priority": 2,
+            "title": "比较材料方案与工程约束",
+            "action": "指定改造材料层、候选厚度、造价来源、预算和舒适性上限，运行真实方案研究。",
+            "target_view": "decision",
+            "evidence_ids": []
+          }
+        ],
+        "materials": [],
+        "latest_study_status": null,
+        "current_study_id": null,
+        "current_assessment": null,
+        "next_step": {
+          "task_key": "MISSING_INPUT:epw",
+          "priority": 1,
+          "title": "EPW 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+          "target_view": "evidence",
+          "evidence_ids": []
+        },
+        "priority_basis": "1=阻断当前计算；2=影响方案判断；3=材料性能与工程外推验证。未估计补证概率或虚构费用。"
+      },
+      "weather": [
+        {
+          "monthly": [
+            {
+              "month": 1,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 1.127,
+              "minimum_c": -17.0,
+              "maximum_c": 17.0,
+              "humidity_pct": 50.349,
+              "wind_m_s": 3.601,
+              "expected_days": 31,
+              "solar_kwh_m2": 71.816,
+              "heating_degree_days": 523.073,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 2,
+              "days": 28,
+              "valid_temperature_days": 28,
+              "temperature_c": -1.293,
+              "minimum_c": -22.0,
+              "maximum_c": 14.0,
+              "humidity_pct": 63.272,
+              "wind_m_s": 3.236,
+              "expected_days": 28,
+              "solar_kwh_m2": 85.369,
+              "heating_degree_days": 540.212,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 3,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 3.157,
+              "minimum_c": -18.0,
+              "maximum_c": 23.0,
+              "humidity_pct": 62.391,
+              "wind_m_s": 4.56,
+              "expected_days": 31,
+              "solar_kwh_m2": 145.741,
+              "heating_degree_days": 460.127,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 4,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 8.393,
+              "minimum_c": -4.0,
+              "maximum_c": 26.0,
+              "humidity_pct": 57.429,
+              "wind_m_s": 4.343,
+              "expected_days": 30,
+              "solar_kwh_m2": 170.561,
+              "heating_degree_days": 288.208,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 5,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 13.111,
+              "minimum_c": -2.0,
+              "maximum_c": 32.0,
+              "humidity_pct": 48.69,
+              "wind_m_s": 4.102,
+              "expected_days": 31,
+              "solar_kwh_m2": 189.537,
+              "heating_degree_days": 168.227,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 6,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 18.827,
+              "minimum_c": 6.7,
+              "maximum_c": 35.0,
+              "humidity_pct": 55.385,
+              "wind_m_s": 4.666,
+              "expected_days": 30,
+              "solar_kwh_m2": 187.857,
+              "heating_degree_days": 32.262,
+              "cooling_degree_days": 0.579
+            },
+            {
+              "month": 7,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 20.791,
+              "minimum_c": 10.0,
+              "maximum_c": 36.0,
+              "humidity_pct": 52.372,
+              "wind_m_s": 3.537,
+              "expected_days": 31,
+              "solar_kwh_m2": 191.439,
+              "heating_degree_days": 11.625,
+              "cooling_degree_days": 1.304
+            },
+            {
+              "month": 8,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 21.516,
+              "minimum_c": 11.0,
+              "maximum_c": 33.0,
+              "humidity_pct": 46.933,
+              "wind_m_s": 3.92,
+              "expected_days": 31,
+              "solar_kwh_m2": 182.66,
+              "heating_degree_days": 4.116,
+              "cooling_degree_days": 0.042
+            },
+            {
+              "month": 9,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 16.995,
+              "minimum_c": 3.0,
+              "maximum_c": 32.0,
+              "humidity_pct": 48.232,
+              "wind_m_s": 3.827,
+              "expected_days": 30,
+              "solar_kwh_m2": 147.863,
+              "heating_degree_days": 75.62,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 10,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 9.355,
+              "minimum_c": -3.0,
+              "maximum_c": 26.0,
+              "humidity_pct": 58.039,
+              "wind_m_s": 3.152,
+              "expected_days": 31,
+              "solar_kwh_m2": 107.937,
+              "heating_degree_days": 267.993,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 11,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 2.571,
+              "minimum_c": -15.0,
+              "maximum_c": 21.0,
+              "humidity_pct": 60.817,
+              "wind_m_s": 3.367,
+              "expected_days": 30,
+              "solar_kwh_m2": 86.438,
+              "heating_degree_days": 462.877,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 12,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 1.759,
+              "minimum_c": -25.0,
+              "maximum_c": 19.0,
+              "humidity_pct": 42.179,
+              "wind_m_s": 5.129,
+              "expected_days": 31,
+              "solar_kwh_m2": 52.73,
+              "heating_degree_days": 503.474,
+              "cooling_degree_days": 0
+            }
+          ],
+          "annual": {
+            "temperature_c": 9.761,
+            "heating_degree_days": 3337.814,
+            "cooling_degree_days": 1.925,
+            "solar_kwh_m2": 1619.948
+          },
+          "insights": [
+            "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+            "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+            "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+          ],
+          "kind": "epw",
+          "name": "Denver Centennial  Golden   Nr",
+          "location": {
+            "name": "Denver Centennial  Golden   Nr",
+            "region": "CO",
+            "country": "USA",
+            "station": "724666",
+            "latitude": 39.74,
+            "longitude": -105.18,
+            "timezone_hours": -7.0,
+            "elevation_m": 1829.0
+          },
+          "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+          "quality": {
+            "records": 8760,
+            "expected_records": 8760,
+            "missing_records": 0,
+            "duplicate_records": 0,
+            "invalid_fields": {},
+            "full_year": true,
+            "simulation_candidate": true,
+            "issues": []
+          },
+          "limitations": [
+            "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+            "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+            "通过检查后仍须人工登记和复核 EPW 证据。"
+          ],
+          "weather_id": "weather_678db8a817654780a19188f67f136f93",
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "file_id": "file_fbf2953ba6ed4821844041140082b410",
+          "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+          "analyzer_version": "weather-quality-1",
+          "created_at": "2026-10-21T13:06:16.047655+00:00",
+          "options": {
+            "heating_base_c": 18,
+            "cooling_base_c": 26
+          },
+          "provenance": {
+            "provider": "uploaded_epw",
+            "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+            "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+          },
+          "revision": 1
+        }
+      ],
+      "as_of": "2026-10-21T13:06:16.712583+00:00",
+      "weather_summary": "已核对 1 份天气分析；数值及来源见结果卡。",
+      "limitations": [
+        "通过准入仅允许仿真，不证明模型代表真实建筑。",
+        "项目声明不会直接修改 IDF；建模工作区通过显式发布生成有版本的计算输入。",
+        "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+        "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+      ]
+    },
+    "created_at": "2026-10-21T13:06:16.391095+00:00",
+    "llm_commentary": null,
+    "llm_raw": null,
+    "error": null,
+    "task": "weather",
+    "tool_status": "succeeded",
+    "explanation_status": "not_requested",
+    "revision": 14,
+    "resolved_task": "weather",
+    "finished_at": "2026-10-21T13:06:16.712583+00:00"
+  },
+  {
+    "agent_id": "agent_c6b75d0f8a6743d1b90221c457319e97",
+    "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+    "question": "核对站点、记录数、年均温、HDD18、CDD26、太阳辐射和来源 SHA256，不运行仿真。",
+    "mode": "provider",
+    "status": "succeeded",
+    "events": [
+      {
+        "tool": "project_get",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:16.974375+00:00",
+        "result": {
+          "name": "商业打磨验收 · Schependomlaan / Golden",
+          "building": {
+            "use": "office",
+            "location": "Test inputs; not a real combined building",
+            "region": "TEST",
+            "area_m2": 1.0,
+            "floors": null,
+            "floor_height_m": null,
+            "window_wall_ratio": null,
+            "envelope": null,
+            "hvac": null,
+            "schedules": null,
+            "notes": null
+          },
+          "data_nature": "user_project",
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "revision": 1,
+          "created_at": "2026-10-21T13:06:11.580270+00:00",
+          "updated_at": "2026-10-21T13:06:11.580270+00:00"
+        },
+        "result_hash": "00384a976c14fa2f4fcac0af1f9f8609f0ce0a27f0a83430e975813501b210c5",
+        "duration_ms": 15,
+        "finished_at": "2026-10-21T13:06:16.994995+00:00"
+      },
+      {
+        "tool": "evidence_list",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:17.000757+00:00",
+        "result": [],
+        "result_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "duration_ms": 15,
+        "finished_at": "2026-10-21T13:06:17.026784+00:00"
+      },
+      {
+        "tool": "evidence_validate",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:17.031794+00:00",
+        "result": {
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "scheme_id": "baseline",
+          "can_simulate": false,
+          "can_recommend": false,
+          "readiness": "EVIDENCE_INSUFFICIENT",
+          "blockers": [
+            {
+              "code": "MISSING_INPUT",
+              "field": "idf",
+              "message": "IDF 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+            },
+            {
+              "code": "MISSING_INPUT",
+              "field": "epw",
+              "message": "EPW 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+            }
+          ],
+          "selected_evidence": {},
+          "limitations": [
+            "通过准入仅允许仿真，不证明模型代表真实建筑。",
+            "项目声明不会直接修改 IDF；建模工作区通过显式发布生成有版本的计算输入。",
+            "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+            "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+          ]
+        },
+        "result_hash": "f16ebe5b2d87e348995bcd332dccb5975fb290795b9d8d6aa861ebebeb26ad13",
+        "duration_ms": 16,
+        "finished_at": "2026-10-21T13:06:17.052317+00:00"
+      },
+      {
+        "tool": "project_diagnose",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:17.056320+00:00",
+        "result": {
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "generated_at": "2026-10-21T13:06:17.080063+00:00",
+          "can_simulate": false,
+          "tasks": [
+            {
+              "task_key": "MISSING_INPUT:epw",
+              "priority": 1,
+              "title": "EPW 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "MISSING_INPUT:idf",
+              "priority": 1,
+              "title": "IDF 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:envelope",
+              "priority": 2,
+              "title": "核对围护结构与残图构造",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:hvac",
+              "priority": 2,
+              "title": "核对设备台账与系统",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:schedules",
+              "priority": 2,
+              "title": "核对运行时段与负荷",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "evidence:bill",
+              "priority": 2,
+              "title": "补充并复核能耗账单与模型校准",
+              "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "evidence:drawing",
+              "priority": 2,
+              "title": "补充并复核图纸、测量与构件定位",
+              "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+              "target_view": "spatial",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "material:new",
+              "priority": 2,
+              "title": "登记候选材料与热工参数",
+              "action": "填写检测定位、测试条件和适用范围；经复核后生成材料方案。",
+              "target_view": "decision",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "run:baseline",
+              "priority": 2,
+              "title": "建立当前有效基准仿真",
+              "action": "完成输入复核后运行 baseline，用作材料方案的同题比较基准。",
+              "target_view": "simulation",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "study:new",
+              "priority": 2,
+              "title": "比较材料方案与工程约束",
+              "action": "指定改造材料层、候选厚度、造价来源、预算和舒适性上限，运行真实方案研究。",
+              "target_view": "decision",
+              "evidence_ids": []
+            }
+          ],
+          "materials": [],
+          "latest_study_status": null,
+          "current_study_id": null,
+          "current_assessment": null,
+          "next_step": {
+            "task_key": "MISSING_INPUT:epw",
+            "priority": 1,
+            "title": "EPW 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          "priority_basis": "1=阻断当前计算；2=影响方案判断；3=材料性能与工程外推验证。未估计补证概率或虚构费用。"
+        },
+        "result_hash": "fc8dbab38bca1066bafbaec0d87cf3c00836b23a9498273e314c6c8169c21872",
+        "duration_ms": 15,
+        "finished_at": "2026-10-21T13:06:17.080063+00:00"
+      },
+      {
+        "tool": "weather_summary",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:17.083063+00:00",
+        "result": [
+          {
+            "monthly": [
+              {
+                "month": 1,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.127,
+                "minimum_c": -17.0,
+                "maximum_c": 17.0,
+                "humidity_pct": 50.349,
+                "wind_m_s": 3.601,
+                "expected_days": 31,
+                "solar_kwh_m2": 71.816,
+                "heating_degree_days": 523.073,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 2,
+                "days": 28,
+                "valid_temperature_days": 28,
+                "temperature_c": -1.293,
+                "minimum_c": -22.0,
+                "maximum_c": 14.0,
+                "humidity_pct": 63.272,
+                "wind_m_s": 3.236,
+                "expected_days": 28,
+                "solar_kwh_m2": 85.369,
+                "heating_degree_days": 540.212,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 3,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 3.157,
+                "minimum_c": -18.0,
+                "maximum_c": 23.0,
+                "humidity_pct": 62.391,
+                "wind_m_s": 4.56,
+                "expected_days": 31,
+                "solar_kwh_m2": 145.741,
+                "heating_degree_days": 460.127,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 4,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 8.393,
+                "minimum_c": -4.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 57.429,
+                "wind_m_s": 4.343,
+                "expected_days": 30,
+                "solar_kwh_m2": 170.561,
+                "heating_degree_days": 288.208,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 5,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 13.111,
+                "minimum_c": -2.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.69,
+                "wind_m_s": 4.102,
+                "expected_days": 31,
+                "solar_kwh_m2": 189.537,
+                "heating_degree_days": 168.227,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 6,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 18.827,
+                "minimum_c": 6.7,
+                "maximum_c": 35.0,
+                "humidity_pct": 55.385,
+                "wind_m_s": 4.666,
+                "expected_days": 30,
+                "solar_kwh_m2": 187.857,
+                "heating_degree_days": 32.262,
+                "cooling_degree_days": 0.579
+              },
+              {
+                "month": 7,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 20.791,
+                "minimum_c": 10.0,
+                "maximum_c": 36.0,
+                "humidity_pct": 52.372,
+                "wind_m_s": 3.537,
+                "expected_days": 31,
+                "solar_kwh_m2": 191.439,
+                "heating_degree_days": 11.625,
+                "cooling_degree_days": 1.304
+              },
+              {
+                "month": 8,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 21.516,
+                "minimum_c": 11.0,
+                "maximum_c": 33.0,
+                "humidity_pct": 46.933,
+                "wind_m_s": 3.92,
+                "expected_days": 31,
+                "solar_kwh_m2": 182.66,
+                "heating_degree_days": 4.116,
+                "cooling_degree_days": 0.042
+              },
+              {
+                "month": 9,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 16.995,
+                "minimum_c": 3.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.232,
+                "wind_m_s": 3.827,
+                "expected_days": 30,
+                "solar_kwh_m2": 147.863,
+                "heating_degree_days": 75.62,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 10,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 9.355,
+                "minimum_c": -3.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 58.039,
+                "wind_m_s": 3.152,
+                "expected_days": 31,
+                "solar_kwh_m2": 107.937,
+                "heating_degree_days": 267.993,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 11,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 2.571,
+                "minimum_c": -15.0,
+                "maximum_c": 21.0,
+                "humidity_pct": 60.817,
+                "wind_m_s": 3.367,
+                "expected_days": 30,
+                "solar_kwh_m2": 86.438,
+                "heating_degree_days": 462.877,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 12,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.759,
+                "minimum_c": -25.0,
+                "maximum_c": 19.0,
+                "humidity_pct": 42.179,
+                "wind_m_s": 5.129,
+                "expected_days": 31,
+                "solar_kwh_m2": 52.73,
+                "heating_degree_days": 503.474,
+                "cooling_degree_days": 0
+              }
+            ],
+            "annual": {
+              "temperature_c": 9.761,
+              "heating_degree_days": 3337.814,
+              "cooling_degree_days": 1.925,
+              "solar_kwh_m2": 1619.948
+            },
+            "insights": [
+              "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+              "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+              "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+            ],
+            "kind": "epw",
+            "name": "Denver Centennial  Golden   Nr",
+            "location": {
+              "name": "Denver Centennial  Golden   Nr",
+              "region": "CO",
+              "country": "USA",
+              "station": "724666",
+              "latitude": 39.74,
+              "longitude": -105.18,
+              "timezone_hours": -7.0,
+              "elevation_m": 1829.0
+            },
+            "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+            "quality": {
+              "records": 8760,
+              "expected_records": 8760,
+              "missing_records": 0,
+              "duplicate_records": 0,
+              "invalid_fields": {},
+              "full_year": true,
+              "simulation_candidate": true,
+              "issues": []
+            },
+            "limitations": [
+              "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+              "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+              "通过检查后仍须人工登记和复核 EPW 证据。"
+            ],
+            "weather_id": "weather_678db8a817654780a19188f67f136f93",
+            "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+            "file_id": "file_fbf2953ba6ed4821844041140082b410",
+            "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+            "analyzer_version": "weather-quality-1",
+            "created_at": "2026-10-21T13:06:16.047655+00:00",
+            "options": {
+              "heating_base_c": 18,
+              "cooling_base_c": 26
+            },
+            "provenance": {
+              "provider": "uploaded_epw",
+              "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+              "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+            },
+            "revision": 1
+          }
+        ],
+        "result_hash": "fd5a218d80f21b61d6a6e825a58e3e41fa03e186edf759693abd979c722c947d",
+        "duration_ms": 94,
+        "finished_at": "2026-10-21T13:06:17.187638+00:00"
+      },
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:17.191638+00:00",
+        "arguments": {
+          "provider": "OpenAI-compatible",
+          "model": "qwen3-benchmark"
+        },
+        "result": {
+          "tool_calls_returned": 0,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 15985,
+        "finished_at": "2026-10-21T13:06:33.188849+00:00"
+      },
+      {
+        "tool": "weather_summary",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:33.201450+00:00",
+        "result": [
+          {
+            "monthly": [
+              {
+                "month": 1,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.127,
+                "minimum_c": -17.0,
+                "maximum_c": 17.0,
+                "humidity_pct": 50.349,
+                "wind_m_s": 3.601,
+                "expected_days": 31,
+                "solar_kwh_m2": 71.816,
+                "heating_degree_days": 523.073,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 2,
+                "days": 28,
+                "valid_temperature_days": 28,
+                "temperature_c": -1.293,
+                "minimum_c": -22.0,
+                "maximum_c": 14.0,
+                "humidity_pct": 63.272,
+                "wind_m_s": 3.236,
+                "expected_days": 28,
+                "solar_kwh_m2": 85.369,
+                "heating_degree_days": 540.212,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 3,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 3.157,
+                "minimum_c": -18.0,
+                "maximum_c": 23.0,
+                "humidity_pct": 62.391,
+                "wind_m_s": 4.56,
+                "expected_days": 31,
+                "solar_kwh_m2": 145.741,
+                "heating_degree_days": 460.127,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 4,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 8.393,
+                "minimum_c": -4.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 57.429,
+                "wind_m_s": 4.343,
+                "expected_days": 30,
+                "solar_kwh_m2": 170.561,
+                "heating_degree_days": 288.208,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 5,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 13.111,
+                "minimum_c": -2.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.69,
+                "wind_m_s": 4.102,
+                "expected_days": 31,
+                "solar_kwh_m2": 189.537,
+                "heating_degree_days": 168.227,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 6,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 18.827,
+                "minimum_c": 6.7,
+                "maximum_c": 35.0,
+                "humidity_pct": 55.385,
+                "wind_m_s": 4.666,
+                "expected_days": 30,
+                "solar_kwh_m2": 187.857,
+                "heating_degree_days": 32.262,
+                "cooling_degree_days": 0.579
+              },
+              {
+                "month": 7,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 20.791,
+                "minimum_c": 10.0,
+                "maximum_c": 36.0,
+                "humidity_pct": 52.372,
+                "wind_m_s": 3.537,
+                "expected_days": 31,
+                "solar_kwh_m2": 191.439,
+                "heating_degree_days": 11.625,
+                "cooling_degree_days": 1.304
+              },
+              {
+                "month": 8,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 21.516,
+                "minimum_c": 11.0,
+                "maximum_c": 33.0,
+                "humidity_pct": 46.933,
+                "wind_m_s": 3.92,
+                "expected_days": 31,
+                "solar_kwh_m2": 182.66,
+                "heating_degree_days": 4.116,
+                "cooling_degree_days": 0.042
+              },
+              {
+                "month": 9,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 16.995,
+                "minimum_c": 3.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.232,
+                "wind_m_s": 3.827,
+                "expected_days": 30,
+                "solar_kwh_m2": 147.863,
+                "heating_degree_days": 75.62,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 10,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 9.355,
+                "minimum_c": -3.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 58.039,
+                "wind_m_s": 3.152,
+                "expected_days": 31,
+                "solar_kwh_m2": 107.937,
+                "heating_degree_days": 267.993,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 11,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 2.571,
+                "minimum_c": -15.0,
+                "maximum_c": 21.0,
+                "humidity_pct": 60.817,
+                "wind_m_s": 3.367,
+                "expected_days": 30,
+                "solar_kwh_m2": 86.438,
+                "heating_degree_days": 462.877,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 12,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.759,
+                "minimum_c": -25.0,
+                "maximum_c": 19.0,
+                "humidity_pct": 42.179,
+                "wind_m_s": 5.129,
+                "expected_days": 31,
+                "solar_kwh_m2": 52.73,
+                "heating_degree_days": 503.474,
+                "cooling_degree_days": 0
+              }
+            ],
+            "annual": {
+              "temperature_c": 9.761,
+              "heating_degree_days": 3337.814,
+              "cooling_degree_days": 1.925,
+              "solar_kwh_m2": 1619.948
+            },
+            "insights": [
+              "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+              "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+              "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+            ],
+            "kind": "epw",
+            "name": "Denver Centennial  Golden   Nr",
+            "location": {
+              "name": "Denver Centennial  Golden   Nr",
+              "region": "CO",
+              "country": "USA",
+              "station": "724666",
+              "latitude": 39.74,
+              "longitude": -105.18,
+              "timezone_hours": -7.0,
+              "elevation_m": 1829.0
+            },
+            "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+            "quality": {
+              "records": 8760,
+              "expected_records": 8760,
+              "missing_records": 0,
+              "duplicate_records": 0,
+              "invalid_fields": {},
+              "full_year": true,
+              "simulation_candidate": true,
+              "issues": []
+            },
+            "limitations": [
+              "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+              "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+              "通过检查后仍须人工登记和复核 EPW 证据。"
+            ],
+            "weather_id": "weather_678db8a817654780a19188f67f136f93",
+            "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+            "file_id": "file_fbf2953ba6ed4821844041140082b410",
+            "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+            "analyzer_version": "weather-quality-1",
+            "created_at": "2026-10-21T13:06:16.047655+00:00",
+            "options": {
+              "heating_base_c": 18,
+              "cooling_base_c": 26
+            },
+            "provenance": {
+              "provider": "uploaded_epw",
+              "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+              "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+            },
+            "revision": 1
+          }
+        ],
+        "result_hash": "fd5a218d80f21b61d6a6e825a58e3e41fa03e186edf759693abd979c722c947d",
+        "duration_ms": 78,
+        "finished_at": "2026-10-21T13:06:33.288705+00:00"
+      }
+    ],
+    "answer": {
+      "can_simulate": false,
+      "can_recommend": false,
+      "basis": [
+        "project_get",
+        "evidence_list",
+        "evidence_validate",
+        "project_diagnose",
+        "weather_summary",
+        "weather_summary"
+      ],
+      "gaps": [
+        {
+          "code": "MISSING_INPUT",
+          "field": "idf",
+          "message": "IDF 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+        },
+        {
+          "code": "MISSING_INPUT",
+          "field": "epw",
+          "message": "EPW 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+        }
+      ],
+      "summary": "当前输入阻断计算；已列出可执行补证顺序。",
+      "diagnosis": {
+        "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+        "generated_at": "2026-10-21T13:06:33.303855+00:00",
+        "can_simulate": false,
+        "tasks": [
+          {
+            "task_key": "MISSING_INPUT:epw",
+            "priority": 1,
+            "title": "EPW 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "MISSING_INPUT:idf",
+            "priority": 1,
+            "title": "IDF 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:envelope",
+            "priority": 2,
+            "title": "核对围护结构与残图构造",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:hvac",
+            "priority": 2,
+            "title": "核对设备台账与系统",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:schedules",
+            "priority": 2,
+            "title": "核对运行时段与负荷",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "evidence:bill",
+            "priority": 2,
+            "title": "补充并复核能耗账单与模型校准",
+            "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "evidence:drawing",
+            "priority": 2,
+            "title": "补充并复核图纸、测量与构件定位",
+            "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+            "target_view": "spatial",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "material:new",
+            "priority": 2,
+            "title": "登记候选材料与热工参数",
+            "action": "填写检测定位、测试条件和适用范围；经复核后生成材料方案。",
+            "target_view": "decision",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "run:baseline",
+            "priority": 2,
+            "title": "建立当前有效基准仿真",
+            "action": "完成输入复核后运行 baseline，用作材料方案的同题比较基准。",
+            "target_view": "simulation",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "study:new",
+            "priority": 2,
+            "title": "比较材料方案与工程约束",
+            "action": "指定改造材料层、候选厚度、造价来源、预算和舒适性上限，运行真实方案研究。",
+            "target_view": "decision",
+            "evidence_ids": []
+          }
+        ],
+        "materials": [],
+        "latest_study_status": null,
+        "current_study_id": null,
+        "current_assessment": null,
+        "next_step": {
+          "task_key": "MISSING_INPUT:epw",
+          "priority": 1,
+          "title": "EPW 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+          "target_view": "evidence",
+          "evidence_ids": []
+        },
+        "priority_basis": "1=阻断当前计算；2=影响方案判断；3=材料性能与工程外推验证。未估计补证概率或虚构费用。"
+      },
+      "weather": [
+        {
+          "monthly": [
+            {
+              "month": 1,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 1.127,
+              "minimum_c": -17.0,
+              "maximum_c": 17.0,
+              "humidity_pct": 50.349,
+              "wind_m_s": 3.601,
+              "expected_days": 31,
+              "solar_kwh_m2": 71.816,
+              "heating_degree_days": 523.073,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 2,
+              "days": 28,
+              "valid_temperature_days": 28,
+              "temperature_c": -1.293,
+              "minimum_c": -22.0,
+              "maximum_c": 14.0,
+              "humidity_pct": 63.272,
+              "wind_m_s": 3.236,
+              "expected_days": 28,
+              "solar_kwh_m2": 85.369,
+              "heating_degree_days": 540.212,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 3,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 3.157,
+              "minimum_c": -18.0,
+              "maximum_c": 23.0,
+              "humidity_pct": 62.391,
+              "wind_m_s": 4.56,
+              "expected_days": 31,
+              "solar_kwh_m2": 145.741,
+              "heating_degree_days": 460.127,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 4,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 8.393,
+              "minimum_c": -4.0,
+              "maximum_c": 26.0,
+              "humidity_pct": 57.429,
+              "wind_m_s": 4.343,
+              "expected_days": 30,
+              "solar_kwh_m2": 170.561,
+              "heating_degree_days": 288.208,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 5,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 13.111,
+              "minimum_c": -2.0,
+              "maximum_c": 32.0,
+              "humidity_pct": 48.69,
+              "wind_m_s": 4.102,
+              "expected_days": 31,
+              "solar_kwh_m2": 189.537,
+              "heating_degree_days": 168.227,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 6,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 18.827,
+              "minimum_c": 6.7,
+              "maximum_c": 35.0,
+              "humidity_pct": 55.385,
+              "wind_m_s": 4.666,
+              "expected_days": 30,
+              "solar_kwh_m2": 187.857,
+              "heating_degree_days": 32.262,
+              "cooling_degree_days": 0.579
+            },
+            {
+              "month": 7,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 20.791,
+              "minimum_c": 10.0,
+              "maximum_c": 36.0,
+              "humidity_pct": 52.372,
+              "wind_m_s": 3.537,
+              "expected_days": 31,
+              "solar_kwh_m2": 191.439,
+              "heating_degree_days": 11.625,
+              "cooling_degree_days": 1.304
+            },
+            {
+              "month": 8,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 21.516,
+              "minimum_c": 11.0,
+              "maximum_c": 33.0,
+              "humidity_pct": 46.933,
+              "wind_m_s": 3.92,
+              "expected_days": 31,
+              "solar_kwh_m2": 182.66,
+              "heating_degree_days": 4.116,
+              "cooling_degree_days": 0.042
+            },
+            {
+              "month": 9,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 16.995,
+              "minimum_c": 3.0,
+              "maximum_c": 32.0,
+              "humidity_pct": 48.232,
+              "wind_m_s": 3.827,
+              "expected_days": 30,
+              "solar_kwh_m2": 147.863,
+              "heating_degree_days": 75.62,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 10,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 9.355,
+              "minimum_c": -3.0,
+              "maximum_c": 26.0,
+              "humidity_pct": 58.039,
+              "wind_m_s": 3.152,
+              "expected_days": 31,
+              "solar_kwh_m2": 107.937,
+              "heating_degree_days": 267.993,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 11,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 2.571,
+              "minimum_c": -15.0,
+              "maximum_c": 21.0,
+              "humidity_pct": 60.817,
+              "wind_m_s": 3.367,
+              "expected_days": 30,
+              "solar_kwh_m2": 86.438,
+              "heating_degree_days": 462.877,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 12,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 1.759,
+              "minimum_c": -25.0,
+              "maximum_c": 19.0,
+              "humidity_pct": 42.179,
+              "wind_m_s": 5.129,
+              "expected_days": 31,
+              "solar_kwh_m2": 52.73,
+              "heating_degree_days": 503.474,
+              "cooling_degree_days": 0
+            }
+          ],
+          "annual": {
+            "temperature_c": 9.761,
+            "heating_degree_days": 3337.814,
+            "cooling_degree_days": 1.925,
+            "solar_kwh_m2": 1619.948
+          },
+          "insights": [
+            "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+            "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+            "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+          ],
+          "kind": "epw",
+          "name": "Denver Centennial  Golden   Nr",
+          "location": {
+            "name": "Denver Centennial  Golden   Nr",
+            "region": "CO",
+            "country": "USA",
+            "station": "724666",
+            "latitude": 39.74,
+            "longitude": -105.18,
+            "timezone_hours": -7.0,
+            "elevation_m": 1829.0
+          },
+          "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+          "quality": {
+            "records": 8760,
+            "expected_records": 8760,
+            "missing_records": 0,
+            "duplicate_records": 0,
+            "invalid_fields": {},
+            "full_year": true,
+            "simulation_candidate": true,
+            "issues": []
+          },
+          "limitations": [
+            "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+            "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+            "通过检查后仍须人工登记和复核 EPW 证据。"
+          ],
+          "weather_id": "weather_678db8a817654780a19188f67f136f93",
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "file_id": "file_fbf2953ba6ed4821844041140082b410",
+          "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+          "analyzer_version": "weather-quality-1",
+          "created_at": "2026-10-21T13:06:16.047655+00:00",
+          "options": {
+            "heating_base_c": 18,
+            "cooling_base_c": 26
+          },
+          "provenance": {
+            "provider": "uploaded_epw",
+            "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+            "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+          },
+          "revision": 1
+        }
+      ],
+      "as_of": "2026-10-21T13:06:33.303855+00:00",
+      "weather_summary": "已核对 1 份天气分析；数值及来源见结果卡。",
+      "limitations": [
+        "通过准入仅允许仿真，不证明模型代表真实建筑。",
+        "项目声明不会直接修改 IDF；建模工作区通过显式发布生成有版本的计算输入。",
+        "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+        "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+      ]
+    },
+    "created_at": "2026-10-21T13:06:16.971372+00:00",
+    "llm_commentary": "- 站点、记录数、年均温、HDD18、CDD26、太阳辐射和来源：均未提供数据，无法核对。\n- 不运行仿真。",
+    "llm_raw": "- 站点、记录数、年均温、HDD18、CDD26、太阳辐射和来源：均未提供数据，无法核对。\n- 不运行仿真。",
+    "error": null,
+    "task": "weather",
+    "tool_status": "succeeded",
+    "explanation_status": "available",
+    "revision": 16,
+    "resolved_task": "weather",
+    "finished_at": "2026-10-21T13:06:33.303855+00:00"
+  },
+  {
+    "agent_id": "agent_41a0ebb75511476fb1646a9d578eada2",
+    "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+    "question": "核对站点、记录数、年均温、HDD18、CDD26、太阳辐射和来源 SHA256，不运行仿真。",
+    "mode": "provider",
+    "status": "succeeded",
+    "events": [
+      {
+        "tool": "project_get",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:33.562215+00:00",
+        "result": {
+          "name": "商业打磨验收 · Schependomlaan / Golden",
+          "building": {
+            "use": "office",
+            "location": "Test inputs; not a real combined building",
+            "region": "TEST",
+            "area_m2": 1.0,
+            "floors": null,
+            "floor_height_m": null,
+            "window_wall_ratio": null,
+            "envelope": null,
+            "hvac": null,
+            "schedules": null,
+            "notes": null
+          },
+          "data_nature": "user_project",
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "revision": 1,
+          "created_at": "2026-10-21T13:06:11.580270+00:00",
+          "updated_at": "2026-10-21T13:06:11.580270+00:00"
+        },
+        "result_hash": "00384a976c14fa2f4fcac0af1f9f8609f0ce0a27f0a83430e975813501b210c5",
+        "duration_ms": 15,
+        "finished_at": "2026-10-21T13:06:33.578818+00:00"
+      },
+      {
+        "tool": "evidence_list",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:33.582818+00:00",
+        "result": [],
+        "result_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "duration_ms": 0,
+        "finished_at": "2026-10-21T13:06:33.598327+00:00"
+      },
+      {
+        "tool": "evidence_validate",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:33.602834+00:00",
+        "result": {
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "scheme_id": "baseline",
+          "can_simulate": false,
+          "can_recommend": false,
+          "readiness": "EVIDENCE_INSUFFICIENT",
+          "blockers": [
+            {
+              "code": "MISSING_INPUT",
+              "field": "idf",
+              "message": "IDF 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+            },
+            {
+              "code": "MISSING_INPUT",
+              "field": "epw",
+              "message": "EPW 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+            }
+          ],
+          "selected_evidence": {},
+          "limitations": [
+            "通过准入仅允许仿真，不证明模型代表真实建筑。",
+            "项目声明不会直接修改 IDF；建模工作区通过显式发布生成有版本的计算输入。",
+            "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+            "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+          ]
+        },
+        "result_hash": "f16ebe5b2d87e348995bcd332dccb5975fb290795b9d8d6aa861ebebeb26ad13",
+        "duration_ms": 15,
+        "finished_at": "2026-10-21T13:06:33.624176+00:00"
+      },
+      {
+        "tool": "project_diagnose",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:33.628689+00:00",
+        "result": {
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "generated_at": "2026-10-21T13:06:33.653671+00:00",
+          "can_simulate": false,
+          "tasks": [
+            {
+              "task_key": "MISSING_INPUT:epw",
+              "priority": 1,
+              "title": "EPW 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "MISSING_INPUT:idf",
+              "priority": 1,
+              "title": "IDF 需要唯一的有效证据；当前 0 份",
+              "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:envelope",
+              "priority": 2,
+              "title": "核对围护结构与残图构造",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:hvac",
+              "priority": 2,
+              "title": "核对设备台账与系统",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "building:schedules",
+              "priority": 2,
+              "title": "核对运行时段与负荷",
+              "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "evidence:bill",
+              "priority": 2,
+              "title": "补充并复核能耗账单与模型校准",
+              "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+              "target_view": "evidence",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "evidence:drawing",
+              "priority": 2,
+              "title": "补充并复核图纸、测量与构件定位",
+              "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+              "target_view": "spatial",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "material:new",
+              "priority": 2,
+              "title": "登记候选材料与热工参数",
+              "action": "填写检测定位、测试条件和适用范围；经复核后生成材料方案。",
+              "target_view": "decision",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "run:baseline",
+              "priority": 2,
+              "title": "建立当前有效基准仿真",
+              "action": "完成输入复核后运行 baseline，用作材料方案的同题比较基准。",
+              "target_view": "simulation",
+              "evidence_ids": []
+            },
+            {
+              "task_key": "study:new",
+              "priority": 2,
+              "title": "比较材料方案与工程约束",
+              "action": "指定改造材料层、候选厚度、造价来源、预算和舒适性上限，运行真实方案研究。",
+              "target_view": "decision",
+              "evidence_ids": []
+            }
+          ],
+          "materials": [],
+          "latest_study_status": null,
+          "current_study_id": null,
+          "current_assessment": null,
+          "next_step": {
+            "task_key": "MISSING_INPUT:epw",
+            "priority": 1,
+            "title": "EPW 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          "priority_basis": "1=阻断当前计算；2=影响方案判断；3=材料性能与工程外推验证。未估计补证概率或虚构费用。"
+        },
+        "result_hash": "79be5090366a8b5347209e3ba928f1a68009a68ae3cc51a8472061baa3a703f5",
+        "duration_ms": 15,
+        "finished_at": "2026-10-21T13:06:33.653671+00:00"
+      },
+      {
+        "tool": "weather_summary",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:33.657670+00:00",
+        "result": [
+          {
+            "monthly": [
+              {
+                "month": 1,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.127,
+                "minimum_c": -17.0,
+                "maximum_c": 17.0,
+                "humidity_pct": 50.349,
+                "wind_m_s": 3.601,
+                "expected_days": 31,
+                "solar_kwh_m2": 71.816,
+                "heating_degree_days": 523.073,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 2,
+                "days": 28,
+                "valid_temperature_days": 28,
+                "temperature_c": -1.293,
+                "minimum_c": -22.0,
+                "maximum_c": 14.0,
+                "humidity_pct": 63.272,
+                "wind_m_s": 3.236,
+                "expected_days": 28,
+                "solar_kwh_m2": 85.369,
+                "heating_degree_days": 540.212,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 3,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 3.157,
+                "minimum_c": -18.0,
+                "maximum_c": 23.0,
+                "humidity_pct": 62.391,
+                "wind_m_s": 4.56,
+                "expected_days": 31,
+                "solar_kwh_m2": 145.741,
+                "heating_degree_days": 460.127,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 4,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 8.393,
+                "minimum_c": -4.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 57.429,
+                "wind_m_s": 4.343,
+                "expected_days": 30,
+                "solar_kwh_m2": 170.561,
+                "heating_degree_days": 288.208,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 5,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 13.111,
+                "minimum_c": -2.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.69,
+                "wind_m_s": 4.102,
+                "expected_days": 31,
+                "solar_kwh_m2": 189.537,
+                "heating_degree_days": 168.227,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 6,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 18.827,
+                "minimum_c": 6.7,
+                "maximum_c": 35.0,
+                "humidity_pct": 55.385,
+                "wind_m_s": 4.666,
+                "expected_days": 30,
+                "solar_kwh_m2": 187.857,
+                "heating_degree_days": 32.262,
+                "cooling_degree_days": 0.579
+              },
+              {
+                "month": 7,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 20.791,
+                "minimum_c": 10.0,
+                "maximum_c": 36.0,
+                "humidity_pct": 52.372,
+                "wind_m_s": 3.537,
+                "expected_days": 31,
+                "solar_kwh_m2": 191.439,
+                "heating_degree_days": 11.625,
+                "cooling_degree_days": 1.304
+              },
+              {
+                "month": 8,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 21.516,
+                "minimum_c": 11.0,
+                "maximum_c": 33.0,
+                "humidity_pct": 46.933,
+                "wind_m_s": 3.92,
+                "expected_days": 31,
+                "solar_kwh_m2": 182.66,
+                "heating_degree_days": 4.116,
+                "cooling_degree_days": 0.042
+              },
+              {
+                "month": 9,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 16.995,
+                "minimum_c": 3.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.232,
+                "wind_m_s": 3.827,
+                "expected_days": 30,
+                "solar_kwh_m2": 147.863,
+                "heating_degree_days": 75.62,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 10,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 9.355,
+                "minimum_c": -3.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 58.039,
+                "wind_m_s": 3.152,
+                "expected_days": 31,
+                "solar_kwh_m2": 107.937,
+                "heating_degree_days": 267.993,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 11,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 2.571,
+                "minimum_c": -15.0,
+                "maximum_c": 21.0,
+                "humidity_pct": 60.817,
+                "wind_m_s": 3.367,
+                "expected_days": 30,
+                "solar_kwh_m2": 86.438,
+                "heating_degree_days": 462.877,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 12,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.759,
+                "minimum_c": -25.0,
+                "maximum_c": 19.0,
+                "humidity_pct": 42.179,
+                "wind_m_s": 5.129,
+                "expected_days": 31,
+                "solar_kwh_m2": 52.73,
+                "heating_degree_days": 503.474,
+                "cooling_degree_days": 0
+              }
+            ],
+            "annual": {
+              "temperature_c": 9.761,
+              "heating_degree_days": 3337.814,
+              "cooling_degree_days": 1.925,
+              "solar_kwh_m2": 1619.948
+            },
+            "insights": [
+              "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+              "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+              "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+            ],
+            "kind": "epw",
+            "name": "Denver Centennial  Golden   Nr",
+            "location": {
+              "name": "Denver Centennial  Golden   Nr",
+              "region": "CO",
+              "country": "USA",
+              "station": "724666",
+              "latitude": 39.74,
+              "longitude": -105.18,
+              "timezone_hours": -7.0,
+              "elevation_m": 1829.0
+            },
+            "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+            "quality": {
+              "records": 8760,
+              "expected_records": 8760,
+              "missing_records": 0,
+              "duplicate_records": 0,
+              "invalid_fields": {},
+              "full_year": true,
+              "simulation_candidate": true,
+              "issues": []
+            },
+            "limitations": [
+              "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+              "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+              "通过检查后仍须人工登记和复核 EPW 证据。"
+            ],
+            "weather_id": "weather_678db8a817654780a19188f67f136f93",
+            "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+            "file_id": "file_fbf2953ba6ed4821844041140082b410",
+            "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+            "analyzer_version": "weather-quality-1",
+            "created_at": "2026-10-21T13:06:16.047655+00:00",
+            "options": {
+              "heating_base_c": 18,
+              "cooling_base_c": 26
+            },
+            "provenance": {
+              "provider": "uploaded_epw",
+              "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+              "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+            },
+            "revision": 1
+          }
+        ],
+        "result_hash": "fd5a218d80f21b61d6a6e825a58e3e41fa03e186edf759693abd979c722c947d",
+        "duration_ms": 63,
+        "finished_at": "2026-10-21T13:06:33.728802+00:00"
+      },
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:33.731799+00:00",
+        "arguments": {
+          "provider": "OpenAI-compatible",
+          "model": "qwen3-benchmark"
+        },
+        "result": {
+          "tool_calls_returned": 0,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 15171,
+        "finished_at": "2026-10-21T13:06:48.902931+00:00"
+      },
+      {
+        "tool": "weather_summary",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-10-21T13:06:48.913435+00:00",
+        "result": [
+          {
+            "monthly": [
+              {
+                "month": 1,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.127,
+                "minimum_c": -17.0,
+                "maximum_c": 17.0,
+                "humidity_pct": 50.349,
+                "wind_m_s": 3.601,
+                "expected_days": 31,
+                "solar_kwh_m2": 71.816,
+                "heating_degree_days": 523.073,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 2,
+                "days": 28,
+                "valid_temperature_days": 28,
+                "temperature_c": -1.293,
+                "minimum_c": -22.0,
+                "maximum_c": 14.0,
+                "humidity_pct": 63.272,
+                "wind_m_s": 3.236,
+                "expected_days": 28,
+                "solar_kwh_m2": 85.369,
+                "heating_degree_days": 540.212,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 3,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 3.157,
+                "minimum_c": -18.0,
+                "maximum_c": 23.0,
+                "humidity_pct": 62.391,
+                "wind_m_s": 4.56,
+                "expected_days": 31,
+                "solar_kwh_m2": 145.741,
+                "heating_degree_days": 460.127,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 4,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 8.393,
+                "minimum_c": -4.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 57.429,
+                "wind_m_s": 4.343,
+                "expected_days": 30,
+                "solar_kwh_m2": 170.561,
+                "heating_degree_days": 288.208,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 5,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 13.111,
+                "minimum_c": -2.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.69,
+                "wind_m_s": 4.102,
+                "expected_days": 31,
+                "solar_kwh_m2": 189.537,
+                "heating_degree_days": 168.227,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 6,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 18.827,
+                "minimum_c": 6.7,
+                "maximum_c": 35.0,
+                "humidity_pct": 55.385,
+                "wind_m_s": 4.666,
+                "expected_days": 30,
+                "solar_kwh_m2": 187.857,
+                "heating_degree_days": 32.262,
+                "cooling_degree_days": 0.579
+              },
+              {
+                "month": 7,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 20.791,
+                "minimum_c": 10.0,
+                "maximum_c": 36.0,
+                "humidity_pct": 52.372,
+                "wind_m_s": 3.537,
+                "expected_days": 31,
+                "solar_kwh_m2": 191.439,
+                "heating_degree_days": 11.625,
+                "cooling_degree_days": 1.304
+              },
+              {
+                "month": 8,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 21.516,
+                "minimum_c": 11.0,
+                "maximum_c": 33.0,
+                "humidity_pct": 46.933,
+                "wind_m_s": 3.92,
+                "expected_days": 31,
+                "solar_kwh_m2": 182.66,
+                "heating_degree_days": 4.116,
+                "cooling_degree_days": 0.042
+              },
+              {
+                "month": 9,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 16.995,
+                "minimum_c": 3.0,
+                "maximum_c": 32.0,
+                "humidity_pct": 48.232,
+                "wind_m_s": 3.827,
+                "expected_days": 30,
+                "solar_kwh_m2": 147.863,
+                "heating_degree_days": 75.62,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 10,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 9.355,
+                "minimum_c": -3.0,
+                "maximum_c": 26.0,
+                "humidity_pct": 58.039,
+                "wind_m_s": 3.152,
+                "expected_days": 31,
+                "solar_kwh_m2": 107.937,
+                "heating_degree_days": 267.993,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 11,
+                "days": 30,
+                "valid_temperature_days": 30,
+                "temperature_c": 2.571,
+                "minimum_c": -15.0,
+                "maximum_c": 21.0,
+                "humidity_pct": 60.817,
+                "wind_m_s": 3.367,
+                "expected_days": 30,
+                "solar_kwh_m2": 86.438,
+                "heating_degree_days": 462.877,
+                "cooling_degree_days": 0
+              },
+              {
+                "month": 12,
+                "days": 31,
+                "valid_temperature_days": 31,
+                "temperature_c": 1.759,
+                "minimum_c": -25.0,
+                "maximum_c": 19.0,
+                "humidity_pct": 42.179,
+                "wind_m_s": 5.129,
+                "expected_days": 31,
+                "solar_kwh_m2": 52.73,
+                "heating_degree_days": 503.474,
+                "cooling_degree_days": 0
+              }
+            ],
+            "annual": {
+              "temperature_c": 9.761,
+              "heating_degree_days": 3337.814,
+              "cooling_degree_days": 1.925,
+              "solar_kwh_m2": 1619.948
+            },
+            "insights": [
+              "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+              "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+              "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+            ],
+            "kind": "epw",
+            "name": "Denver Centennial  Golden   Nr",
+            "location": {
+              "name": "Denver Centennial  Golden   Nr",
+              "region": "CO",
+              "country": "USA",
+              "station": "724666",
+              "latitude": 39.74,
+              "longitude": -105.18,
+              "timezone_hours": -7.0,
+              "elevation_m": 1829.0
+            },
+            "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+            "quality": {
+              "records": 8760,
+              "expected_records": 8760,
+              "missing_records": 0,
+              "duplicate_records": 0,
+              "invalid_fields": {},
+              "full_year": true,
+              "simulation_candidate": true,
+              "issues": []
+            },
+            "limitations": [
+              "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+              "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+              "通过检查后仍须人工登记和复核 EPW 证据。"
+            ],
+            "weather_id": "weather_678db8a817654780a19188f67f136f93",
+            "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+            "file_id": "file_fbf2953ba6ed4821844041140082b410",
+            "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+            "analyzer_version": "weather-quality-1",
+            "created_at": "2026-10-21T13:06:16.047655+00:00",
+            "options": {
+              "heating_base_c": 18,
+              "cooling_base_c": 26
+            },
+            "provenance": {
+              "provider": "uploaded_epw",
+              "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+              "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+            },
+            "revision": 1
+          }
+        ],
+        "result_hash": "fd5a218d80f21b61d6a6e825a58e3e41fa03e186edf759693abd979c722c947d",
+        "duration_ms": 47,
+        "finished_at": "2026-10-21T13:06:48.974204+00:00"
+      }
+    ],
+    "answer": {
+      "can_simulate": false,
+      "can_recommend": false,
+      "basis": [
+        "project_get",
+        "evidence_list",
+        "evidence_validate",
+        "project_diagnose",
+        "weather_summary",
+        "weather_summary"
+      ],
+      "gaps": [
+        {
+          "code": "MISSING_INPUT",
+          "field": "idf",
+          "message": "IDF 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+        },
+        {
+          "code": "MISSING_INPUT",
+          "field": "epw",
+          "message": "EPW 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案"
+        }
+      ],
+      "summary": "当前输入阻断计算；已列出可执行补证顺序。",
+      "diagnosis": {
+        "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+        "generated_at": "2026-10-21T13:06:48.987712+00:00",
+        "can_simulate": false,
+        "tasks": [
+          {
+            "task_key": "MISSING_INPUT:epw",
+            "priority": 1,
+            "title": "EPW 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "MISSING_INPUT:idf",
+            "priority": 1,
+            "title": "IDF 需要唯一的有效证据；当前 0 份",
+            "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:envelope",
+            "priority": 2,
+            "title": "核对围护结构与残图构造",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:hvac",
+            "priority": 2,
+            "title": "核对设备台账与系统",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "building:schedules",
+            "priority": 2,
+            "title": "核对运行时段与负荷",
+            "action": "补充现场或授权资料并修订建筑声明；核对 IDF 对象，不自动用默认值填补。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "evidence:bill",
+            "priority": 2,
+            "title": "补充并复核能耗账单与模型校准",
+            "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+            "target_view": "evidence",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "evidence:drawing",
+            "priority": 2,
+            "title": "补充并复核图纸、测量与构件定位",
+            "action": "登记来源、测量/账单范围和版本；复核后本任务自动更新。",
+            "target_view": "spatial",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "material:new",
+            "priority": 2,
+            "title": "登记候选材料与热工参数",
+            "action": "填写检测定位、测试条件和适用范围；经复核后生成材料方案。",
+            "target_view": "decision",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "run:baseline",
+            "priority": 2,
+            "title": "建立当前有效基准仿真",
+            "action": "完成输入复核后运行 baseline，用作材料方案的同题比较基准。",
+            "target_view": "simulation",
+            "evidence_ids": []
+          },
+          {
+            "task_key": "study:new",
+            "priority": 2,
+            "title": "比较材料方案与工程约束",
+            "action": "指定改造材料层、候选厚度、造价来源、预算和舒适性上限，运行真实方案研究。",
+            "target_view": "decision",
+            "evidence_ids": []
+          }
+        ],
+        "materials": [],
+        "latest_study_status": null,
+        "current_study_id": null,
+        "current_assessment": null,
+        "next_step": {
+          "task_key": "MISSING_INPUT:epw",
+          "priority": 1,
+          "title": "EPW 需要唯一的有效证据；当前 0 份",
+          "action": "上传并登记资料；拒绝不适用版本，明确所用方案",
+          "target_view": "evidence",
+          "evidence_ids": []
+        },
+        "priority_basis": "1=阻断当前计算；2=影响方案判断；3=材料性能与工程外推验证。未估计补证概率或虚构费用。"
+      },
+      "weather": [
+        {
+          "monthly": [
+            {
+              "month": 1,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 1.127,
+              "minimum_c": -17.0,
+              "maximum_c": 17.0,
+              "humidity_pct": 50.349,
+              "wind_m_s": 3.601,
+              "expected_days": 31,
+              "solar_kwh_m2": 71.816,
+              "heating_degree_days": 523.073,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 2,
+              "days": 28,
+              "valid_temperature_days": 28,
+              "temperature_c": -1.293,
+              "minimum_c": -22.0,
+              "maximum_c": 14.0,
+              "humidity_pct": 63.272,
+              "wind_m_s": 3.236,
+              "expected_days": 28,
+              "solar_kwh_m2": 85.369,
+              "heating_degree_days": 540.212,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 3,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 3.157,
+              "minimum_c": -18.0,
+              "maximum_c": 23.0,
+              "humidity_pct": 62.391,
+              "wind_m_s": 4.56,
+              "expected_days": 31,
+              "solar_kwh_m2": 145.741,
+              "heating_degree_days": 460.127,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 4,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 8.393,
+              "minimum_c": -4.0,
+              "maximum_c": 26.0,
+              "humidity_pct": 57.429,
+              "wind_m_s": 4.343,
+              "expected_days": 30,
+              "solar_kwh_m2": 170.561,
+              "heating_degree_days": 288.208,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 5,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 13.111,
+              "minimum_c": -2.0,
+              "maximum_c": 32.0,
+              "humidity_pct": 48.69,
+              "wind_m_s": 4.102,
+              "expected_days": 31,
+              "solar_kwh_m2": 189.537,
+              "heating_degree_days": 168.227,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 6,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 18.827,
+              "minimum_c": 6.7,
+              "maximum_c": 35.0,
+              "humidity_pct": 55.385,
+              "wind_m_s": 4.666,
+              "expected_days": 30,
+              "solar_kwh_m2": 187.857,
+              "heating_degree_days": 32.262,
+              "cooling_degree_days": 0.579
+            },
+            {
+              "month": 7,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 20.791,
+              "minimum_c": 10.0,
+              "maximum_c": 36.0,
+              "humidity_pct": 52.372,
+              "wind_m_s": 3.537,
+              "expected_days": 31,
+              "solar_kwh_m2": 191.439,
+              "heating_degree_days": 11.625,
+              "cooling_degree_days": 1.304
+            },
+            {
+              "month": 8,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 21.516,
+              "minimum_c": 11.0,
+              "maximum_c": 33.0,
+              "humidity_pct": 46.933,
+              "wind_m_s": 3.92,
+              "expected_days": 31,
+              "solar_kwh_m2": 182.66,
+              "heating_degree_days": 4.116,
+              "cooling_degree_days": 0.042
+            },
+            {
+              "month": 9,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 16.995,
+              "minimum_c": 3.0,
+              "maximum_c": 32.0,
+              "humidity_pct": 48.232,
+              "wind_m_s": 3.827,
+              "expected_days": 30,
+              "solar_kwh_m2": 147.863,
+              "heating_degree_days": 75.62,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 10,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 9.355,
+              "minimum_c": -3.0,
+              "maximum_c": 26.0,
+              "humidity_pct": 58.039,
+              "wind_m_s": 3.152,
+              "expected_days": 31,
+              "solar_kwh_m2": 107.937,
+              "heating_degree_days": 267.993,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 11,
+              "days": 30,
+              "valid_temperature_days": 30,
+              "temperature_c": 2.571,
+              "minimum_c": -15.0,
+              "maximum_c": 21.0,
+              "humidity_pct": 60.817,
+              "wind_m_s": 3.367,
+              "expected_days": 30,
+              "solar_kwh_m2": 86.438,
+              "heating_degree_days": 462.877,
+              "cooling_degree_days": 0
+            },
+            {
+              "month": 12,
+              "days": 31,
+              "valid_temperature_days": 31,
+              "temperature_c": 1.759,
+              "minimum_c": -25.0,
+              "maximum_c": 19.0,
+              "humidity_pct": 42.179,
+              "wind_m_s": 5.129,
+              "expected_days": 31,
+              "solar_kwh_m2": 52.73,
+              "heating_degree_days": 503.474,
+              "cooling_degree_days": 0
+            }
+          ],
+          "annual": {
+            "temperature_c": 9.761,
+            "heating_degree_days": 3337.814,
+            "cooling_degree_days": 1.925,
+            "solar_kwh_m2": 1619.948
+          },
+          "insights": [
+            "当前数据中，8 月均温最高（21.5°C），2 月最低（-1.3°C）。缺测月份须先补证。",
+            "按日均温计算：HDD18=3337.8 °C·d，CDD26=1.9 °C·d。度日反映气候需求，不是建筑耗能预测。",
+            "检查范围内未发现缺测或时间异常；仍需核对地点、气象年和项目适用性。"
+          ],
+          "kind": "epw",
+          "name": "Denver Centennial  Golden   Nr",
+          "location": {
+            "name": "Denver Centennial  Golden   Nr",
+            "region": "CO",
+            "country": "USA",
+            "station": "724666",
+            "latitude": 39.74,
+            "longitude": -105.18,
+            "timezone_hours": -7.0,
+            "elevation_m": 1829.0
+          },
+          "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+          "quality": {
+            "records": 8760,
+            "expected_records": 8760,
+            "missing_records": 0,
+            "duplicate_records": 0,
+            "invalid_fields": {},
+            "full_year": true,
+            "simulation_candidate": true,
+            "issues": []
+          },
+          "limitations": [
+            "仅检查时间、常用气象字段和数值范围，不证明站点代表性或气象测量准确性。",
+            "典型气象年不能代表极端设计条件；月度极值为文件中的小时气温极值。",
+            "通过检查后仍须人工登记和复核 EPW 证据。"
+          ],
+          "weather_id": "weather_678db8a817654780a19188f67f136f93",
+          "project_id": "project_cfdeb35cd3f1413598005ed09a8a7e29",
+          "file_id": "file_fbf2953ba6ed4821844041140082b410",
+          "source_hash": "c184b947cd34d41c6d6474d63d66dbb82bc0e6cae4c888edcf837348282bce7f",
+          "analyzer_version": "weather-quality-1",
+          "created_at": "2026-10-21T13:06:16.047655+00:00",
+          "options": {
+            "heating_base_c": 18,
+            "cooling_base_c": 26
+          },
+          "provenance": {
+            "provider": "uploaded_epw",
+            "filename": "USA_CO_Golden-NREL.724666_TMY3.epw",
+            "source_note": "用户上传原始文件；来源授权及地点适用性需登记人复核。"
+          },
+          "revision": 1
+        }
+      ],
+      "as_of": "2026-10-21T13:06:48.987712+00:00",
+      "weather_summary": "已核对 1 份天气分析；数值及来源见结果卡。",
+      "limitations": [
+        "通过准入仅允许仿真，不证明模型代表真实建筑。",
+        "项目声明不会直接修改 IDF；建模工作区通过显式发布生成有版本的计算输入。",
+        "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+        "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+      ]
+    },
+    "created_at": "2026-10-21T13:06:33.559089+00:00",
+    "llm_commentary": "- 站点、记录数、年均温、HDD18、CDD26、太阳辐射和来源：均未提供有效数据，无法核对。\n- 不运行仿真。",
+    "llm_raw": "- 站点、记录数、年均温、HDD18、CDD26、太阳辐射和来源：均未提供有效数据，无法核对。\n- 不运行仿真。",
+    "error": null,
+    "task": "weather",
+    "tool_status": "succeeded",
+    "explanation_status": "available",
+    "revision": 16,
+    "resolved_task": "weather",
+    "finished_at": "2026-10-21T13:06:48.987712+00:00"
+  }
+]

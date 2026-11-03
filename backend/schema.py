@@ -103,6 +103,15 @@ class EvidenceReview(Contract):
     review_note: str = Field(min_length=5, max_length=2000)
 
 
+class EvidenceMetadata(Contract):
+    expected_revision: int = Field(ge=1)
+    source_locator: str = Field(min_length=1, max_length=1000)
+    authority: str = Field(min_length=1, max_length=300)
+    permission: str = Field(min_length=1, max_length=1000)
+    responsible_person: str = Field(min_length=1, max_length=100)
+    uncertainty: str | None = Field(default=None, max_length=2000)
+
+
 class RunCreate(Contract):
     project_id: str
     scheme_id: Literal["baseline", "R1", "R2"]

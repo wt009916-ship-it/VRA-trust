@@ -1,0 +1,230 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "file_id": {
+      "title": "File Id",
+      "type": "string"
+    },
+    "mode": {
+      "default": "geometry",
+      "enum": [
+        "geometry",
+        "vision",
+        "local_raster",
+        "damaged_raster"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "scale_to_m": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scale To M"
+    },
+    "height_m": {
+      "default": 3,
+      "exclusiveMinimum": 0.5,
+      "maximum": 30,
+      "title": "Height M",
+      "type": "number"
+    },
+    "elevation_m": {
+      "default": 0,
+      "maximum": 1500,
+      "minimum": -100,
+      "title": "Elevation M",
+      "type": "number"
+    },
+    "layer": {
+      "anyOf": [
+        {
+          "maxLength": 150,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Layer"
+    },
+    "page": {
+      "default": 1,
+      "maximum": 500,
+      "minimum": 1,
+      "title": "Page",
+      "type": "integer"
+    },
+    "send_to_provider": {
+      "default": false,
+      "title": "Send To Provider",
+      "type": "boolean"
+    },
+    "reconstruct_footprints": {
+      "default": false,
+      "title": "Reconstruct Footprints",
+      "type": "boolean"
+    },
+    "reconstruct_elements": {
+      "default": false,
+      "title": "Reconstruct Elements",
+      "type": "boolean"
+    },
+    "source_window_tolerance_m": {
+      "default": 0,
+      "maximum": 0.02,
+      "minimum": 0,
+      "title": "Source Window Tolerance M",
+      "type": "number"
+    },
+    "reconstruction_tolerance_m": {
+      "default": 0,
+      "maximum": 0.02,
+      "minimum": 0,
+      "title": "Reconstruction Tolerance M",
+      "type": "number"
+    },
+    "ifc_origin_m": {
+      "anyOf": [
+        {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ifc Origin M"
+    },
+    "ifc_storey_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 200,
+      "title": "Ifc Storey Ids",
+      "type": "array"
+    },
+    "crop_px": {
+      "anyOf": [
+        {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Crop Px"
+    },
+    "scale_basis": {
+      "default": "",
+      "maxLength": 500,
+      "title": "Scale Basis",
+      "type": "string"
+    },
+    "closure_m": {
+      "default": 0,
+      "maximum": 1.5,
+      "minimum": 0,
+      "title": "Closure M",
+      "type": "number"
+    },
+    "min_room_area_m2": {
+      "default": 1,
+      "maximum": 20,
+      "minimum": 0.5,
+      "title": "Min Room Area M2",
+      "type": "number"
+    },
+    "damage_gap_m": {
+      "default": 0,
+      "maximum": 0.5,
+      "minimum": 0,
+      "title": "Damage Gap M",
+      "type": "number"
+    },
+    "deskew": {
+      "default": true,
+      "title": "Deskew",
+      "type": "boolean"
+    },
+    "ocr_labels": {
+      "default": true,
+      "title": "Ocr Labels",
+      "type": "boolean"
+    },
+    "manual_bridges_px": {
+      "items": {
+        "maxItems": 4,
+        "minItems": 4,
+        "prefixItems": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "type": "array"
+      },
+      "maxItems": 100,
+      "title": "Manual Bridges Px",
+      "type": "array"
+    },
+    "manual_bridge_basis": {
+      "default": "",
+      "maxLength": 1000,
+      "title": "Manual Bridge Basis",
+      "type": "string"
+    }
+  },
+  "required": [
+    "file_id"
+  ],
+  "title": "ImportOptions",
+  "type": "object"
+}

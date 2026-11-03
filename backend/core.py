@@ -6,11 +6,13 @@ Python standard library only. Not a certified design or carbon-credit verifier.
 """
 from __future__ import annotations
 import hashlib, json, math, os, re, shutil, sqlite3, subprocess, tempfile, time, uuid
+import threading
+from functools import wraps
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-PARSER_VERSION='native-sql-0.2.0'
+PARSER_VERSION='native-sql-0.3.0'
 REPORT_NAME='AnnualBuildingUtilityPerformanceSummary'
 class ValidationError(ValueError): pass
 def now(): return datetime.now(timezone.utc).isoformat()
@@ -35,7 +37,7 @@ def relative_file(root,value):
 def code_hash():
     # Physics validity must not depend on UI, authentication or Agent code.
     # Keep the entire audited computation module conservative for physics changes.
-    return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION})
+    return hash_json({'physics_core':sha(Path(__file__)), 'heat_pump_binder':sha(Path(__file__).with_name('heat_pump.py')), 'parser':PARSER_VERSION})
 def engine_path():
     configured=os.environ.get('ENERGYPLUS_EXE')
     if not configured and (ROOT/'config.local.json').is_file():configured=read_json(ROOT/'config.local.json').get('energyplus_exe')
@@ -98,13 +100,20 @@ def parse_sql(path):
                 value,cloc=energy('End Uses','Total End Uses',r['ColumnName'])
                 carriers[r['ColumnName']]=value;locators[r['ColumnName']]=cloc
         if not carriers or abs(sum(carriers.values())-total)>max(1,total*.005):raise ValidationError('Fuel totals do not reconcile to site total')
+        end_uses={}
+        for r in rows:
+            # Native reports include a blank separator row. It is not a missing measurement.
+            if r['TableName']=='End Uses' and r['RowName'].strip() and r['RowName']!='Total End Uses' and r['ColumnName']!='Water':
+                value,cell=energy('End Uses',r['RowName'],r['ColumnName'])
+                end_uses.setdefault(r['RowName'],{})[r['ColumnName']]=value
+                locators['End Uses / '+r['RowName']+' / '+r['ColumnName']]=cell
         comfort={}
         for r in rows:
             if r['TableName']=='Comfort and Setpoint Not Met Summary' and r['Units'].lower() in ('hr','hrs','hours'):
                 try:v=float(r['Value'])
                 except (ValueError,TypeError):continue
                 if math.isfinite(v):comfort[r['RowName']+' / '+r['ColumnName']]=v
-        return {'annual_energy_kwh':total,'area_m2':area,'eui_kwh_m2a':total/area,'energy_by_carrier_kwh':carriers,'annual_days':len(covered),'engine_sql_version':sim[0][0],'locators':locators,'comfort_hours':comfort,'scope':'annual_site_energy_not_source_energy','parser_version':PARSER_VERSION}
+        return {'annual_energy_kwh':total,'area_m2':area,'eui_kwh_m2a':total/area,'energy_by_carrier_kwh':carriers,'end_uses_kwh':end_uses,'annual_days':len(covered),'engine_sql_version':sim[0][0],'locators':locators,'comfort_hours':comfort,'scope':'annual_site_energy_not_source_energy','parser_version':PARSER_VERSION}
     except sqlite3.Error as e:raise ValidationError('Native EnergyPlus SQLite rejected: '+str(e)) from e
     finally:con.close()
 
@@ -139,16 +148,50 @@ def invalidation(old,new):
     elif 'display' in changed:action='regenerate_report'
     return {'changed':changed,'invalid':sorted(affected),'action':action,'energyplus_rerun_planned':action=='rerun_energyplus','energyplus_calls_executed':0}
 
+def expansion_hash(model, engine):
+    content = re.sub(r'!.*', '', Path(model).read_text(encoding='utf-8-sig', errors='replace'))
+    if not re.search(r'(?im)^\s*HVACTemplate\s*:', content):return None
+    executable = Path(engine).parent / ('ExpandObjects.exe' if os.name == 'nt' else 'ExpandObjects')
+    if not executable.is_file():raise ValidationError('HVACTemplate requires the native ExpandObjects beside EnergyPlus')
+    return sha(executable)
+
 def source_fingerprints(case,scheme,profile,engine,file_root=None):
     root=Path(file_root) if file_root else ROOT
-    return {'model':sha(relative_file(root,scheme['model'])),'weather':sha(relative_file(root,case['weather'])),'case':hash_json(case),'factor':hash_json(profile),'engine':sha(engine),'code':code_hash()}
+    model=relative_file(root,scheme['model'])
+    result={'model':sha(model),'weather':sha(relative_file(root,case['weather'])),'case':hash_json(case),'factor':hash_json(profile),'engine':sha(engine),'code':code_hash()}
+    expander=expansion_hash(model,engine)
+    if expander:result['expander']=expander
+    return result
 
-def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_override=None,profile_override=None,file_root=None):
+_ENGINE_SLOT = threading.BoundedSemaphore(1)
+
+def serialized_engine(fn):
+    """One native engine process across baseline, material and robustness workers.
+
+    This is a process-wide lock. Production must run exactly one API worker.
+    """
+    @wraps(fn)
+    def run(*args, **kwargs):
+        with _ENGINE_SLOT:
+            return fn(*args, **kwargs)
+    return run
+
+def engine_timeout_seconds():
+    value = int(os.environ.get('VRA_ENGINE_TIMEOUT_SECONDS', '1800'))
+    if not 30 <= value <= 7200:
+        raise ValidationError('VRA_ENGINE_TIMEOUT_SECONDS须为30–7200秒')
+    return value
+
+
+@serialized_engine
+def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=None,*,case_override=None,profile_override=None,file_root=None):
     rd=Path(run_dir);rd.mkdir(parents=True,exist_ok=True)
     identity={'run_id':rd.name,'case_id':case_id,'scheme_id':scheme_id,'status':'running','started_at':now(),'data_nature':'engineering_reference'}
     manifest={**identity,'engine_calls_executed':0,'artifact_hashes':{},'fingerprints':{}}
     start=time.perf_counter()
     try:
+        timeout = timeout if timeout is not None else engine_timeout_seconds()
+        manifest['timeout_seconds'] = timeout
         case=case_override if case_override is not None else load_case(case_id)
         scheme=get_scheme(case,scheme_id);profile=profile_override if profile_override is not None else get_profile(profile_id);engine=engine_path()
         root=Path(file_root) if file_root else ROOT
@@ -169,6 +212,15 @@ def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_overr
             shutil.copy2(inp/'model.idf',tmp/'model.idf');shutil.copy2(inp/'weather.epw',tmp/'weather.epw')
             output=tmp/'output';output.mkdir()
             command=[str(engine),'-d',str(output),'-w',str(tmp/'weather.epw'),str(tmp/'model.idf')]
+            fixed_template = manifest['fingerprints'].get('expander') and 'HVAC scope: packaged_heat_pump_electricity' in (inp/'model.idf').read_text(encoding='utf-8')
+            if fixed_template:
+                from .heat_pump import expand_fixed
+                try:
+                    command[-1] = str(expand_fixed((inp/'model.idf').read_text(encoding='utf-8'),engine,tmp))
+                finally:
+                    for name in ('expanded.idf','fixed.idf','sizing-bindings.json','expansion.log','expandedidf.err'):
+                        if (tmp/name).is_file():shutil.copy2(tmp/name,inp/name)
+            elif manifest['fingerprints'].get('expander'):command.insert(1,'-x')
             manifest['command']=command;manifest['command_note']='Temporary execution paths; archived inputs are input/model.idf and input/weather.epw.'
             try:
                 with (rd/'stdout.log').open('wb') as stdout,(rd/'stderr.log').open('wb') as stderr:
@@ -179,7 +231,12 @@ def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_overr
                 manifest['exit_code']=None;raise ValidationError('EnergyPlus timeout; process terminated') from e
             finally:
                 shutil.copytree(output,rd/'output',dirs_exist_ok=True)
+                # Native expansion output is part of the evidence, not a hidden intermediate.
+                for candidate in (tmp/'expanded.idf',output/'expanded.idf',output/'eplusout.expidf',output/'model.expidf'):
+                    if candidate.is_file():shutil.copy2(candidate,inp/'expanded.idf');break
             if cp.returncode!=0:raise ValidationError('EnergyPlus exited with code '+str(cp.returncode))
+            if manifest['fingerprints'].get('expander') and not (inp/'expanded.idf').is_file():
+                raise ValidationError('Native HVAC expansion succeeded without archived expanded.idf')
         err=rd/'output/eplusout.err'
         if not err.is_file():raise ValidationError('Missing ERR')
         text=err.read_text(encoding='utf-8',errors='replace')
@@ -208,6 +265,9 @@ def read_validated(rd,check_current=True):
     if manifest['run_id']!=rd.name or any(result.get(k)!=manifest.get(k) for k in ['run_id','case_id','scheme_id','status']):raise ValidationError('Run binding mismatch')
     if manifest['status']!='succeeded':return result,manifest,{'changed':[],'invalid':[],'action':'failed'}
     required={'input/model.idf','input/weather.epw','input/case.json','input/carbon_profile.json','output/eplusout.sql','output/eplusout.err','result.json'}
+    if manifest.get('fingerprints',{}).get('expander'):required.add('input/expanded.idf')
+    if 'HVAC scope: packaged_heat_pump_electricity' in (rd/'input/model.idf').read_text(encoding='utf-8'):
+        required.update({'input/fixed.idf','input/sizing-bindings.json','input/expansion.log'})
     if not required.issubset(manifest.get('artifact_hashes',{})):raise ValidationError('Incomplete evidence manifest')
     for rel,expected in manifest['artifact_hashes'].items():
         if sha(relative_file(rd,rel))!=expected:raise ValidationError('Evidence hash mismatch: '+rel)

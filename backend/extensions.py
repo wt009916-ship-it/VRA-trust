@@ -3,23 +3,28 @@ import json
 import zipfile
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
+
 from .agent import Agent, Chat
 from .gateway import Gateway
 from .trust import FactorUpdate, Trust
 from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
+from .decision_api import register_decisions
+
 
 def register_extensions(app, domain, auth):
-    trust, gateway = (Trust(domain), Gateway(domain.store))
+    register_decisions(app, domain)
+    trust, gateway = Trust(domain), Gateway(domain.store)
     agent = Agent(domain, gateway)
-    app.state.agent, app.state.gateway = (agent, gateway)
-    robustness, spatial = (Robustness(domain), Spatial(domain))
+    app.state.agent, app.state.gateway = agent, gateway
+    robustness, spatial = Robustness(domain), Spatial(domain)
     app.state.robustness = robustness
     domain.robustness = robustness
 
-    def developer(request):
-        if not auth.is_admin(request.state.user['id']):
-            raise HTTPException(403, '只有工作区管理员可以配置 Provider')
+    from .private_support import enabled
+    if enabled():
+        from .private_console import register_provider_admin
+        register_provider_admin(app, domain, auth, gateway, agent)
 
     @app.get('/api/agent/status')
     def agent_status():
@@ -30,12 +35,28 @@ def register_extensions(app, domain, auth):
     def chat(project_id: str, body: Chat):
         return agent.start(project_id, body)
 
+    @app.get('/api/projects/{project_id}/agent')
+    def agent_history(project_id: str, summary: bool = False):
+        # The main boundary checks project ownership. Persisted tasks survive reloads.
+        if summary:
+            keys = ('agent_id','question','mode','status','created_at','finished_at','task','parent_task_id')
+            fields = ','.join("json_extract(body, '$."+k+"') AS "+k for k in keys)
+            with domain.store.connect() as con:
+                rows = con.execute('SELECT '+fields+" FROM records r WHERE kind='agent' AND project_id=? "
+                    "AND revision=(SELECT MAX(revision) FROM records x WHERE x.kind=r.kind AND x.id=r.id) ORDER BY rowid DESC LIMIT 30", (project_id,)).fetchall()
+            return [dict(row) for row in rows]
+        return [agent.view(t) for t in domain.store.list('agent', project_id)[:30]]
+
     @app.get('/api/projects/{project_id}/agent/{agent_id}')
     def agent_task(project_id: str, agent_id: str):
         task = domain.store.get('agent', agent_id)
         if task['project_id'] != project_id:
             raise HTTPException(404)
-        return task
+        return agent.view(task)
+
+    @app.post('/api/projects/{project_id}/agent/{agent_id}/cancel')
+    def cancel_agent(project_id: str, agent_id: str):
+        return agent.cancel(project_id, agent_id)
 
     @app.get('/api/projects/{project_id}/carbon-factors')
     def factor(project_id: str):

@@ -1,0 +1,192 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "batch": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Batch"
+    },
+    "contains_rare_earth": {
+      "default": false,
+      "title": "Contains Rare Earth",
+      "type": "boolean"
+    },
+    "conductivity_w_mk": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Conductivity W Mk"
+    },
+    "density_kg_m3": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 30000,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Density Kg M3"
+    },
+    "specific_heat_j_kgk": {
+      "anyOf": [
+        {
+          "maximum": 20000,
+          "minimum": 100,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Specific Heat J Kgk"
+    },
+    "thermal_evidence_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Thermal Evidence Id"
+    },
+    "sample_evidence_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sample Evidence Id"
+    },
+    "control_evidence_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Control Evidence Id"
+    },
+    "aging_evidence_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Aging Evidence Id"
+    },
+    "test_conditions": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Test Conditions"
+    },
+    "applicability": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Applicability"
+    },
+    "source_locator": {
+      "anyOf": [
+        {
+          "maxLength": 1000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Locator"
+    },
+    "review_state": {
+      "default": "pending",
+      "enum": [
+        "pending",
+        "confirmed"
+      ],
+      "title": "Review State",
+      "type": "string"
+    },
+    "responsible_person": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Responsible Person",
+      "type": "string"
+    },
+    "review_note": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Review Note"
+    }
+  },
+  "required": [
+    "name",
+    "responsible_person"
+  ],
+  "title": "MaterialCard",
+  "type": "object"
+}
