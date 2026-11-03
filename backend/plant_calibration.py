@@ -30,7 +30,7 @@ class PlantFit(Contract):
     condenser_temperature_column: str = Field(min_length=1, max_length=200)
     power_unit: Literal['W', 'kW']
     cooling_unit: Literal['W', 'kW', 'refrigeration_ton']
-    flow_unit: Literal['m3/s', 'm3/h', 'L/s', 'US_gpm']
+    flow_unit: Literal['m3/s', 'm3/h', 'L/s', 'US_gpm', 'US_gph']
     temperature_unit: Literal['K', 'C', 'F']
     utc_offset_minutes: StrictInt | None = Field(default=None, ge=-720, le=840)
     interval_seconds: StrictInt = Field(ge=60, le=86400)
@@ -74,7 +74,7 @@ def analyze_plant(path, options):
         raise core.ValidationError('留出期起点必须包含UTC偏移') from exc
     power_scale = {'W': .001, 'kW': 1}[options.power_unit]
     cooling_scale = {'W': .001, 'kW': 1, 'refrigeration_ton': 3.516852842}[options.cooling_unit]
-    flow_scale = {'m3/s': 1, 'm3/h': 1/3600, 'L/s': .001, 'US_gpm': .003785411784/60}[options.flow_unit]
+    flow_scale = {'m3/s': 1, 'm3/h': 1/3600, 'L/s': .001, 'US_gpm': .003785411784/60, 'US_gph': .003785411784/3600}[options.flow_unit]
     def celsius(value):
         return value-273.15 if options.temperature_unit == 'K' else (
             (value-32)*5/9 if options.temperature_unit == 'F' else value)
@@ -128,6 +128,12 @@ def analyze_plant(path, options):
                                   'absent_intervals': gaps, 'off_interval_grid': off_grid}.items() if v})
     valid = [r for r in records if not r['flags']]
     bad_balance = sum(r['balance_error_percent'] > options.balance_tolerance_percent for r in valid)
+    ratios = [r['cooling_kw']/r['water_heat_kw'] for r in valid if r['water_heat_kw'] > 0]
+    ratios = [v for v in ratios if math.isfinite(v)]
+    balance_diagnostic = {'declared_flow_unit': options.flow_unit, 'paired_rows': len(ratios),
+                          'cooling_to_water_heat_ratio_p05_p50_p95': np.quantile(ratios, [.05, .5, .95]).tolist() if ratios else None,
+                          'source_values_rescaled': False,
+                          'meaning': 'Check meter channel, time alignment and source unit. A stable ratio does not authorize a conversion or prove independent metering.'}
     blockers = []
     if duplicates or descending or any(r['timestamp'] is None for r in records):
         blockers.append('时间无效、重复或乱序，拒绝工况拟合')
@@ -140,7 +146,7 @@ def analyze_plant(path, options):
     result = {'rows': len(records), 'valid_operating_rows': len(valid), 'excluded_rows': len(records)-len(valid),
               'issues': dict(issues), 'imputed_rows': 0, 'balance_failed_rows': bad_balance,
               'balance_error_median_percent': float(np.median([r['balance_error_percent'] for r in valid])) if valid else None,
-              'blockers': blockers, 'fit': None, 'status': 'blocked', 'calibrated': False,
+              'balance_diagnostic': balance_diagnostic, 'blockers': blockers, 'fit': None, 'status': 'blocked', 'calibrated': False,
               'scope': 'Operating-point electric power fit only; not annual energy, sensor certification, native EnergyPlus calibration, or site acceptance.'}
     if len(train) < 40 or len(holdout) < 20:
         blockers.append('至少40个训练工况、20个按时间留出的工况；不复制样本补足')

@@ -18,7 +18,7 @@ from . import core
 from .domain import identifier
 from .schema import Contract
 
-VERSION = "weather-quality-1"
+VERSION = "weather-quality-2"
 NASA_URL = "https://power.larc.nasa.gov/api/temporal/daily/point"
 NASA_FIELDS = {"T2M": ("temperature_c", "C", -90, 70), "T2M_MIN": ("minimum_c", "C", -90, 70),
                "T2M_MAX": ("maximum_c", "C", -90, 70), "RH2M": ("humidity_pct", "%", 0, 100),
@@ -173,6 +173,8 @@ def analyze_epw(path, options):
     expected = [(f"{year}-{m:02}-{d:02}", h) for m in range(1, 13) for d in range(1, calendar.monthrange(year, m)[1]+1) for h in range(1, 25)]
     issues, invalid, rows, keys = [], Counter(), [], []
     minutes = set()
+    # OneBuilding TMYx exports hourly slots with a constant midpoint marker.
+    allowed_minutes = (0, 30, 60) if location[4].strip() in {"SRC-TMYx", "ERA5-TMYx"} else (0, 60)
     for number, values in enumerate(lines[8:], 9):
         try:
             if len(values) < 35:
@@ -181,7 +183,7 @@ def analyze_epw(path, options):
             key = date(year, m, d).isoformat()
             # Legacy EnergyPlus TMY3 files use minute=0; modern hourly EPW uses 60.
             # Accept either consistent convention, never subhourly or mixed records.
-            if not 1 <= h <= 24 or minute not in (0, 60) or not 1600 <= y <= 2500:
+            if not 1 <= h <= 24 or minute not in allowed_minutes or not 1600 <= y <= 2500:
                 raise ValueError()
         except (ValueError, IndexError):
             invalid["timestamp_or_columns"] += 1
@@ -206,12 +208,12 @@ def analyze_epw(path, options):
     if invalid:
         issues.append("发现缺测标记、越界值或无效记录；见逐字段质量清单。")
     if len(minutes) > 1:
-        issues.append("分钟字段混用了 0 和 60；请核对原始文件的逐时时标。")
+        issues.append("分钟字段混用了不同记录约定；请核对原始文件的逐时时标。")
     result = aggregate(rows, options, True, full, issues)
     return {**result, "rows": rows, "kind": "epw", "name": location[1],
             "location": {"name": location[1], "region": location[2], "country": location[3], "station": location[5],
                          "latitude": lat, "longitude": lon, "timezone_hours": timezone, "elevation_m": elevation},
-            "time_basis": "EPW 本地标准时，hour 1–24 为时段结束；兼容旧 TMY3 minute=0。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
+            "time_basis": "EPW 本地标准时，hour 1–24 标记小时区间；兼容旧 TMY3 minute=0 和逐时 TMYx 固定 minute=30，原分钟保留且未改写。整理日期 2000/2001 仅为典型年索引，source_year/source_minute 保留原值。",
             "quality": {"records": len(lines)-8, "expected_records": len(expected), "missing_records": missing_hours,
                         "duplicate_records": duplicates, "invalid_fields": dict(invalid), "full_year": full,
                         "simulation_candidate": full and not issues, "issues": issues},

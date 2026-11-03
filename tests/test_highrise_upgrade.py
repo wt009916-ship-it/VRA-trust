@@ -400,3 +400,24 @@ def test_native_collinear_contact_vertices_are_preserved_in_triangles():
     assert all(len(s['points'])==3 for s in result)
     for zone in ['A','B']:
         assert sum(thermal_mesh.measures(s['points'])[0] for s in result if s['zone']==zone)==pytest.approx(1.)
+
+
+
+def test_long_skinny_interzone_triangle_merges_even_above_small_area_threshold():
+    from backend import thermal_mesh
+    a = [[0., 0., 3.], [.006, 0., 3.], [0., 3., 3.]]
+    b = [[.006, 0., 3.], [1., 3., 3.], [0., 3., 3.]]
+    def contact(name, zone, other, points):
+        return dict(name=name, zone=zone, other=other, points=points,
+                    kind='Roof' if zone=='A' else 'Floor', boundary='Surface',
+                    construction='Floor' if zone=='A' else 'FloorReverse', boundary_basis='Short-edge control')
+    def reverse(ring):
+        return [[x,y,z+.2] for x,y,z in reversed(ring)]
+    source = [contact('a1','A','b1',a), contact('a2','A','b2',b),
+              contact('b1','B','a1',reverse(a)), contact('b2','B','a2',reverse(b))]
+    assert thermal_mesh.measures(a)[0] > .001
+    merged, notes = thermal_mesh.merge_small_pairs(source)
+    assert len(merged) == 2 and notes[0]['short_edge_repair']
+    assert all(len(f['points']) == 4 for f in merged)
+    assert {f['name'] for f in merged} == {f['other'] for f in merged}
+    thermal_mesh.conservation(source, merged)

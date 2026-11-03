@@ -446,11 +446,22 @@ def merge_small_pairs(surfaces):
             key = (face['zone'], lookup[face['other']]['zone'], face['kind'], face['construction'], *planes[face['name']]['key'])
             groups[key].append(face)
     active, report = set(lookup), []
+
+    def short_triangle(points):
+        xyz = np.round(np.asarray(points), 6)
+        return len(xyz) == 3 and bool(np.min(np.linalg.norm(xyz-np.roll(xyz, 1, axis=0), axis=1)) < .01)
+
+    def engine_face(points):
+        xyz = np.round(np.asarray(points), 6)
+        vector = np.sum(np.cross(xyz[1:-1]-xyz[0], xyz[2:]-xyz[0]), axis=0)
+        return np.max(np.abs(vector))/2 > .00005 and not short_triangle(points)
+
     for face in faces:
         if face['name'] not in active or face['boundary'] != 'Surface':
             continue
         p = planes[face['name']]
-        if p['poly'].area >= .001:
+        short_edge_repair = p['poly'].area >= .001
+        if short_edge_repair and not short_triangle(face['points']):
             continue
         reciprocal = lookup[face['other']]
         key = (face['zone'], reciprocal['zone'], face['kind'], face['construction'], *p['key'])
@@ -479,6 +490,8 @@ def merge_small_pairs(surfaces):
             front, back = face_points(union, p), face_points(union, other_plane)
             if engine_fragile_polygon(front) or engine_fragile_polygon(back):
                 continue
+            if short_edge_repair and not (engine_face(front) and engine_face(back)):
+                continue
             valid = True
             for old_a, old_b, new in ((face, neighbour, front), (reciprocal, opposite, back)):
                 origin = np.asarray(old_a['points'][0])
@@ -494,7 +507,8 @@ def merge_small_pairs(surfaces):
             report.append({'removed_face': face['name'], 'reverse_removed_face': reciprocal['name'],
                            'into_face': neighbour['name'], 'reverse_into_face': opposite['name'],
                            'contact_area_m2': p['poly'].area, 'union_area_m2': union.area,
-                           'method': 'Exact convex coplanar union on both sides; no contact area discarded'})
+                           'method': 'Exact convex coplanar union on both sides; no contact area discarded',
+                           'short_edge_repair': short_edge_repair})
             break
     return [s for s in faces if s['name'] in active], report
 

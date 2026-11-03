@@ -206,3 +206,18 @@ def test_weather_quality_gate_blocks_missing_temperature(client, tmp_path):
     client.patch('/api/projects/'+pid+'/evidence/'+ev['evidence_id'], json={'expected_revision':ev['revision'], 'review_state':'confirmed', 'responsible_person':'Test only','review_note':'Deliberately invalid test input'})
     gate = domain.gate(pid)
     assert not gate['can_simulate'] and any(b['code']=='INVALID_SOURCE' and b['field']=='epw' for b in gate['blockers'])
+
+
+
+@pytest.mark.parametrize('source', ['SRC-TMYx', 'ERA5-TMYx'])
+def test_tmyx_hourly_midpoint_kept_but_mixed_minute_rejected(tmp_path, source):
+    def midpoint(lines):
+        lines[0][4] = source
+        for row in lines[8:]:
+            row[4] = '30'
+    result = analyze_epw(epw_variant(tmp_path, midpoint), AnalysisOptions())
+    assert result['quality']['simulation_candidate'] and result['rows'][0]['source_minute'] == 30
+    def mixed(lines):
+        midpoint(lines)
+        lines[8][4] = '60'
+    assert not analyze_epw(epw_variant(tmp_path, mixed), AnalysisOptions())['quality']['simulation_candidate']

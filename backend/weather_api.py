@@ -6,6 +6,8 @@ from .weather import Weather, EPWAnalysis, NASARequest, SOURCES
 
 def register_weather(app, domain):
     domain.weather = app.state.weather = weather = Weather(domain)
+    from .regional_context import register_regions
+    register_regions(app, domain)
 
     @app.get("/api/projects/{project_id}/weather/sources")
     def sources(project_id: str):
