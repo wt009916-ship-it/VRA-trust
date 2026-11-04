@@ -1,4 +1,5 @@
 """Project-bound evidence and real runs. No model-generated engineering values."""
+import csv
 import hashlib
 import re
 import threading
@@ -6,6 +7,7 @@ import uuid
 from pathlib import Path
 
 from . import core
+from .input_validation import validate_idf, validate_epw
 from .schema import (
     Evidence,
     EvidenceCreate,
@@ -108,9 +110,10 @@ class Domain:
                         raise core.ValidationError("当前计算链仅验收 EnergyPlus 9.0 IDF，请使用匹配版本模型")
                     if not re.search(r"Output:SQLite\s*,\s*SimpleAndTabular\s*;", text, re.IGNORECASE):
                         raise core.ValidationError("IDF 需要 Output:SQLite,SimpleAndTabular; 和年度汇总输出")
-                elif not path.read_text(encoding="utf-8-sig", errors="replace").startswith("LOCATION,"):
-                    raise core.ValidationError("EPW LOCATION header missing")
-            except (core.ValidationError, OSError, KeyError) as exc:
+                    validate_idf(path)
+                else:
+                    validate_epw(path)
+            except (core.ValidationError, OSError, KeyError, UnicodeError, csv.Error) as exc:
                 blockers.append({"code": "INVALID_SOURCE", "field": kind, "message": str(exc), "action": "重新导入正确源文件并保留失败版本"})
         return {"project_id": project_id, "scheme_id": scheme_id, "can_simulate": not blockers,
                 "can_recommend": False, "readiness": "READY_FOR_SIMULATION" if not blockers else "EVIDENCE_INSUFFICIENT",

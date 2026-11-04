@@ -189,6 +189,10 @@ class Agent:
             # Authoritative decision fields are computed from current tools, never model prose.
             gate = self.domain.gate(record['project_id'])
             record.update(status='succeeded', answer={'can_simulate': gate['can_simulate'], 'can_recommend': False,
+                'workflow_completed': True, 'task_completion': 'not_assessed',
+                'execution_scope': 'evidence_gate_only' if body.mode == 'local' else 'bounded_provider_tools',
+                'task_notice': '本地模式只执行资料准入检查，不解析或完成输入框中的任意专业任务，也不记忆前轮对话。'
+                    if body.mode == 'local' else '工具流程已结束；用户任务是否完成仍需核验，不能仅凭模型解释认定完成。',
                 'basis': [e['tool'] for e in record['events'] if e['status'] == 'succeeded' and e['tool'] in TOOLS], 'gaps': gate['blockers'],
                 'summary': '可进入仿真；尚不能给出确定最优推荐。' if gate['can_simulate'] else '当前证据不足，不能进入仿真或给出确定推荐。',
                 'limitations': gate['limitations']})

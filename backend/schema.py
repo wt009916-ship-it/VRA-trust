@@ -2,7 +2,7 @@
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
+from pydantic import StrictFloat, StrictInt, BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 
 class Contract(BaseModel):
@@ -22,10 +22,10 @@ class Building(Contract):
     use: str = Field(min_length=1, max_length=100)
     location: str = Field(min_length=1, max_length=200)
     region: str = Field(min_length=1, max_length=40)
-    area_m2: float = Field(gt=0, le=10000000)
-    floors: int | None = Field(default=None, gt=0, le=300)
-    floor_height_m: float | None = Field(default=None, gt=0, le=50)
-    window_wall_ratio: float | None = Field(default=None, ge=0, le=1)
+    area_m2: StrictFloat = Field(gt=0, le=10000000)
+    floors: StrictInt | None = Field(default=None, gt=0, le=300)
+    floor_height_m: StrictFloat | None = Field(default=None, gt=0, le=50)
+    window_wall_ratio: StrictFloat | None = Field(default=None, ge=0, le=1)
     envelope: str | None = Field(default=None, max_length=4000)
     hvac: str | None = Field(default=None, max_length=4000)
     schedules: str | None = Field(default=None, max_length=4000)
@@ -49,13 +49,13 @@ class ProjectCreate(Contract):
 
 class Project(ProjectCreate):
     project_id: str
-    revision: int
+    revision: StrictInt
     created_at: str
     updated_at: str
 
 
 class BuildingUpdate(Contract):
-    expected_revision: int = Field(ge=1)
+    expected_revision: StrictInt = Field(ge=1)
     building: Building
 
 
@@ -69,7 +69,7 @@ class EvidenceCreate(Contract):
     authority: str = Field(min_length=1, max_length=300)
     permission: str = Field(min_length=1, max_length=1000)
     uncertainty: str | None = Field(default=None, max_length=2000)
-    confidence: float | None = Field(default=None, ge=0, le=1)
+    confidence: StrictFloat | None = Field(default=None, ge=0, le=1)
     acquisition_method: str = Field(min_length=1, max_length=300)
     responsible_person: str = Field(min_length=1, max_length=100)
     status: EvidenceStatus = EvidenceStatus.IMPORTED
@@ -89,7 +89,7 @@ class EvidenceCreate(Contract):
 class Evidence(EvidenceCreate):
     evidence_id: str
     project_id: str
-    revision: int
+    revision: StrictInt
     timestamp: str
     hash: str
     review_state: Literal["pending", "confirmed", "rejected"] = "pending"
@@ -97,7 +97,7 @@ class Evidence(EvidenceCreate):
 
 
 class EvidenceReview(Contract):
-    expected_revision: int = Field(ge=1)
+    expected_revision: StrictInt = Field(ge=1)
     review_state: Literal["confirmed", "rejected", "pending"]
     responsible_person: str = Field(min_length=1, max_length=100)
     review_note: str = Field(min_length=5, max_length=2000)
@@ -137,9 +137,9 @@ class RunView(Contract):
     provenance: Provenance | None = None
     error: str | None = None
     stale_reasons: list[str] = Field(default_factory=list)
-    warnings_count: int | None = None
+    warnings_count: StrictInt | None = None
     review_status: str = "pending_engineer_review"
-    engine_calls_executed: int = 0
+    engine_calls_executed: StrictInt = 0
     limitations: list[str] = Field(default_factory=list)
 
 

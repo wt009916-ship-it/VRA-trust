@@ -4,7 +4,7 @@ import uuid
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import StrictFloat, StrictInt, Field, model_validator
 
 from . import core
 from .schema import Contract
@@ -12,11 +12,11 @@ from .schema import Contract
 
 class Wall(Contract):
     id: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
-    x1: float = Field(ge=-1000, le=1000)
-    z1: float = Field(ge=-1000, le=1000)
-    x2: float = Field(ge=-1000, le=1000)
-    z2: float = Field(ge=-1000, le=1000)
-    thickness_m: float = Field(gt=0, le=2)
+    x1: StrictFloat = Field(ge=-1000, le=1000)
+    z1: StrictFloat = Field(ge=-1000, le=1000)
+    x2: StrictFloat = Field(ge=-1000, le=1000)
+    z2: StrictFloat = Field(ge=-1000, le=1000)
+    thickness_m: StrictFloat = Field(gt=0, le=2)
     evidence_id: str
     source_locator: str = Field(min_length=3, max_length=1000)
     status: Literal['CONFIRMED', 'AI_SUGGESTED', 'UNKNOWN']
@@ -30,9 +30,9 @@ class Wall(Contract):
 
 
 class Reconstruction(Contract):
-    expected_revision: int = Field(ge=0)
-    floor_height_m: float = Field(gt=0, le=20)
-    floors: int = Field(ge=1, le=30)
+    expected_revision: StrictInt = Field(ge=0)
+    floor_height_m: StrictFloat = Field(gt=0, le=20)
+    floors: StrictInt = Field(ge=1, le=30)
     responsible_person: str = Field(min_length=1, max_length=100)
     review_note: str = Field(min_length=5, max_length=2000)
     walls: list[Wall] = Field(min_length=1, max_length=300)

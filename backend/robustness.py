@@ -5,7 +5,7 @@ import threading
 import uuid
 from pathlib import Path
 
-from pydantic import Field, model_validator
+from pydantic import StrictFloat, StrictInt, Field, model_validator
 
 from . import core
 from .schema import Contract
@@ -26,7 +26,7 @@ def set_conductivity(text, name, value):
 
 class Axis(Contract):
     material: str = Field(min_length=1, max_length=160)
-    values: list[float] = Field(min_length=2, max_length=6)
+    values: list[StrictFloat] = Field(min_length=2, max_length=6)
     source: str = Field(min_length=5, max_length=1000)
     evidence_id: str | None = None
 
@@ -40,15 +40,15 @@ class Axis(Contract):
 class Search(Contract):
     run_ids: list[str] = Field(min_length=2, max_length=3)
     axes: list[Axis] = Field(min_length=1, max_length=2)
-    budget: int = Field(ge=2, le=24)
-    ranking_tolerance_kwh: float = Field(default=.01, gt=0, le=1000)
+    budget: StrictInt = Field(ge=2, le=24)
+    ranking_tolerance_kwh: StrictFloat = Field(default=.01, gt=0, le=1000)
 
 
 class Acquisition(Contract):
     material: str
-    confirmed_value: float = Field(gt=0)
-    cost_cny: float = Field(ge=0, le=1000000)
-    duration_hours: float = Field(ge=0, le=10000)
+    confirmed_value: StrictFloat = Field(gt=0)
+    cost_cny: StrictFloat = Field(ge=0, le=1000000)
+    duration_hours: StrictFloat = Field(ge=0, le=10000)
     method: str = Field(min_length=3, max_length=1000)
 
 
@@ -82,7 +82,7 @@ class Robustness:
         for rid in run_ids:
             job = self.store.job(rid)
             _, path = self.domain.file_record(job['project_id'], job['evidence_snapshot']['idf']['source_file'])
-            catalog = {o[1]: float(o[4]) for o in objects(path.read_text(encoding='utf-8-sig')) if o[0].lower() == 'material' and len(o) >= 7}
+            catalog = {o[1]: StrictFloat(o[4]) for o in objects(path.read_text(encoding='utf-8-sig')) if o[0].lower() == 'material' and len(o) >= 7}
             catalogs.append(catalog)
         common = set.intersection(*(set(c) for c in catalogs)) if catalogs else set()
         return [{'name': name, 'conductivity_w_mk': [c[name] for c in catalogs], 'unit': 'W/(m K)'} for name in sorted(common)]

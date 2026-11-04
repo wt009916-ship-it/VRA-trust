@@ -2,21 +2,21 @@
 import inspect
 import uuid
 
-from pydantic import Field
+from pydantic import StrictFloat, StrictInt, Field
 
 from . import core
 from .schema import Contract
 
 
 class Factor(Contract):
-    value: float = Field(ge=0, le=100)
+    value: StrictFloat = Field(ge=0, le=100)
     unit: str = "kgCO2/kWh"
     source: str = Field(min_length=5, max_length=2000)
     factor_id: str = Field(min_length=1, max_length=200)
 
 
 class FactorUpdate(Contract):
-    expected_revision: int = Field(ge=0)
+    expected_revision: StrictInt = Field(ge=0)
     region: str = Field(min_length=1, max_length=40)
     scenario: bool
     factors: dict[str, Factor] = Field(max_length=20)

@@ -1,7 +1,7 @@
 import './style.css';
 import { spatialWorkspace } from './spatial-ui.js';
 import { robustnessWorkspace } from './robustness-ui.js';
-import { bindWorkflow, privateConsoleUnavailable, runAgent, factorEditor } from './trust-ui.js';
+import { bindWorkflow, developerSettings, runAgent, factorEditor } from './trust-ui.js';
 import { request, post, escape as esc, number as num, latestSchemes, resultValue, comparisonIsCurrent, setCsrfToken } from './api.js';
 
 import { appShell, homeView, projectView, authView, icon } from './layout.js';
@@ -32,7 +32,7 @@ function shell() {
   document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
   document.querySelector('#theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; localStorage.setItem('vra-theme', theme); };
   document.querySelector('#logout').onclick = e => action(async () => { await post('/auth/logout', {}); clearSession(); authScreen(false); }, e.currentTarget);
-  const dev=document.querySelector('#developer-settings'); if(dev) dev.onclick=()=>privateConsoleUnavailable(modal,action,notice);
+  const dev=document.querySelector('#developer-settings'); if(dev) dev.onclick=()=>developerSettings(modal,action,notice);
   bindProjectLinks();
 }
 function bindProjectLinks() {
