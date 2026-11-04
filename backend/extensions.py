@@ -10,6 +10,7 @@ from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
 from .thermal import Thermal, Assembly, ThermalCompare, compare as compare_thermal, render_html as thermal_html
 from .cad import Cad, Inspection
+from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, compare as lifecycle_compare, report as lifecycle_report
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -20,6 +21,27 @@ def register_extensions(app, domain, auth):
     domain.robustness = robustness
     thermal = Thermal(domain)
     cad = Cad(domain)
+    lifecycle = Lifecycle(domain)
+
+    @app.post('/api/projects/{project_id}/lifecycle-comparisons')
+    def lifecycle_comparison(project_id: str, body: LifecycleComparison):
+        return lifecycle_compare(lifecycle, project_id, body)
+
+    @app.post('/api/projects/{project_id}/lifecycle', status_code=201)
+    def lifecycle_create(project_id: str, body: Inventory):
+        return lifecycle.save(project_id, body)
+
+    @app.get('/api/projects/{project_id}/lifecycle')
+    def lifecycle_history(project_id: str):
+        return [lifecycle.view(project_id, r['lifecycle_id']) for r in domain.store.list('lifecycle', project_id)]
+
+    @app.get('/api/projects/{project_id}/lifecycle/{lifecycle_id}')
+    def lifecycle_record(project_id: str, lifecycle_id: str):
+        return lifecycle.view(project_id, lifecycle_id)
+
+    @app.get('/api/projects/{project_id}/lifecycle/{lifecycle_id}/report.html', response_class=HTMLResponse)
+    def lifecycle_html(project_id: str, lifecycle_id: str):
+        return lifecycle_report(lifecycle.view(project_id, lifecycle_id))
 
     @app.post('/api/projects/{project_id}/cad-inspections', status_code=201)
     def inspect_cad(project_id: str, body: Inspection):
