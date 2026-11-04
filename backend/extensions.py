@@ -11,6 +11,7 @@ from .spatial import Spatial, Reconstruction
 from .thermal import Thermal, Assembly, ThermalCompare, compare as compare_thermal, render_html as thermal_html
 from .cad import Cad, Inspection
 from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, compare as lifecycle_compare, report as lifecycle_report
+from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -22,6 +23,42 @@ def register_extensions(app, domain, auth):
     thermal = Thermal(domain)
     cad = Cad(domain)
     lifecycle = Lifecycle(domain)
+    standards = Standards(domain)
+
+    @app.post('/api/projects/{project_id}/standards-preview')
+    def standards_preview(project_id: str, body: StandardPreview):
+        return standards.preview(project_id, body)
+
+    @app.post('/api/projects/{project_id}/standards', status_code=201)
+    def standards_create(project_id: str, body: StandardInput):
+        return standards.save(project_id, body)
+
+    @app.get('/api/projects/{project_id}/standards')
+    def standards_list(project_id: str):
+        return standards.catalog(project_id)
+
+    @app.get('/api/projects/{project_id}/standards/{standard_id}')
+    def standards_get(project_id: str, standard_id: str):
+        return standards.view(project_id, standard_id)
+
+    @app.get('/api/projects/{project_id}/standards/{standard_id}/source.pdf')
+    def standards_source(project_id: str, standard_id: str):
+        record = standards.view(project_id, standard_id)
+        source, path = domain.file_record(project_id, record['input']['file_id'])
+        return FileResponse(path, media_type='application/pdf', filename=source['name'],
+            content_disposition_type='inline', headers={'X-Source-SHA256':source['hash']})
+
+    @app.post('/api/projects/{project_id}/standards/{standard_id}/review')
+    def standards_review(project_id: str, standard_id: str, body: StandardReview, request: Request):
+        return standards.review(project_id, standard_id, body, request.state.user['id'])
+
+    @app.post('/api/projects/{project_id}/standard-queries', status_code=201)
+    def standards_query(project_id: str, body: StandardQuery):
+        return standards.query(project_id, body)
+
+    @app.get('/api/projects/{project_id}/standard-queries/{normquery_id}')
+    def standards_query_get(project_id: str, normquery_id: str):
+        return standards.query_view(project_id, normquery_id)
 
     @app.post('/api/projects/{project_id}/lifecycle-validation')
     def lifecycle_validation(project_id: str, body: Inventory):
