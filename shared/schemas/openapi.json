@@ -1842,6 +1842,54 @@
         ]
       }
     },
+    "/api/projects/{project_id}/agent-tasks": {
+      "get": {
+        "summary": "Agent History",
+        "operationId": "agent_history_api_projects__project_id__agent_tasks_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/agent/{agent_id}": {
       "get": {
         "summary": "Agent Task",
@@ -3019,6 +3067,38 @@
                 "type": "null"
               }
             ]
+          },
+          "objective": {
+            "type": "string",
+            "enum": [
+              "open_ended",
+              "inspect_evidence",
+              "inspect_results"
+            ],
+            "title": "Objective",
+            "default": "open_ended"
+          },
+          "target_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Run Id"
+          },
+          "previous_agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Agent Id"
           }
         },
         "additionalProperties": false,

@@ -71,6 +71,11 @@ def register_extensions(app, domain, auth):
     def chat(project_id: str, body: Chat):
         return agent.start(project_id, body)
 
+    @app.get('/api/projects/{project_id}/agent-tasks')
+    def agent_history(project_id: str):
+        return [{k: task.get(k) for k in ('agent_id', 'question', 'mode', 'objective', 'status', 'created_at', 'answer', 'previous_agent_id')}
+                for task in domain.store.list('agent', project_id)[:20]]
+
     @app.get('/api/projects/{project_id}/agent/{agent_id}')
     def agent_task(project_id: str, agent_id: str):
         task = domain.store.get('agent', agent_id)

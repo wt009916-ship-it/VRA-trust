@@ -89,6 +89,15 @@ with TestClient(create_app(root)) as client:
     report = client.get('/api/runs/' + rid + '/report.json').json()
     check(report['certificate']['stability_status'] == study['stability_status'], 'decision certificate includes same bounded search evidence')
     check(client.get('/api/runs/' + rid + '/report.pdf').status_code == 200, 'PDF generated from updated report snapshot')
-    output = {'checks': checks, 'project_id': pid, 'runs': runs, 'carbon_after': updated['carbon'], 'search': study, 'data_nature': 'official reference, not field validation', 'root': str(root)}
+    task = client.post(f'/api/projects/{pid}/agent/chat', json={'message': 'Inspect this actual reference simulation', 'objective': 'inspect_results', 'target_run_id': rid}).json()
+    verified_task = wait(client, f'/api/projects/{pid}/agent/'+task['agent_id'])
+    check(verified_task['answer']['task_completion'] == 'verified', 'Agent objective verified against actual current EnergyPlus result')
+    baseline_evidence = next(e for e in client.get(f'/api/projects/{pid}/evidence').json() if e['type'] == 'idf' and e.get('scheme_id') == 'baseline')
+    client.patch(f'/api/projects/{pid}/evidence/'+baseline_evidence['evidence_id'], json={'expected_revision': baseline_evidence['revision'], 'review_state': 'pending', 'responsible_person': 'Automated reference test', 'review_note': 'Withdraw to test Agent stale result refusal'})
+    task = client.post(f'/api/projects/{pid}/agent/chat', json={'message': 'Recheck after evidence withdrawal', 'objective': 'inspect_results', 'target_run_id': rid, 'previous_agent_id': task['agent_id']}).json()
+    stale_task = wait(client, f'/api/projects/{pid}/agent/'+task['agent_id'])
+    check(stale_task['answer']['task_completion'] == 'incomplete' and stale_task['answer']['verification'][0]['state'] == 'stale', 'Agent does not reuse prior success after evidence withdrawal')
+    check(len(stale_task['context_snapshot']) == 1 and before == {p.relative_to(rd).as_posix(): core.sha(p) for p in rd.rglob('*') if p.is_file()}, 'Bounded task memory preserves original simulation artifacts')
+    output = {'checks': checks, 'project_id': pid, 'runs': runs, 'carbon_after': updated['carbon'], 'search': study, 'agent_verified': verified_task, 'agent_stale': stale_task, 'data_nature': 'official reference, not field validation', 'root': str(root)}
     core.write_json(ROOT / 'validation/trust-slice/latest.json', output)
     print(json.dumps({'passed': len(checks), 'root': str(root)}, ensure_ascii=False), flush=True)
