@@ -58,6 +58,8 @@ def report_pdf(report):
     rows([("项目", project["name"]), ("数据性质", project["data_nature"]), ("运行", run["run_id"]), ("方案 / 状态", run["scheme_id"] + " / " + run["status"]), ("报告时间 UTC", report["generated_at"]), ("证书状态", cert["status"])])
     section("01  计算结果与适用范围")
     rows([("全年场地能耗 kWh", numeric(metrics.get("annual_energy_kwh"))), ("总建筑面积 m2", numeric(metrics.get("area_m2"))), ("EUI kWh/(m2·a)", numeric(metrics.get("eui_kwh_m2a"))), ("运行 CO2 kg", numeric(carbon.get("operating_carbon_kg"))), ("碳核算性质", "教学因子情景，非正式核算" if carbon.get("scenario") else carbon.get("status", "未计算")), ("引擎调用 / Warning", str(run["engine_calls_executed"]) + " / " + str(run["warnings_count"])), ("生命周期 / 签发信用", "均未评估；运行 CO2 不等于 LCA 或碳信用")])
+    assurance = carbon.get('source_assurance') or {'status': 'USER_DECLARED'}
+    rows([('因子来源状态', assurance['status']), ('来源可信边界', assurance.get('notice', '来源未独立核证'))])
     if run["error"] or run["stale_reasons"]:
         story.append(para("拒绝原因：" + str(run["error"] or "；".join(run["stale_reasons"]))))
     story.append(PageBreak())

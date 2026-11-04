@@ -13,6 +13,15 @@ class Factor(Contract):
     unit: str = "kgCO2/kWh"
     source: str = Field(min_length=5, max_length=2000)
     factor_id: str = Field(min_length=1, max_length=200)
+    publisher: str | None = Field(default=None, min_length=1, max_length=300)
+    document_version: str | None = Field(default=None, min_length=1, max_length=200)
+    reference_year: StrictInt | None = Field(default=None, ge=1900, le=2100)
+
+
+class FactorReview(Contract):
+    factor_revision: StrictInt = Field(ge=1)
+    evidence_ids: list[str] = Field(min_length=1, max_length=20)
+    note: str = Field(min_length=10, max_length=2000)
 
 
 class FactorUpdate(Contract):
@@ -64,6 +73,51 @@ class Trust:
         records = self.store.list('factor', project_id)
         return records[0] if records else None
 
+    def review_factor(self, project_id, body, reviewer):
+        factor = self.factor(project_id)
+        if not factor or factor['revision'] != body.factor_revision:
+            raise core.ValidationError('Factor revision conflict; review the current version')
+        if factor['profile'].get('scenario') or not factor['profile']['factors']:
+            raise core.ValidationError('Scenario/empty factors cannot be reviewed as sourced factors')
+        if any(not all(f.get(k) is not None and f.get(k) != '' for k in ('publisher', 'document_version', 'reference_year'))
+               for f in factor['profile']['factors'].values()):
+            raise core.ValidationError('Publisher, document version and reference year are required for source review')
+        snapshots = []
+        for eid in sorted(set(body.evidence_ids)):
+            ev = self.store.get('evidence', eid)
+            if ev['project_id'] != project_id or ev['review_state'] != 'confirmed' or not ev['source_file'] or ev['status'] in {'ASSUMED', 'AI_INFERRED', 'MISSING'}:
+                raise core.ValidationError('Source review requires confirmed non-assumed evidence from this project')
+            if ev['source_file']:
+                self.domain.file_record(project_id, ev['source_file'])
+            snapshots.append(ev)
+        return self.store.put('factorreview', {'factorreview_id': 'factorreview_' + uuid.uuid4().hex,
+            'project_id': project_id, 'factor_hash': factor['hash'], 'factor_revision': factor['revision'],
+            'evidence_snapshot': snapshots, 'reviewer': reviewer, 'note': body.note, 'timestamp': core.now(),
+            'meaning': 'Human source review only; not independent certification or carbon-credit eligibility'})
+
+    def source_assurance(self, project_id, profile):
+        default = {'status': 'SCENARIO' if profile.get('scenario') else 'USER_DECLARED',
+                   'notice': '计算有效性与来源可信度分开；自由填写的来源不是已核证因子。人工核对也不是认证。'}
+        if profile.get('scenario'):
+            return default
+        factor = self.factor(project_id)
+        if not factor or core.hash_json(profile) != core.hash_json(factor['profile']):
+            return default
+        reviews = self.store.list('factorreview', project_id)
+        current = next((r for r in reviews if r['factor_hash'] == factor['hash'] and r['factor_revision'] == factor['revision']), None)
+        if not current:
+            return default
+        for old in current['evidence_snapshot']:
+            now = self.store.get('evidence', old['evidence_id'])
+            if now['revision'] != old['revision'] or now['hash'] != old['hash'] or now['review_state'] != 'confirmed':
+                return {**default, 'status': 'REVIEW_STALE'}
+            if now['source_file']:
+                try:
+                    self.domain.file_record(project_id, now['source_file'])
+                except (OSError, core.ValidationError, KeyError):
+                    return {**default, 'status': 'REVIEW_STALE'}
+        return {**default, 'status': 'HUMAN_SOURCE_REVIEWED', 'review': current}
+
     def update_factor(self, project_id, body):
         project = self.store.get('project', project_id)
         profile = {'profile_id': 'project-factor', **body.model_dump(exclude={'expected_revision'})}
@@ -86,6 +140,7 @@ class Trust:
 
     def carbon_view(self, job, raw):
         profile = self.current_profile(job)
+        assurance = self.source_assurance(job['project_id'], profile)
         profile_hash = core.hash_json(profile)
         derived = [d for d in self.store.list('carbon', job['project_id']) if d['run_id'] == job['run_id']]
         if derived:
@@ -95,10 +150,10 @@ class Trust:
                 payload = {k: v for k, v in latest.items() if k not in {'revision', 'hash'}}
                 if latest['source_result_hash'] != core.sha(result_file) or latest['hash'] != core.hash_json(payload):
                     raise core.ValidationError('Carbon derivation integrity failed')
-                return {**latest['result'], 'node_state': 'VALID', 'derivation_id': latest['carbon_id'], 'provenance': payload, 'factor_snapshot': profile}
+                return {**latest['result'], 'source_assurance': assurance, 'node_state': 'VALID', 'derivation_id': latest['carbon_id'], 'provenance': payload, 'factor_snapshot': profile}
         elif profile_hash == core.hash_json(job['factor_snapshot']):
-            return {**raw, 'node_state': 'VALID', 'derivation_id': None, 'factor_snapshot': profile}
-        return {'node_state': 'STALE', 'status': 'stale', 'operating_carbon_kg': None,
+            return {**raw, 'source_assurance': assurance, 'node_state': 'VALID', 'derivation_id': None, 'factor_snapshot': profile}
+        return {'node_state': 'STALE', 'status': 'stale', 'source_assurance': assurance, 'operating_carbon_kg': None,
                 'profile_hash': profile_hash, 'factor_snapshot': profile, 'scenario': profile.get('scenario', False), 'reason': '碳因子或碳计算版本已更新；能耗保持有效，请仅重算碳排。'}
 
     def recalculate(self, run_id):
@@ -135,7 +190,8 @@ class Trust:
             node(':energy', 'Metric', '全年场地能耗', state, [run_id], metrics.get('annual_energy_kwh')),
             node(':area', 'Parameter', 'SQL 建筑面积', state, [run_id], metrics.get('area_m2')),
             node(':eui', 'Metric', 'EUI', state, [run_id + ':energy', run_id + ':area'], metrics.get('eui_kwh_m2a')),
-            {**node(':factor', 'Evidence', '运行碳因子', 'ASSUMPTION' if profile.get('scenario') else 'VALID', []), 'hash': core.hash_json(profile)},
+            {**node(':factor', 'Evidence', '运行碳因子', 'ASSUMPTION' if profile.get('scenario') else 'VALID', []),
+             'hash': core.hash_json(profile), 'source_assurance': carbon.get('source_assurance') or {'status': 'SCENARIO' if profile.get('scenario') else 'USER_DECLARED'}},
             node(':carbon', 'Metric', '运行碳排', cs, [run_id + ':energy', run_id + ':factor'], carbon.get('operating_carbon_kg')),
             node(':decision', 'Decision', '确定推荐：尚缺成本、舒适性与稳定性证据', 'UNKNOWN', [run_id + ':eui', run_id + ':carbon']),
             node(':certificate', 'Certificate', '决策证书草稿', 'PARTIALLY_STALE' if cs == 'STALE' and state == 'VALID' else 'STALE' if state == 'STALE' else 'UNKNOWN', [run_id + ':decision'])]
