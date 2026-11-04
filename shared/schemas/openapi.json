@@ -1375,6 +1375,345 @@
         ]
       }
     },
+    "/api/projects/{project_id}/lifecycle-validation": {
+      "post": {
+        "summary": "Lifecycle Validation",
+        "operationId": "lifecycle_validation_api_projects__project_id__lifecycle_validation_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Inventory"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/lifecycle-comparisons": {
+      "post": {
+        "summary": "Lifecycle Comparison",
+        "operationId": "lifecycle_comparison_api_projects__project_id__lifecycle_comparisons_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Comparison"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/lifecycle": {
+      "post": {
+        "summary": "Lifecycle Create",
+        "operationId": "lifecycle_create_api_projects__project_id__lifecycle_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Inventory"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Lifecycle History",
+        "operationId": "lifecycle_history_api_projects__project_id__lifecycle_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/lifecycle/{lifecycle_id}": {
+      "get": {
+        "summary": "Lifecycle Record",
+        "operationId": "lifecycle_record_api_projects__project_id__lifecycle__lifecycle_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "lifecycle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lifecycle Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/lifecycle/{lifecycle_id}/report.html": {
+      "get": {
+        "summary": "Lifecycle Html",
+        "operationId": "lifecycle_html_api_projects__project_id__lifecycle__lifecycle_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "lifecycle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lifecycle Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/cad-inspections": {
       "post": {
         "summary": "Inspect Cad",
@@ -2921,6 +3260,88 @@
         ],
         "title": "Actions"
       },
+      "Activity": {
+        "properties": {
+          "activity_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Activity Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "production",
+              "transport",
+              "construction",
+              "operation",
+              "end_of_life"
+            ],
+            "title": "Stage"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "kg",
+              "t",
+              "tkm",
+              "kWh",
+              "m3",
+              "m2",
+              "item"
+            ],
+            "title": "Unit"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "whole_period",
+              "annual"
+            ],
+            "title": "Period"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Source"
+          },
+          "factor": {
+            "$ref": "#/components/schemas/EmissionFactor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "activity_id",
+          "name",
+          "stage",
+          "unit",
+          "period",
+          "source",
+          "factor"
+        ],
+        "title": "Activity"
+      },
       "Assembly": {
         "properties": {
           "name": {
@@ -3044,6 +3465,39 @@
           "file"
         ],
         "title": "Body_upload_api_projects__project_id__files_post"
+      },
+      "Boundary": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": [
+              "production",
+              "transport",
+              "construction",
+              "operation",
+              "end_of_life"
+            ],
+            "title": "Stage"
+          },
+          "included": {
+            "type": "boolean",
+            "title": "Included"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "stage",
+          "included",
+          "reason"
+        ],
+        "title": "Boundary"
       },
       "Building": {
         "properties": {
@@ -3270,6 +3724,25 @@
         ],
         "title": "Chat"
       },
+      "Comparison": {
+        "properties": {
+          "lifecycle_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 2,
+            "title": "Lifecycle Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lifecycle_ids"
+        ],
+        "title": "Comparison"
+      },
       "ComparisonRequest": {
         "properties": {
           "run_ids": {
@@ -3312,6 +3785,120 @@
           "password"
         ],
         "title": "Credentials"
+      },
+      "EmissionFactor": {
+        "properties": {
+          "factor_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Factor Id"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "denominator": {
+            "type": "string",
+            "enum": [
+              "kg",
+              "t",
+              "tkm",
+              "kWh",
+              "m3",
+              "m2",
+              "item"
+            ],
+            "title": "Denominator"
+          },
+          "numerator": {
+            "type": "string",
+            "const": "kgCO2e",
+            "title": "Numerator",
+            "default": "kgCO2e"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "production",
+              "transport",
+              "construction",
+              "operation",
+              "end_of_life"
+            ],
+            "title": "Stage"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Source"
+          },
+          "publisher": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Publisher"
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Version"
+          },
+          "year": {
+            "type": "integer",
+            "maximum": 2100.0,
+            "minimum": 1900.0,
+            "title": "Year"
+          },
+          "region": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Region"
+          },
+          "method": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Method"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "factor_id",
+          "denominator",
+          "stage",
+          "source",
+          "publisher",
+          "version",
+          "year",
+          "region",
+          "method"
+        ],
+        "title": "EmissionFactor"
       },
       "Evidence": {
         "properties": {
@@ -3859,6 +4446,88 @@
           "file_id"
         ],
         "title": "Inspection"
+      },
+      "Inventory": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "area_m2": {
+            "type": "number",
+            "maximum": 10000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Area M2"
+          },
+          "study_years": {
+            "type": "integer",
+            "maximum": 200.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Study Years"
+          },
+          "region": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Region"
+          },
+          "method": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Method"
+          },
+          "functional_unit": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Functional Unit"
+          },
+          "import_file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^file_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Import File Id"
+          },
+          "boundaries": {
+            "items": {
+              "$ref": "#/components/schemas/Boundary"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 5,
+            "title": "Boundaries"
+          },
+          "activities": {
+            "items": {
+              "$ref": "#/components/schemas/Activity"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Activities"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "area_m2",
+          "study_years",
+          "region",
+          "method",
+          "functional_unit",
+          "boundaries",
+          "activities"
+        ],
+        "title": "Inventory"
       },
       "JsonValue": {},
       "Layer": {
