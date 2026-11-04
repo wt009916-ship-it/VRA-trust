@@ -1,3 +1,4 @@
+import { cadWorkspace } from './cad-ui.js';
 import { thermalWorkspace } from './thermal-ui.js';
 import './style.css';
 import { spatialWorkspace } from './spatial-ui.js';
@@ -92,7 +93,7 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
-  if(host && ['spatial','robustness','thermal'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(()=>view==='thermal'?thermalWorkspace(state,host,action):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
+  if(host && ['spatial','robustness','thermal','cad'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(()=>view==='cad'?cadWorkspace(state,host,action):view==='thermal'?thermalWorkspace(state,host,action):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
 }
 function renderProject() {
   const p = state.project;

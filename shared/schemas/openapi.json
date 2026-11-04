@@ -1375,6 +1375,168 @@
         ]
       }
     },
+    "/api/projects/{project_id}/cad-inspections": {
+      "post": {
+        "summary": "Inspect Cad",
+        "operationId": "inspect_cad_api_projects__project_id__cad_inspections_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Inspection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Cad History",
+        "operationId": "cad_history_api_projects__project_id__cad_inspections_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/cad-inspections/{cad_id}": {
+      "get": {
+        "summary": "Cad Record",
+        "operationId": "cad_record_api_projects__project_id__cad_inspections__cad_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "cad_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cad Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/thermal": {
       "post": {
         "summary": "Thermal Create",
@@ -3682,6 +3844,21 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "Inspection": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "pattern": "^file_[a-f0-9]{32}$",
+            "title": "File Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_id"
+        ],
+        "title": "Inspection"
       },
       "JsonValue": {},
       "Layer": {
