@@ -2,9 +2,9 @@
 import json
 import zipfile
 from fastapi.responses import FileResponse
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from .agent import Agent, Chat
-from .gateway import Gateway
+from .gateway import Gateway, ProviderSettings
 from .trust import FactorUpdate, Trust
 from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
@@ -20,6 +20,25 @@ def register_extensions(app, domain, auth):
     def developer(request):
         if not auth.is_admin(request.state.user['id']):
             raise HTTPException(403, '只有工作区管理员可以配置 Provider')
+
+    @app.get('/api/developer/provider')
+    def settings(request: Request):
+        developer(request)
+        return gateway.public()
+
+    @app.put('/api/developer/provider')
+    def configure(body: ProviderSettings, request: Request):
+        developer(request)
+        return gateway.save(body)
+
+    @app.post('/api/developer/provider/test')
+    def test_provider(request: Request):
+        developer(request)
+        answer = gateway.complete([{'role': 'user', 'content': '请调用 evidence_validate 工具检查资料。'}], agent.tools())
+        calls = answer.get('tool_calls') or []
+        # Connectivity check must not execute model-selected mutating tools.
+        return {'connected': True, 'tool_calling_observed': any(c.get('function', {}).get('name') == 'evidence_validate' for c in calls),
+                'model': gateway.public()['model'], 'tools_executed': 0}
 
     @app.get('/api/agent/status')
     def agent_status():

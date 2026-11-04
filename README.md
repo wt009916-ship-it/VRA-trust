@@ -96,3 +96,7 @@ runtime、runs、validation、密钥、依赖和私人建筑资料不提交。
 运行专项真实验收：`python scripts/verify_trust_slice.py`。它在 validation 下建立隔离账户，运行 3 个参考方案和 3 次预算内反例仿真，并核验选择性重算不调用 EnergyPlus。
 
 Provider 协议依据：[DeepSeek 官方 Tool Calls 文档](https://api-docs.deepseek.com/guides/tool_calls/)。默认模型 deepseek-flash，可在管理员设置中修改。未填 Key 时不会模拟 LLM 成功；协议测试不等于付费服务商在线验收。
+
+## 2026-11-04 审计修复分支
+
+本批修复与复现证据见 [AUDIT_P0_DELIVERY](docs/AUDIT_P0_DELIVERY.md)，完整验收目标见 [ACCEPTANCE_ROADMAP](docs/ACCEPTANCE_ROADMAP.md)。工程数值API现在拒绝布尔值和数字字符串。IDF/EPW增加有限全年预检；计算校验器更新使历史运行保守失效，须新建运行，不重写历史hash。活动前端已移除历史图表/PDF依赖，legacy仅保留源码。真实Provider与实楼专业验收仍待完成。

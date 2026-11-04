@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-PARSER_VERSION='native-sql-0.2.0'
+PARSER_VERSION='native-sql-0.3.0'
 REPORT_NAME='AnnualBuildingUtilityPerformanceSummary'
 class ValidationError(ValueError): pass
 def now(): return datetime.now(timezone.utc).isoformat()
@@ -35,7 +35,8 @@ def relative_file(root,value):
 def code_hash():
     # Physics validity must not depend on UI, authentication or Agent code.
     # Keep the entire audited computation module conservative for physics changes.
-    return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION})
+    return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION,
+                      'input_validation':sha(ROOT/'backend/input_validation.py')})
 def engine_path():
     configured=os.environ.get('ENERGYPLUS_EXE')
     if not configured and (ROOT/'config.local.json').is_file():configured=read_json(ROOT/'config.local.json').get('energyplus_exe')
@@ -73,6 +74,9 @@ def parse_sql(path):
         dates=con.execute('SELECT DISTINCT Month,Day FROM Time WHERE EnvironmentPeriodIndex=? AND COALESCE(WarmupFlag,0)=0 AND IntervalType=1',(env[0][0],)).fetchall()
         covered={(r[0],r[1]) for r in dates}
         if len(covered) not in (365,366) or (1,1) not in covered or (12,31) not in covered:raise ValidationError('Not a full-year weather run; annual metric rejected')
+        from .input_validation import validate_hourly_rows
+        hourly=con.execute('SELECT Month,Day,Hour,Interval FROM Time WHERE EnvironmentPeriodIndex=? AND COALESCE(WarmupFlag,0)=0 AND IntervalType=1',(env[0][0],)).fetchall()
+        validate_hourly_rows(hourly)
         hours=con.execute('SELECT SUM(Interval)/60.0 FROM Time WHERE EnvironmentPeriodIndex=? AND COALESCE(WarmupFlag,0)=0 AND IntervalType=1',(env[0][0],)).fetchone()[0]
         if hours not in (8760,8784):raise ValidationError('Incomplete annual hourly record coverage')
         rows=con.execute('SELECT TableName,RowName,ColumnName,Units,Value FROM TabularDataWithStrings WHERE ReportName=? AND ReportForString=?',(REPORT_NAME,'Entire Facility')).fetchall()
@@ -88,7 +92,7 @@ def parse_sql(path):
         def energy(table,row,col):
             v,u,loc=one(table,row,col)
             if u not in scales:raise ValidationError('Unsupported energy unit: '+u)
-            return v*scales[u],loc
+            return number(v*scales[u],'converted energy'),loc
         total,loc=energy('Site and Source Energy','Total Site Energy','Total Energy')
         area,u,aloc=one('Building Area','Total Building Area','Area')
         if u!='m2' or area<=0:raise ValidationError('Invalid floor area')
@@ -104,7 +108,7 @@ def parse_sql(path):
                 try:v=float(r['Value'])
                 except (ValueError,TypeError):continue
                 if math.isfinite(v):comfort[r['RowName']+' / '+r['ColumnName']]=v
-        return {'annual_energy_kwh':total,'area_m2':area,'eui_kwh_m2a':total/area,'energy_by_carrier_kwh':carriers,'annual_days':len(covered),'engine_sql_version':sim[0][0],'locators':locators,'comfort_hours':comfort,'scope':'annual_site_energy_not_source_energy','parser_version':PARSER_VERSION}
+        return {'annual_energy_kwh':total,'area_m2':area,'eui_kwh_m2a':number(total/area,'EUI'),'energy_by_carrier_kwh':carriers,'annual_days':len(covered),'engine_sql_version':sim[0][0],'locators':locators,'comfort_hours':comfort,'scope':'annual_site_energy_not_source_energy','parser_version':PARSER_VERSION}
     except sqlite3.Error as e:raise ValidationError('Native EnergyPlus SQLite rejected: '+str(e)) from e
     finally:con.close()
 
@@ -119,8 +123,8 @@ def calculate_carbon(energy,profile,region):
         if factor.get('unit')!='kgCO2/kWh':raise ValidationError('排放因子单位不匹配：'+carrier)
         val=number(factor.get('value'),'factor')
         if not factor.get('source') or not factor.get('factor_id'):raise ValidationError('Missing factor provenance')
-        rows.append({'carrier':carrier,'energy_kwh':amount,'factor':val,'factor_id':factor['factor_id'],'factor_source':factor['source'],'carbon_kg':amount*val})
-    subtotal=sum(r['carbon_kg'] for r in rows)
+        rows.append({'carrier':carrier,'energy_kwh':amount,'factor':val,'factor_id':factor['factor_id'],'factor_source':factor['source'],'carbon_kg':number(amount*val,'carbon product')})
+    subtotal=number(sum(r['carbon_kg'] for r in rows),'carbon total')
     complete=not missing and bool(profile.get('factors'))
     return {'status':('scenario' if profile.get('scenario') else 'calculated') if complete else 'incomplete','operating_carbon_kg':subtotal if complete else None,'covered_carbon_kg':subtotal if rows else None,'missing_carriers':missing,'coverage':'positive site-energy carriers only; direct and electricity CO2, not full lifecycle or all GHG','profile_id':profile['profile_id'],'profile_hash':hash_json(profile),'scenario':profile.get('scenario',False),'rows':rows,'lca_total_kg':None,'ccer_issued_t':None}
 
