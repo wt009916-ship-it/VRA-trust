@@ -1,5 +1,6 @@
 """Project-authorized read-only file inspection with immutable source binding."""
 import subprocess
+import os
 import sys
 import tempfile
 import threading
@@ -37,6 +38,7 @@ class Cad:
                 try:
                     cp = subprocess.run([sys.executable, str(Path(__file__).with_name('cad_worker.py')), str(path), str(output)],
                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                        cwd=tmp, env={**{k:v for k,v in os.environ.items() if k.upper() in {'PATH','SYSTEMROOT','WINDIR','TEMP','TMP','LANG','LC_ALL'}}, 'USERPROFILE':tmp, 'XDG_CONFIG_HOME':tmp},
                         timeout=30, check=False, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
                 except subprocess.TimeoutExpired:
                     raise core.ValidationError('File parsing timed out; original preserved') from None

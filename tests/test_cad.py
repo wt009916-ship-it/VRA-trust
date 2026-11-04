@@ -88,7 +88,9 @@ def test_corrupt_and_duplicate_files_rejected_without_success(client, name, cont
 def test_timeout_releases_capacity_and_no_anonymous_read(client, monkeypatch):
     pid = create_project(client)['project_id']; fid = upload(client, pid, 'test.dxf', dxf_bytes())
     service = Cad(client.app.state.domain)
+    monkeypatch.setenv('DEEPSEEK_API_KEY', 'test-only-never-forward')
     def timeout(*a, **k):
+        assert 'DEEPSEEK_API_KEY' not in k['env']
         raise subprocess.TimeoutExpired('parser',30)
     monkeypatch.setattr(subprocess, 'run', timeout)
     for _ in range(3):
