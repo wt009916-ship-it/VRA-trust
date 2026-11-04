@@ -9,6 +9,7 @@ from .trust import FactorUpdate, FactorReview, Trust
 from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
 from .thermal import Thermal, Assembly, ThermalCompare, compare as compare_thermal, render_html as thermal_html
+from .cad import Cad, Inspection
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -18,6 +19,19 @@ def register_extensions(app, domain, auth):
     app.state.robustness = robustness
     domain.robustness = robustness
     thermal = Thermal(domain)
+    cad = Cad(domain)
+
+    @app.post('/api/projects/{project_id}/cad-inspections', status_code=201)
+    def inspect_cad(project_id: str, body: Inspection):
+        return cad.inspect(project_id, body)
+
+    @app.get('/api/projects/{project_id}/cad-inspections')
+    def cad_history(project_id: str):
+        return [cad.view(project_id, r['cad_id']) for r in domain.store.list('cad', project_id)]
+
+    @app.get('/api/projects/{project_id}/cad-inspections/{cad_id}')
+    def cad_record(project_id: str, cad_id: str):
+        return cad.view(project_id, cad_id)
 
     @app.post('/api/projects/{project_id}/thermal', status_code=201)
     def thermal_create(project_id: str, body: Assembly):
