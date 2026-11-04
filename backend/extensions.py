@@ -1,13 +1,14 @@
 """Project-scoped trust and Agent endpoints, protected by the main API boundary."""
 import json
 import zipfile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi import HTTPException, Request
 from .agent import Agent, Chat
 from .gateway import Gateway, ProviderSettings
-from .trust import FactorUpdate, Trust
+from .trust import FactorUpdate, FactorReview, Trust
 from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
+from .thermal import Thermal, Assembly, ThermalCompare, compare as compare_thermal, render_html as thermal_html
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -16,6 +17,27 @@ def register_extensions(app, domain, auth):
     robustness, spatial = (Robustness(domain), Spatial(domain))
     app.state.robustness = robustness
     domain.robustness = robustness
+    thermal = Thermal(domain)
+
+    @app.post('/api/projects/{project_id}/thermal', status_code=201)
+    def thermal_create(project_id: str, body: Assembly):
+        return thermal.save(project_id, body)
+
+    @app.get('/api/projects/{project_id}/thermal')
+    def thermal_list(project_id: str):
+        return [thermal.view(project_id, r['thermal_id']) for r in domain.store.list('thermal', project_id)]
+
+    @app.post('/api/projects/{project_id}/thermal-comparisons')
+    def thermal_comparison(project_id: str, body: ThermalCompare):
+        return compare_thermal(thermal, project_id, body)
+
+    @app.get('/api/projects/{project_id}/thermal/{thermal_id}')
+    def thermal_record(project_id: str, thermal_id: str):
+        return thermal.view(project_id, thermal_id)
+
+    @app.get('/api/projects/{project_id}/thermal/{thermal_id}/report.html', response_class=HTMLResponse)
+    def thermal_report(project_id: str, thermal_id: str):
+        return thermal_html(thermal.view(project_id, thermal_id))
 
     def developer(request):
         if not auth.is_admin(request.state.user['id']):
@@ -63,6 +85,16 @@ def register_extensions(app, domain, auth):
     @app.put('/api/projects/{project_id}/carbon-factors')
     def update_factor(project_id: str, body: FactorUpdate):
         return trust.update_factor(project_id, body)
+
+    @app.get('/api/projects/{project_id}/carbon-factor-assurance')
+    def factor_assurance(project_id: str):
+        current = trust.factor(project_id)
+        return trust.source_assurance(project_id, current['profile']) if current else {'status': 'NOT_REGISTERED'}
+
+    @app.post('/api/projects/{project_id}/carbon-factor-reviews', status_code=201)
+    def review_factor(project_id: str, body: FactorReview, request: Request):
+        user = request.state.user
+        return trust.review_factor(project_id, body, {'user_id': user['id'], 'display_name': user['display_name']})
 
     @app.post('/api/runs/{run_id}/recalculate-carbon')
     def recalculate(run_id: str):

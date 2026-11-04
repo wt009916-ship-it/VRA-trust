@@ -1,0 +1,166 @@
+{
+  "$defs": {
+    "Layer": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "thickness": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 10000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thickness"
+        },
+        "thickness_unit": {
+          "enum": [
+            "m",
+            "cm",
+            "mm"
+          ],
+          "title": "Thickness Unit",
+          "type": "string"
+        },
+        "conductivity": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 100000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Conductivity"
+        },
+        "conductivity_unit": {
+          "enum": [
+            "W/(m K)",
+            "mW/(m K)"
+          ],
+          "title": "Conductivity Unit",
+          "type": "string"
+        },
+        "correction_factor": {
+          "default": 1,
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Correction Factor",
+          "type": "number"
+        },
+        "correction_basis": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Correction Basis",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Source",
+          "type": "string"
+        },
+        "evidence_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evidence Id"
+        }
+      },
+      "required": [
+        "name",
+        "thickness_unit",
+        "conductivity_unit",
+        "correction_basis",
+        "source"
+      ],
+      "title": "Layer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "layers": {
+      "items": {
+        "$ref": "#/$defs/Layer"
+      },
+      "maxItems": 40,
+      "minItems": 1,
+      "title": "Layers",
+      "type": "array"
+    },
+    "rsi_m2k_w": {
+      "anyOf": [
+        {
+          "maximum": 2,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rsi M2K W"
+    },
+    "rse_m2k_w": {
+      "anyOf": [
+        {
+          "maximum": 2,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rse M2K W"
+    },
+    "surface_basis": {
+      "maxLength": 1000,
+      "minLength": 3,
+      "title": "Surface Basis",
+      "type": "string"
+    },
+    "application": {
+      "maxLength": 2000,
+      "minLength": 3,
+      "title": "Application",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "layers",
+    "surface_basis",
+    "application"
+  ],
+  "title": "Assembly",
+  "type": "object"
+}

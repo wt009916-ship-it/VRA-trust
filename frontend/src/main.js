@@ -1,3 +1,4 @@
+import { thermalWorkspace } from './thermal-ui.js';
 import './style.css';
 import { spatialWorkspace } from './spatial-ui.js';
 import { robustnessWorkspace } from './robustness-ui.js';
@@ -91,7 +92,7 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
-  if(host && ['spatial','robustness'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(()=>view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
+  if(host && ['spatial','robustness','thermal'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(()=>view==='thermal'?thermalWorkspace(state,host,action):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
 }
 function renderProject() {
   const p = state.project;
@@ -147,7 +148,7 @@ function evidenceForm() {
 }
 function renderRuns() {
   const target = document.querySelector('#runs'); if (!target) return;
-  target.innerHTML = state.runs.length ? '<div class="table-scroll"><table><thead><tr><th>方案 / run_id</th><th>状态</th><th>年能耗 kWh</th><th>EUI</th><th>运行 CO₂ kg</th><th>依据</th></tr></thead><tbody>' + state.runs.map(r => '<tr><td><strong>' + esc(r.scheme_id) + '</strong><small class="mono">' + esc(r.run_id.slice(0, 16)) + '…</small></td><td>' + badge(label[r.status], r.status === 'succeeded' ? 'success' : 'warning') + (r.warnings_count ? '<small>' + r.warnings_count + ' warnings · 待复核</small>' : '') + (r.error ? '<small class="error-text">' + esc(r.error) + '</small>' : '') + (r.stale_reasons?.length ? '<small class="error-text">' + r.stale_reasons.map(esc).join('；') + '</small>' : '') + '</td><td class="numeric">' + num(resultValue(r, 'annual_energy_kwh')) + '</td><td class="numeric">' + num(resultValue(r, 'eui_kwh_m2a')) + '</td><td class="numeric">' + num(r.status === 'succeeded' ? r.carbon?.operating_carbon_kg : null) + (r.carbon?.scenario ? '<small>教学情景</small>' : '') + (r.carbon?.node_state==='STALE'?'<small class="error-text">STALE · 因子已更新</small><button data-recarbon="'+r.run_id+'">仅重算碳排</button>':'') + '</td><td><button data-trace="' + r.run_id + '">查看依据</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">未计算 · 没有历史数值补位</div>';
+  target.innerHTML = state.runs.length ? '<div class="table-scroll"><table><thead><tr><th>方案 / run_id</th><th>状态</th><th>年能耗 kWh</th><th>EUI</th><th>运行 CO₂ kg</th><th>依据</th></tr></thead><tbody>' + state.runs.map(r => '<tr><td><strong>' + esc(r.scheme_id) + '</strong><small class="mono">' + esc(r.run_id.slice(0, 16)) + '…</small></td><td>' + badge(label[r.status], r.status === 'succeeded' ? 'success' : 'warning') + (r.warnings_count ? '<small>' + r.warnings_count + ' warnings · 待复核</small>' : '') + (r.error ? '<small class="error-text">' + esc(r.error) + '</small>' : '') + (r.stale_reasons?.length ? '<small class="error-text">' + r.stale_reasons.map(esc).join('；') + '</small>' : '') + '</td><td class="numeric">' + num(resultValue(r, 'annual_energy_kwh')) + '</td><td class="numeric">' + num(resultValue(r, 'eui_kwh_m2a')) + '</td><td class="numeric">' + num(r.status === 'succeeded' ? r.carbon?.operating_carbon_kg : null) + (r.carbon?.scenario ? '<small>教学情景</small>' : '') + (r.carbon?.source_assurance?'<small>来源：'+esc(r.carbon.source_assurance.status)+'</small>':'') + (r.carbon?.node_state==='STALE'?'<small class="error-text">STALE · 因子已更新</small><button data-recarbon="'+r.run_id+'">仅重算碳排</button>':'') + '</td><td><button data-trace="' + r.run_id + '">查看依据</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">未计算 · 没有历史数值补位</div>';
   document.querySelectorAll('[data-recarbon]').forEach(b=>{b.onclick=()=>action(async()=>{await post('/runs/'+b.dataset.recarbon+'/recalculate-carbon',{});await refreshRuns();notice('碳排已重算；EnergyPlus 调用 0 次。');},b);});
   document.querySelectorAll('[data-trace]').forEach(b => { b.onclick = () => action(() => trace(b.dataset.trace)); });
 }
