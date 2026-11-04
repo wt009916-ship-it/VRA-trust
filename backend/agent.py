@@ -12,6 +12,7 @@ from . import core
 from .schema import Contract, RunCreate
 from .trust import Trust
 from .robustness import Search, Actions
+from .standards import Standards, Query as StandardQuery
 
 
 class Chat(Contract):
@@ -26,6 +27,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    standards_query: StandardQuery | None = None
     run_id: str | None = None
     scheme_id: Literal['baseline', 'R1', 'R2'] = 'baseline'
     factor_profile_id: str = 'none'
@@ -36,6 +38,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'standards_search': '只读检索本项目已复核规范摘录；需 standards_query 和查询日期；不虚构条款或自动判定合规',
     'project_get': '读取当前项目建筑声明',
     'evidence_list': '读取证据清单及来源定位',
     'evidence_validate': '运行 Evidence Gate，检查缺口与准入',
@@ -56,6 +59,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'standards_search': ('standards_query',),
     'project_get': (), 'evidence_list': (), 'building_get': (),
     'evidence_validate': ('scheme_id',), 'evidence_gap_rank': ('scheme_id',),
     'simulation_create': ('scheme_id', 'factor_profile_id'),
@@ -138,6 +142,10 @@ class Agent:
             raise core.ValidationError('Unexpected arguments for ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'standards_search':
+            if not args.standards_query:
+                raise core.ValidationError('Provide standards_query including as_of date')
+            return Standards(d).search(project_id, args.standards_query)
         if args.run_id and self.store.job(args.run_id)['project_id'] != project_id:
             raise ToolRefusal('Cross-project tool argument rejected')
         if name in {'simulation_create', 'carbon_calculate', 'counterexample_search'} and not allow_compute:
