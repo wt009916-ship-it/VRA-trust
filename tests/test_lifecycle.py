@@ -1,4 +1,5 @@
 from decimal import Decimal
+import copy
 import pytest
 from pydantic import ValidationError
 from backend.lifecycle import Inventory, calculate, STAGES
@@ -80,3 +81,58 @@ def test_history_comparison_export_and_project_revision(client):
     assert client.post(base+'/lifecycle',json=b).status_code==409
     client.cookies.clear()
     assert client.get(base+'/lifecycle').status_code==401
+
+
+def test_import_original_and_evidence_withdrawal(client):
+    pid=create_project(client)['project_id']; base=f'/api/projects/{pid}'
+    source=client.post(base+'/files',files={'file':('factor.json',b'{"synthetic":true}')}).json()
+    ev=client.post(base+'/evidence',json={'type':'literature','name':'test source','source_file':source['file_id'],
+        'source_locator':'page 1','authority':'Test author','permission':'synthetic','acquisition_method':'test',
+        'responsible_person':'auditor','status':'IMPORTED'}).json()
+    b=inventory(); b['activities'][0]['factor']['evidence_id']=ev['evidence_id']; b['import_file_id']=source['file_id']
+    a=client.post(base+'/lifecycle',json=b).json()
+    assert a['import_source']['hash']==source['hash']
+    assert client.patch(base+'/evidence/'+ev['evidence_id'],json={'expected_revision':1,'review_state':'confirmed',
+        'responsible_person':'auditor','review_note':'Test source inspected, not certification'}).status_code==200
+    assert client.get(base+'/lifecycle/'+a['lifecycle_id']).json()['status']=='stale'
+    fresh=client.post(base+'/lifecycle',json=b).json()
+    _,path=client.app.state.domain.file_record(pid,source['file_id']);path.write_bytes(b'tamper')
+    assert client.get(base+'/lifecycle/'+fresh['lifecycle_id']).json()['result'] is None
+    assert client.post(base+'/lifecycle',json=b).status_code==409
+    assert client.app.state.domain.store.get('lifecycle',a['lifecycle_id'])['result']['boundary_total_kgco2e']==11090
+
+
+def test_factor_version_conflict_and_annual_scope():
+    b=inventory(); extra=copy.deepcopy(b['activities'][0]);extra['activity_id']='second-material';extra['factor']['version']='2'
+    b['activities'].append(extra)
+    with pytest.raises(ValidationError,match='inconsistent'): Inventory(**b)
+    b=inventory(); b['activities'][0]['period']='annual'
+    with pytest.raises(ValidationError,match='Annual'): Inventory(**b)
+
+
+def test_zero_baseline_extreme_ratio_and_report_escape(client):
+    pid=create_project(client)['project_id'];base=f'/api/projects/{pid}'
+    b=inventory();b['name']='<script>alert(1)</script>'
+    for a in b['activities']: a['quantity']=0
+    zero=client.post(base+'/lifecycle',json=b).json()
+    normal=client.post(base+'/lifecycle',json=inventory()).json()
+    def compare(a,c):
+        return client.post(base+'/lifecycle-comparisons',json={'lifecycle_ids':[a['lifecycle_id'],c['lifecycle_id']]})
+    assert compare(zero,normal).json()['results'][1]['reduction_pct'] is None
+    text=client.get(base+'/lifecycle/'+zero['lifecycle_id']+'/report.html').text
+    assert '<script>' not in text and '&lt;script&gt;' in text
+    b['activities'][0]['quantity']=1e-300;b['activities'][0]['factor']['value']=1e-10
+    tiny=client.post(base+'/lifecycle',json=b).json()
+    assert compare(tiny,normal).status_code==409
+    b=inventory();b['activities'][0]['factor']['value']=None
+    incomplete=client.post(base+'/lifecycle',json=b).json()
+    assert compare(incomplete,normal).status_code==409
+
+
+def test_import_schema_rejects_unknown_fields_and_foreign_file(client):
+    pid=create_project(client)['project_id']; other=create_project(client)['project_id']
+    source=client.post(f'/api/projects/{other}/files',files={'file':('other.json',b'{}')}).json()
+    b=inventory();b['import_file_id']=source['file_id']
+    assert client.post(f'/api/projects/{pid}/lifecycle',json=b).status_code==409
+    b=inventory();b['invented_field']=42
+    assert client.post(f'/api/projects/{pid}/lifecycle-validation',json=b).status_code==422

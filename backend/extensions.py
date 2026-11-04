@@ -23,6 +23,10 @@ def register_extensions(app, domain, auth):
     cad = Cad(domain)
     lifecycle = Lifecycle(domain)
 
+    @app.post('/api/projects/{project_id}/lifecycle-validation')
+    def lifecycle_validation(project_id: str, body: Inventory):
+        return body.model_dump()
+
     @app.post('/api/projects/{project_id}/lifecycle-comparisons')
     def lifecycle_comparison(project_id: str, body: LifecycleComparison):
         return lifecycle_compare(lifecycle, project_id, body)

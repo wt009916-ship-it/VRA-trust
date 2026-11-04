@@ -65,6 +65,7 @@ class Inventory(Contract):
     region: str = Field(min_length=1, max_length=100)
     method: str = Field(min_length=3, max_length=300)
     functional_unit: str = Field(min_length=5, max_length=1000)
+    import_file_id: str | None = Field(default=None, pattern=r'^file_[a-f0-9]{32}$')
     boundaries: list[Boundary] = Field(min_length=5, max_length=5)
     activities: list[Activity] = Field(max_length=500)
 
@@ -137,6 +138,9 @@ class Lifecycle:
         if body.region != project['building']['region'] or not math.isclose(body.area_m2, project['building']['area_m2'], rel_tol=1e-9):
             raise core.ValidationError('Inventory region/area must match current project declaration')
         evidence = []
+        imported = None
+        if body.import_file_id:
+            imported, _ = self.domain.file_record(pid, body.import_file_id)
         for eid in sorted({a.factor.evidence_id for a in body.activities if a.factor.evidence_id}):
             ev = self.store.get('evidence', eid)
             if ev['project_id'] != pid:
@@ -145,7 +149,7 @@ class Lifecycle:
                 self.domain.file_record(pid, ev['source_file'])
             evidence.append(ev)
         obj = {'lifecycle_id': 'lifecycle_'+uuid.uuid4().hex, 'project_id': pid, 'project_revision': project['revision'],
-            'input': body.model_dump(), 'result': calculate(body), 'source_snapshot': evidence,
+            'input': body.model_dump(), 'result': calculate(body), 'source_snapshot': evidence, 'import_source': imported,
             'calculator_hash': core.sha(Path(__file__)), 'created_at': core.now()}
         obj['hash'] = core.hash_json(obj)
         self.store.put('lifecycle', obj)
@@ -158,6 +162,11 @@ class Lifecycle:
         if core.hash_json({k:v for k,v in obj.items() if k not in {'hash','revision'}}) != obj['hash']:
             raise core.ValidationError('Lifecycle record integrity failed')
         stale = obj['calculator_hash'] != core.sha(Path(__file__)) or obj['project_revision'] != self.store.get('project',pid)['revision']
+        if obj.get('import_source'):
+            try:
+                self.domain.file_record(pid, obj['import_source']['file_id'])
+            except (OSError, ValueError, KeyError):
+                stale = True
         for old in obj['source_snapshot']:
             ev = self.store.get('evidence', old['evidence_id'])
             stale |= ev['revision'] != old['revision'] or ev['hash'] != old['hash']
@@ -170,7 +179,28 @@ class Lifecycle:
 
 
 def report(record):
-    return '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>阶段化碳清单</title><h1>阶段化碳清单 · 未核证</h1><p>不是完整性认证或碳资产凭证。</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere">'+html.escape(json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False))+'</pre></html>'
+    escape = lambda value: html.escape(str(value))
+    display = lambda value: '缺数据 / 不适用' if value is None else format(value, '.10g')
+    body, result = record['input'], record.get('result')
+    labels = {'production':'材料生产', 'transport':'材料运输', 'construction':'施工',
+              'operation':'建筑运行', 'end_of_life':'寿命末期'}
+    summary = '<p>记录已失效，旧结果不得用于当前决策。</p>'
+    if result:
+        rows = ''.join('<tr>'+''.join('<td>'+escape(v)+'</td>' for v in
+            (labels[stage], item['status'], display(item['kgco2e']), item['reason']))+'</tr>'
+            for stage, item in result['stages'].items())
+        summary = ('<h2>声明边界总排放：'+display(result['boundary_total_kgco2e'])+' kgCO₂e</h2>'
+            '<p>单位面积（整个评估期）：'+display(result['kgco2e_m2_over_study_period'])+' kgCO₂e/m²</p>'
+            '<table><tr><th>阶段</th><th>状态</th><th>kgCO₂e</th><th>范围依据</th></tr>'+rows+'</table>'
+            '<ul>'+''.join('<li>'+escape(x)+'</li>' for x in result['limitations'])+'</ul>')
+    return ('<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>阶段化碳清单</title>'
+        '<style>body{font:16px/1.7 system-ui,sans-serif;max-width:960px;margin:40px auto;padding:20px;color:#172e31}'
+        'table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccd6d4;padding:10px;text-align:left}'
+        'pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}</style>'
+        '<h1>'+escape(body['name'])+' · 未核证</h1><p>不是完整性认证或碳资产凭证。</p>'
+        '<p>评估期 '+escape(body['study_years'])+' 年 · 面积 '+escape(body['area_m2'])+' m² · 地区 '+escape(body['region'])+'</p>'
+        '<p>方法：'+escape(body['method'])+'<br>功能单位：'+escape(body['functional_unit'])+'</p>'+summary+
+        '<h2>输入、逐项复算与来源快照</h2><pre>'+escape(json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False))+'</pre></html>')
 
 
 class Comparison(Contract):
