@@ -2,7 +2,9 @@
 
 适用：本机Windows/Linux单个VRA服务，当前数据库结构；不是在线备份、跨机部署或云灾备验收。
 
-备份包含账号密码摘要、项目原件及历史计算结果，**未加密**。只保存到有访问控制的本地目录，不上传GitHub或通过业务API分享。工具排除private目录中的Provider配置/密钥、可再生成exports、目录锁及SQLite临时侧文件；SQLite已提交WAL内容通过backup API合并进快照。Linux新包权限0600；Windows chmod不等于DACL，仍须使用本机受控目录，本批不声称完成Windows ACL验收。
+当前CLI默认生成**口令加密备份**（AES-256-GCM）。账号摘要、项目原件和历史计算结果进入加密包，Provider配置/密钥及可再生成exports不迁移。新临时目录和恢复目录在写入明文前设置并验证访问限制：Windows只允许当前账户与SYSTEM，Linux目录0700/文件0600。原runtime和旧备份的既有权限不会被批量修改。
+
+选择足够强的独立口令并另外妥善保管；工具不保存口令，也无法找回遗失口令。默认在终端隐式输入，创建时输入两次。不要把口令写在命令行参数、环境变量、日志或仓库。后台自动化可显式使用`--password-stdin`从受保护管道输入，禁止用含真实口令的固定命令代替。
 
 ## 创建
 
@@ -11,19 +13,19 @@
 3. 在项目根目录、已安装依赖的Python环境运行：
 
 ```powershell
-python scripts/backup_runtime.py create --source ./runtime --archive ../backups/vra-20261105.zip
+python scripts/backup_runtime.py create --source ./runtime --archive ../backups/vra-20261105.vraenc
 ```
 
-程序返回整包archive_sha256、文件数、总字节数。把SHA-256另存到受控记录；恢复时需要这份先前记录，不能只相信未知包自行附带的校验值。已存在的目标包拒绝覆盖；执行失败可能保留不完整ZIP，不能当作成功备份。源目录未知条目、链接/重解析点、缺失登记原件或成功运行缺失产物都会拒绝备份，不静默遗漏。
+程序返回密文整包archive_sha256、文件数、密文字节数及权限验证结果。把SHA-256另存到受控记录；恢复时需要这份先前记录，不能只相信未知包自行附带的校验值。已存在的目标包拒绝覆盖；执行失败可能保留不完整密文，不能当作成功备份。源目录未知条目、链接/重解析点、缺失登记原件或成功运行缺失产物都会拒绝备份，不静默遗漏。
 
 ## 验证与恢复
 
 ```powershell
-python scripts/backup_runtime.py verify --archive ../backups/vra-20261105.zip --sha256 <先前记录的64位SHA256>
-python scripts/backup_runtime.py restore --archive ../backups/vra-20261105.zip --sha256 <先前记录的64位SHA256> --target ./runtime-restored-20261105
+python scripts/backup_runtime.py verify --archive ../backups/vra-20261105.vraenc --sha256 <先前记录的64位SHA256>
+python scripts/backup_runtime.py restore --archive ../backups/vra-20261105.vraenc --sha256 <先前记录的64位SHA256> --target ./runtime-restored-20261105
 ```
 
-`verify`核对整包、成员清单/哈希、支持的SQLite结构及完整性、登记原件/OCR预览和成功运行manifest绑定。校验不是作者签名，也不能证明工程原始信息真实。
+`verify`先核对密文整包与认证标签，再检查内层成员清单/哈希、支持的SQLite结构及完整性、登记原件/OCR预览和成功运行manifest绑定。错误密码与篡改不会进入ZIP/数据库解析。校验不是作者签名，也不能证明工程原始信息真实。
 
 恢复目录必须不存在，连已有空目录也不会覆盖。先建立`.restore-incomplete`标记，所有检查通过后才移除；中途损坏/空间不足/校验失败保留隔离目录和标记，应用拒绝启动该目录。不要手动删除标记来伪装恢复成功，改用新的目标目录重试。
 
@@ -46,6 +48,18 @@ $env:VRA_DATA_DIR = (Resolve-Path ./runtime-restored-20261105).Path
 
 ## 限额与适用范围
 
-当前单包上限4 GiB、20000个数据文件、8 MiB清单；只接受本工具生成的ZIP_STORED格式。SQLite备份有30秒预算，源/目标磁盘空间不足则拒绝或留下未发布目录。格式版本vra-cold-backup-1，未知SQLite结构拒绝，不执行包中的迁移/触发器。
+内层数据上限4 GiB、20000个数据文件、8 MiB清单；密文封装包含认证头和标签，内层仅接受本工具的ZIP_STORED格式。当前实测约28.5 MB参考包与跨多个分块的交叉验证，不声称已做4 GiB容量或长稳验收。SQLite备份有30秒预算，源/目标磁盘空间不足则拒绝或留下未发布目录。密文封装版本vra-encrypted-backup-2，内层vra-cold-backup-1。未知SQLite结构拒绝，不执行包中的迁移/触发器。
 
 目录锁为Windows字节锁或Linux flock，是参与进程之间的协作锁，不防御具有同一账户文件写权限的恶意程序；不支持网络文件系统或多主机共享。文件逐个fsync并保留失败标记，不声称经断电或磁盘损坏演练。运行环境、依赖、EnergyPlus、OCR模型与仓库代码不在runtime备份包内，须按部署文档重新准备匹配版本。
+
+## 旧明文兼容与保护边界
+
+旧ZIP不会被默认自动识别为可接受的加密包。仅在明确选择`--legacy-plaintext`后可创建/验证/恢复v1明文包；它仍含敏感数据，应留在受控目录。本选项与`--password-stdin`互斥，不能悄悄降级加密。已有明文包不会被自动转换或删除。
+
+```
+python scripts/backup_runtime.py verify --archive ../backups/old.zip --sha256 <先前记录的SHA256> --legacy-plaintext
+```
+
+创建快照和认证解密需要受限临时明文空间；通常结束会清理，强制杀进程/断电可能留下受保护的vra-private-*目录。未承诺安全擦除、内存清零或防管理员/同账户进程。若临时清理失败会报错，已经正确完成的恢复目录可能仍存在，须核对恢复记录而不是覆盖重试。使用可信的本地父目录，不使用共享网络盘。磁盘空间及累计配额仍需下一阶段加固。
+
+Windows已完成真实受限令牌“控制文件可读、私有文件拒绝”的本机测试；不是另一真实人员/第二台电脑验收。Linux权限以CI实际模式/所有者检查为准，不冒充跨账户读测试。加密库、格式、测试和未覆盖风险见ENCRYPTED_BACKUP_DELIVERY.md。

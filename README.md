@@ -103,4 +103,4 @@ Provider 协议依据：[DeepSeek 官方 Tool Calls 文档](https://api-docs.dee
 
 ## 本地备份与恢复
 
-新增停服维护CLI：`python scripts/backup_runtime.py --help`。支持SQLite一致快照、原件/运行/OCR历史校验和仅恢复到新目录；旧会话撤销，未完成任务不自动重跑。备份未加密且含账号摘要，模型服务密钥不迁移。完整步骤与边界见[备份恢复指南](docs/BACKUP_RECOVERY_GUIDE.md)，实际验收见[交付报告](docs/BACKUP_RECOVERY_DELIVERY.md)。
+新增停服维护CLI：`python scripts/backup_runtime.py --help`。支持SQLite一致快照、原件/运行/OCR历史校验和仅恢复到新目录；旧会话撤销，未完成任务不自动重跑。备份默认口令认证加密，新建临时/恢复存储限制访问；旧明文需显式兼容选项，模型服务密钥不迁移。完整步骤与边界见[备份恢复指南](docs/BACKUP_RECOVERY_GUIDE.md)，实际验收见[加密恢复交付](docs/ENCRYPTED_BACKUP_DELIVERY.md)。

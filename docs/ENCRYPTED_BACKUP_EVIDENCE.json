@@ -1,0 +1,195 @@
+{
+  "created_at": "2026-11-05T09:23:42.458105+00:00",
+  "baseline_commit": "9ea634358f8e81027f00ae651509fbd91dfa082f",
+  "kind": "development_validation_single_host_encrypted_recovery",
+  "score": 70,
+  "score_dimensions": [
+    15,
+    17,
+    7,
+    6,
+    7,
+    7,
+    8,
+    3
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Windows"
+  },
+  "tests": {
+    "windows_full_before_linux_only_fd_cleanup": {
+      "passed": 447,
+      "skipped": 2,
+      "subtests": 6,
+      "seconds": 339.31
+    },
+    "windows_final_backup_and_encryption": {
+      "passed": 59,
+      "skipped": 2,
+      "seconds": 94.93,
+      "new_cases_collected": 28,
+      "new_passed": 26
+    },
+    "linux_ci": {
+      "status": "pending"
+    },
+    "native_encrypted_recovery": {
+      "checks": 35,
+      "actual_engine_calls": 1,
+      "original_and_native_files_compared": 33,
+      "archive_files": 34
+    },
+    "windows_actual_restricted_token_probe": {
+      "control_read_allowed": true,
+      "private_read_denied": true,
+      "identity": "restricted_current_token_with_Everyone_restriction",
+      "separate_physical_account_test": false
+    },
+    "dependency_osv": {
+      "packages": 56,
+      "affected_packages": 0,
+      "scope": "point_in_time_version_query_not_penetration_test"
+    }
+  },
+  "privacy": "Only metadata and hashes committed. Archives/logs/database remain ignored locally. Random test passphrases not retained; reproduce by rerunning the verifier, not decrypting previous test archives.",
+  "known_limits": [
+    "Existing active runtime data remains plaintext; only new maintenance objects receive restrictive permissions.",
+    "Not protection against same-user/admin/memory/disk recovery; no secure erase or key recovery.",
+    "Crash can leave restricted plaintext staging; cleanup failure can report failure after successful restore publication.",
+    "Trusted local parents required; no adversarial shared-parent/network filesystem/cross-host/power-loss validation.",
+    "Restricted token is actual Windows OS access check with positive control, not a second physical account.",
+    "4GiB/20000-file format limits not capacity-tested; actual archive about 28.5MB.",
+    "No aggregate storage quota; native worker sandbox gaps remain.",
+    "No real building, expert certification, live Provider, training expansion or UI redesign claimed."
+  ],
+  "sources": [
+    {
+      "path": "backend/backup.py",
+      "bytes": 18751,
+      "sha256": "fdd4c4543eafce6a37b9a219741ac3732bc9344f7536b7c2531d2692cd7e3327"
+    },
+    {
+      "path": "backend/encrypted_backup.py",
+      "bytes": 6687,
+      "sha256": "709e60668501273d781dcb5287f7fd48800e0e48c2a1b3423a9ff29dc9b9ab67"
+    },
+    {
+      "path": "backend/private_storage.py",
+      "bytes": 7580,
+      "sha256": "6e6c1b9cf59ab5ed270e0b0e914a45c058dd1eb1e7d52449296259ec70ba241b"
+    },
+    {
+      "path": "backend/runtime_lock.py",
+      "bytes": 2983,
+      "sha256": "2ed7e1b3cea077a7dc417ae9f174c0031a105d54b5f3f7a00ed4ae8307aae63d"
+    },
+    {
+      "path": "backend/requirements.txt",
+      "bytes": 298,
+      "sha256": "fc477131e57e935fc2357a08408d6b936c397acb36a27a6491b890c078edd861"
+    },
+    {
+      "path": "scripts/backup_runtime.py",
+      "bytes": 3548,
+      "sha256": "7dcbc40a44a4c1ccd693996ba58e614b32da6e97b10df944de7c961e145507e8"
+    },
+    {
+      "path": "scripts/verify_backup_recovery.py",
+      "bytes": 10615,
+      "sha256": "2a59bbd60fa751935b6a1e49e516c69f1d62dcfe80d7bf3bb057b96d8fb56049"
+    },
+    {
+      "path": "tests/test_backup.py",
+      "bytes": 17425,
+      "sha256": "1540300bedc33bd73422c6bd6b9d9795827d5a54075c56e1907285fb8991ef09"
+    },
+    {
+      "path": "tests/test_encrypted_backup.py",
+      "bytes": 11669,
+      "sha256": "e3bb35e41ee88be33749001834cfad3ec76ca258ca44de9f0ec790f6f7dde6f7"
+    },
+    {
+      "path": "tests/backup_access_probe.py",
+      "bytes": 2231,
+      "sha256": "db98eb6b5cfd8c5cc2b82f4471f1f5c223a3fc540f31422bb187f4fa499132dc"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "validation/encrypted-backup-20261105/initial-static-check.json",
+      "bytes": 269,
+      "sha256": "d869e00cce34406dde05427f85e059501d19990bb19c6523d9067d3ec88876a6"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/first-tests.log",
+      "bytes": 980,
+      "sha256": "d570b874c2b0c67ba86cd9dbe3d0c9a023699ea110ef5d95ab8dc55aa9b13eea"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/backend-final.log",
+      "bytes": 1472,
+      "sha256": "8ed271245fa3e865ae3ce598bee7774235d291d383426c0c92a2dae2f5c78b98"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/final-focused.log",
+      "bytes": 980,
+      "sha256": "d3ccfc56a14804b6847aae12a010b62668bfddb78977e2c5fdb43aac6fb36feb"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/dependency-osv.json",
+      "bytes": 5769,
+      "sha256": "548157bbed32195ef4bf07dd55780c132765ae011a4e07cf2934da7d21f43bad"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/acl-probe/actual-output.json",
+      "bytes": 181,
+      "sha256": "614d38bd8dee824724f1ddb9da1ac33285577e3232b15d7398d3d76eee707fab"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery.log",
+      "bytes": 2715,
+      "sha256": "a6fbd09d3515020986cfdbec93ddb8480274f3cf8b94eed3ca1b6650b46288fb"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery/summary.json",
+      "bytes": 3020,
+      "sha256": "ff385a50f021560ce20163a235b20a36a2808dba40ade32b1b8e16d0c922c631"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery/checks.json",
+      "bytes": 2757,
+      "sha256": "49457c0075236ce63d8324b2b04f04e5f601197f6a0217fbd1ad6873509e1868"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery/backup-summary.json",
+      "bytes": 546,
+      "sha256": "2323e9846315145517a6b9fff6cd3ecef87117737bb7a835e75631906894946c"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery/restore-summary.json",
+      "bytes": 771,
+      "sha256": "b64eb4d4f6a716700afd7d8a41c5dafbe617df7d6b4cd8325f68bf881be20ee9"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery/backup.vraenc",
+      "bytes": 28507049,
+      "sha256": "f060fcb7d88bd6faff98642f9144592eeed671b5738b68342f8be6b7f661de40"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery/stale-backup.vraenc",
+      "bytes": 28508156,
+      "sha256": "a292d153d37b3ea122d002fc94eef71e5cc53165619e0214247146b5db1bc3da"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery/altered.vraenc",
+      "bytes": 28507049,
+      "sha256": "1b668c327d1a22d62e23f9cf416b04d9cd4f939d607be3cfdf7e35d3c3acce48"
+    },
+    {
+      "path": "validation/encrypted-backup-20261105/native-recovery/restored-report.pdf",
+      "bytes": 56835,
+      "sha256": "23aa7f94499b2fcdd7e665dbf429d84b5779715f09a00c4c6a051a203d542dc1"
+    }
+  ]
+}

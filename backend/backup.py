@@ -19,6 +19,7 @@ from pathlib import Path, PurePosixPath
 
 from . import core
 from .runtime_lock import RuntimeLease, safe_path
+from .private_storage import private_mkdir, private_open, private_temporary, verify_private
 
 FORMAT = 'vra-cold-backup-1'
 MAX_BYTES = 4 * 1024**3
@@ -152,7 +153,7 @@ def create_backup(source, archive):
         # Freeze SQL writers; the separate reader's backup API includes committed WAL pages.
         with closing(database(source/'vra.sqlite3')) as guard:
             guard.execute('BEGIN IMMEDIATE')
-            with tempfile.TemporaryDirectory(prefix='vra-backup-db-', dir=archive.parent) as tmp:
+            with private_temporary(archive.parent) as tmp:
                 snapshot = Path(tmp)/'vra.sqlite3'
                 with closing(database(source/'vra.sqlite3', True)) as src, closing(sqlite3.connect(snapshot)) as dst:
                     deadline = time.monotonic() + 30
@@ -172,8 +173,7 @@ def create_backup(source, archive):
                 if len(encoded) > MAX_MANIFEST:
                     raise ValueError('Backup manifest too large')
                 # Exclusive creation. A failure is retained as an invalid archive, never overwritten.
-                with archive.open('xb') as raw:
-                    os.chmod(archive, 0o600)
+                with private_open(archive) as raw:
                     with zipfile.ZipFile(raw, 'w', compression=zipfile.ZIP_STORED) as package:
                         for name in sorted(before):
                             package.write(snapshot if name == 'vra.sqlite3' else source/name, name)
@@ -237,8 +237,7 @@ def _copy_verified(package, entries, target=None):
                 if target:
                     path = safe_path(target/name)
                     path.parent.mkdir(parents=True, exist_ok=True)
-                    output = path.open('xb')
-                    os.chmod(path, 0o600)
+                    output = private_open(path)
                 while chunk := stream.read(1024*1024):
                     size += len(chunk)
                     if size > meta['bytes']:
@@ -282,10 +281,9 @@ def verify_backup(archive, expected_sha256):
     with _open_backup(archive, expected_sha256) as package:
         manifest = _manifest(package)
         _copy_verified(package, manifest['files'])
-        with tempfile.TemporaryDirectory(prefix='vra-verify-db-') as tmp:
+        with private_temporary(Path(tempfile.gettempdir())) as tmp:
             path = Path(tmp)/'vra.sqlite3'
-            with package.open('vra.sqlite3') as src, path.open('xb') as dst:
-                os.chmod(path, 0o600)
+            with package.open('vra.sqlite3') as src, private_open(path) as dst:
                 shutil.copyfileobj(src, dst, length=1024*1024)
             with closing(database(path, True)) as con:
                 check_database(con, manifest['files'], json_reader(manifest['files'], package.read))
@@ -294,13 +292,15 @@ def verify_backup(archive, expected_sha256):
             'database_semantics_checked': True}
 
 
-def restore_backup(archive, target, expected_sha256):
+def restore_backup(archive, target, expected_sha256, *, authenticated_envelope=None):
+    if authenticated_envelope is not None and not re.fullmatch('[a-f0-9]{64}',str(authenticated_envelope)):
+        raise ValueError('Invalid authenticated envelope identity')
     archive, target = safe_path(archive), safe_path(target)
     if target.exists() or not target.parent.is_dir() or archive.is_relative_to(target):
         raise ValueError('Restore requires a NEW destination under an existing parent; no overwrite')
     with _open_backup(archive, expected_sha256) as package:
         manifest = _manifest(package)
-        target.mkdir(mode=0o700)  # exclusive reservation; never replace an existing directory
+        private_mkdir(target)  # restricted ACL/mode BEFORE plaintext, never overwrite
         marker = target/'.restore-incomplete'
         marker.write_text('Not available for application startup; restore incomplete.\n', encoding='utf-8')
         with RuntimeLease(target, 'maintenance'):
@@ -328,6 +328,9 @@ def restore_backup(archive, target, expected_sha256):
                        'files_verified': len(manifest['files']), 'revoked_sessions': sessions,
                        'pending_jobs_failed': interrupted, 'appended_revisions': revised,
                        'provider_credentials_restored': False, 'historical_engineering_hashes_rewritten': False}
+            receipt['storage_protection']=verify_private(target,True)
+            if authenticated_envelope:
+                receipt.update(encrypted_archive_sha256=authenticated_envelope,encrypted=True,authenticated=True)
             core.write_json(target/'recovery'/('restore_'+uuid.uuid4().hex+'.json'), receipt)
             marker.unlink()  # publish only after every check and explicit recovery transform
     return receipt

@@ -3,6 +3,7 @@
 Never uses the user's runtime. No credentials or session tokens in evidence.
 """
 import io
+import argparse
 import json
 import secrets
 import sys
@@ -16,12 +17,24 @@ from fastapi.testclient import TestClient
 from backend import core
 from backend.api import create_app
 from backend.backup import create_backup, restore_backup, verify_backup
+from backend.encrypted_backup import create_encrypted, restore_encrypted, verify_encrypted
+from backend.private_storage import verify_private
 
 
 def main():
-    out = Path(sys.argv[1]).resolve()
+    parser=argparse.ArgumentParser()
+    parser.add_argument('output');parser.add_argument('--encrypted',action='store_true')
+    args=parser.parse_args()
+    out = Path(args.output).resolve()
     out.mkdir(parents=True, exist_ok=False)
     password = secrets.token_urlsafe(32)
+    archive_password=secrets.token_urlsafe(48).encode()  # isolated, never persisted or printed
+    def create(source,archive):
+        return create_encrypted(source,archive,archive_password) if args.encrypted else create_backup(source,archive)
+    def verify(archive,digest):
+        return verify_encrypted(archive,archive_password,digest) if args.encrypted else verify_backup(archive,digest)
+    def restore(archive,target,digest):
+        return restore_encrypted(archive,target,archive_password,digest) if args.encrypted else restore_backup(archive,target,digest)
     checks = []
     def check(value, name):
         checks.append({'name': name, 'passed': bool(value)})
@@ -83,9 +96,19 @@ def main():
         token=client.cookies.get('vra_session')
         evidence_before=client.get(f'/api/projects/{pid}/evidence').json()
     hashes_before={p.relative_to(out/'source').as_posix():core.sha(p) for folder in ('files','runs','drawings') for p in (out/'source'/folder).rglob('*') if p.is_file()}
-    archive=out/'backup.zip';meta=create_backup(out/'source',archive)
-    check(verify_backup(archive,meta['archive_sha256'])['database_semantics_checked'],'archive database and file verification')
-    receipt=restore_backup(archive,out/'restored',meta['archive_sha256'])
+    archive=out/('backup.vraenc' if args.encrypted else 'backup.zip');meta=create(out/'source',archive)
+    check(verify(archive,meta['archive_sha256'])['database_semantics_checked'],'archive database and file verification')
+    if args.encrypted:
+        check(b'password_hash' not in archive.read_bytes() and b'project_id' not in archive.read_bytes(),'encrypted package hides database names and values')
+        try:restore_encrypted(archive,out/'wrong-key',secrets.token_urlsafe(48).encode(),meta['archive_sha256'])
+        except ValueError:check(not (out/'wrong-key').exists(),'wrong key creates no runtime')
+        else:check(False,'wrong key rejected')
+        altered=out/'altered.vraenc';raw=bytearray(archive.read_bytes());raw[-1]^=1;altered.write_bytes(raw)
+        try:restore_encrypted(altered,out/'altered-runtime',archive_password,core.sha(altered))
+        except ValueError:check(not (out/'altered-runtime').exists(),'altered tag creates no runtime')
+        else:check(False,'altered tag rejected')
+    receipt=restore(archive,out/'restored',meta['archive_sha256'])
+    if args.encrypted:check(verify_private(out/'restored',True)['verified'],'restored runtime private permissions verified')
     core.write_json(out/'backup-summary.json',meta);core.write_json(out/'restore-summary.json',receipt)
     check(all(core.sha(out/'restored'/n)==h for n,h in hashes_before.items()),'every original/run/preview byte hash unchanged')
     print('Archive restored; verifying accounts, native artifacts and reports',flush=True)
@@ -113,14 +136,14 @@ def main():
             'review_note':'Deliberately revoke input to verify restored data cannot resurrect stale engineering results.'})
         check(response.status_code==200,'revoke evidence on restored copy only')
         check(client.get(f'/api/runs/{rid}/result').json()['status']=='stale','restored result becomes stale on revoked input')
-    second=out/'stale-backup.zip';meta2=create_backup(out/'restored',second)
-    restore_backup(second,out/'stale-restored',meta2['archive_sha256'])
+    second=out/('stale-backup.vraenc' if args.encrypted else 'stale-backup.zip');meta2=create(out/'restored',second)
+    restore(second,out/'stale-restored',meta2['archive_sha256'])
     with TestClient(create_app(out/'stale-restored',start_worker=False)) as client:
         login(client)
         stale=client.get(f'/api/runs/{rid}/result').json()
         check(stale['status']=='stale' and stale['metrics'] is None,'second recovery preserves stale refusal')
     check(all(core.sha(out/'source'/n)==h for n,h in hashes_before.items()),'original source artifacts retained unchanged')
-    summary={'checks_passed':len(checks),'actual_engine_calls':1,'reference_only':True,'score_claim':None,
+    summary={'checks_passed':len(checks),'actual_engine_calls':1,'reference_only':True,'score_claim':None,'encrypted':args.encrypted,
              'backup':meta,'restored_files':len(hashes_before),'run_metrics':before['metrics'],'native_output_sql_sha256':core.sha(out/'restored/runs'/rid/'output/eplusout.sql')}
     core.write_json(out/'summary.json',summary)
     print(json.dumps(summary,ensure_ascii=False),flush=True)
