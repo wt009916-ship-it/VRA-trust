@@ -15,6 +15,7 @@ from .standards import Standards, StandardInput, Preview as StandardPreview, Rev
 from .engineering import Engineering, BeamInput, report as engineering_report
 from .material_cost import Costs, Estimate, Comparison as CostComparison, compare as cost_compare, report as cost_report
 from .construction import Schedules, ScheduleInput, report as schedule_report
+from .operations import Operations, AnalysisInput, report as operations_report
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -30,6 +31,31 @@ def register_extensions(app, domain, auth):
     engineering = Engineering(domain)
     costs = Costs(domain)
     schedules = Schedules(domain)
+    operations = Operations(domain)
+
+    @app.get('/api/projects/{project_id}/operation-inputs')
+    def operations_inputs(project_id: str):
+        return [{k:r[k] for k in ('file_id','name','size','hash')} for r in domain.store.list('file',project_id) if r['name'].lower().endswith('.csv')]
+
+    @app.get('/api/projects/{project_id}/operation-inputs/{file_id}')
+    def operations_preview(project_id: str, file_id: str):
+        return operations.preview(project_id,file_id)
+
+    @app.post('/api/projects/{project_id}/operations', status_code=201)
+    def operations_create(project_id: str, body: AnalysisInput):
+        return operations.save(project_id,body)
+
+    @app.get('/api/projects/{project_id}/operations')
+    def operations_list(project_id: str):
+        return [operations.view(project_id,r['operation_id']) for r in domain.store.list('operation',project_id)]
+
+    @app.get('/api/projects/{project_id}/operations/{operation_id}')
+    def operations_get(project_id: str, operation_id: str):
+        return operations.view(project_id,operation_id)
+
+    @app.get('/api/projects/{project_id}/operations/{operation_id}/report.html', response_class=HTMLResponse)
+    def operations_html(project_id: str, operation_id: str):
+        return operations_report(operations.view(project_id,operation_id))
 
     @app.post('/api/projects/{project_id}/schedule-validation')
     def schedule_validation(project_id: str, body: ScheduleInput):

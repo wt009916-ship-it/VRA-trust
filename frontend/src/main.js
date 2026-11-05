@@ -1,3 +1,4 @@
+import { operationsWorkspace } from './operations-ui.js';
 import { scheduleWorkspace } from './schedule-ui.js';
 import { materialCostWorkspace } from './material-cost-ui.js';
 import { engineeringWorkspace } from './engineering-ui.js';
@@ -106,7 +107,7 @@ function switchView(view) {
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
-  if(host && ['spatial','robustness','thermal','cad','lifecycle','standards','engineering','cost','schedule'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';const restored=state.resumeBeam;state.resumeBeam=null;action(()=>view==='schedule'?scheduleWorkspace(state,host,action):view==='cost'?materialCostWorkspace(state,host,action):view==='engineering'?engineeringWorkspace(state,host,action,restored):view==='standards'?standardsWorkspace(state,host,action):view==='lifecycle'?lifecycleWorkspace(state,host,action):view==='cad'?cadWorkspace(state,host,action):view==='thermal'?thermalWorkspace(state,host,action):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
+  if(host && ['spatial','robustness','thermal','cad','lifecycle','standards','engineering','cost','schedule','operations'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';const restored=state.resumeBeam;state.resumeBeam=null;action(()=>view==='operations'?operationsWorkspace(state,host,action):view==='schedule'?scheduleWorkspace(state,host,action):view==='cost'?materialCostWorkspace(state,host,action):view==='engineering'?engineeringWorkspace(state,host,action,restored):view==='standards'?standardsWorkspace(state,host,action):view==='lifecycle'?lifecycleWorkspace(state,host,action):view==='cad'?cadWorkspace(state,host,action):view==='thermal'?thermalWorkspace(state,host,action):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
 }
 function renderProject() {
   const p = state.project;

@@ -1375,6 +1375,332 @@
         ]
       }
     },
+    "/api/projects/{project_id}/operation-inputs": {
+      "get": {
+        "summary": "Operations Inputs",
+        "operationId": "operations_inputs_api_projects__project_id__operation_inputs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/operation-inputs/{file_id}": {
+      "get": {
+        "summary": "Operations Preview",
+        "operationId": "operations_preview_api_projects__project_id__operation_inputs__file_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/operations": {
+      "post": {
+        "summary": "Operations Create",
+        "operationId": "operations_create_api_projects__project_id__operations_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Operations List",
+        "operationId": "operations_list_api_projects__project_id__operations_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/operations/{operation_id}": {
+      "get": {
+        "summary": "Operations Get",
+        "operationId": "operations_get_api_projects__project_id__operations__operation_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/operations/{operation_id}/report.html": {
+      "get": {
+        "summary": "Operations Html",
+        "operationId": "operations_html_api_projects__project_id__operations__operation_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/schedule-validation": {
       "post": {
         "summary": "Schedule Validation",
@@ -4644,6 +4970,128 @@
         ],
         "title": "Activity"
       },
+      "AnalysisInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "file_id": {
+            "type": "string",
+            "pattern": "^file_[a-f0-9]{32}$",
+            "title": "File Id"
+          },
+          "equipment": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Equipment"
+          },
+          "data_nature": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "simulation",
+              "synthetic"
+            ],
+            "title": "Data Nature"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Source"
+          },
+          "time_column": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Time Column"
+          },
+          "time_format": {
+            "type": "string",
+            "enum": [
+              "iso8601",
+              "yyyy-mm-dd hh:mm:ss",
+              "mm/dd/yyyy hh:mm",
+              "yyyy-mm-dd hh:mm"
+            ],
+            "title": "Time Format"
+          },
+          "clock_basis": {
+            "type": "string",
+            "enum": [
+              "offset_aware",
+              "declared_local_clock"
+            ],
+            "title": "Clock Basis"
+          },
+          "clock_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Clock Source"
+          },
+          "expected_interval_seconds": {
+            "type": "number",
+            "maximum": 86400.0,
+            "minimum": 0.001,
+            "title": "Expected Interval Seconds"
+          },
+          "maximum_gap_seconds": {
+            "type": "number",
+            "maximum": 604800.0,
+            "minimum": 0.001,
+            "title": "Maximum Gap Seconds"
+          },
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Channels"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/Rule"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Rules"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "file_id",
+          "equipment",
+          "data_nature",
+          "source",
+          "time_column",
+          "time_format",
+          "clock_basis",
+          "clock_source",
+          "expected_interval_seconds",
+          "maximum_gap_seconds",
+          "channels",
+          "rules"
+        ],
+        "title": "AnalysisInput"
+      },
       "Assembly": {
         "properties": {
           "name": {
@@ -5110,6 +5558,64 @@
           "building"
         ],
         "title": "BuildingUpdate"
+      },
+      "Channel": {
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_]{0,39}$",
+            "title": "Channel Id"
+          },
+          "column": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Column"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "degC",
+              "degF",
+              "K",
+              "W",
+              "kW",
+              "Pa",
+              "kPa",
+              "ratio",
+              "percent",
+              "rpm",
+              "rev_s",
+              "kg_s",
+              "L_s",
+              "m3_s",
+              "state"
+            ],
+            "title": "Unit"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "channel_id",
+          "column",
+          "name",
+          "unit",
+          "source"
+        ],
+        "title": "Channel"
       },
       "Chat": {
         "properties": {
@@ -7203,6 +7709,150 @@
           "basis"
         ],
         "title": "Review"
+      },
+      "Rule": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "range",
+              "difference",
+              "rate"
+            ],
+            "title": "Kind"
+          },
+          "channel_id": {
+            "type": "string",
+            "title": "Channel Id"
+          },
+          "other_channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Channel Id"
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Unit"
+          },
+          "lower": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": -1000000000000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lower"
+          },
+          "upper": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": -1000000000000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upper"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "minimum_duration_seconds": {
+            "type": "number",
+            "maximum": 604800.0,
+            "minimum": 0.0,
+            "title": "Minimum Duration Seconds"
+          },
+          "gate_channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate Channel Id"
+          },
+          "gate_minimum": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": -1000000000000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate Minimum"
+          },
+          "gate_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate Unit"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule_id",
+          "name",
+          "kind",
+          "channel_id",
+          "unit",
+          "minimum_duration_seconds",
+          "source"
+        ],
+        "title": "Rule"
       },
       "RunCreate": {
         "properties": {
