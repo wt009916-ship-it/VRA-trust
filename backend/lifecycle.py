@@ -145,6 +145,8 @@ class Lifecycle:
             ev = self.store.get('evidence', eid)
             if ev['project_id'] != pid:
                 raise core.ValidationError('Cross-project lifecycle evidence rejected')
+            if ev['review_state'] == 'rejected':
+                raise core.ValidationError('Rejected factor evidence cannot support a new inventory')
             if ev['source_file']:
                 self.domain.file_record(pid, ev['source_file'])
             evidence.append(ev)
@@ -169,7 +171,7 @@ class Lifecycle:
                 stale = True
         for old in obj['source_snapshot']:
             ev = self.store.get('evidence', old['evidence_id'])
-            stale |= ev['revision'] != old['revision'] or ev['hash'] != old['hash']
+            stale |= ev['review_state'] == 'rejected' or ev['revision'] != old['revision'] or ev['hash'] != old['hash']
             if ev['source_file']:
                 try:
                     self.domain.file_record(pid, ev['source_file'])

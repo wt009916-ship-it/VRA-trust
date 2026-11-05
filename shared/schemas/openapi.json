@@ -1375,6 +1375,345 @@
         ]
       }
     },
+    "/api/projects/{project_id}/material-cost-validation": {
+      "post": {
+        "summary": "Cost Validation",
+        "operationId": "cost_validation_api_projects__project_id__material_cost_validation_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Estimate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/material-costs": {
+      "post": {
+        "summary": "Cost Create",
+        "operationId": "cost_create_api_projects__project_id__material_costs_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Estimate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Cost List",
+        "operationId": "cost_list_api_projects__project_id__material_costs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/material-costs/{cost_id}": {
+      "get": {
+        "summary": "Cost Get",
+        "operationId": "cost_get_api_projects__project_id__material_costs__cost_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "cost_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cost Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/material-costs/{cost_id}/report.html": {
+      "get": {
+        "summary": "Cost Html",
+        "operationId": "cost_html_api_projects__project_id__material_costs__cost_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "cost_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cost Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/material-cost-comparisons": {
+      "post": {
+        "summary": "Cost Comparison",
+        "operationId": "cost_comparison_api_projects__project_id__material_cost_comparisons_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/backend__material_cost__Comparison"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/beam-analyses": {
       "post": {
         "summary": "Beam Create",
@@ -2137,7 +2476,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Comparison"
+                "$ref": "#/components/schemas/backend__lifecycle__Comparison"
               }
             }
           }
@@ -4637,25 +4976,6 @@
         ],
         "title": "Clause"
       },
-      "Comparison": {
-        "properties": {
-          "lifecycle_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 5,
-            "minItems": 2,
-            "title": "Lifecycle Ids"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "lifecycle_ids"
-        ],
-        "title": "Comparison"
-      },
       "ComparisonRequest": {
         "properties": {
           "run_ids": {
@@ -4812,6 +5132,93 @@
           "method"
         ],
         "title": "EmissionFactor"
+      },
+      "Estimate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Region"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY",
+              "USD",
+              "EUR"
+            ],
+            "title": "Currency"
+          },
+          "tax_basis": {
+            "type": "string",
+            "enum": [
+              "included",
+              "excluded"
+            ],
+            "title": "Tax Basis"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "functional_scope": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Functional Scope"
+          },
+          "exclusions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Exclusions"
+          },
+          "import_file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^file_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Import File Id"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/MaterialLine"
+            },
+            "type": "array",
+            "maxItems": 300,
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "region",
+          "currency",
+          "tax_basis",
+          "as_of",
+          "functional_scope",
+          "exclusions",
+          "lines"
+        ],
+        "title": "Estimate"
       },
       "Evidence": {
         "properties": {
@@ -5536,6 +5943,233 @@
         ],
         "title": "Layer"
       },
+      "MaterialLine": {
+        "properties": {
+          "line_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Line Id"
+          },
+          "material_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Material Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "measure": {
+            "$ref": "#/components/schemas/Measure"
+          },
+          "waste_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waste Ratio"
+          },
+          "waste_basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Waste Basis"
+          },
+          "density_kg_m3": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100000.0,
+                "minimum": 1e-06
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Density Kg M3"
+          },
+          "density_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Density Source"
+          },
+          "quote": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "line_id",
+          "material_id",
+          "name",
+          "measure",
+          "waste_basis",
+          "quote"
+        ],
+        "title": "MaterialLine"
+      },
+      "Measure": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "direct",
+              "rectangle",
+              "cuboid"
+            ],
+            "title": "Mode"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "kg",
+              "t",
+              "m",
+              "cm",
+              "mm",
+              "m2",
+              "m3",
+              "item"
+            ],
+            "title": "Unit"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "length": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "dimension_unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "m",
+                  "cm",
+                  "mm"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimension Unit"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "deduction": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deduction"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "unit",
+          "source"
+        ],
+        "title": "Measure"
+      },
       "PointLoad": {
         "properties": {
           "type": {
@@ -5871,6 +6505,102 @@
           "as_of"
         ],
         "title": "Query"
+      },
+      "Quote": {
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Quote Id"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "per_unit": {
+            "type": "string",
+            "enum": [
+              "kg",
+              "t",
+              "m",
+              "cm",
+              "mm",
+              "m2",
+              "m3",
+              "item"
+            ],
+            "title": "Per Unit"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY",
+              "USD",
+              "EUR"
+            ],
+            "title": "Currency"
+          },
+          "tax_basis": {
+            "type": "string",
+            "enum": [
+              "included",
+              "excluded"
+            ],
+            "title": "Tax Basis"
+          },
+          "region": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Region"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Valid From"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date",
+            "title": "Valid Until"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Source"
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "quote_id",
+          "per_unit",
+          "currency",
+          "tax_basis",
+          "region",
+          "valid_from",
+          "valid_until",
+          "source",
+          "version"
+        ],
+        "title": "Quote"
       },
       "Reconstruction": {
         "properties": {
@@ -6544,6 +7274,44 @@
           "status"
         ],
         "title": "Wall"
+      },
+      "backend__lifecycle__Comparison": {
+        "properties": {
+          "lifecycle_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 2,
+            "title": "Lifecycle Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lifecycle_ids"
+        ],
+        "title": "Comparison"
+      },
+      "backend__material_cost__Comparison": {
+        "properties": {
+          "cost_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 2,
+            "title": "Cost Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cost_ids"
+        ],
+        "title": "Comparison"
       }
     },
     "securitySchemes": {

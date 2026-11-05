@@ -14,6 +14,7 @@ from .trust import Trust
 from .robustness import Search, Actions
 from .standards import Standards, Query as StandardQuery
 from .engineering import Engineering
+from .material_cost import Costs
 
 
 class Chat(Contract):
@@ -28,6 +29,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    material_cost_id: str | None = None
     engineering_id: str | None = None
     standards_query: StandardQuery | None = None
     run_id: str | None = None
@@ -40,6 +42,8 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'material_cost_list': '只读列出最近6份材料成本清单和当前状态；不创建价格、数量或税率',
+    'material_cost_read': '按material_cost_id读取当前来源核验后的成本清单；材料成本不等于工程总价或报价认证',
     'beam_analysis_list': '只读列出项目最近6条梁分析记录及当前状态；不创建荷载或判断结构安全',
     'beam_analysis_read': '读取来源及版本核验后的梁分析；需 engineering_id；不得把计算值当作安全或合规结论',
     'standards_search': '只读检索本项目已复核规范摘录；需 standards_query 和查询日期；不虚构条款或自动判定合规',
@@ -63,6 +67,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'material_cost_list': (), 'material_cost_read': ('material_cost_id',),
     'beam_analysis_list': (), 'beam_analysis_read': ('engineering_id',),
     'standards_search': ('standards_query',),
     'project_get': (), 'evidence_list': (), 'building_get': (),
@@ -147,6 +152,14 @@ class Agent:
             raise core.ValidationError('Unexpected arguments for ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'material_cost_list':
+            return [{'cost_id':r['cost_id'],'name':r['input']['name'],'status':Costs(d).view(project_id,r['cost_id'])['status']}
+                for r in self.store.list('cost',project_id)[:6]]
+        if name == 'material_cost_read':
+            if not args.material_cost_id: raise core.ValidationError('Provide material_cost_id')
+            if self.store.get('cost',args.material_cost_id)['project_id'] != project_id:
+                raise ToolRefusal('Cross-project material cost read rejected')
+            return Costs(d).view(project_id,args.material_cost_id)
         if name == 'beam_analysis_list':
             return [{'engineering_id':r['engineering_id'],'name':r['input']['name'],'status':Engineering(d).view(project_id,r['engineering_id'])['status']}
                 for r in self.store.list('engineering',project_id)[:6]]
