@@ -244,10 +244,10 @@ def test_unknown_files_and_linked_sources_are_not_silently_omitted(cold,tmp_path
 
 def test_cli_returns_safe_summary_and_nonzero_rejection(cold,tmp_path):
     script=Path(__file__).resolve().parents[1]/'scripts/backup_runtime.py'
-    cp=subprocess.run([sys.executable,str(script),'create','--source',str(cold[0]),'--archive',str(tmp_path/'cli.zip')],capture_output=True,text=True,timeout=20)
+    cp=subprocess.run([sys.executable,str(script),'create','--source',str(cold[0]),'--archive',str(tmp_path/'cli.zip'),'--legacy-plaintext'],capture_output=True,text=True,timeout=20)
     assert cp.returncode==0,cp.stderr
     result=json.loads(cp.stdout);assert result['status']=='succeeded' and len(result['archive_sha256'])==64
-    cp=subprocess.run([sys.executable,str(script),'restore','--archive',str(tmp_path/'cli.zip'),'--target',str(cold[0]),'--sha256',result['archive_sha256']],capture_output=True,text=True,timeout=20)
+    cp=subprocess.run([sys.executable,str(script),'restore','--archive',str(tmp_path/'cli.zip'),'--target',str(cold[0]),'--sha256',result['archive_sha256'],'--legacy-plaintext'],capture_output=True,text=True,timeout=20)
     assert cp.returncode==1 and json.loads(cp.stdout)['status']=='rejected'
 
 

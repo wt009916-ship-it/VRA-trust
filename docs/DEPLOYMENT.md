@@ -24,3 +24,7 @@ CAD/OCR/规范PDF工作器仅支持Windows与Linux；其他平台或预算安装
 ## 停服备份与恢复
 
 使用scripts/backup_runtime.py创建、验证、恢复到新目录；步骤见BACKUP_RECOVERY_GUIDE.md。新版服务与后台任务持有目录锁，运行期间拒绝维护；升级前的旧服务必须人工正常停止。包含已提交WAL的数据，不直接拷贝活动SQLite主文件冒充完整备份。恢复旧会话撤销、未完成任务失败、Provider默认禁用；原工程指纹不更新。当前只做本机参考数据恢复，不代表加密、Windows ACL、异机/断电或生产灾备已验收。
+
+## 加密与私有维护存储（本批更新）
+
+当前CLI默认认证加密，旧明文操作需--legacy-plaintext。Windows新对象创建时设当前账户/SYSTEM保护DACL并回读，Linux目录0700/文件0600；不修改既有runtime权限。35项本机参考恢复及Windows受限令牌实测见ENCRYPTED_BACKUP_DELIVERY.md。上节“未验收加密/ACL”是上一批状态，本批已限定验证；累计配额、完整隔离、断电/异机/生产部署仍未验收。口令丢失无法找回，临时清理不是安全擦除。

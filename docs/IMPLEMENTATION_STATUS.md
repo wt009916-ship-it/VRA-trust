@@ -1,3 +1,7 @@
+# 2026-11-05 加密备份与访问保护
+
+CLI默认AES-256-GCM认证加密，口令不持久化；新建临时与恢复目录在明文写入前限制权限并回读。Windows受限令牌真实拒读、独立密码API互操作及35项真实工程恢复检查通过。原生隔离/配额/生产灾备仍待验收，开发复评70。详ENCRYPTED_BACKUP_DELIVERY.md、ENCRYPTED_BACKUP_EVIDENCE.json及更新后的BACKUP_RECOVERY_GUIDE.md。
+
 # 2026-11-05 本地停服备份恢复
 
 新增目录锁、SQLite/WAL一致快照、严格归档校验、新目录恢复、会话撤销和未完成任务失败记录。真实EnergyPlus/CAD/OCR原件及历史完成31项恢复演练，旧证据失效不被恢复抹除。备份加密/Windows DACL/生产灾备和累计配额仍未验收，开发复评保持69。详BACKUP_RECOVERY_DELIVERY.md及BACKUP_RECOVERY_EVIDENCE.json。
