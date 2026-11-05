@@ -34,7 +34,7 @@ python scripts/verify_ifc_reference.py validation/ifc-20261105/duplex.ifc <新�
 python scripts/verify_drawing_reference.py validation/drawing-ocr-20261105/kinnear.png <新输出目录>
 ```
 
-本机最终388 passed、1 skipped、6 subtests、1既有httpx弃用警告，244.23秒。新增20个用例在Windows19通过、1个Linux专属文件限额测试跳过；通过数包含“正确报告映射缺口”的测试，不代表20种攻击全部拦截。Linux实测以本批远程CI为准，不能从Windows结果推定。
+本机最终388 passed、1 skipped、6 subtests、1既有httpx弃用警告，244.23秒。新增20个用例在Windows19通过、1个Linux专属文件限额测试跳过；通过数包含“正确报告映射缺口”的测试，不代表20种攻击全部拦截。Linux在提交1edc5d60c81f813f2000b5e459627db72362525b的push/PR两套真实CI分别86.04/98.38秒，均380通过、9跳过、6子测试；本批20项中18通过、2个Windows专属跳过。其余跳过为既有Windows DPAPI及未生成本地参考产物测试，不能算通过。新增Linux映射拒绝、CPU终止、单文件限制和三个接口恢复均包含在本次真实执行中。日志见证据索引。
 
 独立128 MiB探针：Windows VirtualAlloc提交256 MiB被拒绝（1455）；1秒CPU预算导致退出3221225540，实测墙钟2.859秒而非父10秒timeout；派生子进程不能执行；新正常进程仍成功。反例：匿名mmap 256 MiB成功创建，因此mapped_memory_bounded=false，未宣称触碰全部物理页或整机RAM上限。
 
