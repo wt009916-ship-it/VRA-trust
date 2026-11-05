@@ -14,6 +14,7 @@ from . import core
 from .domain import identifier
 from .drawing_models import model_paths, MODELS
 from .schema import Contract
+from .worker_limits import receipt
 
 
 class DrawingInput(Contract):
@@ -38,6 +39,7 @@ class DrawingReview(Contract):
 def parser_hash():
     model_paths()
     return core.hash_json({'worker':core.sha(Path(__file__).with_name('drawing_worker.py')),
+                          'resource_policy':core.sha(Path(__file__).with_name('worker_limits.py')),
                           'model_contract':core.sha(Path(__file__).with_name('drawing_models.py')),
                           'models':MODELS,'versions':{p:version(p) for p in ('rapidocr','onnxruntime','Pillow','pypdfium2','numpy','opencv-python-headless')}})
 
@@ -64,7 +66,7 @@ class Drawings:
             with tempfile.TemporaryDirectory(prefix='vra-ocr-') as tmp:
                 out,preview=Path(tmp)/'result.json',Path(tmp)/'preview.png'
                 env={k:v for k,v in os.environ.items() if k.upper() in {'PATH','SYSTEMROOT','WINDIR','TEMP','TMP','LANG','LC_ALL'}}
-                env.update(USERPROFILE=tmp,XDG_CONFIG_HOME=tmp,OMP_NUM_THREADS='2')
+                env.update(USERPROFILE=tmp,XDG_CONFIG_HOME=tmp,OMP_NUM_THREADS='2',OPENBLAS_NUM_THREADS='2',MKL_NUM_THREADS='2')
                 try:
                     cp=subprocess.run([sys.executable,str(Path(__file__).with_name('drawing_worker.py')),str(path),str(out),str(preview),str(body.page)],
                                       cwd=tmp,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,
@@ -74,6 +76,10 @@ class Drawings:
                 if cp.returncode or not out.is_file() or out.stat().st_size>2*1024*1024 or not preview.is_file() or preview.stat().st_size>40*1024*1024:
                     raise core.ValidationError('OCR rejected or exceeded limits; original preserved')
                 result=core.read_json(out)
+                try:
+                    result['resource_limits']=receipt(out,'drawing')
+                except (ValueError,OSError) as exc:
+                    raise core.ValidationError('OCR resource enforcement not verified') from exc
                 self.domain.file_record(pid,body.file_id)
                 if parser_hash()!=before or core.sha(preview)!=result['preview_sha256']:
                     raise core.ValidationError('OCR inputs or parser changed during processing')

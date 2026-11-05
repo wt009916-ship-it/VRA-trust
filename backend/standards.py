@@ -15,6 +15,7 @@ from pydantic import Field, HttpUrl, StrictInt, model_validator
 from . import core
 from .domain import identifier
 from .schema import Contract
+from .worker_limits import receipt
 
 
 def normalized(value):
@@ -22,7 +23,8 @@ def normalized(value):
 
 
 def parser_hash():
-    return core.hash_json({'worker': core.sha(Path(__file__).with_name('standards_worker.py')), 'pypdf': version('pypdf')})
+    return core.hash_json({'worker': core.sha(Path(__file__).with_name('standards_worker.py')),
+                          'resource_policy':core.sha(Path(__file__).with_name('worker_limits.py')), 'pypdf': version('pypdf')})
 
 
 class Preview(Contract):
@@ -116,6 +118,7 @@ class Standards:
         if not self.capacity.acquire(False):
             raise core.ValidationError('PDF parsers busy; retry later')
         try:
+            before=parser_hash()
             with tempfile.TemporaryDirectory(prefix='vra-standard-') as tmp:
                 output = Path(tmp)/'result.json'
                 try:
@@ -128,8 +131,14 @@ class Standards:
                 if cp.returncode or not output.exists() or output.stat().st_size > 4*1024*1024:
                     raise core.ValidationError('PDF extraction rejected; original preserved')
                 result = core.read_json(output)
+                try:
+                    result['resource_limits']=receipt(output,'standards')
+                except (ValueError,OSError) as exc:
+                    raise core.ValidationError('PDF resource enforcement not verified') from exc
             self.domain.file_record(pid, body.file_id)
-            return {**result, 'source_hash': source['hash'], 'parser_hash': parser_hash(),
+            if parser_hash()!=before:
+                raise core.ValidationError('PDF parser changed during processing; retry')
+            return {**result, 'source_hash': source['hash'], 'parser_hash': before,
                 'notice': '文字层并不证明OCR或条款正确；扫描页需要人工摘录和原件复核。'}
         finally:
             self.capacity.release()
@@ -157,6 +166,7 @@ class Standards:
         source, _ = self.domain.file_record(pid, body.file_id)
         obj = {'standard_id': identifier('standard'), 'project_id': pid, 'input': body.model_dump(mode='json'),
             'source': source, 'parser_hash': extracted['parser_hash'], 'page_count': extracted['page_count'],
+            'extraction_resource_limits':extracted['resource_limits'],
             'review': {'state':'pending', 'basis':None, 'reviewer_id':None}, 'created_at':core.now()}
         obj['hash'] = core.hash_json(obj)
         self.store.put('standard', obj)

@@ -1,4 +1,8 @@
 """Bounded PDF text extraction in a disposable subprocess; no OCR or URL fetch."""
+if __name__ == '__main__':
+    from worker_limits import initialize
+    initialize('standards')
+
 import json
 import sys
 from pathlib import Path
