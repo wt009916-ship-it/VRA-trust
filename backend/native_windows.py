@@ -204,6 +204,7 @@ def launch(command,work,sid_text):
     This is called only by the trusted supervisor after installing its Job.
     HANDLE_LIST restricts inherited handles to three duplicated standard streams.
     """
+    import msvcrt
     apis=api();k,a,_,_=apis;sid=c.c_void_p();pi=PI();attributes=None
     handles=[];token=w.HANDLE();initialized=False
     checked(a.ConvertStringSidToSidW(sid_text,c.byref(sid)))
@@ -217,10 +218,13 @@ def launch(command,work,sid_text):
             checked(k.UpdateProcThreadAttribute(attributes,0,0x20009,c.byref(caps),c.sizeof(caps),None,None))
             checked(k.UpdateProcThreadAttribute(attributes,0,0x2000f,c.byref(optout),c.sizeof(optout),None,None))
             current=k.GetCurrentProcess()
-            for number in [-10,-11,-12]:
-                handle=w.HANDLE()
-                checked(k.DuplicateHandle(current,k.GetStdHandle(number&0xffffffff),current,c.byref(handle),0,True,2))
-                handles.append(handle.value)
+            # stdin is the supervisor's private parent-lifetime pipe. Never
+            # expose it to a parser/engine; duplicate a fresh read-only NUL.
+            with open(os.devnull,'rb') as null:
+                for source in [msvcrt.get_osfhandle(null.fileno()),k.GetStdHandle(-11&0xffffffff),k.GetStdHandle(-12&0xffffffff)]:
+                    handle=w.HANDLE()
+                    checked(k.DuplicateHandle(current,source,current,c.byref(handle),0,True,2))
+                    handles.append(handle.value)
             handle_list=(w.HANDLE*3)(*handles)
             checked(k.UpdateProcThreadAttribute(attributes,0,0x20002,handle_list,c.sizeof(handle_list),None,None))
             startup=SX();startup.startup.cb=c.sizeof(startup);startup.startup.flags=0x100
