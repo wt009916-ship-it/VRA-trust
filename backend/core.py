@@ -8,6 +8,9 @@ from __future__ import annotations
 import hashlib, json, math, os, re, shutil, sqlite3, subprocess, tempfile, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from dataclasses import replace
+from . import execution
+from .private_storage import private_temporary
 
 ROOT=Path(__file__).resolve().parents[1]
 PARSER_VERSION='native-sql-0.3.0'
@@ -36,7 +39,9 @@ def code_hash():
     # Physics validity must not depend on UI, authentication or Agent code.
     # Keep the entire audited computation module conservative for physics changes.
     return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION,
-                      'input_validation':sha(ROOT/'backend/input_validation.py')})
+                      'input_validation':sha(ROOT/'backend/input_validation.py'),
+                      'execution':{name:sha(ROOT/'backend'/name) for name in
+                                   ('execution.py','engine_limits.py','engine_worker.py','worker_limits.py')}})
 def engine_path():
     configured=os.environ.get('ENERGYPLUS_EXE')
     if not configured and (ROOT/'config.local.json').is_file():configured=read_json(ROOT/'config.local.json').get('energyplus_exe')
@@ -147,12 +152,34 @@ def source_fingerprints(case,scheme,profile,engine,file_root=None):
     root=Path(file_root) if file_root else ROOT
     return {'model':sha(relative_file(root,scheme['model'])),'weather':sha(relative_file(root,case['weather'])),'case':hash_json(case),'factor':hash_json(profile),'engine':sha(engine),'code':code_hash()}
 
-def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_override=None,profile_override=None,file_root=None):
+def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_override=None,profile_override=None,file_root=None,
+                   execution_root=None,cancel_check=None):
+    rd=Path(run_dir);rd.mkdir(parents=True,exist_ok=True)
+    if any((rd/name).exists() for name in ('manifest.json','result.json','input','output','version-stdout.log','stdout.log')):
+        raise ValidationError('Run directory already contains evidence; create a new run')
+    policy=execution.Policy.from_env()
+    root=Path(execution_root) if execution_root else rd.parent
+    roots=[root/'runs',root/'searches'] if execution_root else [root]
+    entered=False
+    kwargs=dict(case_override=case_override,profile_override=profile_override,file_root=file_root,
+                policy=policy,cancel_check=cancel_check)
+    try:
+        with execution.archive_slot(root,roots,policy,cancel_check):
+            entered=True
+            return _run_simulation(case_id,scheme_id,profile_id,rd,timeout,**kwargs)
+    except execution.ExecutionError as exc:
+        if entered:raise
+        return _run_simulation(case_id,scheme_id,profile_id,rd,timeout,start_failure=exc,**kwargs)
+
+
+def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_override=None,profile_override=None,file_root=None,
+                    policy,cancel_check=None,start_failure=None):
     rd=Path(run_dir);rd.mkdir(parents=True,exist_ok=True)
     identity={'run_id':rd.name,'case_id':case_id,'scheme_id':scheme_id,'status':'running','started_at':now(),'data_nature':'engineering_reference'}
     manifest={**identity,'engine_calls_executed':0,'artifact_hashes':{},'fingerprints':{}}
     start=time.perf_counter()
     try:
+        if start_failure:raise start_failure
         case=case_override if case_override is not None else load_case(case_id)
         scheme=get_scheme(case,scheme_id);profile=profile_override if profile_override is not None else get_profile(profile_id);engine=engine_path()
         root=Path(file_root) if file_root else ROOT
@@ -160,30 +187,32 @@ def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_overr
         if profile.get('region') not in ('*',case['region']):raise ValidationError('碳因子地区不匹配')
         manifest['data_nature']=case['data_nature'];manifest['factor_profile_id']=profile_id
         manifest['fingerprints']=source_fingerprints(case,scheme,profile,engine,root)
-        manifest['engine_version']=subprocess.check_output([str(engine),'--version'],text=True,encoding='utf-8',errors='replace',timeout=15).strip()
+        with private_temporary(Path(tempfile.gettempdir())) as tmp:
+            manifest['version_resources']=execution.supervise([engine,'--version'],tmp,rd,replace(policy,log_bytes=16384),15,
+                                                              cancel_check=cancel_check,label='version-')
+        manifest['engine_version']=(rd/'version-stdout.log').read_text(encoding='utf-8',errors='replace').strip()
         manifest['engine_idd_hash']=sha(engine.parent/'Energy+.idd') if (engine.parent/'Energy+.idd').is_file() else None
         inp=rd/'input';inp.mkdir(exist_ok=True)
         shutil.copy2(relative_file(root,scheme['model']),inp/'model.idf');shutil.copy2(relative_file(root,case['weather']),inp/'weather.epw')
         if sha(inp/'model.idf')!=manifest['fingerprints']['model'] or sha(inp/'weather.epw')!=manifest['fingerprints']['weather']:raise ValidationError('Inputs changed during snapshot')
         write_json(inp/'case.json',case);write_json(inp/'carbon_profile.json',profile)
         # E+ 9.0 SQLite cannot open some Unicode paths. Use an isolated ASCII working directory.
-        with tempfile.TemporaryDirectory(prefix='vra_ep_') as temp:
-            tmp=Path(temp)
+        with private_temporary(Path(tempfile.gettempdir())) as tmp:
             if not str(tmp).isascii():raise ValidationError('EnergyPlus 9.0 requires an ASCII TEMP directory')
             shutil.copy2(inp/'model.idf',tmp/'model.idf');shutil.copy2(inp/'weather.epw',tmp/'weather.epw')
             output=tmp/'output';output.mkdir()
             command=[str(engine),'-d',str(output),'-w',str(tmp/'weather.epw'),str(tmp/'model.idf')]
             manifest['command']=command;manifest['command_note']='Temporary execution paths; archived inputs are input/model.idf and input/weather.epw.'
             try:
-                with (rd/'stdout.log').open('wb') as stdout,(rd/'stderr.log').open('wb') as stderr:
-                    manifest['engine_calls_executed']=1
-                    cp=subprocess.run(command,cwd=tmp,stdout=stdout,stderr=stderr,timeout=timeout,check=False)
-                manifest['exit_code']=cp.returncode
-            except subprocess.TimeoutExpired as e:
-                manifest['exit_code']=None;raise ValidationError('EnergyPlus timeout; process terminated') from e
-            finally:
-                shutil.copytree(output,rd/'output',dirs_exist_ok=True)
-            if cp.returncode!=0:raise ValidationError('EnergyPlus exited with code '+str(cp.returncode))
+                manifest['engine_calls_executed']=None
+                receipt=execution.supervise(command,tmp,rd,policy,timeout,output=output,cancel_check=cancel_check)
+                manifest.update(execution_resources=receipt,engine_calls_executed=receipt['calls_executed'],exit_code=receipt['exit_code'])
+                execution.archive_output(output,rd/'output',policy)
+            except execution.ExecutionError as exc:
+                if 'execution_resources' not in manifest:
+                    manifest.update(execution_resources=exc.receipt,engine_calls_executed=exc.receipt['calls_executed'])
+                execution.diagnostic(output,rd)
+                raise
         err=rd/'output/eplusout.err'
         if not err.is_file():raise ValidationError('Missing ERR')
         text=err.read_text(encoding='utf-8',errors='replace')

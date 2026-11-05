@@ -33,6 +33,7 @@ from .schema import (
 from .store import Store
 from .runtime_lock import RuntimeLease, safe_path
 from .storage import StorageError
+from .task_capacity import CapacityError
 
 
 class BodyTooLarge(Exception):
@@ -67,6 +68,7 @@ def _create_app(data_dir=None, *, start_worker=True):
     @asynccontextmanager
     async def lifespan(app):
         with RuntimeLease(root):
+            domain.stop.clear()
             if (root / '.restore-incomplete').exists():
                 raise ValueError('Restore incomplete; this directory cannot serve requests')
             if start_worker:
@@ -79,6 +81,7 @@ def _create_app(data_dir=None, *, start_worker=True):
                 domain.stop.set()
                 if domain.worker:
                     domain.worker.join()
+                domain.join_tasks()
 
     app = FastAPI(title="VRA-Trust Evidence API", version="1.0.0", lifespan=lifespan)
     app.state.domain = domain
@@ -128,6 +131,10 @@ def _create_app(data_dir=None, *, start_worker=True):
     @app.exception_handler(StorageError)
     async def storage_error(request, exc):
         return JSONResponse({'detail':str(exc),'code':exc.code},status_code=exc.status)
+
+    @app.exception_handler(CapacityError)
+    async def capacity_error(request, exc):
+        return JSONResponse({'detail':str(exc),'code':'task_capacity'},status_code=429)
 
     @app.exception_handler(KeyError)
     async def not_found(request, exc):
@@ -267,6 +274,11 @@ def _create_app(data_dir=None, *, start_worker=True):
     @app.get("/api/runs/{run_id}", response_model=RunView)
     @app.get("/api/runs/{run_id}/result", response_model=RunView)
     def run(run_id: str):
+        return domain.view(run_id)
+
+    @app.post('/api/runs/{run_id}/cancel', response_model=RunView)
+    def cancel_run(run_id: str):
+        domain.store.cancel_job(run_id)
         return domain.view(run_id)
 
     @app.get("/api/runs/{run_id}/evidence")

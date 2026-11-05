@@ -28,6 +28,8 @@ class Domain:
         self.store = store
         self.storage = OriginalStorage(store)
         self.stop = threading.Event()
+        self.task_lock = threading.RLock()
+        self.tasks = set()
         self.worker = None
 
     def create_project(self, body: ProjectCreate):
@@ -116,6 +118,7 @@ class Domain:
                 "limitations": ["通过准入仅允许仿真，不证明模型代表真实建筑。", "结构化建筑字段是核对声明，当前不会自动修改 IDF。", "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。", "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"]}
 
     def submit(self, body):
+        if self.stop.is_set():raise core.ValidationError('服务正在关闭，未接受新任务')
         gate = self.gate(body.project_id, body.scheme_id)
         if not gate["can_simulate"]:
             raise core.ValidationError("Evidence gate rejected: " + "; ".join(b["message"] for b in gate["blockers"]))
@@ -178,7 +181,9 @@ class Domain:
             # Stored before core invocation so it is part of the artifact manifest.
             core.write_json(rd / "request.json", {k: v for k, v in job.items() if k not in {"status", "error"}})
             result = core.run_simulation(job["case_id"], job["scheme_id"], job["factor_profile_id"], rd,
-                                         case_override=job["case_snapshot"], profile_override=job["factor_snapshot"], file_root=self.store.root)
+                                         case_override=job["case_snapshot"], profile_override=job["factor_snapshot"], file_root=self.store.root,
+                                         execution_root=self.store.root,
+                                         cancel_check=lambda: self.stop.is_set() or self.store.cancel_requested(rid))
             if result["status"] == "failed":
                 self.store.finish(rid, "failed", result["error"]["message"])
             elif abs(result["metrics"]["area_m2"] - job["project_snapshot"]["building"]["area_m2"]) > max(.1, result["metrics"]["area_m2"] * .001):
@@ -201,10 +206,15 @@ class Domain:
         self.worker = threading.Thread(target=loop, daemon=True, name="vra-energyplus-worker")
         self.worker.start()
 
+    def join_tasks(self):
+        with self.task_lock:tasks=list(self.tasks)
+        for thread in tasks:thread.join()
+
     def view(self, run_id):
         job = self.store.job(run_id)
         view = RunView(run_id=run_id, project_id=job["project_id"], case_id=job["case_id"], scheme_id=job["scheme_id"],
                        status=job["status"], data_nature=job["project_snapshot"]["data_nature"], created_at=job["created_at"], error=job["error"],
+                       engine_calls_executed=0 if job['status']=='queued' or job['error']=='Cancelled before execution' else None,
                        limitations=job["gate"]["limitations"]).model_dump(mode="json")
         rd = self.store.root / "runs" / run_id
         if job["status"] in {"queued", "running"}:

@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 
 from . import core
+from .task_capacity import TaskLimits, CapacityError
 
 
 class Store:
@@ -12,6 +13,7 @@ class Store:
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self.db = self.root / "vra.sqlite3"
+        self.task_limits = TaskLimits.from_env()
         with self.connect() as con:
             con.executescript("""
                 PRAGMA journal_mode=WAL;
@@ -81,7 +83,34 @@ class Store:
 
     def add_job(self, job):
         with self.connect() as con:
+            con.execute('BEGIN IMMEDIATE')
+            total,project=con.execute("SELECT COUNT(*),COALESCE(SUM(project_id=?),0) FROM jobs WHERE state IN ('queued','running')",(job['project_id'],)).fetchone()
+            if total>=self.task_limits.runs or project>=self.task_limits.project_runs:
+                raise CapacityError('仿真待执行/运行任务已达容量上限，请等待或取消排队任务')
             con.execute("INSERT INTO jobs VALUES (?,?,?,?,NULL)", (job["run_id"], job["project_id"], "queued", json.dumps(job, ensure_ascii=False, allow_nan=False)))
+
+    def add_active_record(self, kind, record):
+        if kind not in {'agent','search'}:raise ValueError('Unsupported task kind')
+        with self.connect() as con:
+            con.execute('BEGIN IMMEDIATE')
+            rows=con.execute("SELECT body FROM records r WHERE kind=? AND revision=(SELECT MAX(revision) FROM records x WHERE x.kind=r.kind AND x.id=r.id)",(kind,))
+            active=sum(json.loads(row[0]).get('status')=='running' for row in rows)
+            if active>=getattr(self.task_limits,kind):raise CapacityError('本机任务容量已满；未新增任务')
+            return self.put_in(con,kind,record)
+
+    def cancel_job(self, run_id):
+        self.check_id(run_id)
+        with self.connect() as con:
+            con.execute('BEGIN IMMEDIATE')
+            row=con.execute('SELECT state FROM jobs WHERE id=?',(run_id,)).fetchone()
+            if row is None:raise KeyError(run_id)
+            if row[0]=='queued':con.execute("UPDATE jobs SET state='failed',error='Cancelled before execution' WHERE id=?",(run_id,))
+            elif row[0]=='running':con.execute("UPDATE jobs SET error='CANCEL_REQUESTED' WHERE id=?",(run_id,))
+
+    def cancel_requested(self, run_id):
+        with self.connect() as con:
+            row=con.execute('SELECT error FROM jobs WHERE id=?',(run_id,)).fetchone()
+            return bool(row and row[0]=='CANCEL_REQUESTED')
 
     def job(self, run_id):
         self.check_id(run_id)
@@ -105,6 +134,9 @@ class Store:
 
     def finish(self, run_id, state, error=None):
         with self.connect() as con:
+            con.execute('BEGIN IMMEDIATE')
+            previous=con.execute('SELECT error FROM jobs WHERE id=?',(run_id,)).fetchone()
+            if previous and previous[0]=='CANCEL_REQUESTED':state,error='failed','Cancelled; execution terminated or result discarded'
             con.execute("UPDATE jobs SET state=?,error=? WHERE id=?", (state, error, run_id))
 
     def recover(self):

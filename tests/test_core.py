@@ -74,7 +74,7 @@ class NativeEvidenceTests(unittest.TestCase):
             c.close()
             with self.assertRaises(core.ValidationError):core.parse_sql(sql)
     def test_recarbon_no_engine_call(self):
-        with tempfile.TemporaryDirectory() as td,patch.object(core.subprocess,'run',side_effect=AssertionError('must not run engine')):
+        with tempfile.TemporaryDirectory() as td,patch.object(core.execution,'supervise',side_effect=AssertionError('must not run engine')):
             dest=Path(td)/'run_recarbon';r=core.recalculate_carbon(self.source,dest,'none')
             self.assertEqual(r['metrics'],self.summary['results'][0]['metrics']);self.assertIsNone(r['carbon']['operating_carbon_kg'])
             self.assertEqual(core.read_json(dest/'manifest.json')['engine_calls_executed'],0);core.read_validated(dest)
