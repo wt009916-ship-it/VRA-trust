@@ -45,6 +45,10 @@ CAD/PDF/OCR 的强制依赖按已安装 wheel 元数据递归解析、检查环�
 
 最终本机全量：Windows **528 passed / 14 skipped / 6 subtests，646.70秒**；Linux **530 passed / 12 skipped / 6 subtests，312.28秒**。32项前端测试、lint/build、契约导出通过。缓存六次顺序调用和三份公共运行库正常关闭清理通过，但该小样本期间还存在其他本机验收负载，不据此外推生产吞吐或单用户延迟；上述性能缺陷保留。测试客户端弃用、故意重复ZIP成员警告与前端大分块提示保留。
 
+追加只读计时诊断 `preparation-profile.json`：同一CAD样本三次总耗时16.62/26.30/6.81秒；第二次的缓存核验21.62秒，其中文件哈希读取累计21.05秒，第三次分别2.06/1.60秒。缓存文件数仍3943、完整性检查未移除。该证据将高延迟定位到文件读取/哈希阶段，但不能进一步断言磁盘、杀毒软件或内核为根因；PARSER-05继续保留，不把一次变快当稳定性能达标。
+
+PR #24 首轮精确提交 `f242a96dcf38ac14af6298c2753de9606986e531` 六项 push/PR 检查成功；两份 Linux 后端日志均为524 passed / 18 skipped / 6 subtests，231.43/232.20秒。远程未安装 EnergyPlus，这18项跳过不计真实引擎通过。本段与证据索引更新后，最终提交仍须重新通过六项检查；最终 head、合并和日志身份记录在本地 release-receipt.json。
+
 ## 复现及下一步
 
 安装锁定依赖，在 Windows 或符合前述条件的非 root Linux 上设置隔离 `VRA_DATA_DIR`。运行 `python -m pytest -q tests/test_parser_isolation.py tests/test_cad.py tests/test_drawings.py tests/test_standards.py tests/test_worker_limits.py`，再执行全量；真实 EnergyPlus 用例需要实际引擎和当前源码参考运行，否则明确跳过或拒绝。公开文件交叉验证用 `scripts/verify_ifc_reference.py` 与 `scripts/verify_drawing_reference.py`，来源及固定答案沿用 fixtures 中清单。
