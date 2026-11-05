@@ -16,6 +16,7 @@ from .standards import Standards, Query as StandardQuery
 from .engineering import Engineering
 from .material_cost import Costs
 from .construction import Schedules
+from .operations import Operations
 
 
 class Chat(Contract):
@@ -30,6 +31,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    operation_id: str | None = None
     schedule_id: str | None = None
     material_cost_id: str | None = None
     engineering_id: str | None = None
@@ -44,6 +46,8 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'operations_list': '只读列出最近6份设备运行规则核查记录，不推断设备健康或控制设备',
+    'operations_read': '按operation_id读取当前运行异常事件、缺测、阈值来源及检查建议，不能把规则事件当作已确认故障根因',
     'schedule_list': '只读列出最近6份施工进度记录及状态，不生成工期或施工安全结论',
     'schedule_read': '按schedule_id读取当前关键路径、显式剩余工期情景、缺参及资源冲突；未资源调平，不保证现场可施工',
     'material_cost_list': '只读列出最近6份材料成本清单和当前状态；不创建价格、数量或税率',
@@ -71,6 +75,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'operations_list': (), 'operations_read': ('operation_id',),
     'schedule_list': (), 'schedule_read': ('schedule_id',),
     'material_cost_list': (), 'material_cost_read': ('material_cost_id',),
     'beam_analysis_list': (), 'beam_analysis_read': ('engineering_id',),
@@ -157,6 +162,13 @@ class Agent:
             raise core.ValidationError('Unexpected arguments for ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'operations_list':
+            return [{'operation_id':r['operation_id'],'name':r['input']['name'],'status':Operations(d).view(project_id,r['operation_id'])['status']}
+                for r in self.store.list('operation',project_id)[:6]]
+        if name == 'operations_read':
+            if not args.operation_id:raise core.ValidationError('Provide operation_id')
+            if self.store.get('operation',args.operation_id)['project_id']!=project_id:raise ToolRefusal('Cross-project operations rejected')
+            return Operations(d).view(project_id,args.operation_id)
         if name == 'schedule_list':
             return [{'schedule_id':r['schedule_id'],'name':r['input']['name'],'status':Schedules(d).view(project_id,r['schedule_id'])['status']}
                 for r in self.store.list('schedule',project_id)[:6]]
