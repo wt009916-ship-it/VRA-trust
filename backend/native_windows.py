@@ -12,10 +12,10 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
-import uuid
 
 from .native_environment import environment
-from .private_storage import private_temporary, _windows, _sid
+from .private_storage import _windows, _sid
+from .native_ownership import owned_temporary, reserve_profile, confirm_profile
 from .runtime_lock import safe_path
 from .native_staging import copy_file
 
@@ -148,9 +148,9 @@ def _protect_directory(path,sid,write,apis):
 def staging():
     """Parent owns profile lifetime, including when its supervisor is cancelled."""
     apis=api();k,a,u,_=apis;sid=c.c_void_p()
-    name='VRA.Engine.'+uuid.uuid4().hex
-    with private_temporary(Path(tempfile.gettempdir())) as root:
+    with owned_temporary(Path(tempfile.gettempdir())) as root:
         if not str(root).isascii():raise ValueError('Native engine needs ASCII TEMP')
+        name=reserve_profile(root)
         with registry_capability(apis) as capabilities:
             hr=u.CreateAppContainerProfile(name,name,'Temporary VRA native engine',capabilities,len(capabilities),c.byref(sid))
             if hr<0:raise RuntimeError('AppContainer profile creation failed: '+hex(hr&0xffffffff))
@@ -169,14 +169,13 @@ def staging():
             packages=safe_path(Path(os.environ['LOCALAPPDATA'])/'Packages')
             if profile_root.parent!=packages or profile_root.name.casefold()!=name.casefold():
                 raise RuntimeError('Unexpected AppContainer profile storage path')
+            confirm_profile(root,sid_text,profile_root)
             _protect_directory(root,sid_text,False,apis)
             work=root/'output';work.mkdir()
             _protect_directory(work,sid_text,True,apis)
             yield {'root':root,'work':work,'sid':sid_text,'profile':name,'profile_root':profile_root}
         finally:
             a.FreeSid(sid)
-            hr=u.DeleteAppContainerProfile(name)
-            if hr<0:raise RuntimeError('AppContainer profile cleanup failed: '+hex(hr&0xffffffff))
 
 
 @contextmanager

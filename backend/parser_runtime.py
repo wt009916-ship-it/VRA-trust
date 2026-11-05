@@ -21,7 +21,7 @@ from packaging.utils import canonicalize_name
 
 from . import core, execution
 from .native_staging import copy_file
-from .private_storage import private_temporary
+from .native_ownership import owned_temporary as private_temporary
 from .runtime_lock import safe_path
 from .worker_limits import POLICIES
 from . import parser_runtime_cache
@@ -63,7 +63,8 @@ def identity(kind):
     return core.hash_json({'runtime':core.sha(Path(__file__)),'worker':core.sha(ROOT/'parser_worker.py'),
         'cache':core.sha(ROOT/'parser_runtime_cache.py'),'policy':POLICIES[kind],
         'native':{name:core.sha(ROOT/name) for name in ('native_staging.py','native_environment.py',
-                   'native_windows.py','native_linux.py','engine_worker.py','engine_limits.py','execution.py','execution_lifetime.py')},
+                   'native_windows.py','native_linux.py','engine_worker.py','engine_limits.py','execution.py','execution_lifetime.py',
+                   'native_ownership.py','private_storage.py','runtime_lock.py')},
         'python':sys.version,'platform':sys.platform,
         'dependencies':versions})
 

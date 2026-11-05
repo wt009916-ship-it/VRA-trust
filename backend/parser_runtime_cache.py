@@ -2,7 +2,7 @@
 
 Windows grants read/execute to ALL RESTRICTED APPLICATION PACKAGES so fresh
 per-task LPAC identities can share public wheels without sharing their inputs.
-No original directory ACLs are changed. Forced-process-exit cleanup is not claimed.
+No original directory ACLs are changed. Owned leases/journals support recovery.
 """
 import atexit
 from concurrent.futures import ThreadPoolExecutor
@@ -16,7 +16,7 @@ import time
 
 from . import core, execution
 from .native_staging import copy_file
-from .private_storage import private_temporary
+from .native_ownership import owned_temporary as private_temporary
 
 _lock=threading.RLock()
 _entries={}

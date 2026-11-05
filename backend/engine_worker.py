@@ -10,6 +10,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from backend.engine_limits import install
 from backend.native_environment import environment
 from backend.execution_lifetime import bind_supervisor, bind_linux_parent
+from backend.native_ownership import verify_inherited
 
 
 def write(path,value):
@@ -23,8 +24,10 @@ def main():
     if request.stat().st_size>65536:raise ValueError('Oversized engine request')
     data=json.loads(request.read_text(encoding='utf-8'))
     lifetime=bind_supervisor(data['parent_pid'])
+    held_leases=verify_inherited(data['workspace_leases'])
     receipt={'nonce':data['nonce'],'supervisor_pid':os.getpid(),
              'lifetime':lifetime,
+             'workspace_leases':{'verified':True,'count':len(held_leases)},
              **install(data['memory_bytes'],data['cpu_seconds'],data['file_bytes'])}
     target=request.with_suffix('.receipt.json')
     write(target,{**receipt,'state':'ready'})
