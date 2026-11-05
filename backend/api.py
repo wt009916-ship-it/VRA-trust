@@ -13,6 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.concurrency import run_in_threadpool
 
 from . import core
 from .domain import Domain
@@ -31,6 +32,7 @@ from .schema import (
 )
 from .store import Store
 from .runtime_lock import RuntimeLease, safe_path
+from .storage import StorageError
 
 
 class BodyTooLarge(Exception):
@@ -82,7 +84,7 @@ def _create_app(data_dir=None, *, start_worker=True):
     app.state.domain = domain
     app.state.auth = auth
     public_api = {"/api/health", "/api/auth/status", "/api/auth/login", "/api/auth/register"}
-    maximum = int(os.environ.get("VRA_MAX_UPLOAD_MB", "20")) * 1024 * 1024
+    maximum = domain.storage.limits.single_bytes
     app.add_middleware(BodyLimit, limit=maximum + 65536)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
 
@@ -122,6 +124,10 @@ def _create_app(data_dir=None, *, start_worker=True):
     @app.exception_handler(core.ValidationError)
     async def validation_error(request, exc):
         return JSONResponse({"detail": str(exc)}, status_code=409)
+
+    @app.exception_handler(StorageError)
+    async def storage_error(request, exc):
+        return JSONResponse({'detail':str(exc),'code':exc.code},status_code=exc.status)
 
     @app.exception_handler(KeyError)
     async def not_found(request, exc):
@@ -194,9 +200,7 @@ def _create_app(data_dir=None, *, start_worker=True):
 
     @app.post("/api/reference-projects", response_model=Project, status_code=201)
     def reference_project(request: Request):
-        project = domain.create_reference()
-        auth.own(project["project_id"], request.state.user["id"])
-        return project
+        return domain.create_reference(owner_id=request.state.user['id'])
 
     @app.get("/api/projects/{project_id}", response_model=Project)
     def project(project_id: str):
@@ -211,7 +215,11 @@ def _create_app(data_dir=None, *, start_worker=True):
         content = await file.read(maximum + 1)
         if len(content) > maximum:
             return JSONResponse({"detail": "File exceeds upload limit"}, status_code=413)
-        return domain.add_file(project_id, file.filename or "unnamed", content)
+        return await run_in_threadpool(domain.add_file, project_id, file.filename or "unnamed", content)
+
+    @app.get('/api/projects/{project_id}/storage')
+    def project_storage(project_id: str):
+        return domain.storage.usage(project_id)
 
     @app.get("/api/projects/{project_id}/files/{file_id}")
     def source_file(project_id: str, file_id: str):
