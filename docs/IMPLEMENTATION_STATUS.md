@@ -1,3 +1,7 @@
+# 2026-11-06 Linux停止过程身份保留
+
+先实际观测旧代码reap后仍尝试组信号，再以WNOWAIT保留监督器直到组清理；身份丢失、SIGCHLD非默认/SA_NOCLDWAIT拒绝。Linux578后端+6子测试、16跳过，Windows50监督专项/11跳过；双平台各25真实E+核查、Linux四条/Windows两条服务恢复通过。D盘真实空间拒绝保留，C盘新私有目录重跑；未降额度。复评71不变，详PROCESS_IDENTITY_DELIVERY.md和PROCESS_IDENTITY_EVIDENCE.json；下一步真实本地模型工具调用。
+
 # 2026-11-06 原生资源所有权与服务恢复
 
 双平台真实 ASGI 强杀先复现残留，再接入私有所有权账本、继承活动租约、精确身份/Profile 核验与启动回收。Windows/Linux 各 569 后端+6子测试、16明确平台跳过，四条真实服务链各50项检查通过；公开IFC/OCR和25项E+验证回归。旧81文件及索引保持原字节，开发复评71；硬额度/长稳/真实模型/实楼仍待验收。详NATIVE_RECOVERY_DELIVERY.md、NATIVE_RECOVERY_EVIDENCE.json及RESCORE_20261106_RECOVERY.md。
