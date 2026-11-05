@@ -8,7 +8,6 @@ Only fresh staging directories receive ACLs. Original inputs/installations do no
 import ctypes as c
 from ctypes import wintypes as w
 from contextlib import contextmanager
-import hashlib
 import os
 from pathlib import Path
 import subprocess
@@ -18,6 +17,7 @@ import uuid
 from .native_environment import environment
 from .private_storage import private_temporary, _windows, _sid
 from .runtime_lock import safe_path
+from .native_staging import copy_file
 
 
 class SI(c.Structure):
@@ -177,20 +177,6 @@ def staging():
             a.FreeSid(sid)
             hr=u.DeleteAppContainerProfile(name)
             if hr<0:raise RuntimeError('AppContainer profile cleanup failed: '+hex(hr&0xffffffff))
-
-
-def copy_file(source,target,maximum):
-    """Fresh file and bounded streaming copy; identity of copied bytes is returned."""
-    source=safe_path(source);size=source.stat().st_size
-    if not source.is_file() or size>maximum:raise ValueError('Native staging file invalid/oversized')
-    digest=hashlib.sha256();count=0
-    with source.open('rb') as inp,target.open('xb') as out:
-        while chunk:=inp.read(1024*1024):
-            count+=len(chunk)
-            if count>maximum:raise ValueError('Native staging file grew beyond budget')
-            digest.update(chunk);out.write(chunk)
-    if count!=size:raise ValueError('Native staging file changed size')
-    return {'sha256':digest.hexdigest(),'bytes':count}
 
 
 @contextmanager

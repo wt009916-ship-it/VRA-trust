@@ -191,11 +191,19 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
             for thread in readers:thread.join(timeout=3)
             if any(t.is_alive() for t in readers):failure=ExecutionError('Native pipe cleanup incomplete')
     result=_receipt(receipt_path,nonce) if process is not None else {'calls_executed':0,'launch_state':'not_started'}
-    isolated=(isolation is not None and result.get('isolation',{}).get('mechanism')=='windows_lpac'
+    isolated=(isolation is not None and sys.platform=='win32' and result.get('isolation',{}).get('mechanism')=='windows_lpac'
               and result['isolation'].get('appcontainer_sid')==isolation['sid']
               and result['isolation'].get('token_verified') is True and result['isolation'].get('job_verified') is True
               and result['isolation'].get('lpac_access_check_verified') is True and result['isolation'].get('capabilities_verified') is True
               and result['isolation'].get('capabilities')==['registryRead'] and result['isolation'].get('network_capabilities')==[])
+    if isolation is not None and sys.platform=='linux':
+        boundary=result.get('isolation',{})
+        isolated=(boundary.get('mechanism')=='linux_landlock_seccomp'
+                  and type(boundary.get('landlock_abi')) is int and boundary['landlock_abi']>=6
+                  and boundary.get('seccomp_mode')==2 and boundary.get('no_new_privs') is True
+                  and boundary.get('network')=='syscall_default_deny' and boundary.get('processes')=='thread_only_clone'
+                  and boundary.get('pid')==result.get('engine_pid') and boundary.get('enforced_before_exec') is True
+                  and type(boundary.get('uid')) is int and boundary['uid']>0)
     result.update(elapsed_seconds=time.monotonic()-started,log_bytes_observed=counts,
                   output_observed=observed_output,aggregate_output_enforcement='periodic_50ms_not_os_disk_quota',filesystem_network_sandbox=isolated)
     if failure:raise ExecutionError(str(failure),result) from failure

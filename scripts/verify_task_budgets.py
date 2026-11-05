@@ -19,6 +19,10 @@ def main():
     args=parser.parse_args()
     root=Path(args.output).resolve();root.mkdir(parents=True,exist_ok=False)
     checked=[];runs=[]
+    def location(path):
+        # Permit evidence on a private native Linux filesystem (e.g. WSL ext4),
+        # rather than forcing native workspaces onto the host's mounted volume.
+        return str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
     def check(name,value):
         if not value:raise AssertionError(name)
         checked.append(name)
@@ -33,6 +37,11 @@ def main():
             check(scheme+' LPAC version and simulation',all(manifest[name]['filesystem_network_sandbox'] is True
                   and manifest[name]['isolation']['lpac_access_check_verified'] is True
                   and manifest[name]['isolation']['capabilities_verified'] is True for name in ['version_resources','execution_resources']))
+        elif sys.platform=='linux':
+            check(scheme+' Landlock/seccomp version and simulation',all(manifest[name]['filesystem_network_sandbox'] is True
+                  and manifest[name]['isolation']['landlock_abi']>=6
+                  and manifest[name]['isolation']['seccomp_mode']==2
+                  and manifest[name]['isolation']['uid']>0 for name in ['version_resources','execution_resources']))
         # Independent Decimal arithmetic directly from original SQL cells.
         with sqlite3.connect((rd/'output/eplusout.sql').as_uri()+'?mode=ro',uri=True) as con:
             def cell(table,row,col,unit):
@@ -47,7 +56,7 @@ def main():
         check(scheme+' golden total',energy==expected[scheme])
         check(scheme+' carrier reconciliation',electric+gas==energy)
         check(scheme+' Decimal EUI',area==Decimal('927.20') and abs(Decimal(str(result['metrics']['eui_kwh_m2a']))-energy/area)<Decimal('1e-12'))
-        runs.append({'run_dir':str(rd.relative_to(ROOT)),'manifest_sha256':core.sha(rd/'manifest.json'),'energy_kwh':str(energy),'area_m2':str(area)})
+        runs.append({'run_dir':location(rd),'manifest_sha256':core.sha(rd/'manifest.json'),'energy_kwh':str(energy),'area_m2':str(area)})
     rd=root/('run_'+uuid.uuid4().hex)
     def cancel_after_engine_output():
         path=rd/'stdout.log'
@@ -56,21 +65,23 @@ def main():
     manifest=core.read_json(rd/'manifest.json')
     check('actual engine cancellation',cancelled['status']=='failed' and manifest['engine_calls_executed']==1)
     if sys.platform=='win32':check('cancelled engine LPAC verified',manifest['execution_resources']['filesystem_network_sandbox'] is True)
+    elif sys.platform=='linux':check('cancelled engine Landlock/seccomp verified',manifest['execution_resources']['filesystem_network_sandbox'] is True)
     check('cancelled metrics unavailable',cancelled['metrics'] is None and cancelled['carbon'] is None)
     check('cancelled SQL not published',not (rd/'output/eplusout.sql').exists())
     recovery_dir=root/('run_'+uuid.uuid4().hex)
     recovery=core.run_simulation('reference_5zone','baseline','none',recovery_dir)
     check('recovery real annual run',recovery['status']=='succeeded' and Decimal(str(recovery['metrics']['annual_energy_kwh']))==expected['baseline'])
     if sys.platform=='win32':check('recovery LPAC verified',core.read_json(recovery_dir/'manifest.json')['execution_resources']['filesystem_network_sandbox'] is True)
+    elif sys.platform=='linux':check('recovery Landlock/seccomp verified',core.read_json(recovery_dir/'manifest.json')['execution_resources']['filesystem_network_sandbox'] is True)
     old_hash=core.sha(rd/'manifest.json')
     try:core.run_simulation('reference_5zone','baseline','none',rd)
     except core.ValidationError:pass
     else:raise AssertionError('Existing evidence overwritten')
     check('cancelled history preserved',core.sha(rd/'manifest.json')==old_hash)
     core.write_json(root/'receipt.json',{'checked_at':core.now(),'checks':checked,'count':len(checked),'physics_hash':core.code_hash(),
-        'runs':runs,'cancelled_run':str(rd.relative_to(ROOT)),'cancelled_receipt':manifest['execution_resources'],
-        'recovery_run':str(recovery_dir.relative_to(ROOT)),'limits':execution.Policy().__dict__,
-        'scope':'public reference only; Windows EnergyPlus LPAC verified when applicable; no Linux/parser sandbox, real-building calibration or production soak'})
+        'runs':runs,'cancelled_run':location(rd),'cancelled_receipt':manifest['execution_resources'],
+        'recovery_run':location(recovery_dir),'limits':execution.Policy().__dict__,
+        'scope':'public reference only; native isolation verified for the executing platform; no parser sandbox, real-building calibration or production soak'})
     print(json.dumps({'checks':len(checked),'status':'passed','receipt':str(root/'receipt.json')}))
 
 

@@ -1,3 +1,7 @@
+# 2026-11-05 Linux EnergyPlus Landlock/seccomp 隔离
+
+Linux 版本检查和年度模拟接入非 root、Landlock ABI≥6、seccomp 默认拒绝及只读输入副本；缺条件不退回普通权限。实际 WSL/ABI7 三方案与 SQL Decimal、取消恢复通过，523 后端+6子测试通过、12明确跳过。双平台最终数量和源码身份见 LINUX_NATIVE_ISOLATION_EVIDENCE.json。评分仍70，解析器隔离、硬额度/强杀回收、实楼/Provider验收继续保留缺口；详 LINUX_NATIVE_ISOLATION_DELIVERY.md。
+
 # 2026-11-05 Windows EnergyPlus LPAC 隔离
 
 Windows版本检查和年度模拟已默认接入LPAC、挂起令牌/能力/访问核验、只读副本、标准流限定继承、环境过滤及输出/profile联合监测。522后端+6子测试、32前端、25项真实E+核查及实际浏览器运行通过。原失败与容量拒绝保留；Linux/解析器隔离和硬额度仍未完成，评分维持70。详NATIVE_ISOLATION_DELIVERY.md及NATIVE_ISOLATION_EVIDENCE.json；远程最终提交检查另行留证。
