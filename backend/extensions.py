@@ -16,6 +16,7 @@ from .engineering import Engineering, BeamInput, report as engineering_report
 from .material_cost import Costs, Estimate, Comparison as CostComparison, compare as cost_compare, report as cost_report
 from .construction import Schedules, ScheduleInput, report as schedule_report
 from .operations import Operations, AnalysisInput, report as operations_report
+from .drawings import Drawings, DrawingInput, DrawingReview
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -32,6 +33,31 @@ def register_extensions(app, domain, auth):
     costs = Costs(domain)
     schedules = Schedules(domain)
     operations = Operations(domain)
+    drawings = Drawings(domain)
+
+    @app.post('/api/projects/{project_id}/drawings', status_code=201)
+    def drawing_create(project_id: str, body: DrawingInput):
+        return drawings.save(project_id,body)
+
+    @app.get('/api/projects/{project_id}/drawings')
+    def drawing_list(project_id: str):
+        return [{k:r[k] for k in ('drawing_id','source','created_at','revision')} for r in domain.store.list('drawing',project_id)]
+
+    @app.get('/api/projects/{project_id}/drawings/{drawing_id}')
+    def drawing_get(project_id: str, drawing_id: str):
+        return drawings.view(project_id,drawing_id)
+
+    @app.get('/api/projects/{project_id}/drawings/{drawing_id}/preview.png')
+    def drawing_preview(project_id: str, drawing_id: str):
+        return FileResponse(drawings.preview(project_id,drawing_id),media_type='image/png',headers={'X-Content-Type-Options':'nosniff'})
+
+    @app.post('/api/projects/{project_id}/drawings/{drawing_id}/review')
+    def drawing_review(project_id: str, drawing_id: str, body: DrawingReview, request: Request):
+        return drawings.review(project_id,drawing_id,body,request.state.user['id'])
+
+    @app.get('/api/projects/{project_id}/drawings/{drawing_id}/history')
+    def drawing_history(project_id: str, drawing_id: str):
+        return drawings.history(project_id,drawing_id)
 
     @app.get('/api/projects/{project_id}/operation-inputs')
     def operations_inputs(project_id: str):
