@@ -18,6 +18,7 @@ from pathlib import Path
 from .private_storage import private_open
 from .runtime_lock import safe_path
 from .native_environment import environment
+from .native_ownership import inherit_leases
 
 MIB=1024**2
 
@@ -135,14 +136,10 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
         raise ExecutionError('Invalid native timeout')
     work,log_dir=safe_path(work),safe_path(log_dir)
     nonce=uuid.uuid4().hex;request=work/(label+'engine-request.json')
-    with private_open(request) as stream:
-        stream.write(json.dumps({'nonce':nonce,'command':list(map(str,command)),'memory_bytes':policy.memory_bytes,
-                                'cpu_seconds':policy.cpu_seconds,'file_bytes':min(policy.output_bytes,64*MIB),
-                                'isolation':isolation,'parent_pid':os.getpid()}).encode())
     receipt_path=request.with_suffix('.receipt.json')
     worker=Path(__file__).with_name('engine_worker.py')
     error=threading.Event();reasons=[];readers=[];counts={};process=None
-    started=time.monotonic();failure=None
+    started=time.monotonic();failure=None;lease_count=0
     observed_output={}
     def check_output():
         files=size=0
@@ -170,9 +167,16 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
         # Supervisor is stdlib-only. Bypass the Windows venv redirector so the
         # retained Popen handle belongs to the process that owns the Job handle.
         interpreter=getattr(sys,'_base_executable',sys.executable) if sys.platform=='win32' else sys.executable
-        process=subprocess.Popen([interpreter,str(worker),str(request)],cwd=work,stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=sys.platform=='linux',
-            env=environment(work),creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+        paths=[work,command[0]]+([isolation['work']]+isolation.get('read_paths',[]) if isolation else [])
+        with inherit_leases(paths) as binding:
+            lease_count=len(binding['items'])
+            with private_open(request) as stream:
+                stream.write(json.dumps({'nonce':nonce,'command':list(map(str,command)),'memory_bytes':policy.memory_bytes,
+                    'cpu_seconds':policy.cpu_seconds,'file_bytes':min(policy.output_bytes,64*MIB),'isolation':isolation,
+                    'parent_pid':os.getpid(),'workspace_leases':binding['items']}).encode())
+            process=subprocess.Popen([interpreter,str(worker),str(request)],cwd=work,stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=sys.platform=='linux',
+                env=environment(work),creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0),**binding['popen'])
         for name,pipe in [('stdout',process.stdout),('stderr',process.stderr)]:
             thread=threading.Thread(target=drain,args=(pipe,log_dir/(label+name+'.log'),name),daemon=True)
             thread.start();readers.append(thread)
@@ -223,7 +227,8 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
     if sys.platform=='linux' and isolation is not None:
         lifetime_ok=lifetime_ok and result.get('isolation',{}).get('parent_lifetime')=={
             'mechanism':'linux_pdeathsig','signal':int(signal.SIGKILL),'parent_pid':result.get('supervisor_pid')}
-    if (isolation is not None and not isolated) or not lifetime_ok or not limits_ok or result.get('mechanism')!=expected or result.get('launch_state')!='finished' or result.get('exit_code')!=0 or process.returncode!=0:
+    leases_ok=(result.get('workspace_leases')=={'verified':True,'count':lease_count})
+    if (isolation is not None and not isolated) or not leases_ok or not lifetime_ok or not limits_ok or result.get('mechanism')!=expected or result.get('launch_state')!='finished' or result.get('exit_code')!=0 or process.returncode!=0:
         raise ExecutionError('Native process failed or lacks completed resource receipt',result)
     try:check_output()
     except ExecutionError as exc:raise ExecutionError(str(exc),result) from exc

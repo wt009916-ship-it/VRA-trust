@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import tempfile
 
-from .private_storage import private_temporary
+from .native_ownership import owned_temporary as private_temporary
 from .runtime_lock import safe_path
 
 

@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from dataclasses import replace
 from . import execution
-from .private_storage import private_temporary
+from .native_ownership import owned_temporary as private_temporary
 
 ROOT=Path(__file__).resolve().parents[1]
 PARSER_VERSION='native-sql-0.3.0'
@@ -42,7 +42,7 @@ def code_hash():
     return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION,
                       'input_validation':sha(ROOT/'backend/input_validation.py'),
                       'execution':{name:sha(ROOT/'backend'/name) for name in
-                                   ('execution.py','execution_lifetime.py','engine_limits.py','engine_worker.py','worker_limits.py',
+                                   ('execution.py','execution_lifetime.py','native_ownership.py','private_storage.py','runtime_lock.py','engine_limits.py','engine_worker.py','worker_limits.py',
                                     'native_environment.py','native_windows.py','native_linux.py','native_staging.py')}})
 def engine_path():
     configured=os.environ.get('ENERGYPLUS_EXE')

@@ -68,6 +68,8 @@ def _create_app(data_dir=None, *, start_worker=True):
     @asynccontextmanager
     async def lifespan(app):
         with RuntimeLease(root):
+            from .native_ownership import recover
+            app.state.native_recovery=recover()
             domain.stop.clear()
             if (root / '.restore-incomplete').exists():
                 raise ValueError('Restore incomplete; this directory cannot serve requests')
