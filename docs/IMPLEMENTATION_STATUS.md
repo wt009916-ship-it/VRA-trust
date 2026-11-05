@@ -1,3 +1,7 @@
+# 2026-11-05 CAD/PDF/OCR 原生解析隔离
+
+三条活动解析链接入每任务 LPAC / 非root Landlock+seccomp、只读输入副本及可信监督回执；公共运行库缓存逐次核验，客户资料不共享。Windows528/Linux530后端加各6子测试、32前端及公开IFC/OCR、真实浏览器上传/提取通过；原失败保留。缓存warm准备仍慢、硬额度与强杀回收未关闭，评分保持70。详PARSER_ISOLATION_DELIVERY.md和PARSER_ISOLATION_EVIDENCE.json；最终远程头的检查另行留证。
+
 # 2026-11-05 Linux EnergyPlus Landlock/seccomp 隔离
 
 Linux 版本检查和年度模拟接入非 root、Landlock ABI≥6、seccomp 默认拒绝及只读输入副本；缺条件不退回普通权限。实际 WSL/ABI7 三方案与 SQL Decimal、取消恢复通过，523 后端+6子测试通过、12明确跳过。双平台最终数量和源码身份见 LINUX_NATIVE_ISOLATION_EVIDENCE.json。评分仍70，解析器隔离、硬额度/强杀回收、实楼/Provider验收继续保留缺口；详 LINUX_NATIVE_ISOLATION_DELIVERY.md。
