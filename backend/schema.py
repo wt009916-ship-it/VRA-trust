@@ -139,7 +139,7 @@ class RunView(Contract):
     stale_reasons: list[str] = Field(default_factory=list)
     warnings_count: StrictInt | None = None
     review_status: str = "pending_engineer_review"
-    engine_calls_executed: StrictInt = 0
+    engine_calls_executed: StrictInt | None = 0
     limitations: list[str] = Field(default_factory=list)
 
 

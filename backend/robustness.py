@@ -9,6 +9,7 @@ from pydantic import StrictFloat, StrictInt, Field, model_validator
 
 from . import core
 from .runtime_lock import runtime_operation
+from .task_capacity import launch
 from .schema import Contract
 
 
@@ -70,7 +71,7 @@ def stability_status(points, total):
 class Robustness:
     def __init__(self, domain):
         self.domain, self.store = domain, domain.store
-        self.capacity = threading.BoundedSemaphore(1)
+        self.capacity = threading.BoundedSemaphore(self.store.task_limits.search)
 
     def recover(self):
         # Persist interruption truth; no resume pretending previous runs finished.
@@ -106,19 +107,13 @@ class Robustness:
                 evidence = self.store.get('evidence', axis.evidence_id)
                 if evidence['project_id'] != project_id:
                     raise core.ValidationError('Cross-project axis evidence rejected')
-        if not self.capacity.acquire(blocking=False):
-            raise core.ValidationError('已有反例搜索正在执行')
         record = {'search_id': 'search_' + uuid.uuid4().hex, 'project_id': project_id, 'status': 'running',
             **body.model_dump(), 'reference_order': [v['scheme_id'] for v in sorted(views, key=lambda v: v['metrics']['annual_energy_kwh'])],
             'reference_provenance': [v['provenance'] for v in views], 'points': [], 'engine_calls': 0,
+            'engine_attempts': 0, 'engine_call_receipts': [],
             'created_at': core.now(), 'stability_status': 'NOT_ASSESSED', 'objective': 'annual_site_energy_kwh',
             'domain_type': 'explicit_discrete_grid_not_continuous_interval', 'error': None, 'search_code_hash': core.sha(Path(__file__))}
-        record = self.store.put('search', record)
-        if background:
-            threading.Thread(target=self.execute, args=(record,), daemon=True, name='vra-counterexamples').start()
-        else:
-            self.execute(record)
-        return self.store.get('search', record['search_id'])
+        return launch(self,'search',record,background=background)
 
     @runtime_operation
     def execute(self, record):
@@ -129,7 +124,8 @@ class Robustness:
             domain = list(itertools.product(*(a['values'] for a in record['axes'])))
             record['total_grid_points'] = len(domain)
             for number, values in enumerate(domain):
-                if record['engine_calls'] + len(record['run_ids']) > record['budget']:
+                if self.domain.stop.is_set():raise core.ValidationError('Search cancelled during service shutdown')
+                if record['engine_attempts'] + len(record['run_ids']) > record['budget']:
                     break
                 point = {'parameters': dict(zip((a['material'] for a in record['axes']), values)), 'runs': [], 'order': None, 'flipped': None}
                 record['points'].append(point)
@@ -148,10 +144,17 @@ class Robustness:
                     case = {**job['case_snapshot'], 'schemes': [{'scheme_id': job['scheme_id'], 'name': job['scheme_id'], 'model': model_path.relative_to(self.store.root).as_posix(), 'cost': None}]}
                     rid = 'run_' + uuid.uuid4().hex
                     rd = search_root / rid
-                    record['engine_calls'] += 1
+                    record['engine_attempts'] += 1
+                    record['engine_calls']=None  # launch may occur before persistence
                     save()
                     result = core.run_simulation(record['project_id'], job['scheme_id'], job['factor_profile_id'], rd,
-                        case_override=case, profile_override=job['factor_snapshot'], file_root=self.store.root)
+                        case_override=case, profile_override=job['factor_snapshot'], file_root=self.store.root,
+                        execution_root=self.store.root, cancel_check=self.domain.stop.is_set)
+                    receipt=core.read_json(rd/'manifest.json')
+                    record['engine_call_receipts'].append({'run_id':rid,'calls_executed':receipt['engine_calls_executed']})
+                    counts=[r['calls_executed'] for r in record['engine_call_receipts']]
+                    record['engine_calls']=sum(counts) if all(type(n) is int for n in counts) else None
+                    save()
                     checked, manifest, _ = core.read_validated(rd, check_current=False)
                     if result['status'] != 'succeeded' or checked['status'] != 'succeeded':
                         raise core.ValidationError('Search simulation failed: ' + rid)
@@ -172,7 +175,6 @@ class Robustness:
         finally:
             record['finished_at'] = core.now()
             save()
-            self.capacity.release()
 
     def view(self, project_id, search_id):
         record = self.store.get('search', search_id)
