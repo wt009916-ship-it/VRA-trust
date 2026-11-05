@@ -45,3 +45,19 @@ stdout/stderr各1MiB写入上限；输出默认256MiB/1024文件，约50ms检查
 - [Microsoft Job Object基本限制](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_basic_limit_information)：CPU时限追加语义与保留时限标志。
 - [Microsoft Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)：子进程继承和关闭Job行为。
 - [Python 3.12 resource](https://docs.python.org/3.12/library/resource.html)、[subprocess](https://docs.python.org/3.12/library/subprocess.html)：进程及资源接口。以实际平台试验为验收依据。
+
+## 最终本机验收
+
+510 passed、4 skipped、6 subtests passed，374.30秒；32前端测试与lint/build通过（保留Three.js大分块警告）。scripts/verify_task_budgets.py完成20项真实引擎核查，baseline/R1/R2分别57193.23/55715.19/55592.10 kWh，独立Decimal读取SQL计算EUI与载能合计。另一次实际取消和再次完整年度运行通过。
+
+浏览器项目project_045f48b25ec549169cf8a285bde335f2，取消run_62577c81b033…后数值为空，新建run_f946a91180ac…成功且数值一致。四个相应监督器/引擎PID退出通过内核句柄检查。新项目四份原件先核对当前公开输入哈希；旧项目哈希不同而保留，未替它强行确认。原工程Warning仍为待工程师复核。
+
+|未关闭问题|复现/观察依据|预期与实际|严重度|修复方向|
+|---|---|---|---|---|
+|TASK-L01 原生输出非硬额度|test_execution连续写输出与50ms循环源码；Windows无FSIZE|预期硬额度阻止写入；目前事后监测可超量再终止|高|部署文件系统/容器磁盘额度；测试瞬时写入和故障回收|
+|TASK-L02 配额覆盖不完整|源码追踪扫描范围仅原件、runs/searches；未做耗尽磁盘试验|预期全runtime可预算；当前其他来源不计入本批额度|高|统一分类型存储预算和保留策略，不能删除旧证据掩盖问题|
+|RES-01/02 完整隔离未完成|既有WORKER_RESOURCE_DELIVERY的映射反例；本批明确无文件/网络沙箱|预期非必要访问被拒绝且树级额度成立；目前未满足|高|受限执行身份、最小文件授权、网络隔离、树级预算及平台对抗实测|
+
+Linux和最终合并状态由证据索引及本地release-receipt记录，不将本机Windows结果代替Linux或生产验收。
+
+首轮Linux双工作流均504 passed、10 skipped、6 subtests passed（157.13/166.23秒），含真实受限子进程测试；不含未安装的EnergyPlus实际年度运行。随后增加两项取消归属/停服生命周期测试，本机任务专项17通过；生产代码未再次变化，最终head由远程六项检查再次确认。

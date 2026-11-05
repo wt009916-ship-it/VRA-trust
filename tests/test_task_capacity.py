@@ -132,3 +132,35 @@ def test_stopped_domain_rejects_without_record(client):
 def test_invalid_queue_configuration_refused(tmp_path,monkeypatch,value):
     monkeypatch.setenv('VRA_ACTIVE_RUNS',value)
     with pytest.raises(ValueError):Store(tmp_path/'bad')
+
+
+def test_cancel_requires_same_project_owner_and_session(client):
+    # Lifecycle-only record: no engine/model output is fabricated.
+    pid=create_project(client)['project_id'];store=client.app.state.domain.store
+    rid='run_'+uuid.uuid4().hex
+    store.add_job({'run_id':rid,'project_id':pid})
+    other=client.post('/api/auth/register',json={'username':'second_owner','display_name':'Other test owner','password':'Isolated-test-only-password-2026'}).json()
+    client.headers['X-CSRF-Token']=other['csrf_token']
+    assert client.post('/api/runs/'+rid+'/cancel').status_code==404
+    assert store.job(rid)['status']=='queued'
+    client.cookies.clear()
+    assert client.post('/api/runs/'+rid+'/cancel').status_code==401
+    assert store.job(rid)['status']=='queued'
+
+
+def test_shutdown_waits_for_registered_task_and_releases_capacity(client,monkeypatch):
+    service=client.app.state.agent;domain=service.domain;pid=create_project(client)['project_id']
+    entered=threading.Event();finished=threading.Event()
+    def controlled_execute(record,body):
+        entered.set()
+        assert domain.stop.wait(5)
+        service.store.put('agent',{**record,'status':'failed','error':'controlled shutdown'},record['revision'])
+        finished.set()
+    monkeypatch.setattr(service,'execute',controlled_execute)
+    result=service.start(pid,Chat(message='shutdown lifecycle fixture'))
+    assert entered.wait(2)
+    domain.stop.set();domain.join_tasks()
+    assert finished.is_set() and not domain.tasks
+    assert service.store.get('agent',result['agent_id'])['status']=='failed'
+    for _ in range(2):assert service.capacity.acquire(blocking=False)
+    for _ in range(2):service.capacity.release()
