@@ -15,6 +15,7 @@ from .robustness import Search, Actions
 from .standards import Standards, Query as StandardQuery
 from .engineering import Engineering
 from .material_cost import Costs
+from .construction import Schedules
 
 
 class Chat(Contract):
@@ -29,6 +30,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    schedule_id: str | None = None
     material_cost_id: str | None = None
     engineering_id: str | None = None
     standards_query: StandardQuery | None = None
@@ -42,6 +44,8 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'schedule_list': '只读列出最近6份施工进度记录及状态，不生成工期或施工安全结论',
+    'schedule_read': '按schedule_id读取当前关键路径、显式剩余工期情景、缺参及资源冲突；未资源调平，不保证现场可施工',
     'material_cost_list': '只读列出最近6份材料成本清单和当前状态；不创建价格、数量或税率',
     'material_cost_read': '按material_cost_id读取当前来源核验后的成本清单；材料成本不等于工程总价或报价认证',
     'beam_analysis_list': '只读列出项目最近6条梁分析记录及当前状态；不创建荷载或判断结构安全',
@@ -67,6 +71,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'schedule_list': (), 'schedule_read': ('schedule_id',),
     'material_cost_list': (), 'material_cost_read': ('material_cost_id',),
     'beam_analysis_list': (), 'beam_analysis_read': ('engineering_id',),
     'standards_search': ('standards_query',),
@@ -152,6 +157,13 @@ class Agent:
             raise core.ValidationError('Unexpected arguments for ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'schedule_list':
+            return [{'schedule_id':r['schedule_id'],'name':r['input']['name'],'status':Schedules(d).view(project_id,r['schedule_id'])['status']}
+                for r in self.store.list('schedule',project_id)[:6]]
+        if name == 'schedule_read':
+            if not args.schedule_id:raise core.ValidationError('Provide schedule_id')
+            if self.store.get('schedule',args.schedule_id)['project_id']!=project_id:raise ToolRefusal('Cross-project schedule rejected')
+            return Schedules(d).view(project_id,args.schedule_id)
         if name == 'material_cost_list':
             return [{'cost_id':r['cost_id'],'name':r['input']['name'],'status':Costs(d).view(project_id,r['cost_id'])['status']}
                 for r in self.store.list('cost',project_id)[:6]]

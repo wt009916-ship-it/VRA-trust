@@ -1375,6 +1375,286 @@
         ]
       }
     },
+    "/api/projects/{project_id}/schedule-validation": {
+      "post": {
+        "summary": "Schedule Validation",
+        "operationId": "schedule_validation_api_projects__project_id__schedule_validation_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/schedules": {
+      "post": {
+        "summary": "Schedule Create",
+        "operationId": "schedule_create_api_projects__project_id__schedules_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Schedule List",
+        "operationId": "schedule_list_api_projects__project_id__schedules_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/schedules/{schedule_id}": {
+      "get": {
+        "summary": "Schedule Get",
+        "operationId": "schedule_get_api_projects__project_id__schedules__schedule_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "schedule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Schedule Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/schedules/{schedule_id}/report.html": {
+      "get": {
+        "summary": "Schedule Html",
+        "operationId": "schedule_html_api_projects__project_id__schedules__schedule_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "schedule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Schedule Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/material-cost-validation": {
       "post": {
         "summary": "Cost Validation",
@@ -5019,6 +5299,59 @@
         ],
         "title": "Credentials"
       },
+      "Demand": {
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Resource Id"
+          },
+          "units": {
+            "type": "number",
+            "maximum": 1000000.0,
+            "minimum": 1e-06,
+            "title": "Units"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "resource_id",
+          "units"
+        ],
+        "title": "Demand"
+      },
+      "Dependency": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Task Id"
+          },
+          "lag_days": {
+            "type": "number",
+            "maximum": 3650.0,
+            "minimum": 0.0,
+            "title": "Lag Days"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "lag_days",
+          "source"
+        ],
+        "title": "Dependency"
+      },
       "EmissionFactor": {
         "properties": {
           "factor_id": {
@@ -6170,6 +6503,78 @@
         ],
         "title": "Measure"
       },
+      "Observation": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Task Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "not_started",
+              "in_progress",
+              "completed"
+            ],
+            "title": "State"
+          },
+          "actual_start_day": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 2000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start Day"
+          },
+          "actual_finish_day": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 2000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Finish Day"
+          },
+          "remaining_days": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 3650.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Days"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "state",
+          "source"
+        ],
+        "title": "Observation"
+      },
       "PointLoad": {
         "properties": {
           "type": {
@@ -6258,6 +6663,38 @@
           "file_id"
         ],
         "title": "Preview"
+      },
+      "Progress": {
+        "properties": {
+          "as_of_day": {
+            "type": "number",
+            "maximum": 2000000.0,
+            "minimum": 0.0,
+            "title": "As Of Day"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/Observation"
+            },
+            "type": "array",
+            "maxItems": 250,
+            "title": "Observations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "as_of_day",
+          "source",
+          "observations"
+        ],
+        "title": "Progress"
       },
       "Project": {
         "properties": {
@@ -6686,6 +7123,56 @@
         ],
         "title": "Registration"
       },
+      "Resource": {
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Resource Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "capacity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity"
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Unit"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "resource_id",
+          "name",
+          "unit",
+          "source"
+        ],
+        "title": "Resource"
+      },
       "Review": {
         "properties": {
           "expected_revision": {
@@ -6888,6 +7375,90 @@
         ],
         "title": "RunView"
       },
+      "ScheduleInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "scope": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Scope"
+          },
+          "calendar": {
+            "type": "string",
+            "const": "continuous_elapsed_days",
+            "title": "Calendar"
+          },
+          "time_origin": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5,
+            "title": "Time Origin"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            },
+            "type": "array",
+            "maxItems": 250,
+            "minItems": 1,
+            "title": "Tasks"
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Resources"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Evidence Ids"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Progress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "import_file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^file_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Import File Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "scope",
+          "calendar",
+          "time_origin",
+          "tasks"
+        ],
+        "title": "ScheduleInput"
+      },
       "Search": {
         "properties": {
           "run_ids": {
@@ -7043,6 +7614,66 @@
           "clauses"
         ],
         "title": "StandardInput"
+      },
+      "Task": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Task Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "duration_days": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 3650.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Days"
+          },
+          "duration_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Duration Source"
+          },
+          "predecessors": {
+            "items": {
+              "$ref": "#/components/schemas/Dependency"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Predecessors"
+          },
+          "demands": {
+            "items": {
+              "$ref": "#/components/schemas/Demand"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Demands"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "name",
+          "duration_source",
+          "predecessors"
+        ],
+        "title": "Task"
       },
       "ThermalCompare": {
         "properties": {
