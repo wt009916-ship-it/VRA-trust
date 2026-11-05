@@ -17,6 +17,7 @@ from pathlib import Path
 
 from .private_storage import private_open
 from .runtime_lock import safe_path
+from .native_environment import environment
 
 MIB=1024**2
 
@@ -56,7 +57,7 @@ class Policy:
     @property
     def reservation(self):
         # Input snapshots can be two 256 MiB uploads, plus output/log/metadata.
-        return self.output_bytes+512*MIB+4*self.log_bytes+MIB
+        return self.output_bytes+512*MIB+128*MIB+4*self.log_bytes+MIB
 
 
 def inventory(root, max_bytes, max_files):
@@ -114,7 +115,7 @@ def _receipt(path,nonce):
         if data.get('nonce')!=nonce:return value
         state=data.get('state')
         if state=='launch_failed':return {**data,'launch_state':state,'calls_executed':0}
-        if state in {'launched','finished'} and type(data.get('engine_pid')) is int:
+        if state in {'launched','finished','execution_failed'} and type(data.get('engine_pid')) is int:
             return {**data,'launch_state':state,'calls_executed':1}
         return {**data,**value}
     except (OSError,ValueError):return value
@@ -129,18 +130,27 @@ def _stop(process):
     process.wait(timeout=10)
 
 
-def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_check=None, label=''):
+def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_check=None, label='', isolation=None, extra_output_roots=()):
     if not isinstance(timeout,(int,float)) or isinstance(timeout,bool) or not math.isfinite(timeout) or not 0<timeout<=3600:
         raise ExecutionError('Invalid native timeout')
     work,log_dir=safe_path(work),safe_path(log_dir)
     nonce=uuid.uuid4().hex;request=work/(label+'engine-request.json')
     with private_open(request) as stream:
         stream.write(json.dumps({'nonce':nonce,'command':list(map(str,command)),'memory_bytes':policy.memory_bytes,
-                                'cpu_seconds':policy.cpu_seconds,'file_bytes':min(policy.output_bytes,64*MIB)}).encode())
+                                'cpu_seconds':policy.cpu_seconds,'file_bytes':min(policy.output_bytes,64*MIB),
+                                'isolation':isolation}).encode())
     receipt_path=request.with_suffix('.receipt.json')
     worker=Path(__file__).with_name('engine_worker.py')
     error=threading.Event();reasons=[];readers=[];counts={};process=None
     started=time.monotonic();failure=None
+    observed_output={}
+    def check_output():
+        files=size=0
+        for root in ([output] if output is not None else [])+list(extra_output_roots):
+            entries,amount=inventory(root,policy.output_bytes,policy.output_files)
+            files+=len(entries);size+=amount
+        observed_output.update(bytes=size,files=files,monitored_roots=len(extra_output_roots)+(output is not None))
+        if size>policy.output_bytes or files>policy.output_files:raise ExecutionError('Combined native output/profile budget exceeded')
     def drain(pipe,path,name):
         total=0
         try:
@@ -162,7 +172,7 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
         interpreter=getattr(sys,'_base_executable',sys.executable) if sys.platform=='win32' else sys.executable
         process=subprocess.Popen([interpreter,str(worker),str(request)],cwd=work,stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=sys.platform=='linux',
-            creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+            env=environment(work),creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
         for name,pipe in [('stdout',process.stdout),('stderr',process.stderr)]:
             thread=threading.Thread(target=drain,args=(pipe,log_dir/(label+name+'.log'),name),daemon=True)
             thread.start();readers.append(thread)
@@ -170,7 +180,7 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
             if cancel_check and cancel_check():raise ExecutionError('Native execution cancelled')
             if error.is_set():raise ExecutionError(reasons[0])
             if time.monotonic()-started>timeout:raise ExecutionError('Native execution timeout')
-            if output is not None:inventory(output,policy.output_bytes,policy.output_files)
+            check_output()
             if process.poll() is not None:break
             time.sleep(.05)
     except Exception as exc:failure=exc
@@ -181,8 +191,13 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
             for thread in readers:thread.join(timeout=3)
             if any(t.is_alive() for t in readers):failure=ExecutionError('Native pipe cleanup incomplete')
     result=_receipt(receipt_path,nonce) if process is not None else {'calls_executed':0,'launch_state':'not_started'}
+    isolated=(isolation is not None and result.get('isolation',{}).get('mechanism')=='windows_lpac'
+              and result['isolation'].get('appcontainer_sid')==isolation['sid']
+              and result['isolation'].get('token_verified') is True and result['isolation'].get('job_verified') is True
+              and result['isolation'].get('lpac_access_check_verified') is True and result['isolation'].get('capabilities_verified') is True
+              and result['isolation'].get('capabilities')==['registryRead'] and result['isolation'].get('network_capabilities')==[])
     result.update(elapsed_seconds=time.monotonic()-started,log_bytes_observed=counts,
-                  aggregate_output_enforcement='periodic_50ms_not_os_disk_quota',filesystem_network_sandbox=False)
+                  output_observed=observed_output,aggregate_output_enforcement='periodic_50ms_not_os_disk_quota',filesystem_network_sandbox=isolated)
     if failure:raise ExecutionError(str(failure),result) from failure
     if error.is_set():raise ExecutionError(reasons[0],result)
     expected='windows_job_object' if sys.platform=='win32' else 'linux_rlimit'
@@ -192,11 +207,10 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
         limits_ok=limits_ok and result.get('active_process_limit')==2 and result.get('kill_on_job_close') is True
     else:
         limits_ok=limits_ok and result.get('file_size_os_enforced') is True and type(result.get('file_bytes')) is int and 0<result['file_bytes']<=min(policy.output_bytes,64*MIB)
-    if not limits_ok or result.get('mechanism')!=expected or result.get('launch_state')!='finished' or result.get('exit_code')!=0 or process.returncode!=0:
+    if (isolation is not None and not isolated) or not limits_ok or result.get('mechanism')!=expected or result.get('launch_state')!='finished' or result.get('exit_code')!=0 or process.returncode!=0:
         raise ExecutionError('Native process failed or lacks completed resource receipt',result)
-    if output is not None:
-        try:inventory(output,policy.output_bytes,policy.output_files)
-        except ExecutionError as exc:raise ExecutionError(str(exc),result) from exc
+    try:check_output()
+    except ExecutionError as exc:raise ExecutionError(str(exc),result) from exc
     return result
 
 
