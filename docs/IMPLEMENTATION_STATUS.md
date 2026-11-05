@@ -1,3 +1,7 @@
+# 2026-11-05 Windows EnergyPlus LPAC 隔离
+
+Windows版本检查和年度模拟已默认接入LPAC、挂起令牌/能力/访问核验、只读副本、标准流限定继承、环境过滤及输出/profile联合监测。522后端+6子测试、32前端、25项真实E+核查及实际浏览器运行通过。原失败与容量拒绝保留；Linux/解析器隔离和硬额度仍未完成，评分维持70。详NATIVE_ISOLATION_DELIVERY.md及NATIVE_ISOLATION_EVIDENCE.json；远程最终提交检查另行留证。
+
 # 2026-11-05 任务执行限额与原生计算监督
 
 持久化仿真/Agent/Search限额、故障释放、仿真取消、Windows Job/Linux rlimit监督和有界原生输出已接入。真实三方案、20项引擎核查及浏览器取消/恢复已执行；最终全量与跨平台结果见TASK_EXECUTION_EVIDENCE.json。旧证据失效记录保留，复评维持70。完整沙箱/生产长稳仍待验收，详TASK_EXECUTION_DELIVERY.md。
