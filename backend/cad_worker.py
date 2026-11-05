@@ -11,6 +11,10 @@ MAX_OBJECTS = 10000
 def parse_dxf(path):
     import ezdxf
     from ezdxf import units
+    if __package__:
+        from .dxf_geometry import inspect_geometry
+    else:
+        from dxf_geometry import inspect_geometry
     doc = ezdxf.readfile(path)
     audit = doc.audit()
     if audit.errors or audit.fixes:
@@ -36,9 +40,9 @@ def parse_dxf(path):
         rows.append(row)
     return {'format': 'DXF', 'version': doc.dxfversion, 'parser': 'ezdxf '+ezdxf.__version__,
         'unit_code': code, 'length_scale_to_m': scale,
-        'counts': dict(Counter(r['type'] for r in rows)), 'objects': rows,
-        'limitations': ['仅统计模型空间顶层实体；块实例未展开、外部参照不加载、图纸空间不计入。',
-            'LINE长度可换算；其他实体未计算工程量。图层名不作为墙/柱等建筑语义分类。',
+        'counts': dict(Counter(r['type'] for r in rows)), 'objects': rows,'geometry':inspect_geometry(doc,scale),
+        'limitations': ['counts/objects保留模型空间顶层统计；geometry另列块/阵列展开实例，不与顶层数量相加。图纸空间不计入。',
+            'LINE、基本圆弧/椭圆、多段线提供限定几何测量；不是净建筑工程量或构件语义分类。',
             '单位未指定时长度保持null，不默认毫米；文字与尺寸标注不自动作为真实几何。']}
 
 
