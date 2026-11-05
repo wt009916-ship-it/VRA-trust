@@ -41,6 +41,8 @@ AppContainer有自己的临时profile存储，因此不能声称只存在一个�
 
 最终本机全量：522 passed、4 skipped、6 subtests passed，426.25秒。前端32项、lint/build及契约导出一致通过；保留Starlette测试客户端弃用提示、损坏ZIP反例的重复项提示，以及Three.js大分块构建警告。Windows专项10项15.96秒；后续全量覆盖同一最终代码。远程Linux和最终提交状态以证据索引及本地release-receipt为准，不将Windows用例跳过计为Linux隔离通过。
 
+首轮远程head bd5b270954705fda855f6622dff5e812ab764977，两组Linux后端各508 passed、18 skipped、6 subtests passed，162.48/159.53秒（job127233866337/127233833437）；六项push/PR检查全部成功。补入该证据后的最终文档提交仍须重新取得六项成功检查才合并。Linux跳过Windows边界和未安装的引擎条件测试，不能据此宣称Linux沙箱完成。
+
 LPAC仍可访问Windows授予ALL RESTRICTED APPLICATION PACKAGES或registryRead的系统资源，也可访问自身profile。它不是VM、完整注册表/IPC审计或硬磁盘配额；不防同账号管理员修改程序及证据。未做完整提权/IPC/重解析点攻击面评估、生产长稳或外部服务测试。E+附加脚本/预处理器未纳入运行库，若输入依赖这些资源则应失败，不扩大授权或替换结果。
 
 在已配置的Python3.12环境执行 `python -m pytest -q tests/test_native_isolation.py tests/test_execution.py`。真实工程执行 `python scripts/verify_task_budgets.py --output <全新验收目录>`，需要实际EnergyPlus和项目公开输入。Windows能力用例在Linux明确跳过，不计通过；全量执行 `python -m pytest -q`。无引擎/无服务不补造数值。
