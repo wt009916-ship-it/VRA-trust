@@ -50,6 +50,8 @@ ELF 本体及当前架构的精确系统动态加载器获得 EXECUTE，库目�
 
 最终物理哈希 `24980c3a62cfba035267af7df98b7775fec71a9958c9049eec31218179f32199`。Windows生成新参考指针前另存prior-windows-*，旧run目录未改。该参考重跑进程沿用显式4 GiB归档预算以容纳保留历史，产品默认额度未更改。Linux失败与后续成功均留在各自目录。
 
+PR #23 首轮远程提交 `f839e729afefc871ad69e9660836653df66ac40f` 六项push/PR检查全部成功。两份Linux后端日志分别为517 passed、18 skipped、6 subtests passed，166.22/120.25秒（job127261687732/127261302773）。远程未安装EnergyPlus，不计真实模拟通过。证据索引追加原日志和提交回执，共505项；补入本段后的最终文档提交仍须六项检查成功才合并，最终head与合并身份在本地release-receipt.json记录。
+
 非 root Linux 服务账号、ABI≥6 和 libseccomp 环境下，安装 `backend/requirements-dev.txt`，设置实际 `ENERGYPLUS_EXE` 及隔离 `VRA_DATA_DIR`，运行 `python -m pytest -q tests/test_linux_isolation.py tests/test_execution.py`。真实参考运行使用 `python scripts/verify_task_budgets.py --output <全新独立目录>`；全量使用 `python -m pytest -q`。已有参考指针必须来自当前源码/当前引擎，否则先另存旧指针并生成新运行，不能修旧哈希。
 
 Windows、root、旧内核会明确跳过 Linux 实际边界测试，这种 skip 不计通过；产品 Linux 执行仍拒绝不满足条件的环境。x86_64 已实测，aarch64 仅实现分支，未有实体或 CI 验收。未进行生产长稳、完整内核攻击面评估、外部服务测试或第二台机器部署。可信服务/同账号管理员被攻陷不在此子进程边界保证内。
