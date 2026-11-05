@@ -49,7 +49,12 @@ def parse_dxf(path):
 def parse_ifc(path):
     import ifcopenshell
     from ifcopenshell.util.element import get_container
-    from ifcopenshell.util.unit import calculate_unit_scale
+    if __package__:
+        from .ifc_details import declarations, project_units, unit_scale
+        from .ifc_geometry import inspect_shapes
+    else:
+        from ifc_details import declarations, project_units, unit_scale
+        from ifc_geometry import inspect_shapes
     doc = ifcopenshell.open(str(path))
     projects = doc.by_type('IfcProject')
     if len(projects) != 1:
@@ -57,7 +62,11 @@ def parse_ifc(path):
     length_units = [u for u in (projects[0].UnitsInContext.Units if projects[0].UnitsInContext else []) if getattr(u, 'UnitType', None) == 'LENGTHUNIT']
     if len(length_units) > 1:
         raise ValueError('Conflicting IFC length units')
-    scale = calculate_unit_scale(doc) if length_units else None
+    units = project_units(projects[0])
+    try:
+        scale = unit_scale(length_units[0], 'LENGTHUNIT') if length_units else None
+    except ValueError:
+        scale = None
     products = doc.by_type('IfcProduct')
     if len(products) > MAX_OBJECTS:
         raise ValueError('IFC product limit exceeded')
@@ -67,28 +76,16 @@ def parse_ifc(path):
             raise ValueError('Missing or duplicate IFC GlobalId')
         seen.add(e.GlobalId)
         container = get_container(e)
-        props = []
-        for rel in getattr(e, 'IsDefinedBy', ()):
-            if not rel.is_a('IfcRelDefinesByProperties'):
-                continue
-            pset = rel.RelatingPropertyDefinition
-            if pset.is_a('IfcPropertySet'):
-                for p in pset.HasProperties:
-                    if p.is_a('IfcPropertySingleValue'):
-                        value = p.NominalValue.wrappedValue if p.NominalValue else None
-                        props.append({'set': pset.Name, 'name': p.Name, 'value': value,
-                            'value_type': p.NominalValue.is_a() if p.NominalValue else None,
-                            'explicit_unit': str(p.Unit) if p.Unit else None, 'source_id': p.id()})
         if not e.ObjectPlacement:
             issues.append({'id': e.id(), 'issue': 'missing_placement'})
         rows.append({'id': e.id(), 'global_id': e.GlobalId, 'type': e.is_a(), 'name': e.Name,
-            'container_id': container.id() if container else None, 'properties': props})
+            'container_id': container.id() if container else None, **declarations(e, units)})
     return {'format': 'IFC', 'version': doc.schema, 'parser': 'ifcopenshell '+ifcopenshell.version,
         'length_scale_to_m': scale, 'counts': dict(Counter(r['type'] for r in rows)),
-        'objects': rows, 'issues': issues, 'limitations': [
+        'objects': rows, 'issues': issues, 'ifc_geometry': inspect_shapes(doc, products, scale), 'limitations': [
             '提取IfcProduct类别和声明的空间包含关系；不是几何碰撞、邻接或承重分析。',
-            '仅读取实例上的单值属性；类型继承、复杂属性、工程量与几何实体尚未计算。',
-            '属性保留原始值、类型和显式单位；不默认采用长度单位换算全部属性。缺单位不猜测。',
+            '单值属性保留实例/类型来源与覆盖关系；声明数量和近似几何量分列，不默认一致。',
+            '声明数量按显式或对应项目单位换算；缺单位、冲突或不支持单位保持null。原始属性不自动解释为数值。',
             '缺少位置只报告缺口；读取成功不等于IFC完整性或工程合规认证。']}
 
 

@@ -1,3 +1,4 @@
+import {ifcMarkup,ifcObjectMarkup} from './ifc-ui.js';
 import {request,post,escape as esc,number as fmt} from './api.js';
 
 export function dxfProjection(geometry){
@@ -19,10 +20,18 @@ export function geometryMarkup(geometry){
 
 export async function cadWorkspace(state,host,action) {
   const base='/projects/'+state.project.project_id;
-  host.innerHTML=`<div class="view-heading"><div><h1>CAD / BIM 文件核验</h1><p>只读解析原文件，保留来源和缺口。实体统计不等于建筑工程量。</p></div></div><form id="cad-upload"><label>选择 DXF / IFC（最大10 MiB）<input name="file" type="file" accept=".dxf,.ifc" required></label><button class="primary">上传并读取</button></form><p>DXF支持限定块展开和几何量；IFC当前读取构件属性。DWG转换、图纸OCR、几何修复和合规认证尚不支持。</p><div id="cad-source"></div><div id="cad-results" aria-live="polite"></div>`;
+  host.innerHTML=`<div class="view-heading"><div><h1>CAD / BIM 文件核验</h1><p>只读解析原文件，保留来源和缺口。实体统计不等于建筑工程量。</p></div></div><form id="cad-upload"><label>选择 DXF / IFC（最大10 MiB）<input name="file" type="file" accept=".dxf,.ifc" required></label><button class="primary">上传并读取</button></form><p>DXF支持限定块展开和几何量；IFC支持类型/实例属性、声明数量与限定网格测量。DWG转换、图纸OCR、几何修复和合规认证尚不支持。</p><div id="cad-source"></div><div id="cad-results" aria-live="polite"></div>`;
   async function history(){
     const records=await request(base+'/cad-inspections');if(!host.isConnected)return;
-    host.querySelector('#cad-results').innerHTML=records.map(r=>`<article><h2>${esc(r.source.name)} · ${r.status==='parsed'?'已读取 · 待工程复核':'已失效'}</h2><p>来源 SHA256：<code>${esc(r.source.hash)}</code></p>${r.result?`<p>${esc(r.result.parser)} · ${esc(r.result.version)} · 长度换算至米：${r.result.length_scale_to_m??'未知，禁止默认换算'}</p><table><tr><th>原文件顶层类别（IFC为产品类别）</th><th>数量</th></tr>${Object.entries(r.result.counts).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')}</table>${geometryMarkup(r.result.geometry)}<ul>${r.result.limitations.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><details><summary>顶层实体、属性、空间归属与缺口</summary><pre>${esc(JSON.stringify({objects:r.result.objects,issues:r.result.issues||[]},null,2))}</pre></details>`:'<p>来源或解析器已变化，请新建读取记录。</p>'}<p><a target="_blank" rel="noopener" href="/api${base}/files/${r.source.file_id}">下载原文件</a> · <a target="_blank" rel="noopener" href="/api${base}/cad-inspections/${r.cad_id}">导出完整JSON</a></p></article>`).join('')||'<p>尚无文件读取记录。</p>';
+    host.querySelector('#cad-results').innerHTML=records.map(r=>`<article><h2>${esc(r.source.name)} · ${r.status==='parsed'?'已读取 · 待工程复核':'已失效'}</h2><p>来源 SHA256：<code>${esc(r.source.hash)}</code></p>${r.result?`<p>${esc(r.result.parser)} · ${esc(r.result.version)} · 长度换算至米：${r.result.length_scale_to_m??'未知，禁止默认换算'}</p><table><tr><th>原文件顶层类别（IFC为产品类别）</th><th>数量</th></tr>${Object.entries(r.result.counts).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')}</table>${geometryMarkup(r.result.geometry)}${ifcMarkup(r.result,r.cad_id)}<ul>${r.result.limitations.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.result.format==='IFC'?'':`<details><summary>顶层实体、属性、空间归属与缺口</summary><pre>${esc(JSON.stringify({objects:r.result.objects,issues:r.result.issues||[]},null,2))}</pre></details>`}`:'<p>来源或解析器已变化，请新建读取记录。</p>'}<p><a target="_blank" rel="noopener" href="/api${base}/files/${r.source.file_id}">下载原文件</a> · <a target="_blank" rel="noopener" href="/api${base}/cad-inspections/${r.cad_id}">导出完整JSON</a></p></article>`).join('')||'<p>尚无文件读取记录。</p>';
+    for(const select of host.querySelectorAll('[data-ifc-record]')){
+      const record=records.find(r=>r.cad_id===select.dataset.ifcRecord);
+      select.onchange=()=>{
+        const id=Number(select.value),product=record.result.objects.find(p=>p.id===id);
+        const geometry=record.result.ifc_geometry.objects.find(p=>p.id===id);
+        select.closest('section').querySelector('[data-ifc-detail]').innerHTML=ifcObjectMarkup(product,geometry);
+      };
+    }
   }
   host.querySelector('#cad-upload').onsubmit=e=>{e.preventDefault();const body=new FormData(e.currentTarget);action(async()=>{
     const file=body.get('file');if(file.size>10*1024*1024)throw Error('文件超过10 MiB，请先提供范围更小的副本。');
