@@ -122,8 +122,54 @@ def _receipt(path,nonce):
     except (OSError,ValueError):return value
 
 
+def _linux_wait_contract():
+    # SIG_IGN/SA_NOCLDWAIT can release a PID without an explicit wait. A custom
+    # process-wide reaper is also outside this exclusive-ownership contract.
+    if signal.getsignal(signal.SIGCHLD)!=signal.SIG_DFL:
+        raise ExecutionError('Native supervision requires default SIGCHLD disposition')
+    # Python getsignal does not expose SA_NOCLDWAIT. Read the kernel ABI, whose
+    # handler/flags are the first two 64-bit words on our supported platforms.
+    # Four words accommodate the optional restorer and 8-byte kernel sigset.
+    import ctypes as c
+    number={'x86_64':13,'aarch64':134}.get(os.uname().machine)
+    if number is None or c.sizeof(c.c_ulong)!=8:
+        raise ExecutionError('Unsupported Linux signal ABI')
+    libc=c.CDLL(None,use_errno=True);libc.syscall.restype=c.c_long
+    action=(c.c_ulong*4)()
+    if libc.syscall(c.c_long(number),c.c_int(signal.SIGCHLD),c.c_void_p(),c.byref(action),c.c_size_t(8))!=0:
+        raise ExecutionError('Cannot verify native SIGCHLD kernel disposition')
+    if action[0]!=0 or action[1]&2:  # SIG_DFL, no SA_NOCLDWAIT
+        raise ExecutionError('Native supervision requires waitable SIGCHLD children')
+
+
+def _linux_child_state(process):
+    """Observe without reaping: keep the session leader PID reserved until stop.
+
+    This supervisor is exclusively waited by this function's caller. Embedders
+    must not install an unrelated waitpid(-1)/SIGCHLD auto-reaper. A detected
+    loss of child ownership fails closed instead of signaling an integer PID.
+    """
+    _linux_wait_contract()
+    if process.returncode is not None:
+        raise ExecutionError('Native supervisor already reaped; group identity unavailable')
+    try:
+        state=os.waitid(os.P_PID,process.pid,os.WEXITED|os.WNOHANG|os.WNOWAIT)
+    except ChildProcessError as error:
+        raise ExecutionError('Native supervisor child ownership lost; group signal refused') from error
+    if state is not None and state.si_pid!=process.pid:
+        raise ExecutionError('Native supervisor wait identity mismatch')
+    return state
+
+
+def _finished(process):
+    return _linux_child_state(process) is not None if sys.platform=='linux' else process.poll() is not None
+
+
 def _stop(process):
     if sys.platform=='linux':
+        # WNOWAIT preserves the leader even after normal exit. Do not poll/wait
+        # (which releases its PID) until the owned group has been stopped.
+        _linux_child_state(process)
         try:os.killpg(process.pid,signal.SIGKILL)
         except ProcessLookupError:pass
     elif process.poll() is None:
@@ -164,6 +210,7 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
         finally:
             counts[name]=total;pipe.close()
     try:
+        if sys.platform=='linux':_linux_wait_contract()
         # Supervisor is stdlib-only. Bypass the Windows venv redirector so the
         # retained Popen handle belongs to the process that owns the Job handle.
         interpreter=getattr(sys,'_base_executable',sys.executable) if sys.platform=='win32' else sys.executable
@@ -185,7 +232,7 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
             if error.is_set():raise ExecutionError(reasons[0])
             if time.monotonic()-started>timeout:raise ExecutionError('Native execution timeout')
             check_output()
-            if process.poll() is not None:break
+            if _finished(process):break
             time.sleep(.05)
     except Exception as exc:failure=exc
     finally:
