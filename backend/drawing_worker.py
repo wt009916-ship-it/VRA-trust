@@ -1,4 +1,8 @@
 """Offline image/PDF-page OCR. Candidates never become engineering parameters."""
+if __name__ == '__main__':
+    from worker_limits import initialize
+    initialize('drawing')
+
 import hashlib
 import json
 import math

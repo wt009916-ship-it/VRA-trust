@@ -1,4 +1,8 @@
 """Bounded read-only native parsing subprocess. No external references are loaded."""
+if __name__ == '__main__':
+    from worker_limits import initialize
+    initialize('cad')
+
 import json
 import math
 import sys
