@@ -43,7 +43,7 @@ def code_hash():
                       'input_validation':sha(ROOT/'backend/input_validation.py'),
                       'execution':{name:sha(ROOT/'backend'/name) for name in
                                    ('execution.py','engine_limits.py','engine_worker.py','worker_limits.py',
-                                    'native_environment.py','native_windows.py')}})
+                                    'native_environment.py','native_windows.py','native_linux.py','native_staging.py')}})
 def engine_path():
     configured=os.environ.get('ENERGYPLUS_EXE')
     if not configured and (ROOT/'config.local.json').is_file():configured=read_json(ROOT/'config.local.json').get('energyplus_exe')
@@ -184,13 +184,14 @@ def native_workspace(engine,work,model=None,weather=None):
                 if source is not None and sha(source)!=scope['identities'][name]['sha256']:
                     raise ValidationError('Native staging source/copy mismatch')
             yield {**scope,'isolation':{'sid':scope['sid'],'work':str(scope['work'])},'extra_output_roots':[scope['profile_root']]}
-    else:
-        # Linux retains its recorded resource-only policy until its independent
-        # filesystem/network boundary is implemented and validated.
-        for name,source in [('model.idf',model),('weather.epw',weather)]:
-            if source is not None:shutil.copy2(source,work/name)
-        output=work/'output';output.mkdir()
-        yield {'engine':engine,'root':work,'work':output,'isolation':None,'identities':{},'extra_output_roots':[]}
+    elif sys.platform=='linux':
+        from .native_staging import linux_engine_workspace
+        with linux_engine_workspace(engine,model,weather) as scope:
+            for name,source in [(engine.name,engine),('model.idf',model),('weather.epw',weather)]:
+                if source is not None and sha(source)!=scope['identities'][name]['sha256']:
+                    raise ValidationError('Native staging source/copy mismatch')
+            yield scope
+    else:raise ValidationError('Native isolation requires Windows or Linux')
 
 
 def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_override=None,profile_override=None,file_root=None,
