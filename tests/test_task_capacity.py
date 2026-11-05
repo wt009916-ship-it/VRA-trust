@@ -99,10 +99,12 @@ def test_api_cancel_queue_csrf_capacity_reuse_and_late_cancel(client,tmp_path,mo
     token=client.headers.pop('X-CSRF-Token');assert client.post(url).status_code==403
     client.headers['X-CSRF-Token']=token
     cancelled=client.post(url).json();assert cancelled['status']=='failed' and cancelled['metrics'] is None
+    assert cancelled['engine_calls_executed']==0
     assert client.post('/api/runs',json=body).status_code==202
     running=store.claim_job();assert running
     response=client.post('/api/runs/'+running['run_id']+'/cancel').json()
     assert response['status']=='running' and store.cancel_requested(running['run_id'])
+    assert response['engine_calls_executed'] is None  # no completed launch receipt yet
     store.finish(running['run_id'],'succeeded')
     assert store.job(running['run_id'])['status']=='failed'
 

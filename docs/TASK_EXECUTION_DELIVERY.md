@@ -60,4 +60,8 @@ stdout/stderr各1MiB写入上限；输出默认256MiB/1024文件，约50ms检查
 
 Linux和最终合并状态由证据索引及本地release-receipt记录，不将本机Windows结果代替Linux或生产验收。
 
-首轮Linux双工作流均504 passed、10 skipped、6 subtests passed（157.13/166.23秒），含真实受限子进程测试；不含未安装的EnergyPlus实际年度运行。随后增加两项取消归属/停服生命周期测试，本机任务专项17通过；生产代码未再次变化，最终head由远程六项检查再次确认。
+首轮Linux双工作流均504 passed、10 skipped、6 subtests passed（157.13/166.23秒），含真实受限子进程测试；不含未安装的EnergyPlus实际年度运行。随后增加两项取消归属/停服生命周期测试，本机任务专项17通过；随后修正运行中调用次数默认值，最终head由远程六项检查再次确认。
+
+TASK-10（中，run view）：claim后读取running任务，旧默认值显示engine_calls_executed=0，无法表示已经启动但尚无完成回执的情况。预期为未确认/null；修复显式区分queued/排队取消的0和其他无回执状态的null。tests/test_task_capacity的API测试同时检查两种状态；final-view-regression.log记录API/任务/Agent相关回归。Windows全量510来自该显示字段修正之前；修正不改变物理核心，真实参考和浏览器产物仍有效，最终完整回归由最终head的Linux CI再次覆盖。
+
+最终调用次数修正后的本机API/任务/Agent专项68通过，89.98秒；见final-view-regression.log。

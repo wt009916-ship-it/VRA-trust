@@ -214,6 +214,7 @@ class Domain:
         job = self.store.job(run_id)
         view = RunView(run_id=run_id, project_id=job["project_id"], case_id=job["case_id"], scheme_id=job["scheme_id"],
                        status=job["status"], data_nature=job["project_snapshot"]["data_nature"], created_at=job["created_at"], error=job["error"],
+                       engine_calls_executed=0 if job['status']=='queued' or job['error']=='Cancelled before execution' else None,
                        limitations=job["gate"]["limitations"]).model_dump(mode="json")
         rd = self.store.root / "runs" / run_id
         if job["status"] in {"queued", "running"}:
