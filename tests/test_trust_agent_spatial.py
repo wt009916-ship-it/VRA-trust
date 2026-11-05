@@ -59,7 +59,7 @@ def test_agent_whitelist_scope_and_compute_permission(client, monkeypatch):
     assert agent.call(pid, 'simulation_create', {}, False)['status'] == 'ACTION_NOT_AUTHORIZED'
     monkeypatch.setattr(agent.store, 'job', lambda rid: {'project_id': 'different'})
     with pytest.raises(core.ValidationError, match='Cross-project'):
-        agent.call(pid, 'simulation_result', {'run_id': 'stolen'}, False)
+        agent.call(pid, 'simulation_result', {'run_id': 'run_' + 'a' * 32}, False)
 
 
 def test_provider_protocol_tool_return_and_no_hidden_reasoning(client, monkeypatch):

@@ -4355,6 +4355,107 @@
         ]
       }
     },
+    "/api/developer/local-model": {
+      "get": {
+        "summary": "Local Model Settings",
+        "operationId": "local_model_settings_api_developer_local_model_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "Configure Local Model",
+        "operationId": "configure_local_model_api_developer_local_model_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalModelSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/developer/local-model/test": {
+      "post": {
+        "summary": "Test Local Model",
+        "operationId": "test_local_model_api_developer_local_model_test_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/agent/chat": {
       "post": {
         "summary": "Chat",
@@ -6072,7 +6173,8 @@
             "type": "string",
             "enum": [
               "local",
-              "provider"
+              "provider",
+              "local_model"
             ],
             "title": "Mode",
             "default": "local"
@@ -7298,6 +7400,31 @@
           "source"
         ],
         "title": "Layer"
+      },
+      "LocalModelSettings": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          },
+          "port": {
+            "type": "integer",
+            "maximum": 65535.0,
+            "minimum": 1024.0,
+            "title": "Port",
+            "default": 18773
+          },
+          "model": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.:-]{1,80}$",
+            "title": "Model",
+            "default": "vra-qwen3-4b"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LocalModelSettings"
       },
       "MaterialLine": {
         "properties": {

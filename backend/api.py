@@ -157,7 +157,9 @@ def _create_app(data_dir=None, *, start_worker=True):
         return {"status": "ok", "engine_available": available, "worker_alive": bool(domain.worker and domain.worker.is_alive()),
                 "demo_mode": os.environ.get("DEMO_MODE", "false").lower() == "true", "deployment": "local_authenticated",
                 "capabilities": {"project_intake": True, "evidence_gate": True, "real_energyplus": available,
-                    "llm_tools": all(app.state.gateway.public()[k] for k in ('enabled', 'key_configured')),
+                    "llm_tools": any(all(gateway.public()[k] for k in ('enabled', 'key_configured'))
+                                     for gateway in (app.state.gateway, app.state.agent.local_model)),
+                    "llm_connection_verified": False,
                     "agent_tools_installed": True, "claim_dag": True, "selective_recomputation": True,
                     "drawing_ai": False, "manual_geometry": True, "robustness": True}}
 
