@@ -9,6 +9,7 @@ from typing import Literal
 from pydantic import Field
 
 from . import core
+from .runtime_lock import runtime_operation
 from .schema import Contract, RunCreate
 from .trust import Trust
 from .robustness import Search, Actions
@@ -266,6 +267,7 @@ class Agent:
             self.execute(record, body)
         return self.store.get('agent', record['agent_id'])
 
+    @runtime_operation
     def execute(self, record, body):
         attempts = {}
         def save():

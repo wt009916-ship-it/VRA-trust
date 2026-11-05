@@ -8,6 +8,7 @@ from pathlib import Path
 from pydantic import StrictFloat, StrictInt, Field, model_validator
 
 from . import core
+from .runtime_lock import runtime_operation
 from .schema import Contract
 
 
@@ -119,6 +120,7 @@ class Robustness:
             self.execute(record)
         return self.store.get('search', record['search_id'])
 
+    @runtime_operation
     def execute(self, record):
         def save():
             nonlocal record
