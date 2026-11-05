@@ -1375,6 +1375,227 @@
         ]
       }
     },
+    "/api/projects/{project_id}/beam-analyses": {
+      "post": {
+        "summary": "Beam Create",
+        "operationId": "beam_create_api_projects__project_id__beam_analyses_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BeamInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Beam List",
+        "operationId": "beam_list_api_projects__project_id__beam_analyses_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/beam-analyses/{engineering_id}": {
+      "get": {
+        "summary": "Beam Get",
+        "operationId": "beam_get_api_projects__project_id__beam_analyses__engineering_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "engineering_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Engineering Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/beam-analyses/{engineering_id}/report.html": {
+      "get": {
+        "summary": "Beam Html",
+        "operationId": "beam_html_api_projects__project_id__beam_analyses__engineering_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "engineering_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Engineering Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/standards-preview": {
       "post": {
         "summary": "Standards Preview",
@@ -3914,6 +4135,173 @@
         ],
         "title": "Axis"
       },
+      "BeamInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "support": {
+            "type": "string",
+            "enum": [
+              "simply_supported",
+              "cantilever"
+            ],
+            "title": "Support"
+          },
+          "span": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Span"
+          },
+          "span_unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "cm",
+              "mm"
+            ],
+            "title": "Span Unit"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "depth": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depth"
+          },
+          "section_unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "cm",
+              "mm"
+            ],
+            "title": "Section Unit"
+          },
+          "elastic_modulus": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Elastic Modulus"
+          },
+          "modulus_unit": {
+            "type": "string",
+            "enum": [
+              "Pa",
+              "MPa",
+              "GPa"
+            ],
+            "title": "Modulus Unit"
+          },
+          "geometry_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Geometry Source"
+          },
+          "material_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Material Source"
+          },
+          "support_basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Support Basis"
+          },
+          "analysis_basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Analysis Basis"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Evidence Ids"
+          },
+          "loads": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/PointLoad"
+                },
+                {
+                  "$ref": "#/components/schemas/UniformLoad"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "point": "#/components/schemas/PointLoad",
+                  "uniform": "#/components/schemas/UniformLoad"
+                }
+              }
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Loads"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "support",
+          "span_unit",
+          "section_unit",
+          "modulus_unit",
+          "geometry_source",
+          "material_source",
+          "support_basis",
+          "analysis_basis",
+          "loads"
+        ],
+        "title": "BeamInput"
+      },
       "Body_upload_api_projects__project_id__files_post": {
         "properties": {
           "file": {
@@ -5148,6 +5536,80 @@
         ],
         "title": "Layer"
       },
+      "PointLoad": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "point",
+            "title": "Type"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "magnitude": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Magnitude"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "N",
+              "kN"
+            ],
+            "title": "Unit"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "position_unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "cm",
+              "mm"
+            ],
+            "title": "Position Unit"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "name",
+          "unit",
+          "position_unit",
+          "source"
+        ],
+        "title": "PointLoad"
+      },
       "Preview": {
         "properties": {
           "file_id": {
@@ -5870,6 +6332,94 @@
           "thermal_ids"
         ],
         "title": "ThermalCompare"
+      },
+      "UniformLoad": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "uniform",
+            "title": "Type"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "magnitude": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Magnitude"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "N/m",
+              "kN/m",
+              "N/mm"
+            ],
+            "title": "Unit"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "position_unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "cm",
+              "mm"
+            ],
+            "title": "Position Unit"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "name",
+          "unit",
+          "position_unit",
+          "source"
+        ],
+        "title": "UniformLoad"
       },
       "ValidationError": {
         "properties": {

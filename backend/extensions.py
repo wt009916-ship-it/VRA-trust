@@ -12,6 +12,7 @@ from .thermal import Thermal, Assembly, ThermalCompare, compare as compare_therm
 from .cad import Cad, Inspection
 from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, compare as lifecycle_compare, report as lifecycle_report
 from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
+from .engineering import Engineering, BeamInput, report as engineering_report
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -24,6 +25,23 @@ def register_extensions(app, domain, auth):
     cad = Cad(domain)
     lifecycle = Lifecycle(domain)
     standards = Standards(domain)
+    engineering = Engineering(domain)
+
+    @app.post('/api/projects/{project_id}/beam-analyses', status_code=201)
+    def beam_create(project_id: str, body: BeamInput):
+        return engineering.save(project_id, body)
+
+    @app.get('/api/projects/{project_id}/beam-analyses')
+    def beam_list(project_id: str):
+        return [engineering.view(project_id,r['engineering_id']) for r in domain.store.list('engineering',project_id)]
+
+    @app.get('/api/projects/{project_id}/beam-analyses/{engineering_id}')
+    def beam_get(project_id: str, engineering_id: str):
+        return engineering.view(project_id,engineering_id)
+
+    @app.get('/api/projects/{project_id}/beam-analyses/{engineering_id}/report.html', response_class=HTMLResponse)
+    def beam_html(project_id: str, engineering_id: str):
+        return engineering_report(engineering.view(project_id,engineering_id))
 
     @app.post('/api/projects/{project_id}/standards-preview')
     def standards_preview(project_id: str, body: StandardPreview):
