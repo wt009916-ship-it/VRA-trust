@@ -5,7 +5,8 @@ dependency design and Xiong's dashboard contract. Historical source is archived.
 Python standard library only. Not a certified design or carbon-credit verifier.
 """
 from __future__ import annotations
-import hashlib, json, math, os, re, shutil, sqlite3, subprocess, tempfile, time, uuid
+import hashlib, json, math, os, re, shutil, sqlite3, subprocess, sys, tempfile, time, uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from dataclasses import replace
@@ -41,7 +42,8 @@ def code_hash():
     return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION,
                       'input_validation':sha(ROOT/'backend/input_validation.py'),
                       'execution':{name:sha(ROOT/'backend'/name) for name in
-                                   ('execution.py','engine_limits.py','engine_worker.py','worker_limits.py')}})
+                                   ('execution.py','engine_limits.py','engine_worker.py','worker_limits.py',
+                                    'native_environment.py','native_windows.py')}})
 def engine_path():
     configured=os.environ.get('ENERGYPLUS_EXE')
     if not configured and (ROOT/'config.local.json').is_file():configured=read_json(ROOT/'config.local.json').get('energyplus_exe')
@@ -172,6 +174,25 @@ def run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_overr
         return _run_simulation(case_id,scheme_id,profile_id,rd,timeout,start_failure=exc,**kwargs)
 
 
+@contextmanager
+def native_workspace(engine,work,model=None,weather=None):
+    if sys.platform=='win32':
+        from .native_windows import engine_workspace
+        with engine_workspace(engine,model,weather) as scope:
+            # Source/copy identity is checked before any native code executes.
+            for name,source in [(engine.name,engine),('model.idf',model),('weather.epw',weather)]:
+                if source is not None and sha(source)!=scope['identities'][name]['sha256']:
+                    raise ValidationError('Native staging source/copy mismatch')
+            yield {**scope,'isolation':{'sid':scope['sid'],'work':str(scope['work'])},'extra_output_roots':[scope['profile_root']]}
+    else:
+        # Linux retains its recorded resource-only policy until its independent
+        # filesystem/network boundary is implemented and validated.
+        for name,source in [('model.idf',model),('weather.epw',weather)]:
+            if source is not None:shutil.copy2(source,work/name)
+        output=work/'output';output.mkdir()
+        yield {'engine':engine,'root':work,'work':output,'isolation':None,'identities':{},'extra_output_roots':[]}
+
+
 def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_override=None,profile_override=None,file_root=None,
                     policy,cancel_check=None,start_failure=None):
     rd=Path(run_dir);rd.mkdir(parents=True,exist_ok=True)
@@ -187,9 +208,11 @@ def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_over
         if profile.get('region') not in ('*',case['region']):raise ValidationError('碳因子地区不匹配')
         manifest['data_nature']=case['data_nature'];manifest['factor_profile_id']=profile_id
         manifest['fingerprints']=source_fingerprints(case,scheme,profile,engine,root)
-        with private_temporary(Path(tempfile.gettempdir())) as tmp:
-            manifest['version_resources']=execution.supervise([engine,'--version'],tmp,rd,replace(policy,log_bytes=16384),15,
-                                                              cancel_check=cancel_check,label='version-')
+        with private_temporary(Path(tempfile.gettempdir())) as tmp,native_workspace(engine,tmp) as scope:
+            manifest['version_resources']=execution.supervise([scope['engine'],'--version'],tmp,rd,replace(policy,log_bytes=16384),15,
+                                                              cancel_check=cancel_check,label='version-',isolation=scope['isolation'],
+                                                              extra_output_roots=scope['extra_output_roots'])
+            manifest['version_runtime_identity']=scope['identities']
         manifest['engine_version']=(rd/'version-stdout.log').read_text(encoding='utf-8',errors='replace').strip()
         manifest['engine_idd_hash']=sha(engine.parent/'Energy+.idd') if (engine.parent/'Energy+.idd').is_file() else None
         inp=rd/'input';inp.mkdir(exist_ok=True)
@@ -197,15 +220,16 @@ def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_over
         if sha(inp/'model.idf')!=manifest['fingerprints']['model'] or sha(inp/'weather.epw')!=manifest['fingerprints']['weather']:raise ValidationError('Inputs changed during snapshot')
         write_json(inp/'case.json',case);write_json(inp/'carbon_profile.json',profile)
         # E+ 9.0 SQLite cannot open some Unicode paths. Use an isolated ASCII working directory.
-        with private_temporary(Path(tempfile.gettempdir())) as tmp:
+        with private_temporary(Path(tempfile.gettempdir())) as tmp,native_workspace(engine,tmp,inp/'model.idf',inp/'weather.epw') as scope:
             if not str(tmp).isascii():raise ValidationError('EnergyPlus 9.0 requires an ASCII TEMP directory')
-            shutil.copy2(inp/'model.idf',tmp/'model.idf');shutil.copy2(inp/'weather.epw',tmp/'weather.epw')
-            output=tmp/'output';output.mkdir()
-            command=[str(engine),'-d',str(output),'-w',str(tmp/'weather.epw'),str(tmp/'model.idf')]
+            output=scope['work']
+            command=[str(scope['engine']),'-d',str(output),'-w',str(scope['root']/'weather.epw'),str(scope['root']/'model.idf')]
+            manifest['native_runtime_identity']=scope['identities']
             manifest['command']=command;manifest['command_note']='Temporary execution paths; archived inputs are input/model.idf and input/weather.epw.'
             try:
                 manifest['engine_calls_executed']=None
-                receipt=execution.supervise(command,tmp,rd,policy,timeout,output=output,cancel_check=cancel_check)
+                receipt=execution.supervise(command,tmp,rd,policy,timeout,output=output,cancel_check=cancel_check,isolation=scope['isolation'],
+                                            extra_output_roots=scope['extra_output_roots'])
                 manifest.update(execution_resources=receipt,engine_calls_executed=receipt['calls_executed'],exit_code=receipt['exit_code'])
                 execution.archive_output(output,rd/'output',policy)
             except execution.ExecutionError as exc:

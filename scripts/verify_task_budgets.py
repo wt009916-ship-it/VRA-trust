@@ -29,6 +29,10 @@ def main():
         check(scheme+' actual success',result['status']=='succeeded')
         _,manifest,_=core.read_validated(rd)
         check(scheme+' launch receipt',manifest['engine_calls_executed']==1 and manifest['execution_resources']['state']=='finished')
+        if sys.platform=='win32':
+            check(scheme+' LPAC version and simulation',all(manifest[name]['filesystem_network_sandbox'] is True
+                  and manifest[name]['isolation']['lpac_access_check_verified'] is True
+                  and manifest[name]['isolation']['capabilities_verified'] is True for name in ['version_resources','execution_resources']))
         # Independent Decimal arithmetic directly from original SQL cells.
         with sqlite3.connect((rd/'output/eplusout.sql').as_uri()+'?mode=ro',uri=True) as con:
             def cell(table,row,col,unit):
@@ -51,11 +55,13 @@ def main():
     cancelled=core.run_simulation('reference_5zone','baseline','none',rd,cancel_check=cancel_after_engine_output)
     manifest=core.read_json(rd/'manifest.json')
     check('actual engine cancellation',cancelled['status']=='failed' and manifest['engine_calls_executed']==1)
+    if sys.platform=='win32':check('cancelled engine LPAC verified',manifest['execution_resources']['filesystem_network_sandbox'] is True)
     check('cancelled metrics unavailable',cancelled['metrics'] is None and cancelled['carbon'] is None)
     check('cancelled SQL not published',not (rd/'output/eplusout.sql').exists())
     recovery_dir=root/('run_'+uuid.uuid4().hex)
     recovery=core.run_simulation('reference_5zone','baseline','none',recovery_dir)
     check('recovery real annual run',recovery['status']=='succeeded' and Decimal(str(recovery['metrics']['annual_energy_kwh']))==expected['baseline'])
+    if sys.platform=='win32':check('recovery LPAC verified',core.read_json(recovery_dir/'manifest.json')['execution_resources']['filesystem_network_sandbox'] is True)
     old_hash=core.sha(rd/'manifest.json')
     try:core.run_simulation('reference_5zone','baseline','none',rd)
     except core.ValidationError:pass
@@ -64,7 +70,7 @@ def main():
     core.write_json(root/'receipt.json',{'checked_at':core.now(),'checks':checked,'count':len(checked),'physics_hash':core.code_hash(),
         'runs':runs,'cancelled_run':str(rd.relative_to(ROOT)),'cancelled_receipt':manifest['execution_resources'],
         'recovery_run':str(recovery_dir.relative_to(ROOT)),'limits':execution.Policy().__dict__,
-        'scope':'public reference only; no real-building calibration, production soak or filesystem/network sandbox'})
+        'scope':'public reference only; Windows EnergyPlus LPAC verified when applicable; no Linux/parser sandbox, real-building calibration or production soak'})
     print(json.dumps({'checks':len(checked),'status':'passed','receipt':str(root/'receipt.json')}))
 
 
