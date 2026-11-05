@@ -1,9 +1,5 @@
 """Source-bound clause retrieval. Declared validity and human review are not certification."""
-import os
 import re
-import subprocess
-import sys
-import tempfile
 import threading
 import unicodedata
 from collections import Counter
@@ -15,7 +11,7 @@ from pydantic import Field, HttpUrl, StrictInt, model_validator
 from . import core
 from .domain import identifier
 from .schema import Contract
-from .worker_limits import receipt
+from . import parser_runtime
 
 
 def normalized(value):
@@ -24,6 +20,7 @@ def normalized(value):
 
 def parser_hash():
     return core.hash_json({'worker': core.sha(Path(__file__).with_name('standards_worker.py')),
+                          'isolated_runtime':parser_runtime.identity('standards'),
                           'resource_policy':core.sha(Path(__file__).with_name('worker_limits.py')), 'pypdf': version('pypdf')})
 
 
@@ -119,22 +116,12 @@ class Standards:
             raise core.ValidationError('PDF parsers busy; retry later')
         try:
             before=parser_hash()
-            with tempfile.TemporaryDirectory(prefix='vra-standard-') as tmp:
-                output = Path(tmp)/'result.json'
-                try:
-                    cp = subprocess.run([sys.executable, str(Path(__file__).with_name('standards_worker.py')), str(path), str(output)],
-                        cwd=tmp, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                        env={**{k:v for k,v in os.environ.items() if k.upper() in {'PATH','SYSTEMROOT','WINDIR','TEMP','TMP','LANG','LC_ALL'}}, 'USERPROFILE':tmp},
-                        timeout=30, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-                except subprocess.TimeoutExpired:
-                    raise core.ValidationError('PDF extraction timed out; original preserved') from None
-                if cp.returncode or not output.exists() or output.stat().st_size > 4*1024*1024:
+            with parser_runtime.run('standards',path) as scope:
+                output = scope['work']/'result.json'
+                if not output.exists() or output.stat().st_size > 4*1024*1024:
                     raise core.ValidationError('PDF extraction rejected; original preserved')
                 result = core.read_json(output)
-                try:
-                    result['resource_limits']=receipt(output,'standards')
-                except (ValueError,OSError) as exc:
-                    raise core.ValidationError('PDF resource enforcement not verified') from exc
+                result['resource_limits']=scope['resource_limits']
             self.domain.file_record(pid, body.file_id)
             if parser_hash()!=before:
                 raise core.ValidationError('PDF parser changed during processing; retry')

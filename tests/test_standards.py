@@ -184,9 +184,11 @@ def test_read_only_agent_tool_returns_citations_without_creating_jobs_or_query_r
 def test_parser_timeout_and_capacity_release(client,monkeypatch):
     import backend.standards as module
     pid,_,b=setup(client)
-    def timeout(*args,**kwargs): raise module.subprocess.TimeoutExpired('worker',30)
-    monkeypatch.setattr(module.subprocess,'run',timeout)
-    with pytest.raises(core.ValidationError,match='timed out'): Standards(client.app.state.domain).preview(pid,module.Preview(file_id=b['file_id']))
+    def timeout(*args,**kwargs):
+        from backend.execution import ExecutionError
+        raise ExecutionError('Native execution timeout')
+    monkeypatch.setattr('backend.parser_runtime.execution.supervise',timeout)
+    with pytest.raises(core.ValidationError,match='isolated execution failed'): Standards(client.app.state.domain).preview(pid,module.Preview(file_id=b['file_id']))
     assert module.Standards.capacity.acquire(False)
     module.Standards.capacity.release()
 
