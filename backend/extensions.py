@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi import HTTPException, Request
 from .agent import Agent, Chat
 from .gateway import Gateway, ProviderSettings
+from .local_model import LocalModelSettings
 from .trust import FactorUpdate, FactorReview, Trust
 from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
@@ -260,7 +261,29 @@ def register_extensions(app, domain, auth):
     @app.get('/api/agent/status')
     def agent_status():
         config = gateway.public()
-        return {'provider_ready': config['enabled'] and config['key_configured'], 'model': config['model'], 'tools': agent.tools()}
+        local = agent.local_model.public()
+        return {'provider_ready': config['enabled'] and config['key_configured'], 'model': config['model'],
+                'local_model_ready': local['enabled'] and local['key_configured'], 'local_model': local['model'],
+                'readiness_notice': '配置就绪不等于服务连通或能力验收通过', 'tools': agent.tools()}
+
+    @app.get('/api/developer/local-model')
+    def local_model_settings(request: Request):
+        developer(request)
+        return agent.local_model.public()
+
+    @app.put('/api/developer/local-model')
+    def configure_local_model(body: LocalModelSettings, request: Request):
+        developer(request)
+        return agent.local_model.save(body)
+
+    @app.post('/api/developer/local-model/test')
+    def test_local_model(request: Request):
+        developer(request)
+        from .agent import ProviderMessage
+        answer = ProviderMessage.model_validate(agent.local_model.complete(
+            [{'role': 'user', 'content': '请调用 evidence_validate 工具检查资料。'}], agent.tools()))
+        return {'connected': True, 'tool_calling_observed': any(c.function.name == 'evidence_validate' for c in answer.tool_calls or []),
+                'model': agent.local_model.public()['model'], 'tools_executed': 0, 'engineering_capability_verified': False}
 
     @app.post('/api/projects/{project_id}/agent/chat', status_code=202)
     def chat(project_id: str, body: Chat):

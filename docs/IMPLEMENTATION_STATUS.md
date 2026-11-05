@@ -1,3 +1,7 @@
+# 2026-11-06 真实本地模型与工具闭环
+
+新增loopback本地模型模式与管理员配置；固定Qwen3-4B/llama.cpp原生HTTP推理、实际应用工具、20题最终/新题留证。修复日期参数哈希及工具定义冗余，新增运行列表与纠错指引。Linux599+6子测试/16跳过；Windows首次全量588通过/2个跨平台参考夹具失败/25跳过，更正夹具后的6项相关测试通过，未重跑全量；33前端通过。解释错误、任务未完成及能力边界混淆保留，开发复评73。详LOCAL_MODEL_DELIVERY.md、LOCAL_MODEL_EVIDENCE.json及RESCORE_20261106_LOCAL_MODEL.md。下一步结构化产物与解释一致性，不扩大训练。
+
 # 2026-11-06 Linux停止过程身份保留
 
 先实际观测旧代码reap后仍尝试组信号，再以WNOWAIT保留监督器直到组清理；身份丢失、SIGCHLD非默认/SA_NOCLDWAIT拒绝。Linux578后端+6子测试、16跳过，Windows50监督专项/11跳过；双平台各25真实E+核查、Linux四条/Windows两条服务恢复通过。D盘真实空间拒绝保留，C盘新私有目录重跑；未降额度。复评71不变，详PROCESS_IDENTITY_DELIVERY.md和PROCESS_IDENTITY_EVIDENCE.json；下一步真实本地模型工具调用。
