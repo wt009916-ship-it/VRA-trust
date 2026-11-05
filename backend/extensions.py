@@ -14,6 +14,7 @@ from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, 
 from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
 from .engineering import Engineering, BeamInput, report as engineering_report
 from .material_cost import Costs, Estimate, Comparison as CostComparison, compare as cost_compare, report as cost_report
+from .construction import Schedules, ScheduleInput, report as schedule_report
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -28,6 +29,27 @@ def register_extensions(app, domain, auth):
     standards = Standards(domain)
     engineering = Engineering(domain)
     costs = Costs(domain)
+    schedules = Schedules(domain)
+
+    @app.post('/api/projects/{project_id}/schedule-validation')
+    def schedule_validation(project_id: str, body: ScheduleInput):
+        return body.model_dump()
+
+    @app.post('/api/projects/{project_id}/schedules', status_code=201)
+    def schedule_create(project_id: str, body: ScheduleInput):
+        return schedules.save(project_id,body)
+
+    @app.get('/api/projects/{project_id}/schedules')
+    def schedule_list(project_id: str):
+        return [schedules.view(project_id,r['schedule_id']) for r in domain.store.list('schedule',project_id)]
+
+    @app.get('/api/projects/{project_id}/schedules/{schedule_id}')
+    def schedule_get(project_id: str, schedule_id: str):
+        return schedules.view(project_id,schedule_id)
+
+    @app.get('/api/projects/{project_id}/schedules/{schedule_id}/report.html', response_class=HTMLResponse)
+    def schedule_html(project_id: str, schedule_id: str):
+        return schedule_report(schedules.view(project_id,schedule_id))
 
     @app.post('/api/projects/{project_id}/material-cost-validation')
     def cost_validation(project_id: str, body: Estimate):
