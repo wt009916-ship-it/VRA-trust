@@ -63,7 +63,7 @@ def identity(kind):
     return core.hash_json({'runtime':core.sha(Path(__file__)),'worker':core.sha(ROOT/'parser_worker.py'),
         'cache':core.sha(ROOT/'parser_runtime_cache.py'),'policy':POLICIES[kind],
         'native':{name:core.sha(ROOT/name) for name in ('native_staging.py','native_environment.py',
-                   'native_windows.py','native_linux.py','engine_worker.py','engine_limits.py','execution.py')},
+                   'native_windows.py','native_linux.py','engine_worker.py','engine_limits.py','execution.py','execution_lifetime.py')},
         'python':sys.version,'platform':sys.platform,
         'dependencies':versions})
 

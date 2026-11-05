@@ -42,7 +42,7 @@ def code_hash():
     return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION,
                       'input_validation':sha(ROOT/'backend/input_validation.py'),
                       'execution':{name:sha(ROOT/'backend'/name) for name in
-                                   ('execution.py','engine_limits.py','engine_worker.py','worker_limits.py',
+                                   ('execution.py','execution_lifetime.py','engine_limits.py','engine_worker.py','worker_limits.py',
                                     'native_environment.py','native_windows.py','native_linux.py','native_staging.py')}})
 def engine_path():
     configured=os.environ.get('ENERGYPLUS_EXE')

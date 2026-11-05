@@ -9,6 +9,7 @@ from contextlib import nullcontext
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from backend.engine_limits import install
 from backend.native_environment import environment
+from backend.execution_lifetime import bind_supervisor, bind_linux_parent
 
 
 def write(path,value):
@@ -21,7 +22,9 @@ def main():
     request=Path(sys.argv[1])
     if request.stat().st_size>65536:raise ValueError('Oversized engine request')
     data=json.loads(request.read_text(encoding='utf-8'))
+    lifetime=bind_supervisor(data['parent_pid'])
     receipt={'nonce':data['nonce'],'supervisor_pid':os.getpid(),
+             'lifetime':lifetime,
              **install(data['memory_bytes'],data['cpu_seconds'],data['file_bytes'])}
     target=request.with_suffix('.receipt.json')
     write(target,{**receipt,'state':'ready'})
@@ -38,7 +41,9 @@ def main():
                 context=launch(data['command'],isolation)
             else:raise RuntimeError('Requested native isolation unavailable')
         else:
+            supervisor_pid=os.getpid()
             context=nullcontext(subprocess.Popen(data['command'],cwd=request.parent,stdin=subprocess.DEVNULL,
+                                 preexec_fn=(lambda:bind_linux_parent(supervisor_pid)) if sys.platform=='linux' else None,
                                  env=environment(request.parent),creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0)))
         with context as process:
             launched=True

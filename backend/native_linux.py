@@ -178,11 +178,15 @@ def launch(command,specification):
         raise RuntimeError('Linux launch requires a dedicated single-thread supervisor')
     read_fd,write_fd=os.pipe2(os.O_CLOEXEC)
     process=None
+    supervisor_pid=os.getpid()
     def prepare():
+        from .execution_lifetime import bind_linux_parent
+        lifetime=bind_linux_parent(supervisor_pid)
         loader=runtime_loader()
         receipt=install(runtime_reads()+specification['read_paths'],[specification['work']],
                         specification['execute_paths']+[loader])
         receipt['elf_loader']=loader
+        receipt['parent_lifetime']=lifetime
         receipt.update(pid=os.getpid(),enforced_before_exec=True,inherited_handles='standard_streams_only')
         data=json.dumps(receipt).encode('utf-8')
         if len(data)>4096 or os.write(write_fd,data)!=len(data):raise RuntimeError('Incomplete isolation handshake')
