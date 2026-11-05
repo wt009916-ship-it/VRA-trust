@@ -1,7 +1,6 @@
 """Generated real-format fixtures with independent counts and distances."""
 import io
 import hashlib
-import subprocess
 import ezdxf
 import ifcopenshell
 import pytest
@@ -90,11 +89,11 @@ def test_timeout_releases_capacity_and_no_anonymous_read(client, monkeypatch):
     service = Cad(client.app.state.domain)
     monkeypatch.setenv('DEEPSEEK_API_KEY', 'test-only-never-forward')
     def timeout(*a, **k):
-        assert 'DEEPSEEK_API_KEY' not in k['env']
-        raise subprocess.TimeoutExpired('parser',30)
-    monkeypatch.setattr(subprocess, 'run', timeout)
+        from backend.execution import ExecutionError
+        raise ExecutionError('Native execution timeout')
+    monkeypatch.setattr('backend.parser_runtime.execution.supervise',timeout)
     for _ in range(3):
-        with pytest.raises(core.ValidationError, match='timed out'):
+        with pytest.raises(core.ValidationError, match='isolated execution failed'):
             service.inspect(pid, Inspection(file_id=fid))
     client.cookies.clear()
     assert client.get(f'/api/projects/{pid}/cad-inspections').status_code == 401

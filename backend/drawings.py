@@ -1,9 +1,5 @@
 """Project-protected OCR candidates and append-only human transcription reviews."""
-import os
 import shutil
-import subprocess
-import sys
-import tempfile
 import threading
 from importlib.metadata import version, PackageNotFoundError
 from pathlib import Path
@@ -14,7 +10,7 @@ from . import core
 from .domain import identifier
 from .drawing_models import model_paths, MODELS
 from .schema import Contract
-from .worker_limits import receipt
+from . import parser_runtime
 
 
 class DrawingInput(Contract):
@@ -39,6 +35,7 @@ class DrawingReview(Contract):
 def parser_hash():
     model_paths()
     return core.hash_json({'worker':core.sha(Path(__file__).with_name('drawing_worker.py')),
+                          'isolated_runtime':parser_runtime.identity('drawing'),
                           'resource_policy':core.sha(Path(__file__).with_name('worker_limits.py')),
                           'model_contract':core.sha(Path(__file__).with_name('drawing_models.py')),
                           'models':MODELS,'versions':{p:version(p) for p in ('rapidocr','onnxruntime','Pillow','pypdfium2','numpy','opencv-python-headless')}})
@@ -63,23 +60,12 @@ class Drawings:
                 before=parser_hash()
             except (ValueError,OSError,PackageNotFoundError) as exc:
                 raise core.ValidationError('OCR models unavailable or modified') from exc
-            with tempfile.TemporaryDirectory(prefix='vra-ocr-') as tmp:
-                out,preview=Path(tmp)/'result.json',Path(tmp)/'preview.png'
-                env={k:v for k,v in os.environ.items() if k.upper() in {'PATH','SYSTEMROOT','WINDIR','TEMP','TMP','LANG','LC_ALL'}}
-                env.update(USERPROFILE=tmp,XDG_CONFIG_HOME=tmp,OMP_NUM_THREADS='2',OPENBLAS_NUM_THREADS='2',MKL_NUM_THREADS='2')
-                try:
-                    cp=subprocess.run([sys.executable,str(Path(__file__).with_name('drawing_worker.py')),str(path),str(out),str(preview),str(body.page)],
-                                      cwd=tmp,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,
-                                      env=env,timeout=60,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
-                except subprocess.TimeoutExpired:
-                    raise core.ValidationError('OCR timed out; original preserved') from None
-                if cp.returncode or not out.is_file() or out.stat().st_size>2*1024*1024 or not preview.is_file() or preview.stat().st_size>40*1024*1024:
+            with parser_runtime.run('drawing',path,body.page) as scope:
+                out,preview=scope['work']/'result.json',scope['work']/'preview.png'
+                if not out.is_file() or out.stat().st_size>2*1024*1024 or not preview.is_file() or preview.stat().st_size>40*1024*1024:
                     raise core.ValidationError('OCR rejected or exceeded limits; original preserved')
                 result=core.read_json(out)
-                try:
-                    result['resource_limits']=receipt(out,'drawing')
-                except (ValueError,OSError) as exc:
-                    raise core.ValidationError('OCR resource enforcement not verified') from exc
+                result['resource_limits']=scope['resource_limits']
                 self.domain.file_record(pid,body.file_id)
                 if parser_hash()!=before or core.sha(preview)!=result['preview_sha256']:
                     raise core.ValidationError('OCR inputs or parser changed during processing')

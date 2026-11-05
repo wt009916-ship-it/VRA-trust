@@ -1,8 +1,4 @@
 """Project-authorized read-only file inspection with immutable source binding."""
-import subprocess
-import os
-import sys
-import tempfile
 import threading
 import uuid
 from importlib.metadata import version
@@ -10,7 +6,7 @@ from pathlib import Path
 from pydantic import Field
 from . import core
 from .schema import Contract
-from .worker_limits import receipt
+from . import parser_runtime
 
 
 class Inspection(Contract):
@@ -19,6 +15,7 @@ class Inspection(Contract):
 
 def parser_version():
     return core.hash_json({'code': core.sha(Path(__file__).with_name('cad_worker.py')),
+        'isolated_runtime':parser_runtime.identity('cad'),
         'resource_policy':core.sha(Path(__file__).with_name('worker_limits.py')),
         'dxf_geometry':core.sha(Path(__file__).with_name('dxf_geometry.py')),
         'ifc_details':core.sha(Path(__file__).with_name('ifc_details.py')),
@@ -39,25 +36,14 @@ class Cad:
             raise core.ValidationError('File parsers busy; retry later')
         try:
             before=parser_version()
-            with tempfile.TemporaryDirectory(prefix='vra-cad-') as tmp:
-                output = Path(tmp)/'result.json'
-                try:
-                    cp = subprocess.run([sys.executable, str(Path(__file__).with_name('cad_worker.py')), str(path), str(output)],
-                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                        cwd=tmp, env={**{k:v for k,v in os.environ.items() if k.upper() in {'PATH','SYSTEMROOT','WINDIR','TEMP','TMP','LANG','LC_ALL'}}, 'USERPROFILE':tmp, 'XDG_CONFIG_HOME':tmp,
-                                     'OMP_NUM_THREADS':'2','OPENBLAS_NUM_THREADS':'2','MKL_NUM_THREADS':'2'},
-                        timeout=30, check=False, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-                except subprocess.TimeoutExpired:
-                    raise core.ValidationError('File parsing timed out; original preserved') from None
+            with parser_runtime.run('cad',path) as scope:
+                output = scope['work']/'result.json'
                 if not output.exists() or output.stat().st_size > 8*1024*1024:
                     raise core.ValidationError('File parsing failed or output exceeded limit')
                 result = core.read_json(output)
-                if cp.returncode:
+                if 'error' in result:
                     raise core.ValidationError('File rejected: '+result.get('error', 'parser failure')+'; original preserved')
-                try:
-                    result['resource_limits']=receipt(output,'cad')
-                except (ValueError,OSError) as exc:
-                    raise core.ValidationError('File parser resource enforcement not verified') from exc
+                result['resource_limits']=scope['resource_limits']
             self.domain.file_record(pid, body.file_id)
             if parser_version()!=before:
                 raise core.ValidationError('File parser changed during processing; retry')

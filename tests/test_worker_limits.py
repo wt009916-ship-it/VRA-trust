@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 import time
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -84,11 +85,9 @@ def test_receipt_missing_or_invalid_never_attests_limits(tmp_path):
     ('standards','source.pdf',pdf_bytes(),'standards-preview','standard')],ids=['cad','drawing','standards'])
 def test_success_output_without_limit_receipt_rejected_original_retained(client,monkeypatch,kind,filename,data,route,record_kind):
     pid=create_project(client)['project_id'];fid=upload(client,pid,filename,data)
-    def unguarded(command,**kwargs):
-        Path(command[3]).write_text('{}')
-        if kind=='drawing':Path(command[4]).write_bytes(b'isolated output placeholder')
-        return subprocess.CompletedProcess(command,0)
-    monkeypatch.setattr(subprocess,'run',unguarded)
+    # Execute the real isolated parser, then remove the trusted receipt. A real
+    # successful result is insufficient evidence of enforced resource policy.
+    monkeypatch.setattr('backend.execution._receipt',lambda *args:{})
     for _ in range(2):
         r=client.post(f'/api/projects/{pid}/{route}',json={'file_id':fid})
         assert r.status_code==409 and 'resource enforcement' in r.text,r.text
@@ -102,13 +101,15 @@ def test_success_output_without_limit_receipt_rejected_original_retained(client,
     ('source.pdf',pdf_bytes(),'standards-preview','standard')],ids=['cad','drawing','standards'])
 def test_actual_cpu_kill_releases_api_capacity_without_success_record(client,monkeypatch,filename,data,route,record_kind):
     pid=create_project(client)['project_id'];fid=upload(client,pid,filename,data)
-    original_run=subprocess.run
-    def killed_worker(command,**kwargs):
+    from backend import execution
+    original_run=execution.supervise
+    def killed_worker(command,work,logs,policy,timeout,**kwargs):
         # Run a real capped CPU process instead of the parser for this isolated
         # request; no fabricated successful process or result is returned.
-        return original_run([sys.executable,str(PROBE),'cpu'],**kwargs)
+        return original_run([command[0],'-I','-B','-c','while True:pass'],work,logs,
+                            replace(policy,cpu_seconds=1),timeout,**kwargs)
     with monkeypatch.context() as patch:
-        patch.setattr(subprocess,'run',killed_worker)
+        patch.setattr(execution,'supervise',killed_worker)
         r=client.post(f'/api/projects/{pid}/{route}',json={'file_id':fid})
     assert r.status_code==409,r.text
     assert client.app.state.domain.store.list(record_kind,pid)==[]

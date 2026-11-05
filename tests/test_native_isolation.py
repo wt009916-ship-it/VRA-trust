@@ -5,7 +5,6 @@ from pathlib import Path
 import shutil
 import socket
 import sys
-import time
 from dataclasses import replace
 
 import pytest
@@ -126,13 +125,20 @@ def test_lpac_failure_cleanup_and_recovery(tmp_path,mode):
     from backend.native_windows import staging
     from tests.test_execution import assert_stopped
     with staging() as scope:
-        python=stage_python(scope);started=time.monotonic()
+        python=stage_python(scope)
+        ready=scope['work']/'ready.txt'
+        # Cancellation must exercise an already running child. A one-second
+        # wall budget can expire during LPAC setup on a busy Windows host.
+        code='from pathlib import Path; import time; Path("ready.txt").write_text("ready"); time.sleep(60)'
         with pytest.raises(ex.ExecutionError) as failure:
-            run(scope,python,'raise SystemExit(7)' if mode=='exit' else 'import time;time.sleep(20)',tmp_path,
-                timeout=1 if mode=='timeout' else 8,
-                cancel_check=(lambda:time.monotonic()-started>1) if mode=='cancel' else None)
+            run(scope,python,'raise SystemExit(7)' if mode=='exit' else code,tmp_path,
+                timeout=8 if mode=='timeout' else 20,
+                cancel_check=ready.exists if mode=='cancel' else None)
         receipt=failure.value.receipt
         assert receipt['calls_executed']==1
+        if mode!='exit':assert ready.read_text()=='ready'
+        if mode=='exit':assert receipt['exit_code']==7
+        else:assert ('timeout' if mode=='timeout' else 'cancel') in str(failure.value)
         assert_stopped(receipt['engine_pid']);assert_stopped(receipt['supervisor_pid'])
         root=scope['root'];profile_root=scope['profile_root']
     assert not root.exists() and not profile_root.exists()

@@ -2,7 +2,6 @@
 import io
 import json
 import hashlib
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -175,11 +174,12 @@ def test_timeout_releases_capacity_and_no_provider_keys_forwarded(client,monkeyp
     pid=create_project(client)['project_id'];fid=upload(client,pid,'blank.png',(GOLD/'blank.png').read_bytes())
     service=Drawings(client.app.state.domain);monkeypatch.setenv('DEEPSEEK_API_KEY','test-only-key')
     def timeout(*args,**kwargs):
-        assert 'DEEPSEEK_API_KEY' not in kwargs['env'];assert kwargs['timeout']==60
-        raise subprocess.TimeoutExpired('isolated OCR',60)
-    monkeypatch.setattr(subprocess,'run',timeout)
+        from backend.execution import ExecutionError
+        assert args[4]==60
+        raise ExecutionError('Native execution timeout')
+    monkeypatch.setattr('backend.parser_runtime.execution.supervise',timeout)
     for _ in range(2):
-        with pytest.raises(core.ValidationError,match='timed out'):service.save(pid,DrawingInput(file_id=fid))
+        with pytest.raises(core.ValidationError,match='isolated execution failed'):service.save(pid,DrawingInput(file_id=fid))
 
 
 def test_model_tamper_rejected_without_download(monkeypatch,tmp_path):
