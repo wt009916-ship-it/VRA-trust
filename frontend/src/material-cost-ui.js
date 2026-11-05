@@ -30,8 +30,9 @@ export async function materialCostWorkspace(state,host,action){
       <details><summary>绑定数量、报价或密度的来源证据</summary>${state.evidence.map(e=>`<label class="check-option"><input name="evidence_ids" type="checkbox" value="${e.evidence_id}">${esc(e.name)} · v${e.revision} · ${esc(e.review_state)}</label>`).join('')||'<p>尚无项目证据。来源将按用户声明保留。</p>'}</details><button type="button" data-remove>移除此项</button>`;
     lines.append(row);row.querySelector('[data-remove]').onclick=()=>row.remove();
     function densityNeeded(){const a=value(row,'measure_unit'),b=value(row,'quote_unit');return (a==='m3'&&['kg','t'].includes(b))||(b==='m3'&&['kg','t'].includes(a));}
-    function updateDensity(){row.querySelector('[data-density]').hidden=!densityNeeded();}
-    function mode(){const m=value(row,'mode');row.querySelector('[data-direct]').hidden=m!=='direct';row.querySelector('[data-geometry]').hidden=m==='direct';row.querySelector('[data-height]').hidden=m!=='cuboid';const u=row.querySelector('[name=measure_unit]');u.disabled=m!=='direct';if(m!=='direct')u.value=m==='rectangle'?'m2':'m3';updateDensity();}
+    function setActive(selector,active){const group=row.querySelector(selector);group.hidden=!active;group.querySelectorAll('input,select').forEach(el=>el.disabled=!active);}
+    function updateDensity(){setActive('[data-density]',densityNeeded());}
+    function mode(){const m=value(row,'mode');setActive('[data-direct]',m==='direct');setActive('[data-geometry]',m!=='direct');setActive('[data-height]',m==='cuboid');const u=row.querySelector('[name=measure_unit]');u.disabled=m!=='direct';if(m!=='direct')u.value=m==='rectangle'?'m2':'m3';updateDensity();}
     row.querySelector('[name=mode]').onchange=mode;row.querySelector('[name=measure_unit]').onchange=updateDensity;row.querySelector('[name=quote_unit]').onchange=updateDensity;
     row.read=()=>{
       const m=value(row,'mode');const measure={mode:m,unit:value(row,'measure_unit'),source:value(row,'quantity_source')};
