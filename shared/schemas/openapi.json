@@ -6209,7 +6209,8 @@
             "enum": [
               "open_ended",
               "inspect_evidence",
-              "inspect_results"
+              "inspect_results",
+              "inspect_material_cost"
             ],
             "title": "Objective",
             "default": "open_ended"
@@ -6224,6 +6225,18 @@
               }
             ],
             "title": "Target Run Id"
+          },
+          "target_cost_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^cost_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Cost Id"
           },
           "previous_agent_id": {
             "anyOf": [
