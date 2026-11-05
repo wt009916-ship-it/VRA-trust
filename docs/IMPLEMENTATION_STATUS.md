@@ -1,3 +1,7 @@
+# 2026-11-06 原生资源所有权与服务恢复
+
+双平台真实 ASGI 强杀先复现残留，再接入私有所有权账本、继承活动租约、精确身份/Profile 核验与启动回收。Windows/Linux 各 569 后端+6子测试、16明确平台跳过，四条真实服务链各50项检查通过；公开IFC/OCR和25项E+验证回归。旧81文件及索引保持原字节，开发复评71；硬额度/长稳/真实模型/实楼仍待验收。详NATIVE_RECOVERY_DELIVERY.md、NATIVE_RECOVERY_EVIDENCE.json及RESCORE_20261106_RECOVERY.md。
+
 # 2026-11-06 原生进程父死亡约束
 
 双平台真实复现调用者强杀后监督器/引擎仍活；新增Windows私有存活管道、原生stdin独立NUL、Linux双代PDEATHSIG及严格回执。进程链强杀/恢复专项通过，完整统计见PARENT_LIFETIME_EVIDENCE.json。新物理参考在独立目录重跑，旧索引失效和容量拒绝保留。完整API强杀的私有目录/profile回收仍未完成；评分70保持，详PARENT_LIFETIME_DELIVERY.md及RESCORE_20261106_LIFETIME.md。
