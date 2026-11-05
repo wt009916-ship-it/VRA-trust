@@ -30,6 +30,7 @@ from .schema import (
     RunView,
 )
 from .store import Store
+from .runtime_lock import RuntimeLease, safe_path
 
 
 class BodyTooLarge(Exception):
@@ -57,20 +58,25 @@ class BodyLimit:
             await JSONResponse({"detail": "Upload/request size limit exceeded"}, status_code=413)(scope, receive, send)
 
 
-def create_app(data_dir=None, *, start_worker=True):
+def _create_app(data_dir=None, *, start_worker=True):
     root = Path(data_dir or os.environ.get("VRA_DATA_DIR", core.ROOT / "runtime")).resolve()
     domain = Domain(Store(root))
     auth = Auth(domain.store)
     @asynccontextmanager
     async def lifespan(app):
-        if start_worker:
-            app.state.agent.recover()
-            app.state.robustness.recover()
-            domain.start_worker()
-        yield
-        domain.stop.set()
-        if domain.worker:
-            domain.worker.join(timeout=5)
+        with RuntimeLease(root):
+            if (root / '.restore-incomplete').exists():
+                raise ValueError('Restore incomplete; this directory cannot serve requests')
+            if start_worker:
+                app.state.agent.recover()
+                app.state.robustness.recover()
+                domain.start_worker()
+            try:
+                yield
+            finally:
+                domain.stop.set()
+                if domain.worker:
+                    domain.worker.join()
 
     app = FastAPI(title="VRA-Trust Evidence API", version="1.0.0", lifespan=lifespan)
     app.state.domain = domain
@@ -323,6 +329,14 @@ def create_app(data_dir=None, *, start_worker=True):
         return schema
     app.openapi = secured_openapi
     return app
+
+
+def create_app(data_dir=None, *, start_worker=True):
+    root = safe_path(data_dir or os.environ.get('VRA_DATA_DIR', core.ROOT / 'runtime'))
+    with RuntimeLease(root):
+        if (root / '.restore-incomplete').exists():
+            raise ValueError('Restore incomplete; this directory cannot serve requests')
+        return _create_app(root, start_worker=start_worker)
 
 
 app = create_app()

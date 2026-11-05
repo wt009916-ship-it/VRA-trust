@@ -1,3 +1,7 @@
+# 2026-11-05 本地停服备份恢复
+
+新增目录锁、SQLite/WAL一致快照、严格归档校验、新目录恢复、会话撤销和未完成任务失败记录。真实EnergyPlus/CAD/OCR原件及历史完成31项恢复演练，旧证据失效不被恢复抹除。备份加密/Windows DACL/生产灾备和累计配额仍未验收，开发复评保持69。详BACKUP_RECOVERY_DELIVERY.md及BACKUP_RECOVERY_EVIDENCE.json。
+
 # 2026-11-05 解析器资源预算与恢复
 
 三个原生工作器在导入前设置OS预算，资源身份绑定结果并拒绝无回执输出；388后端通过、1平台跳过、6子测试，公开IFC/OCR真实重跑。Windows匿名映射缺口实测保留，Linux树级/文件网络隔离未完成；本轮Edge首页403导致UI受阻。评分维持69，详WORKER_RESOURCE_DELIVERY.md及RESCORE_20261105_RESOURCES.md。

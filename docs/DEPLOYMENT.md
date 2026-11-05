@@ -20,3 +20,7 @@ Windows energyplus.exe 不能在 Linux 镜像运行。当前 Docker daemon 未�
 ## 原生解析资源预算
 
 CAD/OCR/规范PDF工作器仅支持Windows与Linux；其他平台或预算安装失败均拒绝解析。Windows Job Object限制私有提交内存/作业用户CPU/单进程，**不覆盖匿名映射**。Linux rlimit限制每进程地址空间/CPU及单文件大小，**不覆盖进程树累计资源或文件网络访问**。预算、真实失败反例与测试见WORKER_RESOURCE_DELIVERY.md。父墙钟超时和这些预算不构成完整恶意文件沙箱。
+
+## 停服备份与恢复
+
+使用scripts/backup_runtime.py创建、验证、恢复到新目录；步骤见BACKUP_RECOVERY_GUIDE.md。新版服务与后台任务持有目录锁，运行期间拒绝维护；升级前的旧服务必须人工正常停止。包含已提交WAL的数据，不直接拷贝活动SQLite主文件冒充完整备份。恢复旧会话撤销、未完成任务失败、Provider默认禁用；原工程指纹不更新。当前只做本机参考数据恢复，不代表加密、Windows ACL、异机/断电或生产灾备已验收。

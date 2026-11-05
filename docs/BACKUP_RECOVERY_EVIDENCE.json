@@ -1,0 +1,273 @@
+{
+  "created_at": "2026-11-05T08:35:31.201372+00:00",
+  "baseline_commit": "8edc11021653309608edc38afafb90c9dfeac43b",
+  "kind": "single_host_development_recovery_not_production_disaster_recovery",
+  "score": 69,
+  "score_dimensions": [
+    15,
+    17,
+    7,
+    6,
+    7,
+    7,
+    7,
+    3
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Windows"
+  },
+  "tests": {
+    "windows_full_before_final_archive_handle_hardening": {
+      "passed": 418,
+      "skipped": 1,
+      "subtests": 6,
+      "seconds": 297.16
+    },
+    "windows_final_backup_and_auth": {
+      "passed": 42,
+      "backup_specific": 33,
+      "seconds": 72.06
+    },
+    "linux_exact_head": "pending_remote_ci",
+    "native_release": {
+      "checks": 31,
+      "engine_calls": 1,
+      "original_and_native_files_compared": 33,
+      "archive_files_including_database": 34
+    },
+    "retained_prior_native_attempts": {
+      "first": {
+        "engine_calls": 1,
+        "failed_on_report_generation_timestamp": true
+      },
+      "second": {
+        "engine_calls": 1,
+        "checks": 31
+      }
+    }
+  },
+  "privacy": "Only metadata/hashes committed; archives, database, account/session data and raw logs stay in ignored local validation. No provider credentials included in archives.",
+  "known_limits": [
+    "Archive not encrypted",
+    "Windows DACL not verified",
+    "Single-host cooperative cold backup only; old servers must be stopped",
+    "No network filesystem/cross-host/power-loss validation",
+    "No aggregate storage quota",
+    "Not engineering certification or live Provider/real-building validation"
+  ],
+  "sources": [
+    {
+      "path": "backend/backup.py",
+      "bytes": 18397,
+      "sha256": "b5ce60be0192c5216a2fb19a9e713ef3bf1821b5604e22bf0d01de3566bcfd52"
+    },
+    {
+      "path": "backend/runtime_lock.py",
+      "bytes": 2983,
+      "sha256": "2ed7e1b3cea077a7dc417ae9f174c0031a105d54b5f3f7a00ed4ae8307aae63d"
+    },
+    {
+      "path": "backend/api.py",
+      "bytes": 15595,
+      "sha256": "d714b724dce45f0f340b79da58fee8c356198b75b85293ca763bfd397d9427c7"
+    },
+    {
+      "path": "backend/domain.py",
+      "bytes": 23462,
+      "sha256": "ad0b3ad0b1245297dd1d7a397e79730e4b88d00ca15546250fea57d281486b90"
+    },
+    {
+      "path": "backend/agent.py",
+      "bytes": 25049,
+      "sha256": "ec4d284f3175715897e77a6235746a91a14d442e9e73918a433aa35fdfd24438"
+    },
+    {
+      "path": "backend/robustness.py",
+      "bytes": 12780,
+      "sha256": "fed447d02ab6fffc2795af82cdec7663d9ddb08a13c7db8a63041ebddb8ba0c5"
+    },
+    {
+      "path": "tests/test_backup.py",
+      "bytes": 17383,
+      "sha256": "8bc9dc668124ca22160eb326f7c77d0f532d5ced96b00e24b21af16a852a64f2"
+    },
+    {
+      "path": "scripts/backup_runtime.py",
+      "bytes": 1985,
+      "sha256": "16b12776d595d318be4f146bd8472eec08e5a793014405fc4e5beffa6d96338a"
+    },
+    {
+      "path": "scripts/verify_backup_recovery.py",
+      "bytes": 8734,
+      "sha256": "023b59f58a838dfb7cba0df55a6eea74bba3844b03f536f15125b2937410b130"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "validation/backup-first-tests.log",
+      "bytes": 4776,
+      "sha256": "00e686c43c70e4b95bda7fb972b38469eef8db5ede7a8c7a5289010634be867a"
+    },
+    {
+      "path": "validation/backup-second-tests.log",
+      "bytes": 969,
+      "sha256": "be756dbb2f6a6220d17651d0fff4f8ed5914a24f11d4290e4f129ca1348379b3"
+    },
+    {
+      "path": "validation/backup-full-tests.log",
+      "bytes": 1400,
+      "sha256": "a02b6ec8c6d1af1bc14ace6af25a73f64339d95eb01a65df8e8d071edfb9dcd3"
+    },
+    {
+      "path": "validation/backup-final-focused.log",
+      "bytes": 969,
+      "sha256": "5749fe3031f8c708584b922337556ab31a93ec227fb78856a2a6e69356328b27"
+    },
+    {
+      "path": "validation/backup-native-drill.log",
+      "bytes": 1037,
+      "sha256": "b172d38d5744341966640940fd2a3dabbb15f1d9268e31febd817e098d70de6c"
+    },
+    {
+      "path": "validation/backup-native-drill-final.log",
+      "bytes": 2440,
+      "sha256": "95340daf45c303a8af72cd4631c899a6d50391534c3f417d8c875cffd8973c34"
+    },
+    {
+      "path": "validation/backup-native-release.log",
+      "bytes": 2440,
+      "sha256": "c481e06052ecb792708db4a30190deb88b79bdc42cfa214d7974f59d83147b6c"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill/checks.json",
+      "bytes": 1478,
+      "sha256": "2e33869f6cb929fc341378aee24d8243fd3716e38e3e3762dc56cb15540b3d23"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill/backup-summary.json",
+      "bytes": 230,
+      "sha256": "48a596d6fda65cbe993202bcbd8d3b8795abb892b82f5476a023eb3e1a8b62e6"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill/restore-summary.json",
+      "bytes": 385,
+      "sha256": "0857d008ec423bc38997244ef2b505e92e4b0ac7953f9bd7bd7adfc62c9ef5dd"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill/run-before.json",
+      "bytes": 5777,
+      "sha256": "f4127869e9b5b9fcc451ebc4a8eec69f35b8501944f1f068c048669c51070264"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill/report-failure-analysis.json",
+      "bytes": 200,
+      "sha256": "c81c6a1cd5099e5f4ad13d8dc3b57980b45ab1ebf9385c371481428ea4556232"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill/backup.zip",
+      "bytes": 28506989,
+      "sha256": "0862a5a1793409597d70f98f4a60345a79960665d6c40033990cbd1c266da526"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/checks.json",
+      "bytes": 2413,
+      "sha256": "2a9a54fc66e6c9f3cdba918b94f37fff094a61271282d21309b83a069d5fcb39"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/summary.json",
+      "bytes": 2658,
+      "sha256": "7b3182d920e012a3e3a50bc9c91e57bf47eb2815e16841586a6bde0c87cee564"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/backup-summary.json",
+      "bytes": 230,
+      "sha256": "eddd5dba2d27e63d6be4788c5736f24ef538cbba8c96e86652bf033ccb97732f"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/restore-summary.json",
+      "bytes": 385,
+      "sha256": "f84b7bc366cf1888f59573ab586b55fb5cdc8c4f27d6d35b1ffc3dda1071b346"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/run-before.json",
+      "bytes": 5777,
+      "sha256": "33c41b89e0c5fb163478d3fb79e3f395ddaf47cbce6d7a74c3c1af99761c2e73"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/report-before.json",
+      "bytes": 15294,
+      "sha256": "5982ef36bbafe250c3d0fabc9c5ab948ab837b7db65286cb5e9eb6927590c40f"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/report-after.json",
+      "bytes": 15294,
+      "sha256": "699ea396f1a35a97ab2a9e9c0f760ee1b27182a388c8c71580ea9783aa14ba54"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/restored-report.pdf",
+      "bytes": 56834,
+      "sha256": "486190f05a1ed7db78a6ee13ddb1f4784ac250189e0c41b8b9865e59802d8ace"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/backup.zip",
+      "bytes": 28506986,
+      "sha256": "299c15d29d73b1fb23bedb9c545e443479adfe3d9b2d6967d597fa437e763188"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-drill-final/stale-backup.zip",
+      "bytes": 28507707,
+      "sha256": "9cd076f594a0a76ec1ae21062a56f12a0ece4e9fba5d8fb24abb31f526f9cb14"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/checks.json",
+      "bytes": 2413,
+      "sha256": "2a9a54fc66e6c9f3cdba918b94f37fff094a61271282d21309b83a069d5fcb39"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/summary.json",
+      "bytes": 2658,
+      "sha256": "a68b83820eea2d176b736b6d9b5964fd8573bd83436bf3e323114868e9929219"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/backup-summary.json",
+      "bytes": 230,
+      "sha256": "4fe743d3551af7b0d19d2c55ec8c36f45218f9f64287d2207bf6d2f17a6e9d38"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/restore-summary.json",
+      "bytes": 385,
+      "sha256": "dfd7599e89089d18b5c39a9344f3ecbf44fe09cc403575a1e84450c526b273e5"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/run-before.json",
+      "bytes": 5777,
+      "sha256": "969e9ec0741218af6205d081d17074852b4b232115149475fd8116a6f1573c13"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/report-before.json",
+      "bytes": 15294,
+      "sha256": "e13e2cc71562ef68bdeeac9bc307ce8b08dbfada3f9ecd33a00abadfe0cc9186"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/report-after.json",
+      "bytes": 15294,
+      "sha256": "ccdd60d441509dbb25706311372b3406932796e257517423ecbb89d70645db80"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/restored-report.pdf",
+      "bytes": 56833,
+      "sha256": "ee2e5b5a1f48031931148c2f4254a5333301ceb37aa7e09c3168ea8779f6b651"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/backup.zip",
+      "bytes": 28506988,
+      "sha256": "decea7b84fbd32a2785e38a405866083fc68798f7c1b53a91a889b3801402ddf"
+    },
+    {
+      "path": "validation/backup-recovery-20261105/native-release/stale-backup.zip",
+      "bytes": 28507709,
+      "sha256": "0117ad868f41f85f4a11ebe2d9969ad4db3806396519d31f6c6084fb0fc23523"
+    }
+  ]
+}

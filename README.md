@@ -100,3 +100,7 @@ Provider 协议依据：[DeepSeek 官方 Tool Calls 文档](https://api-docs.dee
 ## 2026-11-04 审计修复分支
 
 本批修复与复现证据见 [AUDIT_P0_DELIVERY](docs/AUDIT_P0_DELIVERY.md)，完整验收目标见 [ACCEPTANCE_ROADMAP](docs/ACCEPTANCE_ROADMAP.md)。工程数值API现在拒绝布尔值和数字字符串。IDF/EPW增加有限全年预检；计算校验器更新使历史运行保守失效，须新建运行，不重写历史hash。活动前端已移除历史图表/PDF依赖，legacy仅保留源码。真实Provider与实楼专业验收仍待完成。
+
+## 本地备份与恢复
+
+新增停服维护CLI：`python scripts/backup_runtime.py --help`。支持SQLite一致快照、原件/运行/OCR历史校验和仅恢复到新目录；旧会话撤销，未完成任务不自动重跑。备份未加密且含账号摘要，模型服务密钥不迁移。完整步骤与边界见[备份恢复指南](docs/BACKUP_RECOVERY_GUIDE.md)，实际验收见[交付报告](docs/BACKUP_RECOVERY_DELIVERY.md)。

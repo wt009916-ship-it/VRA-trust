@@ -7,6 +7,7 @@ import uuid
 from pathlib import Path
 
 from . import core
+from .runtime_lock import runtime_operation
 from .input_validation import validate_idf, validate_epw
 from .schema import (
     Evidence,
@@ -171,6 +172,7 @@ class Domain:
             reasons.append(str(exc))
         return reasons
 
+    @runtime_operation
     def execute(self, job):
         rid = job["run_id"]
         try:
@@ -193,6 +195,7 @@ class Domain:
             self.store.finish(rid, "failed", str(exc))
 
     def start_worker(self):
+        self.stop.clear()
         self.store.recover()
         def loop():
             while not self.stop.is_set():
