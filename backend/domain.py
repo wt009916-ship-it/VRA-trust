@@ -1,13 +1,13 @@
 """Project-bound evidence and real runs. No model-generated engineering values."""
 import csv
-import hashlib
 import re
+import sqlite3
 import threading
 import uuid
-from pathlib import Path
 
 from . import core
 from .runtime_lock import runtime_operation
+from .storage import OriginalStorage, StorageError
 from .input_validation import validate_idf, validate_epw
 from .schema import (
     Evidence,
@@ -26,6 +26,7 @@ def identifier(prefix):
 class Domain:
     def __init__(self, store):
         self.store = store
+        self.storage = OriginalStorage(store)
         self.stop = threading.Event()
         self.worker = None
 
@@ -38,22 +39,15 @@ class Domain:
         project = self.store.get("project", project_id)
         return self.store.put("project", {**project, "building": body.building.model_dump(), "updated_at": core.now()}, body.expected_revision)
 
+    @runtime_operation
     def add_file(self, project_id, filename, content):
         self.store.get("project", project_id)
-        extension = Path(filename).suffix.lower()
-        if extension not in {".idf", ".epw", ".pdf", ".csv", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".ifc", ".dxf", ".json", ".xml"}:
-            raise core.ValidationError("Unsupported file extension")
-        if not content:
-            raise core.ValidationError("Empty file")
-        fid = identifier("file")
-        path = self.store.root / "files" / (fid + extension)
-        path.parent.mkdir(exist_ok=True)
-        path.write_bytes(content)
-        return self.store.put("file", {"file_id": fid, "project_id": project_id,
-                              "name": Path(filename.replace("\\", "/")).name,
-                              "path": path.relative_to(self.store.root).as_posix(),
-                              "hash": hashlib.sha256(content).hexdigest(), "size": len(content),
-                              "timestamp": core.now()})
+        try:
+            with self.storage.import_batch(project_id, [(filename,content)]) as (_,records):
+                result = records[0]
+            return result
+        except (OSError,sqlite3.Error):
+            raise StorageError('storage_write_failed','原件保存状态未确认，请先检查记录与本机存储；旧原件未覆盖',507) from None
 
     def file_record(self, project_id, file_id):
         obj = self.store.get("file", file_id)
@@ -334,16 +328,34 @@ class Domain:
         return {"results": views, "energy_order": [v["scheme_id"] for v in sorted(views, key=lambda x: x["metrics"]["annual_energy_kwh"])],
                 "recommendation": None, "decision_status": "EVIDENCE_INSUFFICIENT", "note": "仅能耗排序。未评估反例、成本、校准和工程约束，不代表综合最优或可签发碳信用。"}
 
-    def create_reference(self):
+    @runtime_operation
+    def create_reference(self, owner_id=None):
         case = core.load_case("reference_5zone")
-        project = self.create_project(ProjectCreate(name="官方五区参考项目 · 非实测", data_nature="engineering_reference", building={"use": "办公参考模型", "location": "Golden, Colorado", "region": "US-CO", "area_m2": 927.2, "floors": 1, "notes": "官方 5ZoneAirCooled 派生；追加保温为教学假设；无真实建筑校准。"}))
+        project = Project(name="官方五区参考项目 · 非实测", data_nature="engineering_reference", building={"use": "办公参考模型", "location": "Golden, Colorado", "region": "US-CO", "area_m2": 927.2, "floors": 1, "notes": "官方 5ZoneAirCooled 派生；追加保温为教学假设；无真实建筑校准。"},
+                          project_id=identifier('project'),revision=1,created_at=core.now(),updated_at=core.now()).model_dump(mode='json')
         paths = [("epw", None, core.relative_file(core.ROOT, case["weather"]))]
         paths += [("idf", s["scheme_id"], core.relative_file(core.ROOT, s["model"])) for s in case["schemes"]]
-        for kind, scheme, path in paths:
-            file = self.add_file(project["project_id"], path.name, path.read_bytes())
-            self.add_evidence(project["project_id"], EvidenceCreate(type=kind, name=path.name, scheme_id=scheme, source_file=file["file_id"],
-                source_locator="EnergyPlus 9.0.1 ExampleFiles / Golden-NREL weather; complete file",
-                authority="EnergyPlus distributed reference input; derivative insulation is assumed",
-                permission="EnergyPlus license retained in third_party_notices and fixtures/demo/reference_5zone",
-                acquisition_method="explicit_reference_import", responsible_person="待工程师确认", status="IMPORTED", uncertainty="非实测模型；不代表当地真实项目"))
+        try:
+            inputs = []
+            for _,_,path in paths:
+                with path.open('rb') as stream:content=stream.read(self.storage.limits.single_bytes+1)
+                if len(content)>self.storage.limits.single_bytes:
+                    raise StorageError('file_size_limit','参考文件超过当前单文件限额',413)
+                inputs.append((path.name,content))
+            with self.storage.import_batch(project['project_id'],inputs) as (con,files):
+                self.store.put_in(con,'project',project)
+                if owner_id is not None:
+                    if con.execute('SELECT 1 FROM users WHERE id=?',(owner_id,)).fetchone() is None:
+                        raise core.ValidationError('Reference owner does not exist')
+                    con.execute('INSERT INTO project_owners VALUES (?,?)',(project['project_id'],owner_id))
+                for (kind,scheme,path),file in zip(paths,files):
+                    evidence = Evidence(type=kind, name=path.name, scheme_id=scheme, source_file=file['file_id'],
+                        source_locator="EnergyPlus 9.0.1 ExampleFiles / Golden-NREL weather; complete file",
+                        authority="EnergyPlus distributed reference input; derivative insulation is assumed",
+                        permission="EnergyPlus license retained in third_party_notices and fixtures/demo/reference_5zone",
+                        acquisition_method="explicit_reference_import", responsible_person="待工程师确认", status="IMPORTED", uncertainty="非实测模型；不代表当地真实项目",
+                        evidence_id=identifier('evidence'),project_id=project['project_id'],revision=1,timestamp=core.now(),hash=file['hash'])
+                    self.store.put_in(con,'evidence',evidence.model_dump(mode='json'))
+        except (OSError,sqlite3.Error):
+            raise StorageError('storage_write_failed','参考项目保存状态未确认，请先刷新项目列表并检查本机存储；旧原件未覆盖',507) from None
         return project

@@ -28,3 +28,5 @@ CAD/OCR/规范PDF工作器仅支持Windows与Linux；其他平台或预算安装
 ## 加密与私有维护存储（本批更新）
 
 当前CLI默认认证加密，旧明文操作需--legacy-plaintext。Windows新对象创建时设当前账户/SYSTEM保护DACL并回读，Linux目录0700/文件0600；不修改既有runtime权限。35项本机参考恢复及Windows受限令牌实测见ENCRYPTED_BACKUP_DELIVERY.md。上节“未验收加密/ACL”是上一批状态，本批已限定验证；累计配额、完整隔离、断电/异机/生产部署仍未验收。口令丢失无法找回，临时清理不是安全擦除。
+
+2026-11-05：原件累计配额和本地事务导入已补强，默认值/错误码/边界见[STORAGE_QUOTAS_GUIDE.md](STORAGE_QUOTAS_GUIDE.md)。这不限制仿真输出、数据库、预览、备份或上传临时目录，不能替代系统隔离。

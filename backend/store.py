@@ -36,15 +36,21 @@ class Store:
         return identifier
 
     def put(self, kind, obj, expected=0):
-        key = obj[kind + "_id"]
-        self.check_id(key)
         with self.connect() as con:
             con.execute("BEGIN IMMEDIATE")
-            row = con.execute("SELECT MAX(revision) FROM records WHERE kind=? AND id=?", (kind, key)).fetchone()
-            if (row[0] or 0) != expected:
-                raise core.ValidationError("Revision conflict; refresh before editing")
-            obj = {**obj, "revision": expected + 1}
-            con.execute("INSERT INTO records VALUES (?,?,?,?,?)", (kind, key, expected + 1, obj.get("project_id", key), json.dumps(obj, ensure_ascii=False, allow_nan=False)))
+            return self.put_in(con, kind, obj, expected)
+
+    def put_in(self, con, kind, obj, expected=0):
+        """Append within the caller's existing transaction; never commit here."""
+        key = obj[kind + "_id"]
+        self.check_id(key)
+        if not con.in_transaction:
+            raise RuntimeError('put_in requires an explicit write transaction')
+        row = con.execute("SELECT MAX(revision) FROM records WHERE kind=? AND id=?", (kind, key)).fetchone()
+        if (row[0] or 0) != expected:
+            raise core.ValidationError("Revision conflict; refresh before editing")
+        obj = {**obj, "revision": expected + 1}
+        con.execute("INSERT INTO records VALUES (?,?,?,?,?)", (kind, key, expected + 1, obj.get("project_id", key), json.dumps(obj, ensure_ascii=False, allow_nan=False)))
         return obj
 
     def get(self, kind, key, revision=None):
