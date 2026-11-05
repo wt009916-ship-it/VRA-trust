@@ -18,6 +18,18 @@ def body():
                         'correction_basis': 'Dry declared test condition'}]}
 
 
+def test_rejected_evidence_cannot_create_new_thermal_result(client):
+    pid=create_project(client)['project_id'];base='/api/projects/'+pid
+    ev=client.post(base+'/evidence',json={'type':'literature','name':'Withdrawn conductivity source',
+        'source_locator':'Independent test row 1','authority':'Synthetic author','permission':'test only',
+        'acquisition_method':'test','responsible_person':'auditor','status':'IMPORTED'}).json()
+    b=body();b['layers'][0]['evidence_id']=ev['evidence_id']
+    assert client.patch(base+'/evidence/'+ev['evidence_id'],json={'expected_revision':1,'review_state':'rejected',
+        'responsible_person':'auditor','review_note':'Conductivity source rejected'}).status_code==200
+    r=client.post(base+'/thermal',json=b)
+    assert r.status_code==409,r.text
+
+
 def test_multilayer_decimal_oracle_and_units():
     r = calculate(Assembly(**body()))
     expected = Decimal(1) / (Decimal('.13') + Decimal('.04') + Decimal('.2') / Decimal('.8') + Decimal('.08') / Decimal('.04'))

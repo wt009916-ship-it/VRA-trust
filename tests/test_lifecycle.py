@@ -136,3 +136,17 @@ def test_import_schema_rejects_unknown_fields_and_foreign_file(client):
     assert client.post(f'/api/projects/{pid}/lifecycle',json=b).status_code==409
     b=inventory();b['invented_field']=42
     assert client.post(f'/api/projects/{pid}/lifecycle-validation',json=b).status_code==422
+
+
+def test_rejected_factor_evidence_cannot_support_new_inventory(client):
+    pid=create_project(client)['project_id'];base='/api/projects/'+pid
+    ev=client.post(base+'/evidence',json={'type':'literature','name':'Withdrawn factor source',
+        'source_locator':'Independent test row 1','authority':'Synthetic source','permission':'test only',
+        'acquisition_method':'Independent test','responsible_person':'auditor','status':'IMPORTED'}).json()
+    b=inventory();b['activities'][0]['factor']['evidence_id']=ev['evidence_id']
+    old=client.post(base+'/lifecycle',json=b).json()
+    assert client.patch(base+'/evidence/'+ev['evidence_id'],json={'expected_revision':1,'review_state':'rejected',
+        'responsible_person':'auditor','review_note':'Source rejected after independent review'}).status_code==200
+    assert client.get(base+'/lifecycle/'+old['lifecycle_id']).json()['status']=='stale'
+    response=client.post(base+'/lifecycle',json=b)
+    assert response.status_code==409, response.text

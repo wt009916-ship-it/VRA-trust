@@ -13,6 +13,7 @@ from .cad import Cad, Inspection
 from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, compare as lifecycle_compare, report as lifecycle_report
 from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
 from .engineering import Engineering, BeamInput, report as engineering_report
+from .material_cost import Costs, Estimate, Comparison as CostComparison, compare as cost_compare, report as cost_report
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -26,6 +27,31 @@ def register_extensions(app, domain, auth):
     lifecycle = Lifecycle(domain)
     standards = Standards(domain)
     engineering = Engineering(domain)
+    costs = Costs(domain)
+
+    @app.post('/api/projects/{project_id}/material-cost-validation')
+    def cost_validation(project_id: str, body: Estimate):
+        return body.model_dump(mode='json')
+
+    @app.post('/api/projects/{project_id}/material-costs', status_code=201)
+    def cost_create(project_id: str, body: Estimate):
+        return costs.save(project_id,body)
+
+    @app.get('/api/projects/{project_id}/material-costs')
+    def cost_list(project_id: str):
+        return [costs.view(project_id,r['cost_id']) for r in domain.store.list('cost',project_id)]
+
+    @app.get('/api/projects/{project_id}/material-costs/{cost_id}')
+    def cost_get(project_id: str, cost_id: str):
+        return costs.view(project_id,cost_id)
+
+    @app.get('/api/projects/{project_id}/material-costs/{cost_id}/report.html', response_class=HTMLResponse)
+    def cost_html(project_id: str, cost_id: str):
+        return cost_report(costs.view(project_id,cost_id))
+
+    @app.post('/api/projects/{project_id}/material-cost-comparisons')
+    def cost_comparison(project_id: str, body: CostComparison):
+        return cost_compare(costs,project_id,body)
 
     @app.post('/api/projects/{project_id}/beam-analyses', status_code=201)
     def beam_create(project_id: str, body: BeamInput):

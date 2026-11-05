@@ -97,6 +97,8 @@ class Thermal:
             ev = self.store.get('evidence', eid)
             if ev['project_id'] != project_id:
                 raise core.ValidationError('Cross-project thermal evidence rejected')
+            if ev['review_state'] == 'rejected':
+                raise core.ValidationError('Rejected thermal evidence cannot support a new calculation')
             if ev['source_file']:
                 self.domain.file_record(project_id, ev['source_file'])
             snapshots.append(ev)
@@ -121,7 +123,7 @@ class Thermal:
             stale.append('project_revision')
         for old in obj['evidence_snapshot']:
             current = self.store.get('evidence', old['evidence_id'])
-            if (old['revision'], old['hash']) != (current['revision'], current['hash']):
+            if current['review_state'] == 'rejected' or (old['revision'], old['hash']) != (current['revision'], current['hash']):
                 stale.append(old['evidence_id'])
             if current['source_file']:
                 try:
