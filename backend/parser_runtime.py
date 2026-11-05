@@ -183,6 +183,7 @@ def run(kind,source,page=1):
                        'mechanism':receipt['mechanism'],'memory_bytes':receipt['memory_bytes'],'cpu_seconds':receipt['cpu_seconds'],
                        'execution_receipt':receipt,'input_copy':input_identity,'runtime_hash':runtime['hash'],
                        'runtime_bytes':runtime['bytes'],'runtime_files':runtime['files'],'runtime_cache_hit':runtime['cache_hit'],
+                       'runtime_verification':runtime['verification'],
                        'policy_hash':fingerprint,'staging_seconds':staging_seconds,
                        'elapsed_before_cleanup_seconds':time.monotonic()-started}
             yield {'work':work,'resource_limits':resources}
