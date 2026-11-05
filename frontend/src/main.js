@@ -1,3 +1,5 @@
+import { engineeringWorkspace } from './engineering-ui.js';
+import { createBeamDraft } from './beam-draft.js';
 import { standardsWorkspace } from './standards-ui.js';
 import { lifecycleWorkspace } from './lifecycle-ui.js';
 import { cadWorkspace } from './cad-ui.js';
@@ -14,6 +16,7 @@ const root = document.querySelector('#app');
 const state = { projects: [], project: null, evidence: [], runs: [], gate: null, profiles: {}, health: null, selectedRun: null, comparedIds: [], user: null, view: 'readiness' };
 let pollTimer;
 let selection = 0;
+const beamDraft = createBeamDraft();
 const label = { queued: '排队中', running: '仿真中', succeeded: '核验通过', failed: '失败 · 结果不可用', stale: '已失效 · 需复核' };
 const badge = (text, type = '') => '<span class="badge ' + type + '">' + esc(text) + '</span>';
 const link = (url, text) => '<a href="' + url + '" target="_blank" rel="noopener">' + text + ' ↗</a>';
@@ -24,7 +27,7 @@ function notice(message, error = false) {
 }
 async function action(fn, button) {
   if (button) button.disabled = true;
-  try { await fn(); } catch (err) { notice(err.message, true); }
+  try { await fn(); } catch (err) { if (err.status !== 401) notice(err.message, true); }
   finally { if (button?.isConnected) button.disabled = false; }
 }
 function shell() {
@@ -35,7 +38,10 @@ function shell() {
   document.querySelector('#search-projects').onclick = searchProjects;
   document.querySelector('#toggle-sidebar').onclick = () => document.querySelector('.app-frame').classList.toggle('sidebar-collapsed');
   document.querySelector('#theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; localStorage.setItem('vra-theme', theme); };
-  document.querySelector('#logout').onclick = e => action(async () => { await post('/auth/logout', {}); clearSession(); authScreen(false); }, e.currentTarget);
+  document.querySelector('#logout').onclick = e => action(async () => {
+    try { await post('/auth/logout', {}); } catch (err) { if (err.status !== 401) throw err; }
+    clearSession(); authScreen(false);
+  }, e.currentTarget);
   const dev=document.querySelector('#developer-settings'); if(dev) dev.onclick=()=>developerSettings(modal,action,notice);
   bindProjectLinks();
 }
@@ -80,22 +86,25 @@ function projectForm(edit = false) {
   }, e.submitter); };
 }
 async function refreshProjects() { state.projects = await request('/projects'); }
-async function selectProject(id) {
+async function selectProject(id, resume = false) {
   clearTimeout(pollTimer);
   const token = ++selection;
   const [p, ev, runs, gate] = await Promise.all([request('/projects/' + id), request('/projects/' + id + '/evidence'), request('/projects/' + id + '/runs'), request('/projects/' + id + '/gate')]);
   if (token !== selection) return;
   const sameProject = state.project?.project_id === id;
   Object.assign(state, { project: p, evidence: ev, runs, gate, selectedRun: null, comparedIds: [], view: sameProject ? state.view : 'readiness' });
+  const restored = resume ? beamDraft.take(state.user?.id, p, ev) : null;
+  if (restored) { state.view = 'engineering'; state.resumeBeam = restored; }
   renderProject();
   schedulePoll();
+  if (resume && !restored) notice('草稿已过期或项目资料已变更，请重新核对输入。', true);
 }
 function switchView(view) {
   state.view = view;
   document.querySelectorAll('.work-view').forEach(el => { el.hidden = el.id !== view; });
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('selected', el.dataset.view === view));
   const host=document.querySelector('#'+view);
-  if(host && ['spatial','robustness','thermal','cad','lifecycle','standards'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';action(()=>view==='standards'?standardsWorkspace(state,host,action):view==='lifecycle'?lifecycleWorkspace(state,host,action):view==='cad'?cadWorkspace(state,host,action):view==='thermal'?thermalWorkspace(state,host,action):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
+  if(host && ['spatial','robustness','thermal','cad','lifecycle','standards','engineering'].includes(view) && !host.dataset.loaded){host.dataset.loaded='true';const restored=state.resumeBeam;state.resumeBeam=null;action(()=>view==='engineering'?engineeringWorkspace(state,host,action,restored):view==='standards'?standardsWorkspace(state,host,action):view==='lifecycle'?lifecycleWorkspace(state,host,action):view==='cad'?cadWorkspace(state,host,action):view==='thermal'?thermalWorkspace(state,host,action):view==='spatial'?spatialWorkspace(state,host,action,notice,evidenceDetail):robustnessWorkspace(state,host,action));}
 }
 function renderProject() {
   const p = state.project;
@@ -199,16 +208,22 @@ async function refreshRuns() {
 function schedulePoll() {
   clearTimeout(pollTimer);
   if (!state.project) return;
-  pollTimer = setTimeout(async () => { try { await refreshRuns(); schedulePoll(); } catch (err) { notice(err.message, true); } }, 3000);
+  pollTimer = setTimeout(async () => { try { await refreshRuns(); schedulePoll(); } catch (err) { if (err.status !== 401) notice(err.message, true); } }, 3000);
 }
-function clearSession() {
+function clearSession(preserveDraft = false) {
+  if (!preserveDraft) beamDraft.clear();
   selection++; clearTimeout(pollTimer); setCsrfToken('');
-  Object.assign(state, {user:null, projects:[], project:null, evidence:[], runs:[], selectedRun:null, comparedIds:[]});
+  Object.assign(state, {user:null, projects:[], project:null, evidence:[], runs:[], selectedRun:null, comparedIds:[], resumeBeam:null});
 }
 async function enterWorkspace(session) {
   state.user = session.user; setCsrfToken(session.csrf_token);
   [state.health, state.profiles] = await Promise.all([request('/health'), request('/factor-profiles')]);
   await refreshProjects(); home();
+  const target = beamDraft.target(state.user.id);
+  if (target) {
+    if (state.projects.some(p => p.project_id === target)) await selectProject(target, true);
+    else { beamDraft.clear(); notice('原项目已不可访问，已清除临时草稿。', true); }
+  }
 }
 function authScreen(setup, register = false) {
   root.innerHTML = authView({setup, register});
@@ -221,7 +236,14 @@ function authScreen(setup, register = false) {
     catch (err) { error.textContent=err.message; error.hidden=false; button.disabled=false; }
   };
 }
-document.addEventListener('session-expired', () => { clearSession(); authScreen(false); });
+document.addEventListener('session-expired', () => {
+  // Parallel requests can all return 401. Only the first captures the live form.
+  if (!state.user) return;
+  const capture = document.querySelector('#engineering')?.captureDraft;
+  beamDraft.capture(state.user.id, state.project, state.evidence, capture?.());
+  clearSession(true); authScreen(false);
+  notice(capture ? '登录已过期。梁分析输入在本页临时保留15分钟；请用原账号登录。刷新或关闭页面会清除草稿。' : '登录已过期，请重新登录。', true);
+});
 document.addEventListener('keydown', e => {
   if (!state.user || document.querySelector('dialog[open]')) return;
   if ((e.ctrlKey || e.metaKey) && ['k','n'].includes(e.key.toLowerCase())) { e.preventDefault(); if (e.key.toLowerCase()==='k') searchProjects(); else projectForm(); }

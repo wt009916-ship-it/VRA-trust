@@ -13,6 +13,7 @@ from .schema import Contract, RunCreate
 from .trust import Trust
 from .robustness import Search, Actions
 from .standards import Standards, Query as StandardQuery
+from .engineering import Engineering
 
 
 class Chat(Contract):
@@ -27,6 +28,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    engineering_id: str | None = None
     standards_query: StandardQuery | None = None
     run_id: str | None = None
     scheme_id: Literal['baseline', 'R1', 'R2'] = 'baseline'
@@ -38,6 +40,8 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'beam_analysis_list': '只读列出项目最近6条梁分析记录及当前状态；不创建荷载或判断结构安全',
+    'beam_analysis_read': '读取来源及版本核验后的梁分析；需 engineering_id；不得把计算值当作安全或合规结论',
     'standards_search': '只读检索本项目已复核规范摘录；需 standards_query 和查询日期；不虚构条款或自动判定合规',
     'project_get': '读取当前项目建筑声明',
     'evidence_list': '读取证据清单及来源定位',
@@ -59,6 +63,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'beam_analysis_list': (), 'beam_analysis_read': ('engineering_id',),
     'standards_search': ('standards_query',),
     'project_get': (), 'evidence_list': (), 'building_get': (),
     'evidence_validate': ('scheme_id',), 'evidence_gap_rank': ('scheme_id',),
@@ -142,6 +147,15 @@ class Agent:
             raise core.ValidationError('Unexpected arguments for ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'beam_analysis_list':
+            return [{'engineering_id':r['engineering_id'],'name':r['input']['name'],'status':Engineering(d).view(project_id,r['engineering_id'])['status']}
+                for r in self.store.list('engineering',project_id)[:6]]
+        if name == 'beam_analysis_read':
+            if not args.engineering_id:
+                raise core.ValidationError('Provide engineering_id')
+            if self.store.get('engineering',args.engineering_id)['project_id'] != project_id:
+                raise ToolRefusal('Cross-project engineering read rejected')
+            return Engineering(d).view(project_id,args.engineering_id)
         if name == 'standards_search':
             if not args.standards_query:
                 raise core.ValidationError('Provide standards_query including as_of date')
