@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {checkedDeliveryMarkup, staleReasonMarkup} from '../src/agent-artifacts.js';
+import {checkedDeliveryMarkup, staleReasonMarkup, selectedReadProgressMarkup} from '../src/agent-artifacts.js';
+
+test('failed and partial tasks retain selected unread targets without claiming complete intent coverage',()=>{
+ for(const task of [{status:'failed',unresolved_selected_reads:['thermal_<script>']},
+  {status:'succeeded',answer:{unresolved_selected_reads:['operation_<script>']}}]) {
+  const html=selectedReadProgressMarkup(task);
+  assert.ok(html.includes('仍有 1 个') && html.includes('不代表原问题已经完整拆解'));
+  assert.ok(!html.includes('<script>') && html.includes('&lt;script&gt;'));
+  assert.ok(!html.includes('W/(m²') && !html.includes('计算已完成'));
+ }
+ assert.equal(selectedReadProgressMarkup({unresolved_selected_reads:[]}), '');
+});
 
 test('missing catalog evidence is separate from zero numerical results and capability rejection',()=>{
  const html=checkedDeliveryMarkup({checked_missing:[{kind:'thermal',scope:'entire_project_kind',record_id:null,checked_at:'2026-11-07'},

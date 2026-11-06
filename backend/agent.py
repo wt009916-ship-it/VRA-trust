@@ -22,6 +22,7 @@ from .agent_semantics import NumericDelivery, Limitation, SemanticMismatch, read
 from . import agent_calculations as calculations
 from . import agent_capabilities as capabilities
 from . import agent_missing as missing_records
+from . import agent_recovery as read_recovery
 
 
 class Chat(Contract):
@@ -286,6 +287,7 @@ class Agent:
                 answer = capabilities.attach(answer, record['capability_delivery'])
             if record.get('missing_deliveries'):
                 answer = missing_records.attach(answer,self.domain,project_id,record['missing_deliveries'])
+            answer = read_recovery.attach(answer,record)
             answer['basis'] = (record.get('answer') or {}).get('basis', [])
             return {**record, 'answer': answer, 'calculation_progress': calculations.progress(record, answer), 'answer_checked_at': core.now(),
                     'historical_task_completion': (record.get('answer') or {}).get('task_completion'),
@@ -525,11 +527,13 @@ class Agent:
             nonlocal record
             record = self.store.put('agent', record, record['revision'])
         def ensure_read_scope(ds, ident):
-            if self.store.get(ds.kind,ident)['project_id'] != record['project_id']:
-                raise ToolRefusal('Cross-project professional read rejected')
             if body.calculation_plans and not any(e['tool']=='calculation_execute' and e['status']=='succeeded'
                 and e['result']['kind']==ds.kind and e['result']['record_id']==ident for e in record['events']):
                 raise ToolRefusal('Calculation-plan tasks may read only records created by this task')
+            try:stored=self.store.get(ds.kind,ident)
+            except KeyError:raise read_recovery.RecordsUnavailable([ident]) from None
+            if stored['project_id'] != record['project_id']:
+                raise ToolRefusal('Cross-project professional read rejected')
 
         def recheck_missing():
             if len(record['events'])>=15:raise ToolRefusal('Tool budget exceeded before final catalog recheck')
@@ -583,7 +587,12 @@ class Agent:
                         for key in selections:
                             calculations.resolve(self.domain,record['project_id'],key,body.calculation_plans,record['calculation_plan_snapshot'])
                     else:
-                        for ident in selections:ensure_read_scope(inspection(ident.split('_',1)[0]),ident)
+                        unavailable=[];present=[]
+                        for ident in selections:
+                            try:ensure_read_scope(inspection(ident.split('_',1)[0]),ident)
+                            except read_recovery.RecordsUnavailable:unavailable.append(ident)
+                            else:present.append(ident)
+                        if unavailable:raise read_recovery.RecordsUnavailable(unavailable,present)
                     rows=[]
                     for selection in selections:
                         execution=None
@@ -606,9 +615,8 @@ class Agent:
                                 and e['result']['catalog_hash']==explanation.catalog_hash for c in e['result']['capabilities']}
                     if any(c.capability_id not in observed for c in explanation.claims):
                         raise core.ValidationError('Read each capability and its current catalog hash in this task before explaining')
-                if body.calculation_plans:
-                    ds = next((s for s in INSPECTIONS.values() if s.read_tool == name), None)
-                    if ds:ensure_read_scope(ds,args.get(ds.argument))
+                ds = next((s for s in INSPECTIONS.values() if s.read_tool == name), None)
+                if ds:ensure_read_scope(ds,args.get(ds.argument))
                 if name in {'professional_deliver','professional_limit'}:
                     delivery = NumericDelivery.model_validate(args.get('delivery')).delivery() if name == 'professional_deliver' else Limitation.model_validate(args.get('limitation')).delivery()
                     ds = inspection(delivery.kind)
@@ -659,6 +667,8 @@ class Agent:
                 return result
             except Exception as exc:
                 event.update(status='failed', error=str(exc)[:1000])
+                recovery=read_recovery.advice(exc,missing_targets(),offered)
+                if recovery:event['recovery']=recovery
                 # Validation/read failures can be corrected, but side effects and security refusals cannot.
                 if recoverable and name not in WRITE_TOOLS and not isinstance(exc, ToolRefusal) and isinstance(exc, (ValueError, KeyError)) and record['recovery_attempts'] < 2:
                     record['recovery_attempts'] += 1
@@ -676,7 +686,7 @@ class Agent:
                             'corrections': exc.corrections if isinstance(exc, (SemanticMismatch, capabilities.CapabilityMismatch)) else [],
                             'lookup_tool': lookup,
                             'guidance': '先使用lookup_tool核对当前项目可用记录；列表为空则说明缺失，不编造或猜测ID。' if lookup else '依据参数契约修正输入；无法修正时说明缺失。',
-                            'remaining_recoveries': 2 - record['recovery_attempts']}
+                            'remaining_recoveries': 2 - record['recovery_attempts'],**(recovery or {})}
                 raise
             finally:
                 event.update(duration_ms=round((time.monotonic() - start) * 1000), finished_at=core.now())
@@ -747,6 +757,7 @@ class Agent:
                                    'read_records':list(reads.values()),
                                    'queried_empty_without_delivery':missing_records.pending_empty(record),
                                    'queried_available_without_delivery':missing_records.pending_available(record),
+                                   'selected_read_targets_without_delivery':read_recovery.unresolved(record),
                                    'notice':'这里只记录工具进度，不证明自由问题已完整覆盖，也不延续或增加计算授权。'}
                         messages[0]['content'] = system_instruction + '\n当前控制流程状态：' + json.dumps(pending, ensure_ascii=False) + (
                             '\n总预算仍为5轮/15事件。多份明确计划优先用calculation_prepare选择plan_keys，真实执行并读取后逐份交付；已有多记录可用professional_read_many。批量子操作也计入15事件。'
@@ -779,6 +790,11 @@ class Agent:
                     calls = answer.get('tool_calls') or []
                     if not calls:
                         record['llm_commentary'] = answer.get('content')
+                        unresolved=read_recovery.unresolved(record)
+                        if unresolved and turn<4:
+                            provider_event['unresolved_read_reminder']=unresolved
+                            messages.append({'role':'user','content':'此前选择的读取目标仍未交付：'+json.dumps(unresolved)+'。按结构化错误的suggested_calls逐项恢复；缺失按原编号说明，已有记录读取当前结果。未执行的建议不算交付，不新建或重试计算。'})
+                            continue
                         pending_missing=missing_records.pending_empty(record)
                         if pending_missing and turn<4:
                             provider_event['missing_delivery_reminder']=pending_missing
@@ -833,6 +849,11 @@ class Agent:
                                           'notice':'所列能力边界已核验，不代表实际工程任务完成；其他所需结果须另行执行工具并交付。'}
                         messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': json.dumps(result, ensure_ascii=False)})
                     if finish_requested and not batch_failed:
+                        unresolved=read_recovery.unresolved(record)
+                        if unresolved:
+                            record['early_finish_with_unresolved_reads']=unresolved
+                            messages.append({'role':'user','content':'仍有此前选定的读取目标未交付：'+json.dumps(unresolved)+'。不要以一项说明代替整批目标；按对应编号读取或核验缺失，保持本次权限和预算。'})
+                            save();continue
                         available=missing_records.pending_available(record)
                         if available and not record.get('available_delivery_reminded') and turn<4:
                             record['available_delivery_reminded']=available
@@ -872,6 +893,7 @@ class Agent:
                 if record.get('missing_deliveries'):
                     answer = missing_records.attach(answer,self.domain,record['project_id'],record['missing_deliveries'],
                         reader=recheck_missing)
+                answer = read_recovery.attach(answer,record)
                 answer.update(basis=[e['tool'] for e in record['events'] if e['status'] == 'succeeded' and e['tool'] in TOOLS],
                               failed_tool_calls=sum(e['status'] == 'failed' and e['tool'] in TOOLS for e in record['events']))
                 record.update(status='succeeded', answer=answer)
@@ -910,6 +932,8 @@ class Agent:
         except Exception as exc:
             record.update(status='failed', error=str(exc)[:1000], answer=None)
         finally:
+            if body.objective=='open_ended':
+                record['unresolved_selected_reads']=read_recovery.unresolved(record)
             if body.calculation_plans:
                 record['calculation_progress'] = calculations.progress(record, record.get('answer'))
             record['finished_at'] = core.now()
