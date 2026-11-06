@@ -6195,13 +6195,25 @@
                 },
                 {
                   "$ref": "#/components/schemas/CostPlan"
+                },
+                {
+                  "$ref": "#/components/schemas/EngineeringPlan"
+                },
+                {
+                  "$ref": "#/components/schemas/SchedulePlan"
+                },
+                {
+                  "$ref": "#/components/schemas/OperationPlan"
                 }
               ],
               "discriminator": {
                 "propertyName": "kind",
                 "mapping": {
                   "cost": "#/components/schemas/CostPlan",
+                  "engineering": "#/components/schemas/EngineeringPlan",
                   "lifecycle": "#/components/schemas/LifecyclePlan",
+                  "operation": "#/components/schemas/OperationPlan",
+                  "schedule": "#/components/schemas/SchedulePlan",
                   "thermal": "#/components/schemas/ThermalPlan"
                 }
               }
@@ -6238,7 +6250,10 @@
               "inspect_results",
               "inspect_material_cost",
               "inspect_thermal",
-              "inspect_lifecycle"
+              "inspect_lifecycle",
+              "inspect_engineering",
+              "inspect_schedule",
+              "inspect_operations"
             ],
             "title": "Objective",
             "default": "open_ended"
@@ -6289,6 +6304,42 @@
               }
             ],
             "title": "Target Lifecycle Id"
+          },
+          "target_engineering_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^engineering_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Engineering Id"
+          },
+          "target_schedule_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^schedule_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Schedule Id"
+          },
+          "target_operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^operation_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Operation Id"
           },
           "previous_agent_id": {
             "anyOf": [
@@ -6680,6 +6731,31 @@
           "method"
         ],
         "title": "EmissionFactor"
+      },
+      "EngineeringPlan": {
+        "properties": {
+          "plan_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Plan Key"
+          },
+          "kind": {
+            "type": "string",
+            "const": "engineering",
+            "title": "Kind"
+          },
+          "input": {
+            "$ref": "#/components/schemas/BeamInput"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_key",
+          "kind",
+          "input"
+        ],
+        "title": "EngineeringPlan"
       },
       "Estimate": {
         "properties": {
@@ -7840,6 +7916,31 @@
         ],
         "title": "Observation"
       },
+      "OperationPlan": {
+        "properties": {
+          "plan_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Plan Key"
+          },
+          "kind": {
+            "type": "string",
+            "const": "operation",
+            "title": "Kind"
+          },
+          "input": {
+            "$ref": "#/components/schemas/AnalysisInput"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_key",
+          "kind",
+          "input"
+        ],
+        "title": "OperationPlan"
+      },
       "PointLoad": {
         "properties": {
           "type": {
@@ -8874,6 +8975,31 @@
           "tasks"
         ],
         "title": "ScheduleInput"
+      },
+      "SchedulePlan": {
+        "properties": {
+          "plan_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Plan Key"
+          },
+          "kind": {
+            "type": "string",
+            "const": "schedule",
+            "title": "Kind"
+          },
+          "input": {
+            "$ref": "#/components/schemas/ScheduleInput"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_key",
+          "kind",
+          "input"
+        ],
+        "title": "SchedulePlan"
       },
       "Search": {
         "properties": {

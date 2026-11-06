@@ -6,6 +6,38 @@ from .agent_artifacts import material_cost_review, cost_answer
 from .material_cost import Costs
 from .thermal import Thermal
 from .lifecycle import Lifecycle
+from .engineering import Engineering
+from .construction import Schedules
+from .operations import Operations
+
+
+def engineering_review(record):
+    return bounded_review(record, 'engineering', 'engineering_id',
+        '矩形等截面、恒定EI、小挠度线弹性梁；仅辅助分析，不评估承载能力、结构安全或合规。')
+
+
+def schedule_review(record):
+    return bounded_review(record, 'schedule', 'schedule_id',
+        '连续经过日、FS关系的关键路径及显式剩余工期情景；资源冲突未调平，不是施工安全审批或履约保证。')
+
+
+def operation_review(record):
+    return bounded_review(record, 'operation', 'operation_id',
+        '声明CSV、时钟与阈值下的规则筛查；事件可跨规则重叠，不是故障数量或根因确诊，无事件不证明健康。')
+
+
+def bounded_review(record, kind, key, scope):
+    result = record['result']
+    complete = record['status'] == 'calculated'
+    if kind == 'operation' and result:
+        complete = not (result['quality']['cell_issue_count'] or result['quality']['gap_count']) and all(
+            r['evaluated_samples'] > 0 and r['unknown_samples'] == 0 for r in result['rules'])
+    route = {'engineering':'beam-analyses', 'schedule':'schedules', 'operation':'operations'}[kind]
+    return {'kind':kind + '_review', 'record_id':record[key], 'project_id':record['project_id'],
+            'record_hash':record['hash'], 'name':record['input']['name'], 'status':record['status'],
+            'checked_at':core.now(), 'source_status':'USER_DECLARED', 'scope':scope,
+            'input':record['input'], 'result':result, 'verified':bool(result and complete),
+            'report_path':f"/api/projects/{record['project_id']}/{route}/{record[key]}/report.html"}
 
 
 def thermal_review(record):
@@ -75,4 +107,10 @@ INSPECTIONS = {
         'thermal_list', 'thermal_read', 'thermal_selection_basis', '热工构造', Thermal, thermal_review),
     'inspect_lifecycle': Inspection('lifecycle', 'lifecycle_id', 'target_lifecycle_id', 'lifecycle_id',
         'lifecycle_list', 'lifecycle_read', 'lifecycle_selection_basis', '阶段碳清单', Lifecycle, lifecycle_review),
+    'inspect_engineering': Inspection('engineering', 'engineering_id', 'target_engineering_id', 'engineering_id',
+        'beam_analysis_list', 'beam_analysis_read', 'engineering_selection_basis', '限定梁分析', Engineering, engineering_review),
+    'inspect_schedule': Inspection('schedule', 'schedule_id', 'target_schedule_id', 'schedule_id',
+        'schedule_list', 'schedule_read', 'schedule_selection_basis', '施工进度', Schedules, schedule_review),
+    'inspect_operations': Inspection('operation', 'operation_id', 'target_operation_id', 'operation_id',
+        'operations_list', 'operations_read', 'operation_selection_basis', '设备规则核查', Operations, operation_review),
 }

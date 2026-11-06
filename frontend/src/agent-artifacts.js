@@ -1,4 +1,5 @@
 import {escape as esc} from './api.js';
+import {engineeringArtifactMarkup} from './agent-engineering.js';
 
 const value=x=>esc(x??'—');
 export function costArtifactMarkup(artifact) {
@@ -29,13 +30,16 @@ function lifecycleMarkup(a) {
   return `<p>声明边界合计：<strong>${engineeringValue(r.boundary_total_kgco2e)} kgCO₂e</strong></p><p>评估期单位面积量：${engineeringValue(r.kgco2e_m2_over_study_period)} kgCO₂e/m² · ${engineeringValue(b.study_years)} 年；声明面积 ${engineeringValue(b.area_m2)} m²</p><p>功能单位：${esc(b.functional_unit)}；方法：${esc(b.method)}；地区：${esc(b.region)}</p><p>五阶段均已录入且计算完整：${r.all_five_stages_entered?'是，仍不证明清单无遗漏':'否'}。碳核证：未评估；已签发信用：—。</p><ul>${Object.entries(r.stages).map(([key,s])=>`<li>${esc(stages[key]||key)}：${s.included?(s.status==='calculated'?engineeringValue(s.kgco2e)+' kgCO₂e':'资料不完整 · —'):'明确排除 · 不计为零排放'}；${esc(s.reason)}</li>`).join('')}</ul>${r.rows.map(row=>{const x=activities.get(row.activity_id),f=x.factor;return `<details><summary>${esc(x.name)} · ${engineeringValue(row.kgco2e)} kgCO₂e</summary><p>活动量：${engineeringValue(x.quantity)} ${esc(x.unit)}；${x.period==='annual'?'年量':'整个评估期量'} × ${engineeringValue(row.period_multiplier)} → 因子计量数量 ${engineeringValue(row.quantity_in_factor_unit)} ${esc(f.denominator)}</p><p>排放因子：${engineeringValue(f.value)} kgCO₂e/${esc(f.denominator)}；排放量 = 活动量×单位换算×期间倍数×因子。</p><p>活动来源：${esc(x.source)}</p><p>因子来源：${esc(f.source)}；发布者：${esc(f.publisher)}；版本：${esc(f.version)}；年份：${engineeringValue(f.year)}；地区：${esc(f.region)}；方法：${esc(f.method)}</p></details>`;}).join('')}${r.missing.length?`<p>缺参：${r.missing.map(esc).join('、')}</p>`:''}<p>来源为用户声明，填写来源或计算完整不等于因子真实性或独立核证通过。</p><ul>${r.limitations.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
 }
 export function professionalArtifactMarkup(a) {
+  if(a&&['engineering_review','schedule_review','operation_review'].includes(a.kind))return engineeringArtifactMarkup(a);
   if(!a || !['thermal_review','lifecycle_review'].includes(a.kind))return costArtifactMarkup(a);
   const thermal=a.kind==='thermal_review',path=thermal?'thermal':'lifecycle';
   return `<section class="agent-artifact" aria-label="${thermal?'已核验的热工构造结果':'已核验的阶段碳清单结果'}"><h3>${esc(a.name)}</h3><p><strong>${esc(statusText[a.status]||a.status)}</strong> · ${esc(a.scope)}</p>${thermal?thermalMarkup(a):lifecycleMarkup(a)}<p class="subtle">数值至多显示12位有效数字，不代表输入精度；完整原始值保留在同源记录中。</p><small class="mono">${esc(a.record_id)} · 核验时间 ${esc(a.checked_at)}</small><p><a href="/api/projects/${encodeURIComponent(a.project_id)}/${path}/${encodeURIComponent(a.record_id)}/report.html" target="_blank" rel="noopener">打开同源${thermal?'热工':'碳清单'}报告</a></p></section>`;
 }
 
 export function checkedDeliveryMarkup(answer) {
-  if(!answer?.checked_statements?.length)return '';
-  const periods={steady_state:'稳态构造',study_period:'整个评估期',quote_date:'清单声明日期'};
-  return `<section aria-label="经过核验的专业说明"><h3>模型选择 · 当前记录核验</h3><p>以下字段已与当前记录逐项核对。自由问题的完整覆盖度及模型原始文字未获核验。</p>${answer.checked_statements.map(s=>`<h4>${esc(s.name)}</h4><dl>${s.facts.map(f=>`<dt>${esc(f.label)}</dt><dd>${f.period==='quote_date'?value(f.value):engineeringValue(f.value===null?null:Number(f.value))} ${esc(f.unit)} · ${esc(periods[f.period]||f.period)}${f.study_years!==null?' '+value(f.study_years)+' 年':''}${f.area_m2!==null?' · 面积分母 '+value(f.area_m2)+' m²':''}<small> 来源字段 ${esc(f.source_path)}</small></dd>`).join('')}</dl><small class="mono">${esc(s.record_id)}</small>`).join('')}</section>${(answer.artifacts||[]).map(professionalArtifactMarkup).join('')}`;
+  if(!answer)return '';
+  const checked=answer.checked_statements||[];
+  const periods={steady_state:'稳态构造',study_period:'整个评估期',quote_date:'清单声明日期',static_load_case:'声明静力工况',elapsed_days:'声明原点的连续经过日',observed_window:'CSV观测窗口 · 非年量'};
+  const section=checked.length?`<section aria-label="经过核验的专业说明"><h3>模型选择 · 当前记录核验</h3><p>以下字段已与当前记录逐项核对。自由问题的完整覆盖度及模型原始文字未获核验。</p>${checked.map(s=>`<h4>${esc(s.name)}</h4><dl>${s.facts.map(f=>`<dt>${esc(f.label)}</dt><dd>${f.period==='quote_date'?value(f.value):engineeringValue(f.value===null?null:Number(f.value))} ${esc(f.unit)} · ${esc(periods[f.period]||f.period)}${f.study_years!==null?' '+value(f.study_years)+' 年':''}${f.area_m2!==null?' · 面积分母 '+value(f.area_m2)+' m²':''}<small> 来源字段 ${esc(f.source_path)}</small></dd>`).join('')}</dl><small class="mono">${esc(s.record_id)}</small>`).join('')}</section>`:'';
+  return section+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
 }

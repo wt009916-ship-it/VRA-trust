@@ -1,3 +1,4 @@
+import {refreshAgentMode} from './agent-mode-status.js';
 import {storageDescription, createEvidenceIntake} from './storage-intake.js';
 import {drawingWorkspace} from './drawing-ui.js';
 import { operationsWorkspace } from './operations-ui.js';
@@ -87,7 +88,7 @@ function projectForm(edit = false) {
     const building = Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'name'));
     for (const key of ['area_m2', 'floors', 'floor_height_m', 'window_wall_ratio']) building[key] = building[key] === '' ? null : Number(building[key]);
     const result = edit ? await request('/projects/' + p.project_id + '/building', { method: 'PUT', body: JSON.stringify({ expected_revision: p.revision, building }) }) : await post('/projects', { name: data.name, building });
-    dialog.close(); await refreshProjects(); await selectProject(result.project_id);
+    await refreshProjects(); await selectProject(result.project_id); dialog.close();
   }, e.submitter); };
 }
 async function refreshProjects() { state.projects = await request('/projects'); }
@@ -138,7 +139,7 @@ function renderProject() {
     document.querySelector('#comparison').innerHTML = '<div class="comparison"><h3>当前能耗排序：' + data.energy_order.map(esc).join(' → ') + '</h3><p>' + esc(data.note) + '</p><table><thead><tr><th>方案</th><th>节能率</th><th>工程 CO₂ 差值</th><th>综合推荐</th></tr></thead><tbody>' + data.results.map(r => '<tr><td>' + esc(r.scheme_id) + '</td><td>' + num(r.saving_rate_pct) + '%</td><td>' + num(r.engineering_reduction_kg) + ' kg</td><td>证据不足</td></tr>').join('') + '</tbody></table></div>';
   }, e.currentTarget);
   renderEvidence(); renderRuns(); switchView(state.view);
-  const mode=document.querySelector('#agent-mode');request('/agent/status').then(info=>{if(mode?.isConnected){mode.options[1].textContent=info.provider_ready?'AI · '+info.model:'AI · 请先配置 Key';mode.options[2].textContent=info.local_model_ready?'本机 AI · '+info.local_model:'本机 AI · 请先配置';}}).catch(()=>{});
+  refreshAgentMode();
 }
 function renderEvidence() {
   document.querySelector('#evidence-table').innerHTML = state.evidence.length ? '<div class="table-scroll"><table><thead><tr><th>来源 / 证据</th><th>性质</th><th>人工复核</th><th>版本</th><th></th></tr></thead><tbody>' + state.evidence.map(e => '<tr><td><button class="text-button" data-evidence="' + e.evidence_id + '">' + esc(e.name) + '</button><small>' + esc(e.type.toUpperCase()) + (e.scheme_id ? ' · ' + esc(e.scheme_id) : '') + '</small></td><td>' + badge(e.status) + '</td><td>' + badge({ pending: '待确认', confirmed: '已确认', rejected: '已拒绝' }[e.review_state], e.review_state === 'confirmed' ? 'success' : 'warning') + '</td><td>v' + e.revision + '</td><td><button data-evidence="' + e.evidence_id + '">查看 →</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">尚无证据。上传原文件并登记来源定位，保留每一版资料。</div>';
@@ -167,7 +168,7 @@ function evidenceForm() {
     dialog.querySelector('#intake-error').textContent = '';
     try { await submitEvidence(selectedFile, { type: data.get('type'), source_locator: data.get('locator'), authority: data.get('authority'), permission: data.get('permission'), responsible_person: data.get('person'), acquisition_method: 'manual_upload', status: 'IMPORTED', uncertainty: data.get('uncertainty') || null, scheme_id: data.get('type') === 'idf' ? data.get('scheme') : null });
     } catch (error) { dialog.querySelector('#intake-error').textContent = error.message; await refreshStorage(); throw error; }
-    dialog.close(); await selectProject(state.project.project_id);
+    await selectProject(state.project.project_id); dialog.close();
   }, e.submitter); };
 }
 function renderRuns() {

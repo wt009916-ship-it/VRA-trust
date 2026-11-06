@@ -8,6 +8,9 @@ from .schema import Contract
 from .thermal import Assembly
 from .lifecycle import Inventory
 from .material_cost import Estimate
+from .engineering import BeamInput
+from .construction import ScheduleInput
+from .operations import AnalysisInput
 from .agent_semantics import inspection
 
 
@@ -29,7 +32,25 @@ class CostPlan(Contract):
     input: Estimate
 
 
-CalculationPlan = Annotated[ThermalPlan | LifecyclePlan | CostPlan, Field(discriminator='kind')]
+class EngineeringPlan(Contract):
+    plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
+    kind: Literal['engineering']
+    input: BeamInput
+
+
+class SchedulePlan(Contract):
+    plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
+    kind: Literal['schedule']
+    input: ScheduleInput
+
+
+class OperationPlan(Contract):
+    plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
+    kind: Literal['operation']
+    input: AnalysisInput
+
+
+CalculationPlan = Annotated[ThermalPlan | LifecyclePlan | CostPlan | EngineeringPlan | SchedulePlan | OperationPlan, Field(discriminator='kind')]
 
 
 def bindings(domain, pid, plan):
@@ -40,9 +61,13 @@ def bindings(domain, pid, plan):
         ids = {row.evidence_id for row in body.layers if row.evidence_id}
     elif plan.kind == 'lifecycle':
         ids = {row.factor.evidence_id for row in body.activities if row.factor.evidence_id}
-    else:
+    elif plan.kind == 'cost':
         ids = {eid for row in body.lines for eid in row.evidence_ids}
+    else:
+        ids = set(body.evidence_ids)
     files = set()
+    if plan.kind == 'operation':
+        files.add(body.file_id)
     if getattr(body, 'import_file_id', None):
         files.add(body.import_file_id)
     sources = []
@@ -83,6 +108,8 @@ def execute(domain, pid, key, plans, frozen):
 def progress(record, answer):
     """Saved writes remain visible on partial/failure; current validity needs a read."""
     verified = {a.get('record_id') or a.get('cost_id') for a in (answer or {}).get('artifacts', []) if a.get('verified')}
+    limited = {x['record_id'] for x in (answer or {}).get('checked_limitations', [])}
+    fields = {x['record_id'] for x in (answer or {}).get('checked_statements', []) if x['facts']}
     rows = []
     for item in record.get('calculation_plan_snapshot', {}).get('items', []):
         plan = item['plan']
@@ -91,5 +118,5 @@ def progress(record, answer):
         result = events[-1]['result'] if events else {}
         rows.append({'plan_key': plan['plan_key'], 'kind': plan['kind'], 'name': plan['input']['name'],
                      'record_id': result.get('record_id'),
-                     'state': 'verified' if result.get('record_id') in verified else 'saved_unverified' if result else 'not_executed'})
+                     'state': 'verified' if result.get('record_id') in verified else 'limits_verified' if result.get('record_id') in limited else 'fields_verified' if result.get('record_id') in fields else 'saved_unverified' if result else 'not_executed'})
     return rows
