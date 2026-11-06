@@ -1,4 +1,5 @@
 import {refreshAgentMode, createAgentModePreference} from './agent-mode-status.js';
+import {bindReadRequests,collectReadRequests} from './agent-requests.js';
 import {storageDescription, createEvidenceIntake} from './storage-intake.js';
 import {drawingWorkspace} from './drawing-ui.js';
 import { operationsWorkspace } from './operations-ui.js';
@@ -118,6 +119,7 @@ function renderProject() {
   shell();
   document.querySelector('#workspace').innerHTML = projectView(state);
   agentModePreference.bind(document.querySelector('#agent-mode'),state.user?.id,p.project_id);
+  bindReadRequests(document.querySelector('.agent-read-input'),p.project_id,action);
   document.querySelectorAll('[data-view]').forEach(b => { b.onclick = () => switchView(b.dataset.view); });
   const inspector = document.querySelector('.inspector');
   document.querySelector('#toggle-inspector').onclick = () => { inspector.hidden = !inspector.hidden; };
@@ -126,7 +128,7 @@ function renderProject() {
   document.querySelector('#task-import').onclick = evidenceForm;
   document.querySelector('#composer-upload').onclick = evidenceForm;
   document.querySelector('#task-next').onclick = () => switchView(state.gate.can_simulate ? 'simulation' : 'evidence');
-  document.querySelector('#task-command').onsubmit = e => {e.preventDefault();const input=document.querySelector('#command');if(!input.value.trim())return;const target=document.querySelector('#task-response');action(()=>runAgent(state,input.value.trim(),target,document.querySelector('#agent-mode').value,document.querySelector('#allow-compute').checked,document.querySelector('#agent-objective').value,document.querySelector('#continue-agent').checked,document.querySelector('#agent-calculation-plans').value),e.submitter);};
+  document.querySelector('#task-command').onsubmit = e => {e.preventDefault();const input=document.querySelector('#command');if(!input.value.trim()&&!document.querySelector('[data-read-scope]'))return;const target=document.querySelector('#task-response');action(()=>runAgent(state,input.value.trim()||'按本次明确读取清单逐项核验，不新增计算。',target,document.querySelector('#agent-mode').value,document.querySelector('#allow-compute').checked,document.querySelector('#agent-objective').value,document.querySelector('#continue-agent').checked,document.querySelector('#agent-calculation-plans').value,collectReadRequests(document.querySelector('.agent-read-input'))),e.submitter);};
   document.querySelector('#agent-history').onclick=e=>action(async()=>{const tasks=await request('/projects/'+p.project_id+'/agent-tasks');modal('最近20条任务 · 历史结果需重新核验',tasks.map(t=>'<details><summary>'+esc(t.question)+' · '+esc(t.status)+'</summary><pre>'+esc(JSON.stringify(t,null,2))+'</pre></details>').join('')||'<p>暂无历史任务。</p>');},e.currentTarget);
   document.querySelector('#edit-factors').onclick=()=>factorEditor(state,modal,action,refreshRuns);
   document.querySelector('#add-evidence').onclick = evidenceForm;
