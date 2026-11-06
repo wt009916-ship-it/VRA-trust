@@ -152,6 +152,34 @@ def test_initial_inspection_is_projected_and_current_result_rechecked(client, mo
     assert len(events) == 2 and all(e['result'] == view for e in events)
 
 
+def test_initial_projection_preserves_limits_and_has_explicit_full_read_entry():
+    view = run_view(); original = deepcopy(view)
+    compact = sizing.initial_result('simulation_result', view)
+    assert view == original and compact['metrics']['annual_energy_kwh'] == 1234
+    assert 'weather_quality' not in compact and 'simulation_result(run_id)' in compact['projection_notice']
+    gate = {'can_simulate': False, 'blockers': [{'message': 'Weather not confirmed'}], 'limitations': ['Not compliance'],
+            'weather_quality': {'fields': 'large'}, 'selected_evidence': ['Unreviewed file']}
+    minimal = sizing.initial_result('evidence_validate', gate)
+    assert minimal['can_simulate'] is False and minimal['blockers'] == gate['blockers'] and minimal['limitations'] == gate['limitations']
+    assert 'weather_quality' not in minimal and 'evidence_validate' in minimal['projection_notice']
+    assert sizing.initial_result('evidence_list', [1, 2])['evidence_count'] == 2
+
+
+def test_inspect_results_is_read_only_even_when_generic_compute_checkbox_is_true(client, monkeypatch):
+    agent = client.app.state.agent; pid = create_project(client)['project_id']
+    monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
+    def complete(messages, tools):
+        names = {t['function']['name'] for t in tools}
+        assert names == sizing.INSPECTION_TOOLS
+        assert '专业list/read' not in messages[0]['content']
+        return {'role': 'assistant', 'tool_calls': [{'id': 'bad', 'type': 'function',
+            'function': {'name': 'simulation_create', 'arguments': '{}'}}]}
+    monkeypatch.setattr(agent.gateway, 'complete', complete)
+    task = agent.start(pid, Chat(message='Inspect only', mode='provider', objective='inspect_results', allow_compute=True), background=False)
+    assert task['status'] == 'failed' and 'read-only' in task['error']
+    assert not agent.store.jobs(pid)
+
+
 @pytest.mark.parametrize('objective', ['inspect_results', 'inspect_evidence', 'inspect_thermal'])
 def test_every_offered_schema_has_nonempty_enums_in_inspection_modes(client, monkeypatch, objective):
     agent = client.app.state.agent; pid = create_project(client)['project_id']
