@@ -16,9 +16,6 @@ from .schema import Contract, RunCreate
 from .trust import Trust
 from .robustness import Search, Actions
 from .standards import Standards, Query as StandardQuery
-from .engineering import Engineering
-from .construction import Schedules
-from .operations import Operations
 from .local_model import LocalModelGateway
 from .agent_inspections import INSPECTIONS
 from .agent_semantics import NumericDelivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection
