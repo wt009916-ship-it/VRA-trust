@@ -25,7 +25,8 @@ class Claim(Contract):
 
 class Explanation(Contract):
     catalog_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
-    claims: list[Claim] = Field(min_length=1, max_length=4)
+    claims: list[Claim] = Field(min_length=1, max_length=16,
+        description='Aggregate every requested capability actually read, across lookup batches of at most four. Never interpret a batch limit as lack of application support.')
     finish: bool = False
 
     @model_validator(mode='after')
@@ -136,8 +137,30 @@ class CapabilityMismatch(ValueError):
         self.corrections = corrections
 
 
+def read_count(explanation):
+    return (len(explanation['claims']) + 3) // 4 if explanation else 0
+
+
+def collect(ids, reader=None):
+    """Combine bounded reads only when every batch belongs to the same catalog."""
+    if not ids or len(ids) > len(ENTRIES) or len(set(ids)) != len(ids) or any(k not in ENTRIES for k in ids):
+        raise ValueError('Select distinct declared capabilities')
+    reader = reader or catalog
+    digest, rows = None, []
+    for offset in range(0, len(ids), 4):
+        batch = ids[offset:offset + 4]
+        result = reader(batch)
+        if digest is not None and result['catalog_hash'] != digest:
+            raise ValueError('Capability catalog changed between read batches')
+        digest = result['catalog_hash']
+        if [r['capability_id'] for r in result['capabilities']] != batch:
+            raise ValueError('Incomplete or unexpected capability read batch')
+        rows.extend(result['capabilities'])
+    return {'catalog_hash': digest, 'capabilities': rows}
+
+
 def check(explanation, current=None):
-    current = current or catalog([c.capability_id for c in explanation.claims])
+    current = current or collect([c.capability_id for c in explanation.claims])
     if current['catalog_hash'] != explanation.catalog_hash:
         raise ValueError('Capability catalog version changed; read current scope before explaining')
     rows = {r['capability_id']: r for r in current['capabilities']}
@@ -158,7 +181,7 @@ def attach(answer, explanation, reader=None):
     rows, valid = [], False
     try:
         request = Explanation.model_validate(explanation)
-        current = reader([c.capability_id for c in request.claims]) if reader else None
+        current = collect([c.capability_id for c in request.claims], reader)
         rows = check(request, current)['capability_assessments'];valid = True
     except (ValueError, KeyError, OSError):
         answer['gaps'].append({'message':'能力说明版本已变化或无法核验', 'action':'重新查询当前应用能力；不复用旧说明'})

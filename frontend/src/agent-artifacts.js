@@ -41,5 +41,8 @@ export function checkedDeliveryMarkup(answer) {
   const checked=answer.checked_statements||[];
   const periods={steady_state:'稳态构造',study_period:'整个评估期',quote_date:'清单声明日期',static_load_case:'声明静力工况',elapsed_days:'声明原点的连续经过日',observed_window:'CSV观测窗口 · 非年量'};
   const section=checked.length?`<section aria-label="经过核验的专业说明"><h3>模型选择 · 当前记录核验</h3><p>以下字段已与当前记录逐项核对。自由问题的完整覆盖度及模型原始文字未获核验。</p>${checked.map(s=>`<h4>${esc(s.name)}</h4><dl>${s.facts.map(f=>`<dt>${esc(f.label)}</dt><dd>${f.period==='quote_date'?value(f.value):engineeringValue(f.value===null?null:Number(f.value))} ${esc(f.unit)} · ${esc(periods[f.period]||f.period)}${f.study_years!==null?' '+value(f.study_years)+' 年':''}${f.area_m2!==null?' · 面积分母 '+value(f.area_m2)+' m²':''}<small> 来源字段 ${esc(f.source_path)}</small></dd>`).join('')}</dl><small class="mono">${esc(s.record_id)}</small>`).join('')}</section>`:'';
-  return section+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
+  const limitationStates={stale:'来源或版本已失效',incomplete:'资料不完整',outside_model_screen:'超出模型适用范围',constraints_unresolved:'资源约束未解决',incomplete_progress:'进度情景不完整',insufficient_evidence:'证据不充分',events_detected:'检出规则事件'};
+  const limits=answer.checked_limitations||[];
+  const limitations=limits.length?`<section aria-label="当前记录限制说明"><h3>限制说明已核验</h3><p>核验的是当前限制；不改变记录状态，不代表工程结果有效，也不会恢复历史数值。</p>${limits.map(r=>`<article><h4>${esc(limitationStates[r.state]||r.state)}</h4><p>${esc(r.scope)}</p>${r.state==='stale'?`<p>历史数值不可交付。请先复核来源变化，再另行提交计算。</p>${r.stale_reasons?.length?`<p>失效依据：${r.stale_reasons.map(esc).join('、')}</p>`:''}`:''}<small class="mono">${esc(r.record_id)}</small></article>`).join('')}</section>`:'';
+  return section+limitations+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
 }

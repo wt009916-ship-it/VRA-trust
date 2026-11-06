@@ -24,8 +24,8 @@ class Delivery(Contract):
     record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(default_factory=list, max_length=12)
-    limitation_status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected'] | None = Field(default=None,
-        description='For a current incomplete/inapplicable record, copy its status here and use statements: []. This verifies a limitation, not an engineering result. Never invent a numeric status fact.')
+    limitation_status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale'] | None = Field(default=None,
+        description='For a currently incomplete/inapplicable/stale record, copy its status here and use statements: []. This verifies the limitation only, never revives stale numbers or changes record status.')
     finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
 
     @model_validator(mode='after')
@@ -60,7 +60,7 @@ class Limitation(Contract):
     kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
     record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
-    status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected']
+    status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale']
     finish: bool = False
 
     def delivery(self):
@@ -142,9 +142,10 @@ def model_projection(record, kind):
     return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record['input']['name'],
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
-            'limitation_delivery': None if artifact['verified'] or record['status']=='stale' else {
+            'limitation_delivery': None if artifact['verified'] else {
                 'limitation_status':record['status'], 'statements':[],
-                'instruction':'用professional_limit正式说明当前限制：status复制limitation_status，附kind/record_id/record_hash，不提供statements，不编造状态数值或安全结论。'},
+                'stale_reasons':record.get('stale_reasons', []) if record['status']=='stale' else [],
+                'instruction':'用professional_limit正式说明当前限制：status复制limitation_status，附kind/record_id/record_hash，不提供statements。stale只可说明失效，不恢复旧数值，不改变原记录状态。'},
             'calculation_context': calculation_context(record, kind),
             'explanation_instruction': record['explanation_instruction'],
             'projection_notice': '这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。'}
@@ -178,15 +179,18 @@ class SemanticMismatch(ValueError):
 
 
 def check(record, delivery):
-    if record['hash'] != delivery.record_hash or record['status'] == 'stale':
-        raise ValueError('Record changed or stale; read the current record again')
+    if record['hash'] != delivery.record_hash:
+        raise ValueError('Record changed; read the current record again')
     if delivery.limitation_status:
         artifact = inspection(delivery.kind).artifact(record)
         if delivery.limitation_status != record['status'] or artifact['verified']:
             raise ValueError('Limitation does not match the current incomplete or inapplicable record')
         return {'status':'verified', 'reference':delivery.model_dump(mode='json'), 'statements':[],
-                'limitation':{'record_id':delivery.record_id, 'state':record['status'], 'scope':artifact['scope']},
+                'limitation':{'record_id':delivery.record_id, 'state':record['status'], 'scope':artifact['scope'],
+                              'stale_reasons':record.get('stale_reasons', []) if record['status']=='stale' else []},
                 'notice':'只核验当前结果不完整或不适用的状态，不把限制说明当作有效工程数值。'}
+    if record['status'] == 'stale':
+        raise ValueError('Record is stale; numeric delivery remains unavailable')
     available = {f['fact']: f for f in facts(record, delivery.kind)}
     corrections, accepted = [], []
     for claim in delivery.statements:
@@ -233,6 +237,8 @@ def current_answer(domain, project_id, deliveries, reader=None):
             'checked_limitations':limitations,
             'verification': checks, 'summary': '已核验所选结果或限制；自由问题的完整覆盖度仍未评估。' if artifacts else '先前交付已失效或来源不可用，不能复用历史数值。',
             'task_notice': '模型选择记录与事实，应用核对字段；这不是对模型自由解释或整个复杂任务的认证。',
-            'gaps': [] if all(c['passed'] for c in checks) else [{'message': '部分记录已变化或失效', 'action': '重新读取并核验当前记录'}],
+            'gaps': ([{'record_id':r['record_id'], 'message':'当前记录来源或版本已失效，历史数值不可交付',
+                       'action':'复核变化来源后另行提交计算；本次限制核验不会重算或恢复旧结果'} for r in limitations if r['state']=='stale']
+                     + ([] if all(c['passed'] for c in checks) else [{'message': '部分记录已变化或失效', 'action': '重新读取并核验当前记录'}])),
             'limitations': ['未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。'],
             'checked_at': core.now()}
