@@ -2,7 +2,6 @@
 
 These checks detect malformed inputs; they do not certify model suitability.
 """
-import csv
 import math
 import re
 from datetime import date, timedelta
@@ -30,31 +29,8 @@ def validate_hourly_rows(rows):
 
 
 def validate_epw(path):
-    with path.open(encoding='utf-8-sig', newline='') as stream:
-        rows = list(csv.reader(stream))
-    headers = ['LOCATION', 'DESIGN CONDITIONS', 'TYPICAL/EXTREME PERIODS', 'GROUND TEMPERATURES',
-               'HOLIDAYS/DAYLIGHT SAVINGS', 'COMMENTS 1', 'COMMENTS 2', 'DATA PERIODS']
-    if len(rows) < 8 or any(not row or row[0].strip() != label for row, label in zip(rows[:8], headers)):
-        raise ValidationError('EPW requires eight valid header records')
-    if len(rows[0]) < 10 or len(rows[7]) < 7 or rows[7][1:3] != ['1', '1']:
-        raise ValidationError('EPW requires one hourly annual data period and LOCATION metadata')
-    times = []
-    try:
-        for row in rows[8:]:
-            if len(row) != 35:
-                raise ValueError('expected 35 weather fields')
-            month, day, hour, minute = map(int, row[1:5])
-            if minute not in (0, 60):
-                raise ValueError('non-hourly minute')
-            for index in (6, 7, 8, 9):
-                if not math.isfinite(float(row[index])):
-                    raise ValueError('non-finite weather value')
-            times.append((month, day, hour, 60))
-        validate_hourly_rows(times)
-        if [(m, d, h) for m, d, h, _ in times] != sorted((m, d, h) for m, d, h, _ in times):
-            raise ValueError('weather records out of order')
-    except (ValueError, IndexError) as exc:
-        raise ValidationError('Invalid EPW annual data: ' + str(exc)) from exc
+    from .weather_quality import inspect_epw
+    return inspect_epw(path)
 
 
 def validate_idf(path):

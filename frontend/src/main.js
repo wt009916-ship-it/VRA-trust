@@ -1,3 +1,5 @@
+import {bindSimulationGate} from './simulation-gate.js';
+import {weatherQualityMarkup} from './weather-quality.js';
 import {refreshAgentMode, createAgentModePreference} from './agent-mode-status.js';
 import {bindReadRequests,collectReadRequests} from './agent-requests.js';
 import {storageDescription, createEvidenceIntake} from './storage-intake.js';
@@ -133,7 +135,16 @@ function renderProject() {
   document.querySelector('#edit-factors').onclick=()=>factorEditor(state,modal,action,refreshRuns);
   document.querySelector('#add-evidence').onclick = evidenceForm;
   document.querySelector('#review-pending').onclick = () => reviewForm(state.evidence.filter(e => ['idf', 'epw'].includes(e.type) && e.review_state === 'pending'));
-  document.querySelector('#run').onclick = e => action(async () => { const run = await post('/runs', { project_id: p.project_id, scheme_id: document.querySelector('#scheme').value, factor_profile_id: document.querySelector('#factor').value }); notice('已排队：' + run.run_id); await refreshRuns(); schedulePoll(); }, e.currentTarget);
+  const simulationGate=bindSimulationGate({button:document.querySelector('#run'),scheme:document.querySelector('#scheme'),
+    status:document.querySelector('#run-gate-status'),initialGate:state.gate,
+    loadGate:scheme=>request('/projects/'+p.project_id+'/gate?scheme_id='+encodeURIComponent(scheme))});
+  document.querySelector('#run').onclick = () => {
+    if(!simulationGate.ready)return;
+    const scheme=document.querySelector('#scheme').value,factor=document.querySelector('#factor').value;
+    simulationGate.begin();
+    action(async()=>{const run=await post('/runs',{project_id:p.project_id,scheme_id:scheme,factor_profile_id:factor});
+      notice('已排队：'+run.run_id);await refreshRuns();schedulePoll();}).finally(()=>simulationGate.end());
+  };
   document.querySelector('#compare').onclick = e => action(async () => {
     const latest = latestSchemes(state.runs);
     const token = selection;
@@ -158,7 +169,7 @@ function evidenceDetail(ev) {
 function reviewForm(items) {
   if (!items.length) { notice('没有待确认模型；可点击单条证据调整复核状态。'); return; }
   const dialog = modal('人工复核 · ' + items.length + ' 份证据', '<form id="review-form"><p class="form-note">请先查看原文件，确认模型/天气属于此项目，版本、位置、运行范围和面积声明一致。参考模型仅用于演示验证。确认不改变其 IMPORTED / ASSUMED 属性。</p><ul>' + items.map(e => '<li>' + esc(e.name) + ' · v' + e.revision + '</li>').join('') + '</ul><label>复核人<input name="person" required maxlength="100"></label><label>处理<select name="state"><option value="confirmed">确认用于当前项目计算</option><option value="pending">撤回确认，重新待审</option><option value="rejected">拒绝此证据版本</option></select></label><label>复核依据 / 限制<textarea name="note" required minlength="5" maxlength="2000" placeholder="说明你核对的文件、范围及仍未解决的不确定性"></textarea></label><button class="primary" type="submit">保存复核记录</button></form>');
-  document.querySelector('#review-form').onsubmit = e => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.currentTarget)); action(async () => { for (const item of items) await request('/projects/' + item.project_id + '/evidence/' + item.evidence_id, { method: 'PATCH', body: JSON.stringify({ expected_revision: item.revision, review_state: data.state, responsible_person: data.person, review_note: data.note }) }); dialog.close(); await selectProject(state.project.project_id); notice('已保存独立复核版本。受影响的旧运行会显示失效。'); }, e.submitter); };
+  document.querySelector('#review-form').onsubmit = e => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.currentTarget)); action(async () => { for (const item of items) await request('/projects/' + item.project_id + '/evidence/' + item.evidence_id, { method: 'PATCH', body: JSON.stringify({ expected_revision: item.revision, review_state: data.state, responsible_person: data.person, review_note: data.note }) }); await selectProject(state.project.project_id); dialog.close(); notice('已保存独立复核版本。受影响的旧运行会显示失效。'); }, e.submitter); };
 }
 function evidenceForm() {
   const projectId = state.project.project_id;
@@ -195,7 +206,7 @@ async function trace(id, scroll = true) {
   const report = await request('/runs/' + id + '/report.json');
   const r = report.run;
   document.querySelector('#trace-content').className = 'trace-content';
-  document.querySelector('#trace-content').innerHTML = '<div class="trace-heading"><strong class="mono">' + esc(id) + '</strong>' + badge(label[r.status]) + '</div><div class="graph">' + graphMarkup(report.claims.nodes) + '</div><div class="report-actions">' + link('/api/runs/' + id + '/report.json', '完整 JSON') + link('/api/runs/' + id + '/report.html', '证据报告') + link('/api/runs/' + id + '/report.pdf', '下载 PDF') + link('/api/runs/' + id + '/artifacts', '原始证据 ZIP') + '</div><div class="certificate"><p class="eyebrow">DECISION CERTIFICATE · DRAFT</p><h3>当前拒绝给出确定最优推荐</h3><p>状态：' + esc(report.certificate.status) + ' · 工程师未签署</p><p>成立条件：当前输入适用；失效条件：证据、模型、代码或引擎版本变化。</p><p>尚未排除：模型偏差、舒适性问题、方案翻转风险。建议先复核 Warning，再补充账单和运行时段。</p></div><details><summary>完整版本、SQL 来源定位及未满足设定点时间</summary><pre>' + esc(JSON.stringify({ provenance: r.provenance, metrics: r.metrics, evidence: report.evidence, limitations: r.limitations }, null, 2)) + '</pre></details>';
+  document.querySelector('#trace-content').innerHTML = '<div class="trace-heading"><strong class="mono">' + esc(id) + '</strong>' + badge(label[r.status]) + '</div><div class="graph">' + graphMarkup(report.claims.nodes) + '</div><div class="report-actions">' + link('/api/runs/' + id + '/report.json', '完整 JSON') + link('/api/runs/' + id + '/report.html', '证据报告') + link('/api/runs/' + id + '/report.pdf', '下载 PDF') + link('/api/runs/' + id + '/artifacts', '原始证据 ZIP') + '</div>' + weatherQualityMarkup(r.weather_quality) + '<div class="certificate"><p class="eyebrow">DECISION CERTIFICATE · DRAFT</p><h3>当前拒绝给出确定最优推荐</h3><p>状态：' + esc(report.certificate.status) + ' · 工程师未签署</p><p>成立条件：当前输入适用；失效条件：证据、模型、代码或引擎版本变化。</p><p>尚未排除：模型偏差、舒适性问题、方案翻转风险。建议先复核 Warning，再补充账单和运行时段。</p></div><details><summary>完整版本、SQL 来源定位及未满足设定点时间</summary><pre>' + esc(JSON.stringify({ provenance: r.provenance, metrics: r.metrics, evidence: report.evidence, limitations: r.limitations }, null, 2)) + '</pre></details>';
   document.querySelectorAll('[data-node]').forEach(b => { b.onclick = () => { const ev = report.evidence.find(e => e.evidence_id === report.claims.nodes.find(n=>n.id===b.dataset.node)?.evidence_id); if (ev) evidenceDetail(ev); else {const node=report.claims.nodes.find(n=>n.id===b.dataset.node);modal('结论节点与依赖','<pre>'+esc(JSON.stringify(node,null,2))+'</pre>');} }; });
   if (scroll) switchView('trace');
 }

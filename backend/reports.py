@@ -90,8 +90,20 @@ def report_pdf(report):
     story.append(para("计算版本与复核定位", heading))
     section("05  Result Provenance")
     rows(list((run["provenance"] or {"status": "无有效结果版本"}).items()))
+    if run.get('weather_quality'):
+        quality = run['weather_quality']
+        section('05.1  天气输入筛查与缺测条件')
+        rows([('状态 / 小时数', quality['status'] + ' / ' + str(quality['hours'])),
+              ('站点', quality['station']['city']), ('天气 SHA256', quality['source_sha256']),
+              ('策略 / 校验器', quality['policy_version'] + ' / ' + quality['validator_sha256']),
+              ('应用插补次数', quality['application_imputation_count']), ('适用范围', quality['scope'])])
+        for item in quality['conditions']:
+            story.append(para(item['field'] + ': ' + item['message'] + '；' + str(item['count']) +
+                              ' 小时，首/末行 ' + str(item['first_line']) + '/' + str(item['last_line'])))
+        for note in quality['limitations']:
+            story.append(para(note))
     if carbon.get('provenance'):
-        section('05.1  独立碳派生版本（不改写原仿真）')
+        section('05.2  独立碳派生版本（不改写原仿真）')
         for key in ['carbon_id', 'run_id', 'factor_hash', 'source_result_hash', 'calculator_version', 'timestamp', 'energyplus_calls']:
             story.append(para(key + ': ' + str(carbon['provenance'].get(key))))
     section("06  SQL 来源定位")

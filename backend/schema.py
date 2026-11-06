@@ -135,6 +135,7 @@ class RunView(Contract):
     metrics: dict | None = None
     carbon: dict | None = None
     provenance: Provenance | None = None
+    weather_quality: dict | None = None
     error: str | None = None
     stale_reasons: list[str] = Field(default_factory=list)
     warnings_count: StrictInt | None = None
