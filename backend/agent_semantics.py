@@ -10,7 +10,7 @@ from . import core
 
 
 class Statement(Contract):
-    fact: str = Field(min_length=1, max_length=100)
+    fact: str = Field(min_length=1, max_length=100, description='Copy the exact machine key from explanation_facts.fact, never its human-readable label or a translated name.')
     value: str | None = Field(max_length=80, pattern=r'^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]{1,4})?$',
                              description='Required. Copy the current explanation_facts numeric value as a string. Use null only when that source fact value is null.')
     unit: str = Field(min_length=1, max_length=40)
@@ -37,6 +37,23 @@ class Delivery(Contract):
         if bool(self.statements) == bool(self.limitation_status):
             raise ValueError('Deliver either numeric statements or a current limitation status, not both or neither')
         return self
+
+
+class NumericDelivery(Contract):
+    """The model-facing numeric contract matches server validation exactly."""
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
+    record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
+    statements: list[Statement] = Field(min_length=1, max_length=12)
+    finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
+
+    @model_validator(mode='after')
+    def consistent(self):
+        self.delivery()
+        return self
+
+    def delivery(self):
+        return Delivery(**self.model_dump(mode='json'))
 
 
 class Limitation(Contract):
@@ -175,7 +192,8 @@ def check(record, delivery):
     for claim in delivery.statements:
         fact = available.get(claim.fact)
         if fact is None:
-            corrections.append({'fact': claim.fact, 'error': 'Not an available calculated fact; do not infer or invent it'})
+            corrections.append({'fact': claim.fact, 'error': 'Not an available calculated fact; copy an exact fact key, not a translated label',
+                                'available_fact_keys':sorted(available)})
             continue
         value_matches = (claim.value is None and fact['value'] is None) or (
             claim.value is not None and fact['value'] is not None and

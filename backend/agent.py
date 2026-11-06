@@ -21,7 +21,7 @@ from .construction import Schedules
 from .operations import Operations
 from .local_model import LocalModelGateway
 from .agent_inspections import INSPECTIONS
-from .agent_semantics import Delivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection
+from .agent_semantics import NumericDelivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection
 from . import agent_calculations as calculations
 from . import agent_capabilities as capabilities
 
@@ -63,7 +63,7 @@ class ToolArgs(Contract):
     capability_ids: list[capabilities.CapabilityId] | None = Field(default=None, min_length=1, max_length=4)
     capability_explanation: capabilities.Explanation | None = None
     plan_key: str | None = Field(default=None, pattern=r'^[A-Za-z0-9_-]{1,40}$')
-    delivery: Delivery | None = None
+    delivery: NumericDelivery | None = None
     thermal_id: str | None = Field(default=None, pattern=r'^thermal_[a-f0-9]{32}$')
     lifecycle_id: str | None = Field(default=None, pattern=r'^lifecycle_[a-f0-9]{32}$')
     operation_id: str | None = None
@@ -213,10 +213,6 @@ class Agent:
                         collect(value)
 
             collect(parameters)
-            if name == 'professional_deliver':
-                definitions['Delivery']['properties'].pop('limitation_status')
-                definitions['Delivery']['properties']['statements']['minItems'] = 1
-                definitions['Delivery'].setdefault('required', []).append('statements')
             if definitions:
                 parameters['$defs'] = definitions
             tools.append({'type': 'function', 'function': {'name': name, 'description': desc, 'parameters': parameters}})
@@ -287,7 +283,7 @@ class Agent:
             plans, frozen = calculation_context
             return calculations.execute(d, project_id, args.plan_key, plans, frozen)
         if name in {'professional_deliver','professional_limit'}:
-            delivery = args.delivery if name == 'professional_deliver' else args.limitation.delivery() if args.limitation else None
+            delivery = args.delivery.delivery() if name == 'professional_deliver' and args.delivery else args.limitation.delivery() if name == 'professional_limit' and args.limitation else None
             if not delivery:raise core.ValidationError('Provide delivery or limitation')
             if name == 'professional_deliver' and delivery.limitation_status:
                 raise core.ValidationError('Use professional_limit for a limitation; professional_deliver accepts numeric statements only')
@@ -446,13 +442,15 @@ class Agent:
                     parameters['$defs']['Explanation']['properties']['catalog_hash'] = {'type':'string','enum':sorted({r['catalog_hash'] for r in capability_reads})}
                     parameters['$defs']['Claim']['properties']['capability_id'] = {'type':'string','enum':sorted({c['capability_id'] for r in capability_reads for c in r['capabilities']})}
                 if name in {'professional_deliver','professional_limit'} and read_records:
-                    limited = name == 'professional_limit';definition = 'Limitation' if limited else 'Delivery'
+                    limited = name == 'professional_limit';definition = 'Limitation' if limited else 'NumericDelivery'
                     candidates = ([(ds,r) for ds,r in read_records if r['status']!='stale' and not ds.artifact(r)['verified']]
                                   if limited else [(ds,r) for ds,r in read_records if r.get('explanation_facts')])
                     properties = parameters['$defs'][definition]['properties']
                     properties['record_id'] = {'type':'string','enum':sorted({r[ds.record_key] for ds,r in candidates})}
                     properties['record_hash'] = {'type':'string','enum':sorted({r['hash'] for _,r in candidates})}
                     if limited:properties['status'] = {'type':'string','enum':sorted({r['status'] for _,r in candidates})}
+                    else:
+                        parameters['$defs']['Statement']['properties']['fact']['enum'] = sorted({f['fact'] for _,r in candidates for f in r['explanation_facts']})
                     parameters['$defs'][definition]['required'].append('finish')
                     parameters['required'] = ['limitation' if limited else 'delivery']
             return result
@@ -495,7 +493,7 @@ class Agent:
                                       for e in record['events']):
                         raise ToolRefusal('Calculation-plan tasks may read only records created by this task')
                 if name in {'professional_deliver','professional_limit'}:
-                    delivery = Delivery.model_validate(args.get('delivery')) if name == 'professional_deliver' else Limitation.model_validate(args.get('limitation')).delivery()
+                    delivery = NumericDelivery.model_validate(args.get('delivery')).delivery() if name == 'professional_deliver' else Limitation.model_validate(args.get('limitation')).delivery()
                     ds = inspection(delivery.kind)
                     if not any(e['tool'] == ds.read_tool and e['status'] == 'succeeded'
                                and e.get('result', {}).get(ds.record_key) == delivery.record_id

@@ -92,6 +92,10 @@ def driver(a,monkeypatch,plans):
         if len(turns)==1:return batch([('calculation_execute',{'plan_key':p['plan_key']}) for p in plans])
         records=[a.store.list(p['kind'])[0] for p in plans]
         if len(turns)==2:return batch([(inspection(p['kind']).read_tool,{inspection(p['kind']).argument:r[inspection(p['kind']).record_key]}) for p,r in zip(plans,records)])
+        numeric=next(t['function']['parameters'] for t in tools if t['function']['name']=='professional_deliver')
+        keys=numeric['$defs']['Statement']['properties']['fact']['enum']
+        assert '左支反力' not in keys
+        assert all(key in keys for p in plans for key,*_ in EXPECTED[p['kind']])
         return batch([('professional_deliver',{'delivery':{'kind':p['kind'],'record_id':r[inspection(p['kind']).record_key],'record_hash':r['hash'],
             'statements':[dict(fact=k,value=v,unit=u,period=period,study_years=None,area_m2=None) for k,v,u,period in EXPECTED[p['kind']]],'finish':True}}) for p,r in zip(plans,records)])
     monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
@@ -252,7 +256,7 @@ def test_limits_cannot_replace_valid_results_or_forge_states(client,mode):
 def test_numeric_and_limit_tools_have_separate_contracts(client):
     a=client.app.state.agent
     tools={t['function']['name']:t['function']['parameters'] for t in a.tools()}
-    numeric=tools['professional_deliver']['$defs']['Delivery']
+    numeric=tools['professional_deliver']['$defs']['NumericDelivery']
     assert 'limitation_status' not in numeric['properties']
     assert numeric['properties']['statements']['minItems']==1 and 'statements' in numeric['required']
     limited=tools['professional_limit']['$defs']['Limitation']
@@ -264,5 +268,5 @@ def test_numeric_and_limit_tools_have_separate_contracts(client):
     assert a.call(pid,'professional_limit',{'limitation':ref},False)['status']=='verified'
     other=create_project(client)['project_id']
     with pytest.raises(ValueError,match='Cross-project'):a.call(other,'professional_limit',{'limitation':ref},False)
-    with pytest.raises(ValueError,match='professional_limit'):
+    with pytest.raises(ValueError,match='Extra inputs'):
         a.call(pid,'professional_deliver',{'delivery':{k:v for k,v in ref.items() if k!='status'}|{'limitation_status':ref['status']}},False)
