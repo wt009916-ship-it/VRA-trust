@@ -15,8 +15,8 @@ class Statement(Contract):
                              description='Required. Copy the current explanation_facts numeric value as a string. Use null only when that source fact value is null.')
     unit: str = Field(min_length=1, max_length=40)
     period: Literal['steady_state', 'study_period', 'quote_date']
-    study_years: int | None = Field(default=None, ge=1, le=200)
-    area_m2: float | None = Field(default=None, gt=0, allow_inf_nan=False)
+    study_years: int | None = Field(ge=1, le=200, description='Required: copy the fact study_years; null for a non-period calculation.')
+    area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='Required: copy the fact area_m2; null for a total rather than a per-area quantity.')
 
 
 class Delivery(Contract):
@@ -24,6 +24,7 @@ class Delivery(Contract):
     record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(min_length=1, max_length=12)
+    finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
 
     @model_validator(mode='after')
     def consistent(self):

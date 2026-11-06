@@ -111,6 +111,19 @@ def test_delivery_cannot_skip_read_or_cross_project(client, monkeypatch):
     assert not a.store.jobs(pid)
 
 
+def test_explicit_last_delivery_finishes_without_extra_model_call(client, monkeypatch):
+    pid = create_project(client)['project_id'];r = create_record(client, pid, 'thermal');a = client.app.state.agent
+    d = delivery(r);d['finish'] = True
+    captured = scripted(a, monkeypatch, [tool('thermal_read', {'thermal_id':r['thermal_id']}),
+        tool('professional_deliver', {'delivery':d})])
+    t = a.start(pid, Chat(message='Deliver current R', mode='provider'), background=False)
+    assert t['status'] == 'succeeded' and t['model_finished_delivery'] and len(captured) == 2
+    assert t['answer']['task_completion'] == 'partial' and t['events'][-1]['tool'] == 'thermal_read'
+    assert not t['llm_commentary']
+    d['statements'][0].pop('study_years')
+    with pytest.raises(ValueError):Delivery.model_validate(d)
+
+
 def test_stale_hash_and_failed_final_read_do_not_expose_old_values(client, monkeypatch):
     pid = create_project(client)['project_id'];r = create_record(client, pid, 'thermal');a = client.app.state.agent
     bad = delivery(r);bad['record_hash'] = '0'*64
