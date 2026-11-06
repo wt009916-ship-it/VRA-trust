@@ -134,7 +134,7 @@ def test_excess_context_fails_before_provider_and_capacity_recovers(client, monk
     pid = create_project(client)['project_id']; agent = client.app.state.agent
     original = agent.call
     def huge(project_id, name, args, allow):
-        return {'source': 'x'*65000} if name == 'evidence_list' else original(project_id, name, args, allow)
+        return {'source': 'x'*65000} if name == 'project_get' else original(project_id, name, args, allow)
     monkeypatch.setattr(agent, 'call', huge)
     captured = scripted(agent, monkeypatch, [DONE])
     task = agent.start(pid, Chat(message='check', mode='provider'), background=False)

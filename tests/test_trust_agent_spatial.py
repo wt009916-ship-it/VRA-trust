@@ -41,7 +41,7 @@ def test_factor_contract_revision_and_project_auth(client):
 def test_local_agent_real_gate_timeline_and_fail_closed_provider(client):
     pid = create_project(client)['project_id']
     agent = client.app.state.agent
-    task = agent.start(pid, Chat(message='我能推荐最佳方案吗？'), background=False)
+    task = agent.start(pid, Chat(message='检查资料是否满足仿真准入', objective='inspect_evidence'), background=False)
     assert task['status'] == 'succeeded'
     assert task['answer']['can_simulate'] is False
     assert task['answer']['can_recommend'] is False
@@ -106,7 +106,8 @@ def test_provider_agent_calls_actual_registry_under_protocol_fixture(client, mon
     monkeypatch.setattr(agent.gateway, 'complete', lambda messages, tools: next(responses))
     result = agent.start(pid, Chat(message='检查资料', mode='provider'), background=False)
     assert result['status'] == 'succeeded'
-    assert len(result['events']) == 6
+    assert len(result['events']) == 4
+    assert [e['tool'] for e in result['events'] if e.get('origin') == 'controller'] == ['project_get']
     assert result['events'][-2]['result']['can_simulate'] is False
     assert result['events'][-1]['tool'] == 'llm.request'
     assert result['answer']['can_recommend'] is False
