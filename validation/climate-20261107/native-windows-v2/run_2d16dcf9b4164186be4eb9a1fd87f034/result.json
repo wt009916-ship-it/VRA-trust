@@ -1,0 +1,130 @@
+{
+  "run_id": "run_2d16dcf9b4164186be4eb9a1fd87f034",
+  "case_id": "reference_5zone",
+  "scheme_id": "baseline",
+  "status": "succeeded",
+  "started_at": "2026-11-06T22:02:03.243648+00:00",
+  "data_nature": "engineering_reference",
+  "finished_at": "2026-11-06T22:02:12.005107+00:00",
+  "scheme_name": "参考原构造",
+  "metrics": {
+    "annual_energy_kwh": 57193.23,
+    "area_m2": 927.2,
+    "eui_kwh_m2a": 61.68381147540984,
+    "energy_by_carrier_kwh": {
+      "Electricity": 43201.08,
+      "Natural Gas": 13992.15,
+      "Additional Fuel": 0.0,
+      "District Cooling": 0.0,
+      "District Heating": 0.0
+    },
+    "annual_days": 365,
+    "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:02",
+    "locators": {
+      "total_energy": {
+        "table": "Site and Source Energy",
+        "row": "Total Site Energy",
+        "column": "Total Energy",
+        "unit": "kWh",
+        "raw_value": "57193.23"
+      },
+      "area": {
+        "table": "Building Area",
+        "row": "Total Building Area",
+        "column": "Area",
+        "unit": "m2",
+        "raw_value": "927.20"
+      },
+      "Electricity": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "Electricity",
+        "unit": "kWh",
+        "raw_value": "43201.08"
+      },
+      "Natural Gas": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "Natural Gas",
+        "unit": "kWh",
+        "raw_value": "13992.15"
+      },
+      "Additional Fuel": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "Additional Fuel",
+        "unit": "kWh",
+        "raw_value": "0.00"
+      },
+      "District Cooling": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "District Cooling",
+        "unit": "kWh",
+        "raw_value": "0.00"
+      },
+      "District Heating": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "District Heating",
+        "unit": "kWh",
+        "raw_value": "0.00"
+      }
+    },
+    "comfort_hours": {
+      "Time Setpoint Not Met During Occupied Heating / Facility": 1.25,
+      "Time Setpoint Not Met During Occupied Cooling / Facility": 282.0,
+      "Time Not Comfortable Based on Simple ASHRAE 55-2004 / Facility": 293.75
+    },
+    "scope": "annual_site_energy_not_source_energy",
+    "parser_version": "native-sql-0.3.0"
+  },
+  "carbon": {
+    "status": "scenario",
+    "operating_carbon_kg": 24398.97,
+    "covered_carbon_kg": 24398.97,
+    "missing_carriers": [],
+    "coverage": "positive site-energy carriers only; direct and electricity CO2, not full lifecycle or all GHG",
+    "profile_id": "reference_scenario",
+    "profile_hash": "aa76b17b855c21832d63e4645827ccd13382df75720b608707bcb1a45e346328",
+    "scenario": true,
+    "rows": [
+      {
+        "carrier": "Electricity",
+        "energy_kwh": 43201.08,
+        "factor": 0.5,
+        "factor_id": "ASSUMPTION-ELEC-050",
+        "factor_source": "integration test assumption, not an official regional factor",
+        "carbon_kg": 21600.54
+      },
+      {
+        "carrier": "Natural Gas",
+        "energy_kwh": 13992.15,
+        "factor": 0.2,
+        "factor_id": "ASSUMPTION-GAS-020",
+        "factor_source": "integration test assumption per kWh fuel energy, not per m3",
+        "carbon_kg": 2798.4300000000003
+      }
+    ],
+    "lca_total_kg": null,
+    "ccer_issued_t": null
+  },
+  "cost": null,
+  "limitations": [
+    "不是郭峰辉原拟定的南昌5000平方米办公楼，不替代该模型的待交付项。",
+    "模型已有原保温；R1/R2是额外增加80/100mm，非无保温基准。",
+    "气候为美国Golden参考天气；不得声称南昌节能率。",
+    "保温参数为教学假设；无稀土性能或工程合规声明。",
+    "造价、生命周期材料数据与真实碳开发资格未提供。",
+    "地点与设计日取自同站配套DDY，替换官方原模型中的Chicago设计日。",
+    "各方案保留相同HVAC定义和自动定容设置，属于预设计情景比较；不等于固定现有设备条件下的现场改造验证。",
+    "案例间Warning、未满足设定点小时数须由工程人员审查，能耗排序不自动构成推荐。"
+  ],
+  "warnings_count": 2,
+  "geometry_status": "existing frontend geometry is schematic, not this IDF",
+  "ccer": {
+    "status": "not_assessed",
+    "issued_credits_t": null,
+    "reason": "参考算例无真实业主、合规历史监测及开发核证证据。"
+  }
+}
