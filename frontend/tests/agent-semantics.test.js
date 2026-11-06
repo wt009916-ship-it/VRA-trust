@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {checkedDeliveryMarkup} from '../src/agent-artifacts.js';
 
+test('checked stale limitation remains distinct from an effective numerical result',()=>{
+  const html=checkedDeliveryMarkup({checked_limitations:[{record_id:'thermal_test',state:'stale',scope:'One-dimensional wall',stale_reasons:['project_revision','<script>bad</script>']}],checked_statements:[],artifacts:[]});
+  assert.ok(html.includes('限制说明已核验') && html.includes('历史数值不可交付'));
+  assert.ok(html.includes('不改变记录状态') && html.includes('project_revision'));
+  assert.ok(!html.includes('<script>') && html.includes('&lt;script&gt;'));
+  assert.ok(!html.includes('m²·K/W'));
+});
+
 test('checked explanation retains whole period and area denominator, rounds display only',()=>{
   const answer={checked_statements:[{name:'Inventory',record_id:'lifecycle_test',facts:[{
     fact:'per_area',label:'评估期单位面积碳排',value:'17.661749999999998',unit:'kgCO2e/m2',
