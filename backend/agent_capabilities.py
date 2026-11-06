@@ -87,6 +87,29 @@ ENTRIES = {
         '可用进度计算整理计划，专项施工方案和现场风险需要另行专业审查与管理。'),
 }
 
+RELATED = {
+    'thermal_resistance': ['energy_compliance_certification'],
+    'lifecycle_inventory': ['carbon_credit_issuance'],
+    'beam_analysis': ['structural_safety_certification'],
+    'schedule_cpm': ['site_safety_approval'],
+    'operations_rules': ['equipment_fault_diagnosis'],
+    'standards_retrieval': ['energy_compliance_certification'],
+    'drawing_ocr': ['drawing_structural_reconstruction'],
+    'equipment_fault_diagnosis': ['operations_rules'],
+    'energy_compliance_certification': ['thermal_resistance', 'standards_retrieval'],
+    'structural_safety_certification': ['beam_analysis'],
+    'carbon_credit_issuance': ['lifecycle_inventory'],
+    'site_safety_approval': ['schedule_cpm'],
+    'drawing_structural_reconstruction': ['drawing_ocr'],
+}
+
+
+def initial_project_context(project):
+    """Only initial routing context: raw metadata is retained in the audit and explicit reads."""
+    return {'project_id': project['project_id'], 'revision': project['revision'],
+            'declared_area_m2': project['building']['area_m2'],
+            'projection_notice': '初始路由仅提供项目身份、修订和声明面积。名称、备注等自由文本未发送；完整项目保留在控制流程审计，必要时可显式project_get读取。不把项目文字当作应用权限或认证依据。'}
+
 
 def catalog(ids):
     if not ids or len(ids) > 4 or len(set(ids)) != len(ids) or any(key not in ENTRIES for key in ids):
@@ -102,6 +125,7 @@ def catalog(ids):
             'reason_code': 'implemented_bounded_method' if supported else 'outside_application_scope',
             'scope': scope, 'next_step': next_step, 'source_module': 'backend/' + module,
             'source_hash': versions[module], 'project_readiness': 'NOT_ASSESSED',
+            'related_capabilities': [{'capability_id': k, 'title': ENTRIES[k][0]} for k in RELATED.get(key, [])],
             'notice': '这是应用功能范围说明；不是本项目资料充分性、运行就绪、工程合规或认证结论。'})
     return {'catalog_hash': digest, 'capabilities': rows}
 
