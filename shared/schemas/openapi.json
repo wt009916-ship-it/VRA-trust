@@ -6184,6 +6184,32 @@
             "title": "Allow Compute",
             "default": false
           },
+          "calculation_plans": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ThermalPlan"
+                },
+                {
+                  "$ref": "#/components/schemas/LifecyclePlan"
+                },
+                {
+                  "$ref": "#/components/schemas/CostPlan"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "cost": "#/components/schemas/CostPlan",
+                  "lifecycle": "#/components/schemas/LifecyclePlan",
+                  "thermal": "#/components/schemas/ThermalPlan"
+                }
+              }
+            },
+            "type": "array",
+            "maxItems": 2,
+            "title": "Calculation Plans"
+          },
           "search_plan": {
             "anyOf": [
               {
@@ -6364,6 +6390,31 @@
           "run_ids"
         ],
         "title": "ComparisonRequest"
+      },
+      "CostPlan": {
+        "properties": {
+          "plan_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Plan Key"
+          },
+          "kind": {
+            "type": "string",
+            "const": "cost",
+            "title": "Kind"
+          },
+          "input": {
+            "$ref": "#/components/schemas/Estimate"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_key",
+          "kind",
+          "input"
+        ],
+        "title": "CostPlan"
       },
       "Credentials": {
         "properties": {
@@ -7439,6 +7490,31 @@
           "source"
         ],
         "title": "Layer"
+      },
+      "LifecyclePlan": {
+        "properties": {
+          "plan_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Plan Key"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lifecycle",
+            "title": "Kind"
+          },
+          "input": {
+            "$ref": "#/components/schemas/Inventory"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_key",
+          "kind",
+          "input"
+        ],
+        "title": "LifecyclePlan"
       },
       "LocalModelSettings": {
         "properties": {
@@ -9033,6 +9109,31 @@
           "thermal_ids"
         ],
         "title": "ThermalCompare"
+      },
+      "ThermalPlan": {
+        "properties": {
+          "plan_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Plan Key"
+          },
+          "kind": {
+            "type": "string",
+            "const": "thermal",
+            "title": "Kind"
+          },
+          "input": {
+            "$ref": "#/components/schemas/Assembly"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_key",
+          "kind",
+          "input"
+        ],
+        "title": "ThermalPlan"
       },
       "UniformLoad": {
         "properties": {
