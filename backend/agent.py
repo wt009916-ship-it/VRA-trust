@@ -21,6 +21,7 @@ from .agent_inspections import INSPECTIONS
 from .agent_semantics import NumericDelivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection
 from . import agent_calculations as calculations
 from . import agent_capabilities as capabilities
+from . import agent_missing as missing_records
 
 
 class Chat(Contract):
@@ -56,6 +57,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    missing: missing_records.Missing | None = None
     plan_keys: list[str] | None = Field(default=None, min_length=1, max_length=2)
     record_ids: list[str] | None = Field(default=None, min_length=1, max_length=3)
     limitation: Limitation | None = None
@@ -88,6 +90,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'professional_missing': '只读核验并交付当前项目的记录缺失：missing.kind必填；record_id仅用于用户明确指定的编号，省略则核验该类全部记录为空。检查完整目录，不能把最近6条未列出当缺失。不能代替未执行的已授权计划，不创建记录或自动重试计算；最后所需说明可finish=true。',
     'calculation_prepare': '选择本轮已冻结的plan_keys（1到2个）并逐项真实执行、保存、读取当前结果；适合用户要求的多份独立计划。返回每条记录的kind、ID、hash和当前事实/限制，随后仍须逐条professional_deliver或professional_limit。未选计划不会执行，参数不能更改；子操作逐项审计和计预算，失败保留已执行记录。',
     'professional_read_many': '按明确record_ids（1到3个）逐项读取当前专业记录，包括已失效记录；ID决定专业类型，不猜类型。只读，不创建计算；适合多记录复核。返回各记录当前事实/限制和hash，随后仍需正式交付，读取成功不等于任务完成。',
     'capability_lookup': '查询当前应用能做什么及明确边界，每批1到4个capability_ids；超过4项请分批查询，批次上限不是不支持剩余能力。分别核对用户要求的有限计算、资料检索与认证/确诊，不漏支持项，也不加无关项；不检查项目资料充分性。',
@@ -129,6 +132,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'professional_missing': ('missing',),
     'calculation_prepare': ('plan_keys',),
     'professional_read_many': ('record_ids',),
     'professional_limit': ('limitation',),
@@ -221,7 +225,7 @@ class Agent:
                 continue
             # The same root display title adds no constraint and repeats for every tool.
             parameters = {k: v for k, v in schema.items() if k not in {'$defs', 'properties', 'required', 'title'}}
-            parameters['properties'] = {k: schema['properties'][k] for k in TOOL_FIELDS[name]}
+            parameters['properties'] = {k:{a:b for a,b in schema['properties'][k].items() if a!='title'} for k in TOOL_FIELDS[name]}
             definitions = {}
 
             def collect(node):
@@ -255,6 +259,10 @@ class Agent:
             history.append({'agent_id': previous_id, 'question': previous['question'],
                 'professional_references': [{'kind': d['kind'], 'record_id': d['record_id']}
                     for d in previous.get('professional_deliveries', [])],
+                'missing_references':[d['request'] for d in previous.get('missing_deliveries',[])],
+                'calculation_progress':previous.get('calculation_progress',[]),
+                'previous_task_failed':previous['status']=='failed',
+                'failure_notice':'失败不证明没有副作用；应查询当前项目实际记录，不自动重试写操作。' if previous['status']=='failed' else None,
                 'outcome': (previous.get('answer') or {}).get('task_completion', 'failed'),
                 'summary': (previous.get('answer') or {}).get('summary'),
                 'model_commentary_unverified': '' if previous.get('llm_commentary_policy') == 'audit_only'
@@ -266,10 +274,12 @@ class Agent:
         record = self.store.get('agent', agent_id)
         if record['project_id'] != project_id:
             raise ToolRefusal('Cross-project conversation rejected')
-        if (record.get('professional_deliveries') or record.get('capability_delivery')) and record['status'] == 'succeeded':
+        if (record.get('professional_deliveries') or record.get('capability_delivery') or record.get('missing_deliveries')) and record['status'] == 'succeeded':
             answer = current_answer(self.domain, project_id, record['professional_deliveries'])
             if record.get('capability_delivery'):
                 answer = capabilities.attach(answer, record['capability_delivery'])
+            if record.get('missing_deliveries'):
+                answer = missing_records.attach(answer,self.domain,project_id,record['missing_deliveries'])
             answer['basis'] = (record.get('answer') or {}).get('basis', [])
             return {**record, 'answer': answer, 'calculation_progress': calculations.progress(record, answer), 'answer_checked_at': core.now(),
                     'historical_task_completion': (record.get('answer') or {}).get('task_completion'),
@@ -298,6 +308,8 @@ class Agent:
             raise core.ValidationError('Unexpected arguments for ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'professional_missing':
+            return missing_records.assess(d,project_id,args.missing)
         if name in {'calculation_prepare','professional_read_many'}:
             raise ToolRefusal('Compound tools require the bounded task executor and its per-operation audit')
         if name == 'capability_lookup':
@@ -324,9 +336,7 @@ class Agent:
                     for r in self.store.jobs(project_id)[:6]]
         for spec in INSPECTIONS.values():
             if name == spec.list_tool:
-                return [{spec.record_key:r[spec.record_key], 'name':r['input']['name'],
-                         'status':spec.service(d).view(project_id,r[spec.record_key])['status']}
-                        for r in self.store.list(spec.kind,project_id)[:6]]
+                return missing_records.catalog(d,project_id,spec)
             if name == spec.read_tool:
                 ident = getattr(args, spec.argument)
                 if not ident:raise core.ValidationError('Provide ' + spec.argument)
@@ -400,7 +410,7 @@ class Agent:
                 'target_run_id': body.target_run_id, 'previous_agent_id': body.previous_agent_id,
                 'context_snapshot': history, 'recovery_attempts': 0}
         if body.objective == 'open_ended':
-            record.update(professional_deliveries=[], llm_commentary_policy='audit_only')
+            record.update(professional_deliveries=[], missing_deliveries=[], llm_commentary_policy='audit_only')
         if body.calculation_plans:
             record['calculation_plan_snapshot'] = calculations.snapshot(self.domain, project_id, body.calculation_plans)
         if spec:
@@ -421,10 +431,15 @@ class Agent:
         if body.calculation_plans:
             offered = {'project_get', 'calculation_execute', 'calculation_prepare', 'professional_read_many', 'professional_deliver','professional_limit'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
         if not any(p.execution_authorized for p in body.calculation_plans):offered -= {'calculation_execute','calculation_prepare'}
-        if body.objective != 'open_ended':offered -= {'professional_deliver','professional_limit'}
+        if body.objective != 'open_ended':offered -= {'professional_deliver','professional_limit','professional_missing'}
         if body.objective != 'open_ended':offered -= {'capability_lookup', 'capability_explain'}
         def reserved_reads():
-            return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + capabilities.read_count(record.get('capability_delivery'))
+            return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + len(record.get('missing_deliveries',[])) + capabilities.read_count(record.get('capability_delivery'))
+        def missing_targets():
+            ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}\b',body.message))
+            ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('professional_references',[]))
+            ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('missing_references',[]) if r.get('record_id'))
+            return ids
         def turn_tools():
             available = set(offered)
             choices = {}
@@ -440,7 +455,7 @@ class Agent:
                         ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('professional_references', []) if r['kind'] == ds.kind)
                     for e in record['events']:
                         if e['status'] != 'succeeded':continue
-                        if e['tool'] == ds.list_tool:ids.update(r[ds.record_key] for r in e['result'])
+                        if e['tool'] == ds.list_tool:ids.update(r[ds.record_key] for r in missing_records.rows(e['result']))
                         if e['tool'] == 'calculation_execute' and e['result']['kind'] == ds.kind:ids.add(e['result']['record_id'])
                         if e['tool'] == ds.read_tool:
                             ids.add(e['result'][ds.record_key]);read_any = True
@@ -460,6 +475,9 @@ class Agent:
                 if name == 'calculation_execute':
                     parameters['properties']['plan_key'] = {'type':'string','enum':[p.plan_key for p in body.calculation_plans if p.execution_authorized]}
                     parameters['required'] = ['plan_key']
+                if name == 'professional_missing':
+                    parameters['required'] = ['missing']
+                    parameters['$defs']['Missing']['properties']['record_id']['enum']=[None]+sorted(missing_targets())
                 if name == 'calculation_prepare':
                     parameters['properties']['plan_keys'] = {'type':'array','minItems':1,'maxItems':2,'uniqueItems':True,
                         'items':{'type':'string','enum':[p.plan_key for p in body.calculation_plans if p.execution_authorized]}}
@@ -510,6 +528,7 @@ class Agent:
             record['events'].append(event)
             save()
             start = time.monotonic()
+            canonical = {}
             try:
                 if isinstance(args, str):
                     args = json.loads(args, parse_constant=reject_constant, parse_float=finite_float)
@@ -575,6 +594,13 @@ class Agent:
                     previous = record['professional_deliveries']
                     if len(previous) >= 3 and not any(x['record_id'] == delivery.record_id for x in previous):
                         raise ToolRefusal('At most three professional records per task')
+                if name == 'professional_missing' and origin == 'model':
+                    candidate = {'request':canonical['missing']}
+                    if not candidate['request']:raise core.ValidationError('Provide missing request')
+                    if candidate['request'].get('record_id') and candidate['request']['record_id'] not in missing_targets():
+                        raise core.ValidationError('Only check a record ID explicitly requested by the user or referenced in task history; do not invent IDs')
+                    if len(record.get('missing_deliveries',[]))>=6 and not any(missing_records.key(x)==missing_records.key(candidate) for x in record['missing_deliveries']):
+                        raise ToolRefusal('At most six record absence scopes per task')
                 key = core.hash_json([name, canonical])
                 if name in WRITE_TOOLS and key in attempts:
                     if attempts[key] is None:
@@ -590,6 +616,8 @@ class Agent:
                     record['professional_deliveries'] = [x for x in record['professional_deliveries'] if x['record_id'] != delivery.record_id] + [result['reference']]
                 if name == 'capability_explain':
                     record['capability_delivery'] = result['reference']
+                if name == 'professional_missing' and origin == 'model':
+                    record['missing_deliveries'] = [x for x in record['missing_deliveries'] if missing_records.key(x)!=missing_records.key(result['reference'])] + [result['reference']]
                 if isinstance(result, dict) and result.get('status') == 'ACTION_NOT_AUTHORIZED':
                     raise ToolRefusal('本轮未授权计算；历史授权与模型文字不能替代本轮授权')
                 if name in WRITE_TOOLS:
@@ -607,6 +635,8 @@ class Agent:
                               'simulation_result': 'simulation_list', 'simulation_status': 'simulation_list',
                               'claim_trace': 'simulation_list', 'certificate_generate': 'simulation_list',
                               'report_generate': 'simulation_list'}.get(name)
+                    if name=='professional_missing' and canonical.get('missing'):
+                        lookup=inspection(canonical['missing']['kind']).list_tool
                     return {'status': 'TOOL_ERROR', 'error': event['error'], 'retry_allowed': True,
                             'corrections': exc.corrections if isinstance(exc, (SemanticMismatch, capabilities.CapabilityMismatch)) else [],
                             'lookup_tool': lookup,
@@ -620,7 +650,7 @@ class Agent:
             invoke('project_get', {})
             if spec:
                 if not record[spec.target]:
-                    records = invoke(spec.list_tool, {})
+                    records = missing_records.rows(invoke(spec.list_tool, {}))
                     record[spec.target] = records[0][spec.record_key] if records else None
                 if record[spec.target]:
                     invoke(spec.read_tool, {spec.argument:record[spec.target]})
@@ -649,6 +679,7 @@ class Agent:
                     '每批最多查询四项能力，更多要求分批查询；一次汇总提交全部所需claims（最多16项），新的说明替换此前说明。不得用查询能力替代用户要求的实际计算。'
                     'open_ended的热工/阶段碳/材料清单/梁分析/施工进度/设备规则任务：先自主选择对应list/read，再调用professional_deliver交付所问数值事实。'
                     '记录不完整、模型不适用或stale时，用professional_limit提交实际读取的当前status，正式说明限制；该工具不提交数值或statements。核验通过不改变原记录状态。professional_deliver仅提交当前数值，不能包含limitation_status。'
+                    '没有所需记录时，用professional_missing核验当前项目完整范围并交付缺失说明；无明确记录编号则省略record_id，不能猜编号。列表含总数和truncated，最近6条未列出不证明缺失。缺失说明不完成工程计算，不授权重试失败写操作。'
                     'read返回explanation_facts，按该事实项的value、unit、period、study_years、area_m2提交，record_hash来自hash。'
                     '无记录或没有对应事实就说明未完成，不伪造交付。不把总量改称单位面积，不把整个评估期改称年量。'
                     'TOOL_ERROR含corrections时先修正结构化事实，再交付；仅自由文字不能替代工具交付。最多三个不同记录。'
@@ -709,7 +740,7 @@ class Agent:
                             messages.append({'role':'user','content':'你已查询应用能力，但尚未完成正式说明。检查问题中的每个不同要求；遗漏的能力请用capability_lookup补查，可参考related_capabilities。随后capability_explain一次提交全部所需claims和catalog_hash；最后说明finish=true。自由文字不会成为正式结果；不要把计算支持与认证能力合并成一项。'})
                             continue
                         break
-                    new_deliveries = sum(c['function']['name'] in {'professional_deliver','professional_limit'} for c in calls)
+                    new_deliveries = sum(c['function']['name'] in {'professional_deliver','professional_limit','professional_missing'} for c in calls)
                     current_capability_reads = capabilities.read_count(record.get('capability_delivery'))
                     future_capability_reads = current_capability_reads
                     for call in calls:
@@ -731,6 +762,8 @@ class Agent:
                         batch_failed |= isinstance(result, dict) and result.get('status') == 'TOOL_ERROR'
                         if call['function']['name'] in {'professional_deliver','professional_limit','capability_explain'} and result.get('status') == 'verified':
                             finish_requested |= result['reference']['finish']
+                        if call['function']['name']=='professional_missing' and result.get('status')=='verified':
+                            finish_requested |= result['reference']['request']['finish']
                         if body.objective == 'open_ended':
                             ds = next((s for s in INSPECTIONS.values() if s.read_tool == call['function']['name']), None)
                             if ds and isinstance(result, dict) and ds.record_key in result:
@@ -774,6 +807,9 @@ class Agent:
                 if record.get('capability_delivery'):
                     answer = capabilities.attach(answer, record['capability_delivery'],
                         reader=lambda ids: invoke('capability_lookup', {'capability_ids':ids}))
+                if record.get('missing_deliveries'):
+                    answer = missing_records.attach(answer,self.domain,record['project_id'],record['missing_deliveries'],
+                        reader=lambda request: invoke('professional_missing',{'missing':request.model_dump(mode='json')}))
                 answer.update(basis=[e['tool'] for e in record['events'] if e['status'] == 'succeeded' and e['tool'] in TOOLS],
                               failed_tool_calls=sum(e['status'] == 'failed' and e['tool'] in TOOLS for e in record['events']))
                 record.update(status='succeeded', answer=answer)

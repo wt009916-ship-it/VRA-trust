@@ -53,5 +53,8 @@ export function checkedDeliveryMarkup(answer) {
   const limitationStates={stale:'来源或版本已失效',incomplete:'资料不完整',outside_model_screen:'超出模型适用范围',constraints_unresolved:'资源约束未解决',incomplete_progress:'进度情景不完整',insufficient_evidence:'证据不充分',events_detected:'检出规则事件'};
   const limits=answer.checked_limitations||[];
   const limitations=limits.length?`<section aria-label="当前记录限制说明"><h3>限制说明已核验</h3><p>核验的是当前限制；不改变记录状态，不代表工程结果有效，也不会恢复历史数值。</p>${limits.map(r=>`<article><h4>${esc(limitationStates[r.state]||r.state)}</h4><p>${esc(r.scope)}</p>${r.state==='stale'?`<p>历史数值不可交付。请先复核来源变化，再另行提交计算。</p>${staleReasonMarkup(r)}`:''}<small class="mono">${esc(r.record_id)}</small></article>`).join('')}</section>`:'';
-  return section+limitations+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
+  const kinds={thermal:'热工构造',lifecycle:'阶段碳清单',cost:'材料成本',engineering:'梁分析',schedule:'施工进度',operation:'设备规则核查'};
+  const missing=answer.checked_missing||[];
+  const absence=missing.length?`<section aria-label="当前记录缺失说明"><h3>记录可用性已核验 · 尚无所需结果</h3><p>以下是当前项目记录范围的检查，不代表工程计算完成，也不表示应用不支持该功能。</p>${missing.map(r=>`<article><h4>${esc(kinds[r.kind]||r.kind)}</h4><p>${r.scope==='entire_project_kind'?'完整项目目录中没有该类记录。':'指定编号在当前项目中不可用；不能据此判断其他项目是否存在该记录。'}</p>${r.record_id?`<small class="mono">${esc(r.record_id)}</small>`:''}<p>核查时间：${esc(r.checked_at)}</p></article>`).join('')}<p>请核对项目与编号；需要计算时提交完整参数和本次授权。失败后不自动重试写操作，缺失结果不记为零。</p></section>`:'';
+  return section+limitations+absence+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
 }

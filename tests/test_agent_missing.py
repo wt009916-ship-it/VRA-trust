@@ -1,0 +1,182 @@
+"""Real project catalogs and scripted tool messages; not evidence of model intelligence."""
+import pytest
+
+from backend.agent import Chat
+from test_api import create_project
+from test_agent_capabilities import tool
+from test_agent_contract import scripted
+from test_agent_professional import create_record
+from test_agent_calculations import batch, chat, plan
+from test_agent_semantics import delivery
+from backend.agent_missing import Missing
+from backend.agent_inspections import INSPECTIONS
+
+
+KINDS=['thermal','lifecycle','cost','engineering','schedule','operation']
+
+
+def test_empty_project_has_formal_missing_delivery_without_inventing_record(client, monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('thermal_list',{}),tool('professional_missing',{'missing':{'kind':'thermal','finish':True}})])
+    task=agent.start(pid,Chat(message='Check absent wall record; do not invent an ID or value',mode='provider'),background=False)
+    assert task['status']=='succeeded',task.get('error')
+    answer=task['answer'];assert answer['task_completion']=='incomplete'
+    assert answer['checked_missing'][0]['reason_code']=='no_records_in_project'
+    assert not answer.get('checked_statements') and not agent.store.list('thermal',pid)
+    assert [e['tool'] for e in task['events']].count('professional_missing')==2
+
+
+def test_catalog_reports_truncation_and_does_not_prove_older_record_absent(client):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    records=[create_record(client,pid,'thermal') for _ in range(7)]
+    listing=agent.call(pid,'thermal_list',{},False)
+    assert listing['total_count']==7 and listing['returned_count']==6 and listing['truncated']
+    assert records[0]['thermal_id'] not in {r['thermal_id'] for r in listing['records']}
+    with pytest.raises(ValueError,match='available'):
+        agent.call(pid,'professional_missing',{'missing':{'kind':'thermal','record_id':records[0]['thermal_id']}},False)
+
+
+@pytest.mark.parametrize('kind',KINDS)
+def test_entire_scope_absence_has_no_record_id_or_engineering_values(client,kind):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    result=agent.call(pid,'professional_missing',{'missing':{'kind':kind}},False)
+    assert result['missing']['project_record_count']==0 and result['missing']['record_id'] is None
+    assert result['missing']['scope']=='entire_project_kind' and 'result' not in result
+    listing=agent.call(pid,next(s.list_tool for s in INSPECTIONS.values() if s.kind==kind),{},False)
+    assert listing['records']==[] and listing['total_count']==listing['returned_count']==0 and not listing['truncated']
+
+
+def test_foreign_and_nonexistent_ids_are_indistinguishable_within_owned_project(client):
+    own=create_project(client)['project_id'];foreign=create_project(client)['project_id'];agent=client.app.state.agent
+    record=create_record(client,foreign,'thermal')
+    receipts=[agent.call(own,'professional_missing',{'missing':{'kind':'thermal','record_id':rid}},False)
+              for rid in [record['thermal_id'],'thermal_'+'0'*32]]
+    for receipt in receipts:
+        assert receipt['missing']['reason_code']=='record_not_available_in_project'
+        assert receipt['missing']['project_record_count']==0
+        assert foreign not in str(receipt) and record['hash'] not in str(receipt)
+    assert receipts[0]['reference']['catalog_hash']==receipts[1]['reference']['catalog_hash']
+
+
+@pytest.mark.parametrize('mutation',['record_created','project_revised'])
+def test_history_rechecks_absence_without_rewriting_stored_task(client,monkeypatch,mutation):
+    project=create_project(client);pid=project['project_id'];agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'thermal','finish':True}})])
+    task=agent.start(pid,Chat(message='Check absent record',mode='provider'),background=False)
+    assert len(task['answer']['checked_missing'])==1
+    old=agent.store.get('agent',task['agent_id'])
+    if mutation=='record_created':create_record(client,pid,'thermal')
+    else:agent.store.put('project',{**project,'name':'Revised'},project['revision'])
+    current=agent.view(pid,task['agent_id'])
+    assert current['answer']['checked_missing']==[]
+    assert not current['answer']['verification'][-1]['passed']
+    assert agent.store.get('agent',task['agent_id'])==old
+
+
+def test_final_read_catches_concurrent_record_creation(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent;original=agent.call;calls=0
+    def call(*args,**kw):
+        nonlocal calls
+        result=original(*args,**kw)
+        if args[1]=='professional_missing':
+            calls+=1
+            if calls==1:create_record(client,pid,'thermal')
+        return result
+    monkeypatch.setattr(agent,'call',call)
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'thermal','finish':True}})])
+    task=agent.start(pid,Chat(message='Check absence',mode='provider'),background=False)
+    assert task['status']=='succeeded' and not task['answer']['checked_missing']
+    assert any(e['tool']=='professional_missing' and e['status']=='failed' and e['origin']=='controller' for e in task['events'])
+    assert not task['answer']['verification'][-1]['passed']
+
+
+def test_all_six_absence_scopes_fit_existing_budget_with_real_final_reads(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    scripted(agent,monkeypatch,[batch([('professional_missing',{'missing':{'kind':k,'finish':False}}) for k in KINDS[:3]]),
+                               batch([('professional_missing',{'missing':{'kind':k,'finish':True}}) for k in KINDS[3:]])])
+    task=agent.start(pid,Chat(message='Check missing records for all six professional kinds',mode='provider'),background=False)
+    assert task['status']=='succeeded',task.get('error')
+    assert len(task['events'])==15 and len(task['answer']['checked_missing'])==6
+    assert len([e for e in task['events'] if e['tool']=='professional_missing' and e['origin']=='controller'])==6
+    assert task['answer']['task_completion']=='incomplete'
+
+
+def test_absence_does_not_replace_authorized_calculation_plan(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'thermal','finish':True}})])
+    task=agent.start(pid,chat([plan()]),background=False)
+    assert task['status']=='failed' and not agent.store.list('thermal',pid)
+    assert not task['missing_deliveries'] and task['calculation_progress'][0]['state']=='not_executed'
+
+
+def test_rejected_write_followup_checks_actual_catalog_without_retry(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent;p=plan('lifecycle')
+    p['input']['area_m2']=12.0
+    scripted(agent,monkeypatch,[tool('calculation_execute',{'plan_key':p['plan_key']})])
+    failed=agent.start(pid,chat([p]),background=False)
+    assert failed['status']=='failed' and not agent.store.list('lifecycle',pid)
+    captured=scripted(agent,monkeypatch,[tool('lifecycle_list',{}),tool('professional_missing',{'missing':{'kind':'lifecycle','finish':True}})])
+    task=agent.start(pid,Chat(message='Read previous carbon record; do not execute',mode='provider',previous_agent_id=failed['agent_id']),background=False)
+    assert task['status']=='succeeded' and task['context_snapshot'][0]['previous_task_failed']
+    assert task['answer']['checked_missing'][0]['kind']=='lifecycle'
+    assert not any(e['tool']=='calculation_execute' for e in task['events']) and captured
+
+
+def test_uncertain_write_cannot_be_reported_missing_if_record_was_saved(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent;original=agent.call
+    def call(*args,**kw):
+        result=original(*args,**kw)
+        if args[1]=='calculation_execute':raise RuntimeError('Failure after real commit')
+        return result
+    monkeypatch.setattr(agent,'call',call)
+    scripted(agent,monkeypatch,[tool('calculation_execute',{'plan_key':'a'})])
+    failed=agent.start(pid,chat([plan()]),background=False)
+    assert failed['status']=='failed' and len(agent.store.list('thermal',pid))==1
+    monkeypatch.setattr(agent,'call',original)
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'thermal','finish':True}}),{'role':'assistant','content':'Must inspect actual saved record; no retry.'}])
+    task=agent.start(pid,Chat(message='Check previous outcome',mode='provider',previous_agent_id=failed['agent_id']),background=False)
+    assert not task['missing_deliveries'] and len(agent.store.list('thermal',pid))==1
+    assert task['events'][2]['status']=='failed'
+
+
+@pytest.mark.parametrize('data',[{}, {'kind':'unknown'}, {'kind':'thermal','record_id':'cost_'+'1'*32},
+    {'kind':'thermal','record_id':'../../secret'}, {'kind':'thermal','count':0}, {'kind':'thermal','finish':'true'}])
+def test_missing_contract_rejects_fabricated_metadata_and_invalid_scope(data):
+    with pytest.raises(ValueError):Missing.model_validate(data)
+
+
+def test_model_cannot_invent_target_id_to_bypass_existing_records(client,monkeypatch):
+    pid=create_project(client)['project_id'];create_record(client,pid,'thermal');agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'thermal','record_id':'thermal_'+'0'*32,'finish':True}}),
+                               {'role':'assistant','content':'Need current record lookup.'}])
+    task=agent.start(pid,Chat(message='Read the current wall result',mode='provider'),background=False)
+    assert not task['missing_deliveries']
+    assert 'do not invent IDs' in task['events'][2]['error']
+
+
+def test_numeric_delivery_and_other_missing_kind_remain_distinct(client,monkeypatch):
+    pid=create_project(client)['project_id'];record=create_record(client,pid,'thermal');agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('thermal_read',{'thermal_id':record['thermal_id']}),batch([
+        ('professional_deliver',{'delivery':delivery(record)}),('professional_missing',{'missing':{'kind':'cost','finish':True}})])])
+    task=agent.start(pid,Chat(message='Read '+record['thermal_id']+' and check missing procurement record',mode='provider'),background=False)
+    assert task['status']=='succeeded' and task['answer']['task_completion']=='partial'
+    assert len(task['answer']['checked_statements'])==len(task['answer']['checked_missing'])==1
+
+
+def test_explicit_unavailable_id_is_not_misrepresented_as_empty_kind(client,monkeypatch):
+    pid=create_project(client)['project_id'];create_record(client,pid,'thermal');agent=client.app.state.agent
+    ident='thermal_'+'1'*32
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'thermal','record_id':ident,'finish':True}})])
+    task=agent.start(pid,Chat(message='Check this specific unavailable ID: '+ident,mode='provider'),background=False)
+    receipt=task['answer']['checked_missing'][0]
+    assert receipt['project_record_count']==1 and receipt['scope']=='requested_record_in_project'
+    assert receipt['reason_code']=='record_not_available_in_project' and receipt['record_id']==ident
+
+
+def test_malformed_missing_call_recovers_without_unbound_parser_state(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'invalid'}}),
+        tool('professional_missing',{'missing':{'kind':'thermal','finish':True}})])
+    task=agent.start(pid,Chat(message='Check missing wall',mode='provider'),background=False)
+    assert task['status']=='succeeded' and task['recovery_attempts']==1
+    assert len(task['answer']['checked_missing'])==1
