@@ -17,5 +17,5 @@ test('empty stale explanations render no old facts and untrusted strings escape'
     value:null,label:'<img>',unit:'<iframe>',period:'steady_state',study_years:null,area_m2:null,source_path:'<svg>'}]}]});
   assert.ok(!html.includes('<svg')&&!html.includes('<img')&&!html.includes('<script')&&!html.includes('<iframe'));
   assert.ok(html.includes('—'));
-  assert.ok(!checkedDeliveryMarkup({checked_statements:[],artifacts:[]}).includes('17.66175'));
+  assert.equal(checkedDeliveryMarkup({checked_statements:[],artifacts:[]}), '');
 });
