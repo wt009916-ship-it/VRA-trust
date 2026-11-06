@@ -284,7 +284,7 @@ def test_atomic_missing_rejects_whole_selection_when_one_kind_exists(client,monk
 
 
 @pytest.mark.parametrize('payload',[{'kinds':[]},{'kinds':['thermal','thermal']},
-    {'kind':'thermal','kinds':['cost']},{'kinds':['thermal'],'record_id':'thermal_'+'1'*32}])
+    {'kind':'thermal','kinds':['cost']},{'kinds':['thermal','cost'],'record_id':'thermal_'+'1'*32}])
 def test_atomic_missing_selection_rejects_ambiguous_scope(payload):
     with pytest.raises(ValueError):Missing.model_validate(payload)
 
@@ -310,3 +310,25 @@ def test_atomic_absence_history_rechecks_each_scope_after_one_kind_is_created(cl
     assert [r['kind'] for r in current['answer']['checked_missing']]==['cost','operation']
     assert len(current['answer']['verification'])==3 and not current['answer']['verification'][0]['passed']
     assert agent.store.get('agent',task['agent_id'])==saved
+
+
+def test_model_missing_schema_exposes_only_canonical_array_selector(client):
+    definition=next(t for t in client.app.state.agent.tools() if t['function']['name']=='professional_missing')['function']['parameters']['$defs']['Missing']
+    assert 'kind' not in definition['properties']
+    assert definition['required']==['kinds']
+    assert definition['properties']['kinds']['maxItems']==6
+
+
+def test_canonical_single_kind_array_preserves_explicit_id_scope(client):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent;ident='thermal_'+'2'*32
+    result=agent.call(pid,'professional_missing',{'missing':{'kinds':['thermal'],'record_id':ident,'finish':True}},False)
+    assert result['missing'][0]['scope']=='requested_record_in_project' and result['missing'][0]['record_id']==ident
+
+
+def test_explicit_requested_id_cannot_be_replaced_by_broad_empty_catalog(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent;ident='thermal_'+'3'*32
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'thermal','finish':True}}),
+        tool('professional_missing',{'missing':{'kind':'thermal','record_id':ident,'finish':True}})])
+    task=agent.start(pid,Chat(message='Check this exact record '+ident,mode='provider'),background=False)
+    assert task['events'][2]['status']=='failed' and task['recovery_attempts']==1
+    assert task['answer']['checked_missing'][0]['record_id']==ident

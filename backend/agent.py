@@ -94,7 +94,7 @@ class ToolArgs(Contract):
 
 TOOLS = {
     'professional_inventory': '一次读取所选kinds（1到6类）的完整项目目录计数和最近记录，适合多专业可用性检查。空目录随后用professional_missing正式说明；存在记录则读取。不要逐轮分别查询六类而耗尽预算。',
-    'professional_missing': '正式核验记录缺失。多类缺失用一次调用missing.kinds数组（最多6类），同一完整目录快照逐类核验；单类用missing.kind。二者互斥。record_id只配单类且须用户明确编号。发现任一所选记录存在则整批拒绝，不补造结果或重试计算。全部所需交付结束才finish=true。',
+    'professional_missing': '正式核验记录缺失。missing.kinds必填数组（1到6类），同一完整目录快照逐类核验。指定编号时只选1类并填写用户明确的record_id；不能用整类空目录代替指定编号检查。发现任一所选记录存在则整批拒绝，不补造结果或重试计算。全部所需交付结束才finish=true。',
     'calculation_prepare': '选择本轮已冻结的plan_keys（1到2个）并逐项真实执行、保存、读取当前结果；适合用户要求的多份独立计划。返回每条记录的kind、ID、hash和当前事实/限制，随后仍须逐条professional_deliver或professional_limit。未选计划不会执行，参数不能更改；子操作逐项审计和计预算，失败保留已执行记录。',
     'professional_read_many': '按明确record_ids（1到3个）逐项读取当前专业记录，包括已失效记录；ID决定专业类型，不猜类型。只读，不创建计算；适合多记录复核。返回各记录当前事实/限制和hash，随后仍需正式交付，读取成功不等于任务完成。',
     'capability_lookup': '查询当前应用能做什么及明确边界，每批1到4个capability_ids；超过4项请分批查询，批次上限不是不支持剩余能力。分别核对用户要求的有限计算、资料检索与认证/确诊，不漏支持项，也不加无关项；不检查项目资料充分性。',
@@ -626,6 +626,10 @@ class Agent:
                         raise core.ValidationError('Only check a record ID explicitly requested by the user or referenced in task history; do not invent IDs')
                     selected=missing_records.Missing.model_validate(candidate['request']).requests()
                     scopes={missing_records.key(x) for x in record.get('missing_deliveries',[])}
+                    explicit=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}\b',body.message))
+                    for request in selected:
+                        if request.record_id is None and any(ident.startswith(request.kind+'_') and (request.kind,ident) not in scopes for ident in explicit):
+                            raise core.ValidationError('Check the explicitly requested record ID first; entire-kind absence cannot substitute for its requested scope')
                     scopes.update((r.kind,r.record_id) for r in selected)
                     if len(scopes)>6:
                         raise ToolRefusal('At most six record absence scopes per task')

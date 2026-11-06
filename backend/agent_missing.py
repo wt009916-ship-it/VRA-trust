@@ -1,9 +1,10 @@
 """Project-scoped absence is checked against the full catalog, never a recent slice."""
 import json
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import Field, StrictBool, model_validator
+from pydantic import ConfigDict, Field, StrictBool, model_validator
+from pydantic.json_schema import SkipJsonSchema
 
 from . import core
 from .schema import Contract
@@ -11,8 +12,10 @@ from .agent_semantics import inspection
 
 
 class Missing(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation'] | None = None
-    kinds: list[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']] | None = Field(default=None,min_length=1,max_length=6)
+    # Legacy single-kind receipts remain readable; the model sees one array selector only.
+    model_config = ConfigDict(json_schema_extra={'required':['kinds']})
+    kind: SkipJsonSchema[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation'] | None] = None
+    kinds: Annotated[list[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']], Field(min_length=1,max_length=6)] | SkipJsonSchema[None] = None
     record_id: str | None = Field(default=None, pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
     finish: StrictBool = False
 
@@ -20,14 +23,15 @@ class Missing(Contract):
     def matching_kind(self):
         if (self.kind is None)==(self.kinds is None):
             raise ValueError('Select either one kind or multiple kinds, not both')
-        if self.kinds is not None and (len(set(self.kinds))!=len(self.kinds) or self.record_id is not None):
-            raise ValueError('Multiple kinds must be distinct and cannot select a record ID')
-        if self.record_id and not self.record_id.startswith(self.kind+'_'):
+        if self.kinds is not None and (len(set(self.kinds))!=len(self.kinds) or (len(self.kinds)>1 and self.record_id is not None)):
+            raise ValueError('Kinds must be distinct; a record ID requires exactly one kind')
+        selected=self.kind or self.kinds[0]
+        if self.record_id and not self.record_id.startswith(selected+'_'):
             raise ValueError('Record identifier must match the selected kind')
         return self
 
     def requests(self):
-        return [Missing(kind=k,finish=self.finish) for k in self.kinds] if self.kinds else [self]
+        return [Missing(kind=k,record_id=self.record_id,finish=self.finish) for k in self.kinds] if self.kinds else [self]
 
 
 def references(result):
