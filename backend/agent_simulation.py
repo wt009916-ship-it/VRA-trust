@@ -109,3 +109,54 @@ def page(view, offset, expected_hash):
             'design_days': days, 'site_comparison': receipt['site_comparison'],
             'building_coincident_peak_W': None, 'limitations': deepcopy(receipt['limitations']),
             'notice': '仅交付当前页；next_offset为null只表示到达末尾，不证明此前各页已读取。完整IDF原始字段未发送，见报告JSON。' + NOTICE}
+
+
+def observed_view(record):
+    """Most recent full read in this audit; paging output never pretends to be a full read."""
+    for event in reversed(record['events']):
+        result = event.get('result')
+        if (event['status'] == 'succeeded' and event['tool'] in {'simulation_result', 'simulation_status'}
+                and isinstance(result, dict) and result.get('run_id') == record.get('target_run_id') and 'metrics' in result):
+            return result
+    return None
+
+
+def progress(record, current):
+    receipt = ((current or {}).get('metrics') or {}).get('zone_design_loads')
+    if not current or current.get('status') != 'succeeded' or not receipt or receipt.get('status') != 'calculated_model_scenario':
+        return {'state': 'unavailable', 'read_rows': None, 'total_rows': None, 'next_read': None}
+    digest = core.hash_json(receipt); total = len(receipt['rows']); covered = set(); selected = False
+    for event in record['events']:
+        value = event.get('result')
+        if (event.get('origin') == 'model' and event['status'] == 'succeeded' and event['tool'] == 'simulation_result'
+                and isinstance(value, dict) and value.get('schema_version') == 'vra.agent.design-load-page.v1'
+                and value.get('run_id') == current['run_id']):
+            selected = True
+            if value['receipt_hash'] == digest:
+                covered.update(range(value['offset'], value['offset'] + len(value['rows'])))
+    covered.intersection_update(range(total))
+    state = 'complete' if len(covered) == total else 'partial' if selected else 'not_requested'
+    offset = next((i for i in range(total) if i not in covered), None)
+    return {'state': state, 'read_rows': len(covered), 'total_rows': total, 'receipt_hash': digest,
+            'next_read': {'tool': 'simulation_result', 'arguments': {'run_id': current['run_id'],
+                         'zone_offset': offset, 'zone_hash': digest}} if selected and offset is not None else None,
+            'notice': '只统计模型实际读取且属于当前回执的行；控制流程读取完整结果不计为模型已读。'}
+
+
+def attach_answer(answer, record, current):
+    coverage = progress(record, current)
+    valid = bool(current and current.get('status') == 'succeeded' and current.get('metrics'))
+    artifact = {k: deepcopy((current or {}).get(k)) for k in (
+        'run_id', 'project_id', 'status', 'data_nature', 'provenance', 'stale_reasons', 'error', 'limitations')}
+    artifact['metrics'] = {k: deepcopy(v) for k, v in current['metrics'].items() if k in (
+        'annual_energy_kwh', 'area_m2', 'eui_kwh_m2a', 'zone_design_loads')} if valid else None
+    artifact['verified'] = valid
+    completion = 'verified' if valid and coverage['state'] != 'partial' else 'incomplete'
+    return {**answer, 'simulation_artifact': artifact, 'sizing_read_progress': coverage,
+            'task_completion': completion,
+            'verification': [{'check': 'current_valid_physics_result', 'passed': valid,
+                'run_id': (current or {}).get('run_id'), 'state': (current or {}).get('status', 'missing'),
+                'meaning': '当前运行由服务端重新核验；模型分页覆盖单列，不认定自由问题完整覆盖或工程合规'}],
+            'summary': ('当前原生结果已重新核验；模型还有未读取的负荷行。' if coverage['state'] == 'partial'
+                        else '当前原生结果已重新核验；不代表自由问题全部完成或工程合规。') if valid
+                       else '当前运行不可用于数值交付；历史结果未恢复。'}

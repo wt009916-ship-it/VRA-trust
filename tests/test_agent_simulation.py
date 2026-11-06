@@ -150,6 +150,64 @@ def test_initial_inspection_is_projected_and_current_result_rechecked(client, mo
     assert task['status'] == 'succeeded', task['error']
     events = [e for e in task['events'] if e['tool'] == 'simulation_result']
     assert len(events) == 2 and all(e['result'] == view for e in events)
+    assert task['llm_commentary_policy'] == 'audit_only'
+    assert task['answer']['simulation_artifact']['metrics']['zone_design_loads'] == view['metrics']['zone_design_loads']
+    assert task['answer']['sizing_read_progress']['state'] == 'not_requested'
+    saved = deepcopy(agent.store.get('agent', task['agent_id']))
+    view.update(status='stale', metrics=None, stale_reasons=['Evidence withdrawn'])
+    current = agent.view(pid, task['agent_id'])
+    assert current['answer']['task_completion'] == 'incomplete'
+    assert current['answer']['simulation_artifact']['metrics'] is None
+    assert current['answer']['verification'][0]['passed'] is False
+    assert agent.store.get('agent', task['agent_id']) == saved
+
+
+def test_simulation_list_reports_current_staleness_not_only_old_execution_success(client, monkeypatch):
+    agent = client.app.state.agent; pid = create_project(client)['project_id']; view = run_view(pid)
+    monkeypatch.setattr(agent.store, 'jobs', lambda _: [{'run_id': view['run_id'], 'status': 'succeeded', 'scheme_id': 'baseline'}])
+    monkeypatch.setattr(agent.domain, 'view', lambda _: {**view, 'status': 'stale', 'metrics': None})
+    row = agent.call(pid, 'simulation_list', {}, False)[0]
+    assert row['status'] == 'stale' and row['execution_status'] == 'succeeded' and 'metrics' not in row
+
+
+def test_page_coverage_uses_current_hash_and_does_not_count_controller_reads_or_duplicates():
+    view = run_view(); digest = core.hash_json(view['metrics']['zone_design_loads'])
+    record = {'target_run_id': view['run_id'], 'events': [{'tool': 'simulation_result', 'origin': 'controller', 'status': 'succeeded', 'result': view}]}
+    assert sizing.progress(record, view)['state'] == 'not_requested'
+    for offset in (0, 0, 10):
+        record['events'].append({'tool': 'simulation_result', 'origin': 'model', 'status': 'succeeded', 'result': sizing.page(view, offset, digest)})
+    progress = sizing.progress(record, view)
+    assert progress['state'] == 'partial' and progress['read_rows'] == 6
+    assert progress['next_read']['arguments']['zone_offset'] == 5
+    updated = deepcopy(view); updated['metrics']['zone_design_loads']['rows'][0]['calculated_sensible_load_W'] += 1
+    assert sizing.progress(record, updated)['read_rows'] == 0
+    assert sizing.attach_answer({}, record, view)['task_completion'] == 'incomplete'
+    record['events'].append({'tool': 'simulation_result', 'origin': 'model', 'status': 'succeeded', 'result': sizing.page(view, 5, digest)})
+    assert sizing.progress(record, view)['state'] == 'complete'
+    assert sizing.observed_view(record) == view
+
+
+def test_partial_page_prose_cannot_finish_as_verified_and_reminder_has_exact_missing_offset(client, monkeypatch):
+    agent = client.app.state.agent; pid = create_project(client)['project_id']; view = run_view(pid)
+    monkeypatch.setattr(agent.store, 'jobs', lambda _: [{'run_id': view['run_id']}])
+    monkeypatch.setattr(agent.store, 'job', lambda _: {'project_id': pid})
+    monkeypatch.setattr(agent.domain, 'view', lambda _: deepcopy(view))
+    monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
+    seen = []
+    def complete(messages, tools):
+        seen.append(deepcopy(messages))
+        if len(seen) == 1:
+            return {'role': 'assistant', 'tool_calls': [{'id': 'one', 'type': 'function', 'function': {
+                'name': 'simulation_result', 'arguments': json.dumps({'run_id': view['run_id'], 'zone_offset': 0,
+                    'zone_hash': core.hash_json(view['metrics']['zone_design_loads'])})}}]}
+        return {'role': 'assistant', 'content': 'Incorrect fixture prose claiming all rows were read'}
+    monkeypatch.setattr(agent.gateway, 'complete', complete)
+    task = agent.start(pid, Chat(message='Read every row', mode='provider', objective='inspect_results'), background=False)
+    assert task['status'] == 'succeeded' and task['answer']['task_completion'] == 'incomplete'
+    assert len(seen) == 5 and task['answer']['sizing_read_progress']['read_rows'] == 5
+    assert task['llm_commentary_policy'] == 'audit_only'
+    assert any('"zone_offset": 5' in m['content'] for m in seen[-1] if m['role'] == 'user')
+    assert len(task['answer']['simulation_artifact']['metrics']['zone_design_loads']['rows']) == 11
 
 
 def test_initial_projection_preserves_limits_and_has_explicit_full_read_entry():

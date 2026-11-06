@@ -301,6 +301,19 @@ class Agent:
         record = self.store.get('agent', agent_id)
         if record['project_id'] != project_id:
             raise ToolRefusal('Cross-project conversation rejected')
+        if record.get('objective') == 'inspect_results' and record['status'] == 'succeeded':
+            current = None
+            if record.get('target_run_id'):
+                try:
+                    if self.store.job(record['target_run_id'])['project_id'] != project_id:
+                        raise ToolRefusal('Cross-project result history rejected')
+                    current = self.domain.view(record['target_run_id'])
+                except (KeyError, OSError, core.ValidationError):
+                    current = None
+            return {**record, 'answer': agent_simulation.attach_answer(record.get('answer') or {}, record, current),
+                    'llm_commentary_policy': 'audit_only', 'answer_checked_at': core.now(),
+                    'historical_task_completion': (record.get('answer') or {}).get('task_completion'),
+                    'event_snapshot_notice': '工具事件是历史快照；下方原生结果按当前来源重新核验，失效后不显示旧数值。'}
         if (record.get('professional_deliveries') or record.get('capability_delivery') or record.get('missing_deliveries') or record.get('read_requests')) and record['status'] == 'succeeded':
             answer = current_answer(self.domain, project_id, record['professional_deliveries'])
             if record.get('capability_delivery'):
@@ -363,8 +376,8 @@ class Agent:
                 raise ToolRefusal('Cross-project professional delivery rejected')
             return check_explanation(spec.service(d).view(project_id, delivery.record_id), delivery)
         if name == 'simulation_list':
-            return [{'run_id': r['run_id'], 'scheme_id': r.get('scheme_id'), 'status': r['status']}
-                    for r in self.store.jobs(project_id)[:6]]
+            return [{'run_id': r['run_id'], 'scheme_id': r.get('scheme_id'), 'status': d.view(r['run_id'])['status'],
+                     'execution_status': r['status']} for r in self.store.jobs(project_id)[:6]]
         for spec in INSPECTIONS.values():
             if name == spec.list_tool:
                 return missing_records.catalog(d,project_id,spec)
@@ -442,6 +455,7 @@ class Agent:
                 'created_at': core.now(), 'llm_commentary': None, 'error': None, 'objective': body.objective,
                 'target_run_id': body.target_run_id, 'previous_agent_id': body.previous_agent_id,
                 'context_snapshot': history, 'recovery_attempts': 0}
+        if body.objective == 'inspect_results':record['llm_commentary_policy'] = 'audit_only'
         if body.objective == 'open_ended':
             record.update(professional_deliveries=[], missing_deliveries=[], llm_commentary_policy='audit_only')
         if body.read_requests:
@@ -826,6 +840,7 @@ class Agent:
                                    'selected_read_targets_without_delivery':read_recovery.unresolved(record),
                                    'notice':'这里只记录工具进度，不证明自由问题已完整覆盖，也不延续或增加计算授权。'}
                         if body.read_requests:pending['declared_read_requests_without_delivery']=requested_scopes.pending(record)
+                        if body.objective == 'inspect_results':pending['sizing_read_progress'] = agent_simulation.progress(record, agent_simulation.observed_view(record))
                         messages[0]['content'] = system_instruction + '\n当前控制流程状态：' + json.dumps(pending, ensure_ascii=False) + (
                             '\n总预算仍为5轮/15事件。多份明确计划优先用calculation_prepare选择plan_keys，真实执行并读取后逐份交付；已有多记录可用professional_read_many。批量子操作也计入15事件。'
                             '不要逐条走完整流程后才处理下一条而耗尽轮次。已知记录ID可直接读取，无需重复查询项目或列表。'
@@ -857,6 +872,12 @@ class Agent:
                     calls = answer.get('tool_calls') or []
                     if not calls:
                         record['llm_commentary'] = answer.get('content')
+                        if body.objective == 'inspect_results':
+                            coverage = agent_simulation.progress(record, agent_simulation.observed_view(record))
+                            if coverage['state'] == 'partial' and turn < 4:
+                                provider_event['incomplete_sizing_commentary'] = answer.get('content')
+                                messages.append({'role': 'user', 'content': '本次已选择的负荷读取尚有未覆盖行：' + json.dumps(coverage, ensure_ascii=False) + '。未读行不能说成不存在；按next_read继续，或明确本次预算内未完成。总预算不增加。'})
+                                continue
                         pending_declared=requested_scopes.pending(record)
                         if pending_declared and turn<4:
                             provider_event['declared_read_reminder']=pending_declared
@@ -1010,6 +1031,8 @@ class Agent:
                     else ('可进入仿真；尚不能给出确定最优推荐。' if gate['can_simulate'] else '当前证据不足，不能进入仿真或给出确定推荐。'),
                 'failed_tool_calls': sum(e['status'] == 'failed' and e['tool'] in TOOLS for e in record['events']),
                 'limitations': gate['limitations']})
+            if body.objective == 'inspect_results':
+                record['answer'] = agent_simulation.attach_answer(record['answer'], record, current)
         except Exception as exc:
             record.update(status='failed', error=str(exc)[:1000], answer=None)
         finally:
