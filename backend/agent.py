@@ -69,7 +69,7 @@ TOOLS = {
     'professional_deliver': '开放问答的正式交付：先用专业list/read选择并读取记录，再提交delivery，逐项核对数值、单位、期间及面积口径。只支持热工、阶段碳、材料成本；来源hash必填；不校验自由文字、不认证安全或碳信用。',
     'thermal_list': '只读列出最近6个热工构造的ID和当前状态，不生成材料参数',
     'thermal_read': '按thermal_id读取当前一维稳态热阻/U及单位、表面热阻、材料修正依据；U降低不是全年节能率，不判合规',
-    'lifecycle_list': '只读列出最近6份阶段CO2e清单的ID和当前状态，不是运行碳重算或碳信用账户',
+    'lifecycle_list': '建筑碳账/碳清单/生命周期阶段排放：只读列出最近6份阶段CO2e清单的ID和当前状态。阶段总量、每平方米量及期间通过lifecycle_read读取；不是运行碳重算或碳信用账户',
     'lifecycle_read': '按lifecycle_id读取当前声明边界、阶段量、因子来源/版本及评估年限；不签发信用，不把排除阶段当零排放',
     'operations_list': '只读列出最近6份设备运行规则核查记录，不推断设备健康或控制设备',
     'operations_read': '按operation_id读取当前运行异常事件、缺测、阈值来源及检查建议，不能把规则事件当作已确认故障根因',
@@ -549,6 +549,10 @@ class Agent:
                             ds = next((s for s in INSPECTIONS.values() if s.read_tool == call['function']['name']), None)
                             if ds and isinstance(result, dict) and ds.record_key in result:
                                 result = model_projection(result, ds.kind)
+                            elif call['function']['name'] == 'professional_deliver' and result.get('status') == 'verified':
+                                result = {'status': 'verified', 'record_id': result['reference']['record_id'],
+                                          'accepted_facts': [f['fact'] for f in result['statements']],
+                                          'notice': '这些字段已核验并保存；完整交付在工具审计中。不重复发送刚已读取的数值。若无其他所需记录可结束，否则继续处理未交付目标。'}
                         messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': json.dumps(result, ensure_ascii=False)})
                 else:
                     raise core.ValidationError('Provider iteration budget exhausted')
