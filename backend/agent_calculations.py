@@ -1,7 +1,7 @@
 """Execute only user-supplied, typed inputs; model arguments select a frozen key."""
 from typing import Annotated, Literal
 
-from pydantic import Field
+from pydantic import Field, StrictBool
 
 from . import core
 from .schema import Contract
@@ -14,37 +14,42 @@ from .operations import AnalysisInput
 from .agent_semantics import inspection
 
 
-class ThermalPlan(Contract):
+class PlanAuthorization(Contract):
+    execution_authorized: StrictBool = Field(default=True,
+        description='False retains a deferred plan without permitting execution. Omitted means authorized by this request; natural-language conditions are not access control.')
+
+
+class ThermalPlan(PlanAuthorization):
     plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
     kind: Literal['thermal']
     input: Assembly
 
 
-class LifecyclePlan(Contract):
+class LifecyclePlan(PlanAuthorization):
     plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
     kind: Literal['lifecycle']
     input: Inventory
 
 
-class CostPlan(Contract):
+class CostPlan(PlanAuthorization):
     plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
     kind: Literal['cost']
     input: Estimate
 
 
-class EngineeringPlan(Contract):
+class EngineeringPlan(PlanAuthorization):
     plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
     kind: Literal['engineering']
     input: BeamInput
 
 
-class SchedulePlan(Contract):
+class SchedulePlan(PlanAuthorization):
     plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
     kind: Literal['schedule']
     input: ScheduleInput
 
 
-class OperationPlan(Contract):
+class OperationPlan(PlanAuthorization):
     plan_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
     kind: Literal['operation']
     input: AnalysisInput
@@ -96,6 +101,8 @@ def resolve(domain, pid, key, plans, frozen):
     saved = next((p for p in frozen['items'] if p['plan']['plan_key'] == key), None)
     if not plan or not saved or saved['plan'] != plan.model_dump(mode='json'):
         raise core.ValidationError('Select an explicit user calculation plan; do not invent parameters')
+    if not plan.execution_authorized:
+        raise core.ValidationError('Plan execution is not authorized; submit a new explicitly authorized request')
     if bindings(domain, pid, plan) != saved['bindings']:
         raise core.ValidationError('Project or calculation-plan sources changed; submit a new reviewed plan')
     return plan, saved
@@ -123,7 +130,7 @@ def execution_stages(record):
         ident = result.get('record_id')
         read = bool(ident and any(e['tool']==spec.read_tool and e['status']=='succeeded'
                     and e['result'][spec.record_key]==ident for e in record['events']))
-        stage = 'delivery_submitted' if ident in delivered else 'awaiting_delivery' if read else 'awaiting_read' if ident else 'not_executed'
+        stage = 'not_authorized' if not plan.get('execution_authorized', True) else 'delivery_submitted' if ident in delivered else 'awaiting_delivery' if read else 'awaiting_read' if ident else 'not_executed'
         rows.append({'plan_key':plan['plan_key'], 'kind':plan['kind'], 'record_id':ident, 'stage':stage})
     return rows
 
@@ -141,5 +148,5 @@ def progress(record, answer):
         result = events[-1]['result'] if events else {}
         rows.append({'plan_key': plan['plan_key'], 'kind': plan['kind'], 'name': plan['input']['name'],
                      'record_id': result.get('record_id'),
-                     'state': 'verified' if result.get('record_id') in verified else 'limits_verified' if result.get('record_id') in limited else 'fields_verified' if result.get('record_id') in fields else 'saved_unverified' if result else 'not_executed'})
+                     'state': 'not_authorized' if not plan.get('execution_authorized', True) else 'verified' if result.get('record_id') in verified else 'limits_verified' if result.get('record_id') in limited else 'fields_verified' if result.get('record_id') in fields else 'saved_unverified' if result else 'not_executed'})
     return rows

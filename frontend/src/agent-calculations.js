@@ -9,17 +9,18 @@ export function parseCalculationPlans(text, {mode, allowCompute, objective}) {
   for (const plan of plans) {
     if (!plan || !/^[A-Za-z0-9_-]{1,40}$/.test(plan.plan_key) || keys.has(plan.plan_key)) throw new Error('每项需填写唯一 plan_key（字母、数字、下划线或短横线，最多40字符）。');
     if (!['thermal','lifecycle','cost','engineering','schedule','operation'].includes(plan.kind) || !plan.input || typeof plan.input !== 'object' || Array.isArray(plan.input)) throw new Error('每项需包含 kind（thermal/lifecycle/cost/engineering/schedule/operation）和完整 input 参数对象。');
+    if ('execution_authorized' in plan && typeof plan.execution_authorized !== 'boolean') throw new Error('execution_authorized 必须为 true 或 false。');
     keys.add(plan.plan_key);
   }
   return plans;
 }
 
 export function calculationPlanMarkup() {
-  return `<details class="agent-calculation-input"><summary>本次计算参数 · 可选</summary><p class="subtle">仅执行你明确提供的参数，最多两份；模型不能修改。本次只处理这些计划及其新记录，其他任务请另行提问。选择自由提问与 AI 模式，勾选允许计算。提交后会新建记录，不覆盖原记录；再次提交会再次新建。</p><label for="agent-calculation-plans">计算计划 JSON 数组</label><textarea id="agent-calculation-plans" rows="6" spellcheck="false" placeholder='[{"plan_key":"wall_a","kind":"thermal","input":{…完整计算参数…}}]'></textarea><p class="subtle">kind：thermal 热工、lifecycle 阶段碳、cost 材料成本、engineering 梁、schedule 进度、operation 设备规则。设备规则需已上传CSV的file_id，不由模型编造时序或阈值。input 与对应工作台的参数一致；阶段碳和材料成本可使用工作台导出的草稿内容。缺参会保留为未完成，未经核验不交付确定数值。使用外部 AI 时，计划名称和后续读取的工程结果会发给所选服务商。</p></details>`;
+  return `<details class="agent-calculation-input"><summary>本次计算参数 · 可选</summary><p class="subtle">最多两份，模型不能修改参数。提交的每项默认获得本次计算授权；暂缓计划必须设置 execution_authorized: false，仅在文字中写“稍后确认”不能阻止工具执行。本次只处理这些计划及其新记录，其他任务请另行提问。选择自由提问与 AI 模式，勾选允许计算。提交后会新建记录，不覆盖原记录；再次提交会再次新建。</p><label for="agent-calculation-plans">计算计划 JSON 数组</label><textarea id="agent-calculation-plans" rows="6" spellcheck="false" placeholder='[{"plan_key":"wall_a","kind":"thermal","input":{…完整计算参数…}}]'></textarea><p class="subtle">kind：thermal 热工、lifecycle 阶段碳、cost 材料成本、engineering 梁、schedule 进度、operation 设备规则。设备规则需已上传CSV的file_id，不由模型编造时序或阈值。input 与对应工作台的参数一致；阶段碳和材料成本可使用工作台导出的草稿内容。缺参会保留为未完成，未经核验不交付确定数值。使用外部 AI 时，计划名称和后续读取的工程结果会发给所选服务商。</p></details>`;
 }
 
 export function calculationProgressMarkup(rows = []) {
   if (!rows.length) return '';
-  const labels = {verified:'当前结果已核验', limits_verified:'限制已核验 · 未形成完整可用结果', fields_verified:'所列字段已核对 · 结果仍不完整', saved_unverified:'已创建记录 · 尚未形成有效交付', not_executed:'未执行'};
+  const labels = {verified:'当前结果已核验', limits_verified:'限制已核验 · 未形成完整可用结果', fields_verified:'所列字段已核对 · 结果仍不完整', saved_unverified:'已创建记录 · 尚未形成有效交付', not_executed:'未执行', not_authorized:'暂缓 · 未授权执行'};
   return `<section aria-label="本次计算计划"><h4>本次计算计划</h4><ul>${rows.map(row => `<li><strong>${esc(row.name)}</strong> · ${esc(labels[row.state] || row.state)}<small> ${esc(row.plan_key)}${row.record_id ? ' · ' + esc(row.record_id) : ''}</small></li>`).join('')}</ul><p class="subtle">已保存的记录可在对应专业工作台查看；部分执行或失败不会自动回滚已生成记录。</p></section>`;
 }

@@ -196,3 +196,37 @@ def test_invalid_read_many_has_no_leaf_reads(client,monkeypatch,values):
     scripted(a,monkeypatch,[tool('professional_read_many',{'record_ids':values})])
     t=a.start(pid,Chat(message='Read these records',mode='provider'),background=False)
     assert t['status']=='failed' and not any(e.get('parent_event') is not None for e in t['events'])
+
+
+@pytest.mark.parametrize('tool_name,args',[('calculation_execute',{'plan_key':'deferred'}),
+    ('calculation_prepare',{'plan_keys':['wall','deferred']})])
+def test_explicitly_deferred_plan_cannot_be_executed_by_model(client,monkeypatch,tool_name,args):
+    pid=create_project(client)['project_id'];a=client.app.state.agent
+    plans=[plan('thermal','wall'),{**plan('lifecycle','deferred'),'execution_authorized':False}]
+    scripted(a,monkeypatch,[tool(tool_name,args)])
+    t=a.start(pid,chat(plans),background=False)
+    assert t['status']=='failed' and 'not authorized' in t['error']
+    assert not a.store.list('thermal',pid) and not a.store.list('lifecycle',pid)
+
+
+def test_deferred_plan_is_excluded_from_schema_and_finish_reminder(client,monkeypatch):
+    pid=create_project(client)['project_id'];a=client.app.state.agent;calls=[]
+    plans=[plan('thermal','wall'),{**plan('lifecycle','deferred'),'execution_authorized':False}]
+    def complete(messages,tools):
+        calls.append(copy.deepcopy(tools))
+        if len(calls)==1:return tool('calculation_prepare',{'plan_keys':['wall']})
+        return claim(a.store.list('thermal',pid)[0])
+    monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
+    monkeypatch.setattr(a.gateway,'complete',complete)
+    t=a.start(pid,chat(plans),background=False)
+    assert t['status']=='succeeded' and len(calls)==2 and t['model_finished_delivery']
+    assert not t.get('early_finish_with_pending_plans') and not a.store.list('lifecycle',pid)
+    assert [p['state'] for p in t['calculation_progress']]==['verified','not_authorized']
+    schema=next(d['function']['parameters'] for d in calls[0] if d['function']['name']=='calculation_prepare')
+    assert schema['properties']['plan_keys']['items']['enum']==['wall']
+    assert t['answer']['task_completion']=='partial'  # Stored delivery does not prove the full prose task.
+
+
+@pytest.mark.parametrize('value',['false',0,1,None])
+def test_execution_authorization_requires_boolean(value):
+    with pytest.raises(ValueError):chat([{**plan(),'execution_authorized':value}])

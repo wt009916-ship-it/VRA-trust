@@ -18,3 +18,9 @@ test('partial write and unexecuted plans remain explicit and text escaped',()=>{
   assert.equal(calculationProgressMarkup(), '');
   assert.ok(calculationPlanMarkup().includes('再次提交会再次新建'));
 });
+test('deferred plan authorization stays explicit and cannot coerce strings',()=>{
+  const deferred={...plan,execution_authorized:false};
+  assert.deepEqual(parseCalculationPlans(JSON.stringify([deferred]),opts),[deferred]);
+  for(const execution_authorized of ['false',0,1,null]) assert.throws(()=>parseCalculationPlans(JSON.stringify([{...plan,execution_authorized}]),opts));
+  assert.ok(calculationProgressMarkup([{name:'Pending',plan_key:'b',state:'not_authorized'}]).includes('暂缓 · 未授权执行'));
+});
