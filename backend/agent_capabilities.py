@@ -42,7 +42,7 @@ ENTRIES = {
         '逐层厚度、导热系数、修正系数及表面热阻的一维稳态计算；不含热桥、结露和全年节能率。',
         '可在热工工作台提交有单位和来源的参数；缺参保留未知，输入有效性和来源需另行核验。'),
     'energy_simulation': ('建筑能耗仿真', 'core.py', True,
-        '已接入真实EnergyPlus和原生SQL核验；参考模型运行不等于实楼校准或节能合规认证。',
+        '已接入真实EnergyPlus、全年能耗和限定9.0.1分区显热设计负荷原生SQL核验；分区峰值不能相加代替全楼同时峰值，也不等于设备总冷量。参考运行不是实楼校准或节能合规认证。',
         '需可用引擎、适用模型/天气及当前资料准入；本说明不证明当前依赖已就绪或该项目可运行。'),
     'lifecycle_inventory': ('声明边界的阶段碳清单', 'lifecycle.py', True,
         '按明确五阶段边界、活动量、因子、单位和期间核算CO₂e；不证明清单完整性或签发碳信用。',
@@ -116,7 +116,7 @@ def catalog(ids):
     if not ids or len(ids) > 4 or len(set(ids)) != len(ids) or any(key not in ENTRIES for key in ids):
         raise ValueError('Select one to four distinct supported capability identifiers')
     root = Path(__file__).parent
-    versions = {name: core.sha(root / name) for name in sorted({x[1] for x in ENTRIES.values()} | {Path(__file__).name})}
+    versions = {name: core.sha(root / name) for name in sorted({x[1] for x in ENTRIES.values()} | {Path(__file__).name, 'design_loads.py'})}
     digest = core.hash_json({'entries': ENTRIES, 'source_versions': versions})
     rows = []
     for key in ids:
