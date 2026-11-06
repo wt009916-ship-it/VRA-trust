@@ -7,7 +7,7 @@ import time
 import uuid
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, ValidationError, model_validator
 
 from . import core
 from .runtime_lock import runtime_operation
@@ -57,6 +57,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    kinds: list[Literal['thermal','lifecycle','cost','engineering','schedule','operation']] | None = Field(default=None,min_length=1,max_length=6)
     missing: missing_records.Missing | None = None
     plan_keys: list[str] | None = Field(default=None, min_length=1, max_length=2)
     record_ids: list[str] | None = Field(default=None, min_length=1, max_length=3)
@@ -82,6 +83,8 @@ class ToolArgs(Contract):
 
     @model_validator(mode='after')
     def batch_identifiers(self):
+        if self.kinds is not None and len(set(self.kinds))!=len(self.kinds):
+            raise ValueError('Select distinct professional kinds')
         for values, pattern in [(self.plan_keys, r'[A-Za-z0-9_-]{1,40}'),
                                 (self.record_ids, r'(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}')]:
             if values is not None and (len(set(values))!=len(values) or any(not re.fullmatch(pattern,v) for v in values)):
@@ -90,6 +93,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'professional_inventory': '一次读取所选kinds（1到6类）的完整项目目录计数和最近记录，适合多专业可用性检查。空目录随后用professional_missing正式说明；存在记录则读取。不要逐轮分别查询六类而耗尽预算。',
     'professional_missing': '只读核验并交付当前项目的记录缺失：missing.kind必填；record_id仅用于用户明确指定的编号，省略则核验该类全部记录为空。检查完整目录，不能把最近6条未列出当缺失。不能代替未执行的已授权计划，不创建记录或自动重试计算；最后所需说明可finish=true。',
     'calculation_prepare': '选择本轮已冻结的plan_keys（1到2个）并逐项真实执行、保存、读取当前结果；适合用户要求的多份独立计划。返回每条记录的kind、ID、hash和当前事实/限制，随后仍须逐条professional_deliver或professional_limit。未选计划不会执行，参数不能更改；子操作逐项审计和计预算，失败保留已执行记录。',
     'professional_read_many': '按明确record_ids（1到3个）逐项读取当前专业记录，包括已失效记录；ID决定专业类型，不猜类型。只读，不创建计算；适合多记录复核。返回各记录当前事实/限制和hash，随后仍需正式交付，读取成功不等于任务完成。',
@@ -132,6 +136,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'professional_inventory': ('kinds',),
     'professional_missing': ('missing',),
     'calculation_prepare': ('plan_keys',),
     'professional_read_many': ('record_ids',),
@@ -221,6 +226,7 @@ class Agent:
         schema = ToolArgs.model_json_schema()
         tools = []
         for name, desc in TOOLS.items():
+            if allowed is None and name in {s.list_tool for s in INSPECTIONS.values()}:continue
             if allowed is not None and name not in allowed:
                 continue
             # The same root display title adds no constraint and repeats for every tool.
@@ -308,6 +314,8 @@ class Agent:
             raise core.ValidationError('Unexpected arguments for ' + name)
         args = ToolArgs.model_validate(arguments)
         d = self.domain
+        if name == 'professional_inventory':
+            return missing_records.inventory(d,project_id,args.kinds)
         if name == 'professional_missing':
             return missing_records.assess(d,project_id,args.missing)
         if name in {'calculation_prepare','professional_read_many'}:
@@ -428,13 +436,14 @@ class Agent:
         attempts = {}
         spec = INSPECTIONS.get(body.objective)
         offered = {'project_get', spec.list_tool, spec.read_tool} if spec else (set(TOOLS) if body.allow_compute else set(TOOLS) - WRITE_TOOLS)
+        if not spec:offered -= {s.list_tool for s in INSPECTIONS.values()}
         if body.calculation_plans:
             offered = {'project_get', 'calculation_execute', 'calculation_prepare', 'professional_read_many', 'professional_deliver','professional_limit'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
         if not any(p.execution_authorized for p in body.calculation_plans):offered -= {'calculation_execute','calculation_prepare'}
         if body.objective != 'open_ended':offered -= {'professional_deliver','professional_limit','professional_missing'}
         if body.objective != 'open_ended':offered -= {'capability_lookup', 'capability_explain'}
         def reserved_reads():
-            return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + len(record.get('missing_deliveries',[])) + capabilities.read_count(record.get('capability_delivery'))
+            return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + int(bool(record.get('missing_deliveries'))) + capabilities.read_count(record.get('capability_delivery'))
         def missing_targets():
             ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}\b',body.message))
             ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('professional_references',[]))
@@ -456,6 +465,8 @@ class Agent:
                     for e in record['events']:
                         if e['status'] != 'succeeded':continue
                         if e['tool'] == ds.list_tool:ids.update(r[ds.record_key] for r in missing_records.rows(e['result']))
+                        if e['tool']=='professional_inventory':
+                            ids.update(r[ds.record_key] for catalog in e['result']['catalogs'] if catalog['kind']==ds.kind for r in catalog['records'])
                         if e['tool'] == 'calculation_execute' and e['result']['kind'] == ds.kind:ids.add(e['result']['record_id'])
                         if e['tool'] == ds.read_tool:
                             ids.add(e['result'][ds.record_key]);read_any = True
@@ -478,6 +489,7 @@ class Agent:
                 if name == 'professional_missing':
                     parameters['required'] = ['missing']
                     parameters['$defs']['Missing']['properties']['record_id']['enum']=[None]+sorted(missing_targets())
+                if name == 'professional_inventory':parameters['required']=['kinds']
                 if name == 'calculation_prepare':
                     parameters['properties']['plan_keys'] = {'type':'array','minItems':1,'maxItems':2,'uniqueItems':True,
                         'items':{'type':'string','enum':[p.plan_key for p in body.calculation_plans if p.execution_authorized]}}
@@ -518,6 +530,19 @@ class Agent:
             if body.calculation_plans and not any(e['tool']=='calculation_execute' and e['status']=='succeeded'
                 and e['result']['kind']==ds.kind and e['result']['record_id']==ident for e in record['events']):
                 raise ToolRefusal('Calculation-plan tasks may read only records created by this task')
+
+        def recheck_missing():
+            if len(record['events'])>=15:raise ToolRefusal('Tool budget exceeded before final catalog recheck')
+            event={'tool':'professional_missing_recheck','origin':'controller','status':'running','started_at':core.now(),
+                   'arguments':{'scopes':[r['request'] for r in record['missing_deliveries']]}}
+            record['events'].append(event);save();start=time.monotonic()
+            try:
+                result=missing_records.recheck(self.domain,record['project_id'],record['missing_deliveries'])
+                event.update(status='succeeded',result=result,result_hash=core.hash_json(result));return result
+            except Exception as exc:
+                event.update(status='failed',error=str(exc)[:1000]);raise
+            finally:
+                event.update(duration_ms=round((time.monotonic()-start)*1000),finished_at=core.now());save()
 
         def invoke(name, args, recoverable=False, origin='controller', parent_event=None):
             if self.domain.stop.is_set():raise core.ValidationError('Task cancelled during service shutdown')
@@ -636,7 +661,9 @@ class Agent:
                               'claim_trace': 'simulation_list', 'certificate_generate': 'simulation_list',
                               'report_generate': 'simulation_list'}.get(name)
                     if name=='professional_missing' and canonical.get('missing'):
-                        lookup=inspection(canonical['missing']['kind']).list_tool
+                        lookup='professional_inventory'
+                    if body.objective=='open_ended' and lookup in {s.list_tool for s in INSPECTIONS.values()}:
+                        lookup='professional_inventory'
                     return {'status': 'TOOL_ERROR', 'error': event['error'], 'retry_allowed': True,
                             'corrections': exc.corrections if isinstance(exc, (SemanticMismatch, capabilities.CapabilityMismatch)) else [],
                             'lookup_tool': lookup,
@@ -679,7 +706,7 @@ class Agent:
                     '每批最多查询四项能力，更多要求分批查询；一次汇总提交全部所需claims（最多16项），新的说明替换此前说明。不得用查询能力替代用户要求的实际计算。'
                     'open_ended的热工/阶段碳/材料清单/梁分析/施工进度/设备规则任务：先自主选择对应list/read，再调用professional_deliver交付所问数值事实。'
                     '记录不完整、模型不适用或stale时，用professional_limit提交实际读取的当前status，正式说明限制；该工具不提交数值或statements。核验通过不改变原记录状态。professional_deliver仅提交当前数值，不能包含limitation_status。'
-                    '没有所需记录时，用professional_missing核验当前项目完整范围并交付缺失说明；无明确记录编号则省略record_id，不能猜编号。列表含总数和truncated，最近6条未列出不证明缺失。缺失说明不完成工程计算，不授权重试失败写操作。'
+                    '多专业目录查询用professional_inventory一次选齐kinds；不要逐轮单查六类。professional_missing本身会读取完整目录，无需重复查询空列表；无明确编号则省略record_id，不猜编号。每轮最多4个工具调用，多项分轮提交。缺失说明不完成工程计算，不授权重试失败写操作。'
                     'read返回explanation_facts，按该事实项的value、unit、period、study_years、area_m2提交，record_hash来自hash。'
                     '无记录或没有对应事实就说明未完成，不伪造交付。不把总量改称单位面积，不把整个评估期改称年量。'
                     'TOOL_ERROR含corrections时先修正结构化事实，再交付；仅自由文字不能替代工具交付。最多三个不同记录。'
@@ -717,7 +744,17 @@ class Agent:
                             '只在所需交付完成时finish=true；未执行条件任务时明确原因，不能偷偷忽略用户提交的另一计划。')
                         if len(json.dumps(messages, ensure_ascii=False)) > 64000:
                             raise core.ValidationError('Context budget exceeded; narrow the project/task instead of silently truncating evidence')
-                        answer = ProviderMessage.model_validate(gateway.complete(messages, turn_tools())).model_dump(exclude_none=True)
+                        raw_message=gateway.complete(messages,turn_tools())
+                        try:
+                            answer=ProviderMessage.model_validate(raw_message).model_dump(exclude_none=True)
+                        except ValidationError as exc:
+                            errors=exc.errors(include_input=False)
+                            if errors and all(e['loc']==('tool_calls',) and e['type']=='too_long' for e in errors) and record['recovery_attempts']<2:
+                                record['recovery_attempts']+=1
+                                provider_event.update(status='failed',error='Too many tool calls; none executed',protocol_recovery=True)
+                                messages.append({'role':'user','content':'上一轮超出每轮最多4个工具调用，整批均未执行。请拆分到剩余轮次，每轮最多4项；多专业目录先用professional_inventory一次查询。总预算仍为5轮/15事件，不增加权限。'})
+                                continue
+                            raise
                         ids = [c['id'] for c in answer.get('tool_calls', [])]
                         if len(ids) != len(set(ids)):
                             raise core.ValidationError('Duplicate provider tool call IDs')
@@ -732,6 +769,11 @@ class Agent:
                     calls = answer.get('tool_calls') or []
                     if not calls:
                         record['llm_commentary'] = answer.get('content')
+                        pending_missing=missing_records.pending_empty(record)
+                        if pending_missing and turn<4:
+                            provider_event['missing_delivery_reminder']=pending_missing
+                            messages.append({'role':'user','content':'已观察到空目录但尚未正式说明：'+json.dumps(pending_missing)+'。用professional_missing交付对应缺失范围，不用文字或空JSON替代；不重复查空列表。无明确编号则省略record_id。'})
+                            continue
                         if (not (record.get('capability_delivery') or {}).get('finish') and not record.get('capability_delivery_reminded')
                             and any(e['tool']=='capability_lookup' and e['status']=='succeeded' for e in record['events'])
                             and (record.get('capability_delivery') or not any(e['tool']=='capability_explain' for e in record['events']))):
@@ -781,6 +823,11 @@ class Agent:
                                           'notice':'所列能力边界已核验，不代表实际工程任务完成；其他所需结果须另行执行工具并交付。'}
                         messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': json.dumps(result, ensure_ascii=False)})
                     if finish_requested and not batch_failed:
+                        pending_missing=missing_records.pending_empty(record)
+                        if pending_missing:
+                            record['early_finish_with_missing']=pending_missing
+                            messages.append({'role':'user','content':'尚未交付已查询的空目录说明：'+json.dumps(pending_missing)+'。用professional_missing正式核验缺失，不重新计算，不重复查空列表。'})
+                            save();continue
                         outstanding = [p for p in calculations.execution_stages(record) if p['stage'] not in {'delivery_submitted','not_authorized'}]
                         if outstanding:
                             record['early_finish_with_pending_plans'] = outstanding
@@ -809,7 +856,7 @@ class Agent:
                         reader=lambda ids: invoke('capability_lookup', {'capability_ids':ids}))
                 if record.get('missing_deliveries'):
                     answer = missing_records.attach(answer,self.domain,record['project_id'],record['missing_deliveries'],
-                        reader=lambda request: invoke('professional_missing',{'missing':request.model_dump(mode='json')}))
+                        reader=recheck_missing)
                 answer.update(basis=[e['tool'] for e in record['events'] if e['status'] == 'succeeded' and e['tool'] in TOOLS],
                               failed_tool_calls=sum(e['status'] == 'failed' and e['tool'] in TOOLS for e in record['events']))
                 record.update(status='succeeded', answer=answer)

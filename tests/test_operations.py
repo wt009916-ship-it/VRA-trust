@@ -123,7 +123,7 @@ def test_api_preview_export_agent_auth_and_stale(client):
     assert '<script>' not in page and '&lt;script&gt;' in page
     agent=client.app.state.agent
     assert agent.call(pid,'operations_read',{'operation_id':oid},False)['result']['diagnosis']=='NOT_CONFIRMED'
-    assert agent.call(pid,'operations_list',{},False)[0]['operation_id']==oid
+    assert agent.call(pid,'operations_list',{},False)['records'][0]['operation_id']==oid
     other=create_project(client)['project_id']
     assert client.get('/api/projects/'+other+'/operations/'+oid).status_code==409
     assert client.get('/api/projects/'+other+'/operation-inputs/'+b['file_id']).status_code==409

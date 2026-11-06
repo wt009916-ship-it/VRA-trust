@@ -17,13 +17,14 @@ KINDS=['thermal','lifecycle','cost','engineering','schedule','operation']
 
 def test_empty_project_has_formal_missing_delivery_without_inventing_record(client, monkeypatch):
     pid=create_project(client)['project_id'];agent=client.app.state.agent
-    scripted(agent,monkeypatch,[tool('thermal_list',{}),tool('professional_missing',{'missing':{'kind':'thermal','finish':True}})])
+    scripted(agent,monkeypatch,[tool('professional_inventory',{'kinds':['thermal']}),tool('professional_missing',{'missing':{'kind':'thermal','finish':True}})])
     task=agent.start(pid,Chat(message='Check absent wall record; do not invent an ID or value',mode='provider'),background=False)
     assert task['status']=='succeeded',task.get('error')
     answer=task['answer'];assert answer['task_completion']=='incomplete'
     assert answer['checked_missing'][0]['reason_code']=='no_records_in_project'
     assert not answer.get('checked_statements') and not agent.store.list('thermal',pid)
-    assert [e['tool'] for e in task['events']].count('professional_missing')==2
+    assert [e['tool'] for e in task['events']].count('professional_missing')==1
+    assert [e['tool'] for e in task['events']].count('professional_missing_recheck')==1
 
 
 def test_catalog_reports_truncation_and_does_not_prove_older_record_absent(client):
@@ -86,7 +87,7 @@ def test_final_read_catches_concurrent_record_creation(client,monkeypatch):
     scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kind':'thermal','finish':True}})])
     task=agent.start(pid,Chat(message='Check absence',mode='provider'),background=False)
     assert task['status']=='succeeded' and not task['answer']['checked_missing']
-    assert any(e['tool']=='professional_missing' and e['status']=='failed' and e['origin']=='controller' for e in task['events'])
+    assert any(e['tool']=='professional_missing_recheck' and e['origin']=='controller' and not e['result']['checks'][0]['passed'] for e in task['events'])
     assert not task['answer']['verification'][-1]['passed']
 
 
@@ -96,8 +97,9 @@ def test_all_six_absence_scopes_fit_existing_budget_with_real_final_reads(client
                                batch([('professional_missing',{'missing':{'kind':k,'finish':True}}) for k in KINDS[3:]])])
     task=agent.start(pid,Chat(message='Check missing records for all six professional kinds',mode='provider'),background=False)
     assert task['status']=='succeeded',task.get('error')
-    assert len(task['events'])==15 and len(task['answer']['checked_missing'])==6
-    assert len([e for e in task['events'] if e['tool']=='professional_missing' and e['origin']=='controller'])==6
+    assert len(task['events'])==10 and len(task['answer']['checked_missing'])==6
+    checks=[e for e in task['events'] if e['tool']=='professional_missing_recheck' and e['origin']=='controller']
+    assert len(checks)==1 and len(checks[0]['result']['checks'])==6 and checks[0]['result']['snapshot_count']==1
     assert task['answer']['task_completion']=='incomplete'
 
 
@@ -115,7 +117,7 @@ def test_rejected_write_followup_checks_actual_catalog_without_retry(client,monk
     scripted(agent,monkeypatch,[tool('calculation_execute',{'plan_key':p['plan_key']})])
     failed=agent.start(pid,chat([p]),background=False)
     assert failed['status']=='failed' and not agent.store.list('lifecycle',pid)
-    captured=scripted(agent,monkeypatch,[tool('lifecycle_list',{}),tool('professional_missing',{'missing':{'kind':'lifecycle','finish':True}})])
+    captured=scripted(agent,monkeypatch,[tool('professional_inventory',{'kinds':['lifecycle']}),tool('professional_missing',{'missing':{'kind':'lifecycle','finish':True}})])
     task=agent.start(pid,Chat(message='Read previous carbon record; do not execute',mode='provider',previous_agent_id=failed['agent_id']),background=False)
     assert task['status']=='succeeded' and task['context_snapshot'][0]['previous_task_failed']
     assert task['answer']['checked_missing'][0]['kind']=='lifecycle'
@@ -180,3 +182,71 @@ def test_malformed_missing_call_recovers_without_unbound_parser_state(client,mon
     task=agent.start(pid,Chat(message='Check missing wall',mode='provider'),background=False)
     assert task['status']=='succeeded' and task['recovery_attempts']==1
     assert len(task['answer']['checked_missing'])==1
+
+
+def test_observed_empty_catalog_cannot_be_silently_dropped_on_numeric_finish(client,monkeypatch):
+    pid=create_project(client)['project_id'];record=create_record(client,pid,'thermal');agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_inventory',{'kinds':['thermal','cost']}),
+        tool('thermal_read',{'thermal_id':record['thermal_id']}),tool('professional_deliver',{'delivery':{**delivery(record),'finish':True}}),
+        tool('professional_missing',{'missing':{'kind':'cost','finish':True}})])
+    task=agent.start(pid,Chat(message='Read thermal value and missing procurement scope',mode='provider'),background=False)
+    assert task['status']=='succeeded' and task['early_finish_with_missing']==['cost']
+    assert len(task['answer']['checked_statements'])==len(task['answer']['checked_missing'])==1
+
+
+def test_free_prose_after_empty_inventory_receives_bounded_formal_delivery_reminder(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_inventory',{'kinds':['cost']}),
+        {'role':'assistant','content':'No procurement records.'},tool('professional_missing',{'missing':{'kind':'cost','finish':True}})])
+    task=agent.start(pid,Chat(message='Check missing procurement',mode='provider'),background=False)
+    assert task['status']=='succeeded' and len(task['answer']['checked_missing'])==1
+    assert any(e.get('missing_delivery_reminder')==['cost'] for e in task['events'])
+
+
+def test_oversized_model_batch_executes_nothing_then_recovers_within_same_limits(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    calls=[('professional_missing',{'missing':{'kind':k,'finish':True}}) for k in KINDS]
+    first=[('professional_missing',{'missing':{'kind':k,'finish':False}}) for k in KINDS[:3]]
+    scripted(agent,monkeypatch,[batch(calls),batch(first),batch(calls[3:])])
+    task=agent.start(pid,Chat(message='Check all six kinds',mode='provider'),background=False)
+    assert task['status']=='succeeded' and task['recovery_attempts']==1
+    assert task['events'][1]['status']=='failed' and task['events'][1]['protocol_recovery']
+    assert task['events'][2]['tool']=='llm.request'
+    assert len(task['events'])==11 and len(task['answer']['checked_missing'])==6
+
+
+def test_oversized_write_batches_are_never_partly_executed_or_retried(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    oversized=batch([('simulation_create',{'scheme_id':'baseline'})]*5)
+    scripted(agent,monkeypatch,[oversized,oversized,oversized])
+    task=agent.start(pid,Chat(message='Invalid batched writes',mode='provider',allow_compute=True),background=False)
+    assert task['status']=='failed' and task['recovery_attempts']==2
+    assert not agent.store.jobs(pid) and all(e['tool'] in {'project_get','llm.request'} for e in task['events'])
+
+
+def test_final_absence_recheck_reads_one_sqlite_snapshot_for_all_six_scopes(client,monkeypatch):
+    from backend import agent_missing
+    pid=create_project(client)['project_id'];domain=client.app.state.agent.domain
+    references=[agent_missing.assess(domain,pid,Missing(kind=k))['reference'] for k in KINDS]
+    original=domain.store.connect;statements=[];connections=[]
+    def connect():
+        con=original();connections.append(con);con.set_trace_callback(statements.append);return con
+    monkeypatch.setattr(domain.store,'connect',connect)
+    result=agent_missing.recheck(domain,pid,references)
+    assert len(connections)==1 and len(result['checks'])==6 and all(c['passed'] for c in result['checks'])
+    assert len([s for s in statements if s.startswith('SELECT')])==2
+
+
+def test_unified_inventory_is_model_offered_but_legacy_lists_remain_for_explicit_inspections(client):
+    agent=client.app.state.agent;names={t['function']['name'] for t in agent.tools()}
+    assert 'professional_inventory' in names and not any(s.list_tool in names for s in INSPECTIONS.values())
+    for spec in INSPECTIONS.values():
+        assert spec.list_tool in {t['function']['name'] for t in agent.tools({spec.list_tool,spec.read_tool})}
+
+
+def test_incomplete_final_recheck_cannot_silently_drop_a_requested_scope(client):
+    from backend import agent_missing
+    pid=create_project(client)['project_id'];domain=client.app.state.agent.domain
+    references=[agent_missing.assess(domain,pid,Missing(kind=k))['reference'] for k in ['thermal','cost']]
+    with pytest.raises(ValueError,match='Incomplete absence recheck'):
+        agent_missing.attach({},domain,pid,references,reader=lambda:{'checks':[]})
