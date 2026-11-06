@@ -61,17 +61,30 @@ class Policy:
         return self.output_bytes+512*MIB+128*MIB+4*self.log_bytes+MIB
 
 
-def inventory(root, max_bytes, max_files):
-    """No links/special files; bounded nodes as well as bytes and file count."""
+def inventory(root, max_bytes, max_files, *, live=False):
+    """Bounded inventory. Only a live poll may ignore a vanished entry (ENOENT).
+
+    Final checks/archive remain strict. Other I/O errors, links, special files
+    and budgets always fail; periodic polling is not an OS peak-disk quota.
+    """
     root=safe_path(root)
     files=[];size=nodes=0;pending=[root] if root.exists() else []
     while pending:
         directory=pending.pop()
-        with os.scandir(directory) as entries:
+        try:
+            scan=os.scandir(directory)
+        except FileNotFoundError:
+            if live and directory!=root:continue
+            raise
+        with scan as entries:
             for entry in entries:
                 nodes+=1
                 if nodes>max_files*4+16:raise ExecutionError('Artifact directory node budget exceeded')
-                info=entry.stat(follow_symlinks=False)
+                try:
+                    info=entry.stat(follow_symlinks=False)
+                except FileNotFoundError:
+                    if live:continue
+                    raise
                 if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&0x400:
                     raise ExecutionError('Linked native artifacts rejected')
                 if stat.S_ISDIR(info.st_mode):pending.append(Path(entry.path))
@@ -187,10 +200,10 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
     error=threading.Event();reasons=[];readers=[];counts={};process=None
     started=time.monotonic();failure=None;lease_count=0
     observed_output={}
-    def check_output():
+    def check_output(*, live=False):
         files=size=0
         for root in ([output] if output is not None else [])+list(extra_output_roots):
-            entries,amount=inventory(root,policy.output_bytes,policy.output_files)
+            entries,amount=inventory(root,policy.output_bytes,policy.output_files,live=live)
             files+=len(entries);size+=amount
         observed_output.update(bytes=size,files=files,monitored_roots=len(extra_output_roots)+(output is not None))
         if size>policy.output_bytes or files>policy.output_files:raise ExecutionError('Combined native output/profile budget exceeded')
@@ -231,7 +244,7 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
             if cancel_check and cancel_check():raise ExecutionError('Native execution cancelled')
             if error.is_set():raise ExecutionError(reasons[0])
             if time.monotonic()-started>timeout:raise ExecutionError('Native execution timeout')
-            check_output()
+            check_output(live=True)
             if _finished(process):break
             time.sleep(.05)
     except Exception as exc:failure=exc
@@ -258,7 +271,8 @@ def supervise(command, work, log_dir, policy, timeout, *, output=None, cancel_ch
                   and boundary.get('pid')==result.get('engine_pid') and boundary.get('enforced_before_exec') is True
                   and type(boundary.get('uid')) is int and boundary['uid']>0)
     result.update(elapsed_seconds=time.monotonic()-started,log_bytes_observed=counts,
-                  output_observed=observed_output,aggregate_output_enforcement='periodic_50ms_not_os_disk_quota',filesystem_network_sandbox=isolated)
+                  output_observed=observed_output,aggregate_output_enforcement='periodic_50ms_not_os_disk_quota',
+                  live_inventory_policy='ignore_vanished_entries_only_strict_after_exit',filesystem_network_sandbox=isolated)
     if failure:raise ExecutionError(str(failure),result) from failure
     if error.is_set():raise ExecutionError(reasons[0],result)
     expected='windows_job_object' if sys.platform=='win32' else 'linux_rlimit'

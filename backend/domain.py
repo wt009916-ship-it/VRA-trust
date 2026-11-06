@@ -87,7 +87,7 @@ class Domain:
     def gate(self, project_id, scheme_id="baseline"):
         self.store.get("project", project_id)
         evidence = self.store.list("evidence", project_id)
-        blockers, inputs = [], {}
+        blockers, inputs, weather_quality = [], {}, None
         for kind in ["idf", "epw"]:
             candidates = [e for e in evidence if e["type"] == kind and e["review_state"] != "rejected" and (kind == "epw" or e["scheme_id"] == scheme_id)]
             if len(candidates) != 1:
@@ -109,12 +109,15 @@ class Domain:
                         raise core.ValidationError("IDF 需要 Output:SQLite,SimpleAndTabular; 和年度汇总输出")
                     validate_idf(path)
                 else:
-                    validate_epw(path)
+                    weather_quality = validate_epw(path)
+                    if weather_quality['source_sha256'] != ev['hash']:
+                        weather_quality = None
+                        raise core.ValidationError('Weather changed during input validation')
             except (core.ValidationError, OSError, KeyError, UnicodeError, csv.Error) as exc:
                 blockers.append({"code": "INVALID_SOURCE", "field": kind, "message": str(exc), "action": "重新导入正确源文件并保留失败版本"})
         return {"project_id": project_id, "scheme_id": scheme_id, "can_simulate": not blockers,
                 "can_recommend": False, "readiness": "READY_FOR_SIMULATION" if not blockers else "EVIDENCE_INSUFFICIENT",
-                "blockers": blockers, "selected_evidence": inputs,
+                "blockers": blockers, "selected_evidence": inputs, "weather_quality": weather_quality,
                 "limitations": ["通过准入仅允许仿真，不证明模型代表真实建筑。", "结构化建筑字段是核对声明，当前不会自动修改 IDF。", "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。", "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"]}
 
     def submit(self, body):
@@ -245,9 +248,13 @@ class Domain:
                     view["status"] = "stale"
                 else:
                     from .trust import Trust
+                    quality = core.read_json(rd / 'weather-quality.json') if manifest.get('weather_quality') else None
+                    if quality != job['gate'].get('weather_quality'):
+                        raise core.ValidationError('Weather gate/run receipt mismatch')
+                    view['weather_quality'] = quality
                     view.update(metrics=result["metrics"], carbon=Trust(self).carbon_view(job, result["carbon"]))
         except (core.ValidationError, OSError, KeyError, ValueError) as exc:
-            view.update(status="failed", metrics=None, carbon=None, error=job["error"] or str(exc))
+            view.update(status="failed", metrics=None, carbon=None, weather_quality=None, error=job["error"] or str(exc))
         return view
 
     def claims(self, run_id, view=None):

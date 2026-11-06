@@ -41,6 +41,7 @@ def code_hash():
     # Keep the entire audited computation module conservative for physics changes.
     return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION,
                       'input_validation':sha(ROOT/'backend/input_validation.py'),
+                      'weather_quality':sha(ROOT/'backend/weather_quality.py'),
                       'execution':{name:sha(ROOT/'backend'/name) for name in
                                    ('execution.py','execution_lifetime.py','native_ownership.py','private_storage.py','runtime_lock.py','engine_limits.py','engine_worker.py','worker_limits.py',
                                     'native_environment.py','native_windows.py','native_linux.py','native_staging.py')}})
@@ -209,6 +210,15 @@ def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_over
         if profile.get('region') not in ('*',case['region']):raise ValidationError('碳因子地区不匹配')
         manifest['data_nature']=case['data_nature'];manifest['factor_profile_id']=profile_id
         manifest['fingerprints']=source_fingerprints(case,scheme,profile,engine,root)
+        inp=rd/'input';inp.mkdir(exist_ok=True)
+        shutil.copy2(relative_file(root,scheme['model']),inp/'model.idf');shutil.copy2(relative_file(root,case['weather']),inp/'weather.epw')
+        if sha(inp/'model.idf')!=manifest['fingerprints']['model'] or sha(inp/'weather.epw')!=manifest['fingerprints']['weather']:raise ValidationError('Inputs changed during snapshot')
+        write_json(inp/'case.json',case);write_json(inp/'carbon_profile.json',profile)
+        from .input_validation import validate_epw
+        weather_quality=validate_epw(inp/'weather.epw')
+        write_json(rd/'weather-quality.json',weather_quality)
+        manifest['weather_quality']={'artifact':'weather-quality.json','source_sha256':weather_quality['source_sha256'],
+                                     'policy_version':weather_quality['policy_version'],'validator_sha256':weather_quality['validator_sha256']}
         with private_temporary(Path(tempfile.gettempdir())) as tmp,native_workspace(engine,tmp) as scope:
             manifest['version_resources']=execution.supervise([scope['engine'],'--version'],tmp,rd,replace(policy,log_bytes=16384),15,
                                                               cancel_check=cancel_check,label='version-',isolation=scope['isolation'],
@@ -216,10 +226,6 @@ def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_over
             manifest['version_runtime_identity']=scope['identities']
         manifest['engine_version']=(rd/'version-stdout.log').read_text(encoding='utf-8',errors='replace').strip()
         manifest['engine_idd_hash']=sha(engine.parent/'Energy+.idd') if (engine.parent/'Energy+.idd').is_file() else None
-        inp=rd/'input';inp.mkdir(exist_ok=True)
-        shutil.copy2(relative_file(root,scheme['model']),inp/'model.idf');shutil.copy2(relative_file(root,case['weather']),inp/'weather.epw')
-        if sha(inp/'model.idf')!=manifest['fingerprints']['model'] or sha(inp/'weather.epw')!=manifest['fingerprints']['weather']:raise ValidationError('Inputs changed during snapshot')
-        write_json(inp/'case.json',case);write_json(inp/'carbon_profile.json',profile)
         # E+ 9.0 SQLite cannot open some Unicode paths. Use an isolated ASCII working directory.
         with private_temporary(Path(tempfile.gettempdir())) as tmp,native_workspace(engine,tmp,inp/'model.idf',inp/'weather.epw') as scope:
             if not str(tmp).isascii():raise ValidationError('EnergyPlus 9.0 requires an ASCII TEMP directory')
@@ -269,6 +275,14 @@ def read_validated(rd,check_current=True):
     if not required.issubset(manifest.get('artifact_hashes',{})):raise ValidationError('Incomplete evidence manifest')
     for rel,expected in manifest['artifact_hashes'].items():
         if sha(relative_file(rd,rel))!=expected:raise ValidationError('Evidence hash mismatch: '+rel)
+    if manifest.get('weather_quality') is not None or manifest['fingerprints'].get('code')==code_hash():
+        quality=read_json(rd/'weather-quality.json')
+        binding={'artifact':'weather-quality.json','source_sha256':quality['source_sha256'],
+                 'policy_version':quality['policy_version'],'validator_sha256':quality['validator_sha256']}
+        if ('weather-quality.json' not in manifest['artifact_hashes'] or manifest.get('weather_quality')!=binding
+                or quality['source_sha256']!=manifest['fingerprints']['weather']
+                or quality['source_sha256']!=sha(rd/'input/weather.epw')):
+            raise ValidationError('Weather quality receipt binding mismatch')
     plan={'changed':[],'invalid':[],'action':'reuse'}
     if check_current:
         case=load_case(manifest['case_id']);scheme=get_scheme(case,manifest['scheme_id']);profile=get_profile(manifest['factor_profile_id']);engine=engine_path()

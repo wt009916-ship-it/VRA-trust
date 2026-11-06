@@ -1,0 +1,27 @@
+import ctypes as c,json,sqlite3
+from ctypes import wintypes as w
+from pathlib import Path
+db=Path('validation/thermal-20261104/ui-runtime/vra.sqlite3').resolve()
+with sqlite3.connect('file:'+db.as_posix()+'?mode=ro',uri=True) as con:
+ assert con.execute("SELECT count(*) FROM jobs WHERE state IN ('queued','running')").fetchone()[0]==0
+ for body, in con.execute("SELECT body FROM records r WHERE kind IN ('agent','search') AND revision=(SELECT MAX(revision) FROM records s WHERE s.kind=r.kind AND s.id=r.id)"):
+  assert json.loads(body).get('status') not in {'queued','running'},'Active original task; do not stop'
+k=c.WinDLL('kernel32',use_last_error=True)
+k.OpenProcess.argtypes=[w.DWORD,w.BOOL,w.DWORD];k.OpenProcess.restype=w.HANDLE
+k.WaitForSingleObject.argtypes=[w.HANDLE,w.DWORD];k.WaitForSingleObject.restype=w.DWORD
+k.GetExitCodeProcess.argtypes=[w.HANDLE,c.POINTER(w.DWORD)]
+k.CloseHandle.argtypes=[w.HANDLE]
+handle=k.OpenProcess(0x100000|0x1000,False,9552)
+assert handle
+k.FreeConsole();assert k.AttachConsole(9552)
+try:
+ ids=(w.DWORD*32)();count=k.GetConsoleProcessList(ids,32)
+ assert set(ids[:count])=={9552,71168,k.GetCurrentProcessId()},list(ids[:count])
+ assert k.SetConsoleCtrlHandler(None,True)
+ assert k.GenerateConsoleCtrlEvent(0,0)
+ assert k.WaitForSingleObject(handle,30000)==0,'Graceful shutdown did not complete; no forced kill'
+ code=w.DWORD();assert k.GetExitCodeProcess(handle,c.byref(code))
+ data={'server_pid':9552,'exit_code':code.value,'method':'CTRL_C to verified dedicated console','forced_kill':False}
+ Path('validation/climate-20261107/ui-graceful-stop.json').write_text(json.dumps(data),encoding='utf-8')
+finally:k.FreeConsole();k.CloseHandle(handle)
+print(json.dumps(data))

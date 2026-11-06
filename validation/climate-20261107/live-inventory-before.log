@@ -1,0 +1,32 @@
+FFFF.                                                                    [100%]
+================================== FAILURES ===================================
+_________________ test_live_deleted_debug_file_does_not_abort _________________
+tests\test_live_inventory.py:35: in test_live_deleted_debug_file_does_not_abort
+    files, size = execution.inventory(tmp_path, 100, 10, live=True)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: inventory() got an unexpected keyword argument 'live'
+______________ test_final_inventory_still_rejects_disappearance _______________
+tests\test_live_inventory.py:43: in test_final_inventory_still_rejects_disappearance
+    with pytest.raises(FileNotFoundError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE FileNotFoundError
+_________________ test_live_permission_failure_not_suppressed _________________
+tests\test_live_inventory.py:51: in test_live_permission_failure_not_suppressed
+    execution.inventory(tmp_path, 100, 10, live=True)
+E   TypeError: inventory() got an unexpected keyword argument 'live'
+_______________ test_live_budget_still_enforced_after_deletion ________________
+tests\test_live_inventory.py:59: in test_live_budget_still_enforced_after_deletion
+    execution.inventory(tmp_path, 100, 10, live=True)
+E   TypeError: inventory() got an unexpected keyword argument 'live'
+============================== warnings summary ===============================
+..\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_live_inventory.py::test_live_deleted_debug_file_does_not_abort
+FAILED tests/test_live_inventory.py::test_final_inventory_still_rejects_disappearance
+FAILED tests/test_live_inventory.py::test_live_permission_failure_not_suppressed
+FAILED tests/test_live_inventory.py::test_live_budget_still_enforced_after_deletion
+4 failed, 1 passed, 1 warning in 0.18s

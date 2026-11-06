@@ -1,0 +1,125 @@
+{
+  "gate": {
+    "project_id": "project_4fc894ee807a4170bc11de4b41d90399",
+    "scheme_id": "baseline",
+    "can_simulate": false,
+    "can_recommend": false,
+    "readiness": "EVIDENCE_INSUFFICIENT",
+    "blockers": [
+      {
+        "code": "INVALID_SOURCE",
+        "field": "epw",
+        "message": "EPW line 9 · dry_bulb [degC]: 关键天气字段缺测；不允许由前值、默认值或零代替，请补充有来源的新版本",
+        "action": "重新导入正确源文件并保留失败版本"
+      }
+    ],
+    "selected_evidence": {
+      "idf": {
+        "type": "idf",
+        "name": "baseline.idf",
+        "source_file": "file_d490befb21d04c26a9a69e8b9ce76fde",
+        "source_locator": "EnergyPlus 9.0.1 ExampleFiles / Golden-NREL weather; complete file",
+        "value": null,
+        "unit": null,
+        "authority": "EnergyPlus distributed reference input; derivative insulation is assumed",
+        "permission": "EnergyPlus license retained in third_party_notices and fixtures/demo/reference_5zone",
+        "uncertainty": "非实测模型；不代表当地真实项目",
+        "confidence": null,
+        "acquisition_method": "explicit_reference_import",
+        "responsible_person": "隔离天气验收",
+        "status": "IMPORTED",
+        "scheme_id": "baseline",
+        "evidence_id": "evidence_96b49a3c3d1d4b8c980edf51f1a8999f",
+        "project_id": "project_4fc894ee807a4170bc11de4b41d90399",
+        "revision": 2,
+        "timestamp": "2026-11-06T21:42:05.203561+00:00",
+        "hash": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+        "review_state": "confirmed",
+        "review_note": "核对公开五区模型和Golden参考天气哈希，仅用于回归验证。雨况及降水缺测仍存在，不作为实测建筑或降雨工程依据。"
+      },
+      "epw": {
+        "type": "epw",
+        "name": "dry_bulb_missing.epw",
+        "source_file": "file_b53143c0b5464edb8aa36dfa4cb4213e",
+        "source_locator": "第9行干球99.9缺测；保留原始反例文件",
+        "value": null,
+        "unit": null,
+        "authority": "公开Golden参考天气的隔离变异反例；不是观测天气",
+        "permission": "用户授权公开参考与合成本地验收",
+        "uncertainty": "故意引入关键温度缺测，必须拒绝计算，不能视为已修复",
+        "confidence": null,
+        "acquisition_method": "manual_upload",
+        "responsible_person": "隔离天气验收",
+        "status": "IMPORTED",
+        "scheme_id": null,
+        "evidence_id": "evidence_9058a60ab3d2429391e97c4b1c21f5c7",
+        "project_id": "project_4fc894ee807a4170bc11de4b41d90399",
+        "revision": 3,
+        "timestamp": "2026-11-06T21:54:19.280214+00:00",
+        "hash": "0e09caeb8b5617373f33398df33eaeb2ed78dbeba26906f8c7f73d0594bff011",
+        "review_state": "confirmed",
+        "review_note": "重复确认仍不代表有效；同时验收保存后立即打开导入窗口的异步刷新顺序。"
+      }
+    },
+    "weather_quality": null,
+    "limitations": [
+      "通过准入仅允许仿真，不证明模型代表真实建筑。",
+      "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+      "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+      "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+    ]
+  },
+  "run": {
+    "run_id": "run_e390a9d8e26648958ab85addc6d1f327",
+    "project_id": "project_4fc894ee807a4170bc11de4b41d90399",
+    "case_id": "project_4fc894ee807a4170bc11de4b41d90399",
+    "scheme_id": "baseline",
+    "status": "stale",
+    "data_nature": "engineering_reference",
+    "created_at": "2026-11-06T21:42:19.244201+00:00",
+    "finished_at": "2026-11-06T21:42:28.405340+00:00",
+    "metrics": null,
+    "carbon": null,
+    "provenance": {
+      "run_id": "run_e390a9d8e26648958ab85addc6d1f327",
+      "project_id": "project_4fc894ee807a4170bc11de4b41d90399",
+      "case_id": "project_4fc894ee807a4170bc11de4b41d90399",
+      "scheme_id": "baseline",
+      "model_hash": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+      "weather_hash": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+      "engine_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+      "code_version": "c274cbe509b18671cdb42159e4d8bfe3ff4f253ff16d09834d60259d4ac807a0",
+      "parser_version": "native-sql-0.3.0",
+      "factor_version": "3c38414d4d062543c0e5224513e86bd75c970d9f96c959fea83b9d8544463b70",
+      "timestamp": "2026-11-06T21:42:28.405340+00:00"
+    },
+    "weather_quality": null,
+    "error": null,
+    "stale_reasons": [
+      "证据版本变化: weather.epw",
+      "当前证据准入失效"
+    ],
+    "warnings_count": 2,
+    "review_status": "pending_engineer_review",
+    "engine_calls_executed": 1,
+    "limitations": [
+      "通过准入仅允许仿真，不证明模型代表真实建筑。",
+      "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+      "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+      "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+    ]
+  },
+  "originals": [
+    {
+      "name": "dry_bulb_missing.epw",
+      "hash": "0e09caeb8b5617373f33398df33eaeb2ed78dbeba26906f8c7f73d0594bff011",
+      "review_state": "confirmed"
+    },
+    {
+      "name": "weather.epw",
+      "hash": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+      "review_state": "rejected"
+    }
+  ],
+  "job_count": 1
+}
