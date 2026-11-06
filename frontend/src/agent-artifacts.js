@@ -2,6 +2,11 @@ import {escape as esc} from './api.js';
 import {engineeringArtifactMarkup} from './agent-engineering.js';
 
 const value=x=>esc(x??'—');
+export function selectedReadProgressMarkup(task) {
+  const ids=task.unresolved_selected_reads||task.answer?.unresolved_selected_reads||[];
+  if(!ids.length)return '';
+  return `<section aria-label="已选读取目标未交付"><h3>仍有 ${ids.length} 个读取目标未交付</h3><p>以下编号尚无正式结果或缺失说明；流程结束不代表这些目标已完成。</p><ul>${ids.map(id=>`<li class="mono">${esc(id)}</li>`).join('')}</ul><p>请逐项读取当前结果或核验编号。此清单只跟踪已选择的读取目标，不代表原问题已经完整拆解。</p></section>`;
+}
 export function staleReasonMarkup(record) {
   const labels={project_revision:'项目声明版本已变化',calculator_version:'计算器或来源核验版本已变化',
     evidence_revision:'依据的版本或内容摘要已变化',evidence_rejected:'依据已撤回',evidence_missing:'依据记录不可用',
