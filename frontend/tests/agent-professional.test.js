@@ -29,3 +29,13 @@ test('unknowns stay unknown and source fields cannot inject HTML',()=>{
   const c=structuredClone(carbon);c.input.activities[0].factor.version='<svg onload=attack>';
   assert.ok(!professionalArtifactMarkup(c).includes('<svg'));
 });
+test('engineering display removes binary tails, retains small nonzero values and leaves inputs intact',()=>{
+  const a=structuredClone(carbon);a.result.kgco2e_m2_over_study_period=17.661749999999998;a.result.stages.operation.kgco2e=7.800000000000001;
+  const before=JSON.stringify(a),html=professionalArtifactMarkup(a);
+  assert.ok(html.includes('17.66175 kgCO₂e/m²')&&html.includes('7.8 kgCO₂e'));
+  assert.ok(!html.includes('17.661749999999998')&&!html.includes('7.800000000000001'));
+  assert.ok(html.includes('不代表输入精度'));
+  assert.equal(JSON.stringify(a),before);
+  const t=structuredClone(thermal);t.result.u_w_m2k=1.23456789012345e-10;
+  assert.ok(professionalArtifactMarkup(t).includes('1.23456789012e-10 W/(m²·K)'));
+});
