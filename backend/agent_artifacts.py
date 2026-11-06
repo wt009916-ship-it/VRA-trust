@@ -7,7 +7,7 @@ from . import core
 def material_cost_review(record):
     """Only pass a record obtained from Costs.view, never a saved unchecked snapshot."""
     base = {'kind': 'material_cost_review', 'cost_id': record['cost_id'], 'project_id': record['project_id'], 'name': record['input']['name'],
-            'record_hash': record['hash'], 'status': record['status'], 'checked_at': core.now(),
+            'record_hash': record['hash'], 'status': record['status'], 'stale_reasons':record.get('stale_reasons', []), 'stale_details':record.get('stale_details', []), 'checked_at': core.now(),
             'scope': '已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。',
             'currency': record['input']['currency'], 'functional_scope': record['input']['functional_scope'],
             'exclusions': record['input']['exclusions'], 'as_of': record['input']['as_of'],

@@ -111,7 +111,7 @@ def resolve(domain, pid, key, plans, frozen):
 def execute(domain, pid, key, plans, frozen):
     plan, saved = resolve(domain, pid, key, plans, frozen)
     spec = inspection(plan.kind)
-    record = spec.service(domain).save(pid, plan.input)
+    record = spec.service(domain).save(pid, plan.input, expected_bindings=saved['bindings'])
     return {'plan_key': key, 'kind': plan.kind, 'record_id': record[spec.record_key],
             'record_hash': record['hash'], 'status': record['status'], 'input_hash': core.hash_json(saved['plan']['input']),
             'next_tool': spec.read_tool, 'next_arguments': {spec.argument: record[spec.record_key]},

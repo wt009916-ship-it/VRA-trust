@@ -146,8 +146,9 @@ def model_projection(record, kind):
             'explanation_facts': facts(record, kind),
             'limitation_delivery': None if artifact['verified'] else {
                 'limitation_status':record['status'], 'statements':[],
+                'stale_details':record.get('stale_details', []) if record['status']=='stale' else [],
                 'stale_reasons':record.get('stale_reasons', []) if record['status']=='stale' else [],
-                'instruction':'用professional_limit正式说明当前限制：status复制limitation_status，附kind/record_id/record_hash，不提供statements。stale只可说明失效，不恢复旧数值，不改变原记录状态。'},
+                'instruction':'用professional_limit正式说明当前限制：status复制limitation_status，附kind/record_id/record_hash，不提供statements。stale只可依据stale_details说明已观察到的变化；scope是方法范围，不是失效原因。不得推测额外原因、恢复旧数值或改变原记录状态。'},
             'calculation_context': calculation_context(record, kind),
             'explanation_instruction': record['explanation_instruction'],
             'projection_notice': '这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。'}
@@ -189,7 +190,8 @@ def check(record, delivery):
             raise ValueError('Limitation does not match the current incomplete or inapplicable record')
         return {'status':'verified', 'reference':delivery.model_dump(mode='json'), 'statements':[],
                 'limitation':{'record_id':delivery.record_id, 'state':record['status'], 'scope':artifact['scope'],
-                              'stale_reasons':record.get('stale_reasons', []) if record['status']=='stale' else []},
+                              'stale_details':record.get('stale_details', []) if record['status']=='stale' else [],
+                'stale_reasons':record.get('stale_reasons', []) if record['status']=='stale' else []},
                 'notice':'只核验当前结果不完整或不适用的状态，不把限制说明当作有效工程数值。'}
     if record['status'] == 'stale':
         raise ValueError('Record is stale; numeric delivery remains unavailable')

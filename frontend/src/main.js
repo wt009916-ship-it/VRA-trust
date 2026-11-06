@@ -1,4 +1,4 @@
-import {refreshAgentMode} from './agent-mode-status.js';
+import {refreshAgentMode, createAgentModePreference} from './agent-mode-status.js';
 import {storageDescription, createEvidenceIntake} from './storage-intake.js';
 import {drawingWorkspace} from './drawing-ui.js';
 import { operationsWorkspace } from './operations-ui.js';
@@ -23,6 +23,7 @@ const state = { projects: [], project: null, evidence: [], runs: [], gate: null,
 let pollTimer;
 let selection = 0;
 const beamDraft = createBeamDraft();
+const agentModePreference = createAgentModePreference();
 const label = { queued: '排队中', running: '仿真中', succeeded: '核验通过', failed: '失败 · 结果不可用', stale: '已失效 · 需复核' };
 const badge = (text, type = '') => '<span class="badge ' + type + '">' + esc(text) + '</span>';
 const link = (url, text) => '<a href="' + url + '" target="_blank" rel="noopener">' + text + ' ↗</a>';
@@ -116,6 +117,7 @@ function renderProject() {
   const p = state.project;
   shell();
   document.querySelector('#workspace').innerHTML = projectView(state);
+  agentModePreference.bind(document.querySelector('#agent-mode'),state.user?.id,p.project_id);
   document.querySelectorAll('[data-view]').forEach(b => { b.onclick = () => switchView(b.dataset.view); });
   const inspector = document.querySelector('.inspector');
   document.querySelector('#toggle-inspector').onclick = () => { inspector.hidden = !inspector.hidden; };
@@ -224,6 +226,7 @@ function schedulePoll() {
   pollTimer = setTimeout(async () => { try { await refreshRuns(); schedulePoll(); } catch (err) { if (err.status !== 401) notice(err.message, true); } }, 3000);
 }
 function clearSession(preserveDraft = false) {
+  agentModePreference.clear();
   if (!preserveDraft) beamDraft.clear();
   selection++; clearTimeout(pollTimer); setCsrfToken('');
   Object.assign(state, {user:null, projects:[], project:null, evidence:[], runs:[], selectedRun:null, comparedIds:[], resumeBeam:null});

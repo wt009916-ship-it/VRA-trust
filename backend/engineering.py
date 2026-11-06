@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 from typing import Annotated, Literal
 from pydantic import Field, StrictFloat, model_validator
+from .calculation_provenance import validity, persist, version as provenance_version
 from . import core
 from .domain import identifier
 from .schema import Contract
@@ -234,7 +235,7 @@ def calculate(body):
 class Engineering:
     def __init__(self,domain): self.domain,self.store=domain,domain.store
 
-    def save(self,pid,body):
+    def save(self,pid,body, *, expected_bindings=None):
         project=self.store.get('project',pid); snapshots=[]
         for eid in body.evidence_ids:
             evidence=self.store.get('evidence',eid)
@@ -244,8 +245,8 @@ class Engineering:
             snapshots.append(evidence)
         obj={'engineering_id':identifier('engineering'),'project_id':pid,'project_revision':project['revision'],
             'input':body.model_dump(),'result':calculate(body),'source_snapshot':snapshots,'created_at':core.now(),
-            'calculator_hash':core.sha(Path(__file__))}
-        obj['hash']=core.hash_json(obj);self.store.put('engineering',obj)
+            'calculator_hash':provenance_version(Path(__file__))}
+        obj['hash']=core.hash_json(obj);persist(self.domain, 'engineering', obj, expected_bindings)
         return self.view(pid,obj['engineering_id'])
 
     def view(self,pid,eid):
@@ -253,14 +254,9 @@ class Engineering:
         if obj['project_id']!=pid: raise core.ValidationError('Cross-project engineering record rejected')
         if core.hash_json({k:v for k,v in obj.items() if k not in {'hash','revision'}})!=obj['hash']:
             raise core.ValidationError('Engineering record integrity failed')
-        stale=obj['project_revision']!=self.store.get('project',pid)['revision'] or obj['calculator_hash']!=core.sha(Path(__file__))
-        for old in obj['source_snapshot']:
-            current=self.store.get('evidence',old['evidence_id'])
-            stale |= current['revision']!=old['revision'] or current['hash']!=old['hash']
-            if current['source_file']:
-                try: self.domain.file_record(pid,current['source_file'])
-                except (ValueError,KeyError,OSError): stale=True
-        return {**obj,'status':'stale' if stale else obj['result']['status'],'result':None if stale else obj['result']}
+        provenance = validity(self.domain, obj, provenance_version(Path(__file__)))
+        stale = provenance['stale_reasons']
+        return {**obj, **provenance,'status':'stale' if stale else obj['result']['status'],'result':None if stale else obj['result']}
 
 
 def report(record):
