@@ -168,7 +168,7 @@ function evidenceForm() {
     dialog.querySelector('#intake-error').textContent = '';
     try { await submitEvidence(selectedFile, { type: data.get('type'), source_locator: data.get('locator'), authority: data.get('authority'), permission: data.get('permission'), responsible_person: data.get('person'), acquisition_method: 'manual_upload', status: 'IMPORTED', uncertainty: data.get('uncertainty') || null, scheme_id: data.get('type') === 'idf' ? data.get('scheme') : null });
     } catch (error) { dialog.querySelector('#intake-error').textContent = error.message; await refreshStorage(); throw error; }
-    dialog.close(); await selectProject(state.project.project_id);
+    await selectProject(state.project.project_id); dialog.close();
   }, e.submitter); };
 }
 function renderRuns() {
