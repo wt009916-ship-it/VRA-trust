@@ -175,7 +175,7 @@ def test_missing_parameters_remain_null_and_unfinished(client,kind):
     else:p['input']['tasks'][1]['duration_days']=None
     plan=Chat(message='input',mode='provider',allow_compute=True,calculation_plans=[p]).calculation_plans[0]
     spec=inspection(kind);r=spec.service(a.domain).save(pid,plan.input)
-    assert r['status']=='incomplete' and all(f['value'] is None for f in facts(r,kind))
+    assert r['status']=='incomplete' and not facts(r,kind)
     assert not spec.artifact(r)['verified']
 
 

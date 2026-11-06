@@ -198,3 +198,24 @@ def test_early_finish_tracks_each_plan_without_forcing_writes_or_extending_budge
         assert task['status']=='failed' and len(history)==5
         assert 'iteration budget' in task['error'] and not task.get('model_finished_delivery')
         assert len(agent.store.list('thermal',pid))==2
+
+
+def test_unknown_numeric_cannot_replace_formal_limit_and_history_rechecks_it(client,monkeypatch):
+    from backend.agent_semantics import current_answer
+    pid=create_project(client)['project_id'];agent=client.app.state.agent;p=plan()
+    p['input']['layers'][0]['conductivity']=None
+    body=chat([p]).calculation_plans[0].input;spec=inspection('thermal')
+    r=spec.service(agent.domain).save(pid,body);original=agent.store.get('thermal',r['thermal_id'])
+    assert r['result']['u_w_m2k'] is None and facts(r,'thermal')==[]
+    limit={'kind':'thermal','record_id':r['thermal_id'],'record_hash':r['hash'],'status':'incomplete','finish':False}
+    wrong={**delivery(r,value=None),'finish':True}
+    scripted(agent,monkeypatch,[tool('thermal_read',{'thermal_id':r['thermal_id']}),
+        tool('professional_limit',{'limitation':limit}),tool('professional_deliver',{'delivery':wrong}),
+        tool('professional_limit',{'limitation':{**limit,'finish':True}})])
+    t=agent.start(pid,Chat(message='Explain missing conductivity',mode='provider'),background=False)
+    assert t['status']=='succeeded' and t['recovery_attempts']==1
+    assert t['answer']['checked_limitations'][0]['state']=='incomplete' and not t['answer']['checked_statements']
+    assert t['professional_deliveries'][0]['limitation_status']=='incomplete'
+    old=current_answer(agent.domain,pid,[wrong])
+    assert old['task_completion']=='incomplete' and not old['checked_statements'] and not old['verification'][0]['passed']
+    assert agent.store.get('thermal',r['thermal_id'])==original
