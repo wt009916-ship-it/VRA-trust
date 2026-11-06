@@ -14,14 +14,14 @@ class Statement(Contract):
     value: str | None = Field(max_length=80, pattern=r'^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]{1,4})?$',
                              description='Required. Copy the current explanation_facts numeric value as a string. Use null only when that source fact value is null.')
     unit: str = Field(min_length=1, max_length=40)
-    period: Literal['steady_state', 'study_period', 'quote_date']
+    period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window']
     study_years: int | None = Field(ge=1, le=200, description='Required: copy the fact study_years; null for a non-period calculation.')
     area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='Required: copy the fact area_m2; null for a total rather than a per-area quantity.')
 
 
 class Delivery(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(min_length=1, max_length=12)
     finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
@@ -42,7 +42,7 @@ def inspection(kind):
 def facts(record, kind):
     """Explicit meanings from calculator fields, not free-text source descriptions."""
     result = record.get('result')
-    if result is None or record['status'] == 'stale':
+    if result is None or record['status'] == 'stale' or (kind == 'engineering' and record['status'] == 'outside_model_screen'):
         return []
     body = record['input']
     rows = []
@@ -72,6 +72,27 @@ def facts(record, kind):
                     years=years, path='/result/stages/' + stage + '/kgco2e')
     elif kind == 'cost':
         add('material_total', '声明材料清单合计（日期 ' + body['as_of'] + '）', result['material_total'], body['currency'], 'quote_date')
+    elif kind == 'engineering':
+        metrics = result.get('metrics') or {}
+        for key,label,unit in [('max_abs_moment_nm','最大绝对弯矩','N m'),
+            ('max_abs_shear_n','最大绝对剪力','N'),('max_deflection_m','最大向下挠度','m'),
+            ('max_elastic_bending_stress_pa','线弹性最大弯曲应力（非强度验算）','Pa'),
+            ('left_reaction_n','左支反力','N'),('right_reaction_n','右支反力','N'),
+            ('left_reaction_moment_nm','左端支反力矩','N m')]:
+            add(key,label,metrics.get(key),unit,'static_load_case',path='/result/metrics/'+key)
+    elif kind == 'schedule':
+        planned = result.get('planned') or {}
+        add('planned_duration_days','声明计划总工期',planned.get('duration_days'),'day','elapsed_days',path='/result/planned/duration_days')
+        if result.get('forecast'):
+            for key,label in [('as_of_day','进度记录截至日'),('finish_day','显式情景完工日'),('finish_variance_days','情景相对计划的完工偏差')]:
+                add('forecast_'+key,label,result['forecast'][key],'day','elapsed_days',path='/result/forecast/'+key)
+    elif kind == 'operation':
+        for key,label in [('sample_count','CSV样本数'),('cell_issue_count','缺失或无效数值单元数'),('gap_count','超出最大间隔的采样缺口数')]:
+            add(key,label,result['quality'][key],'count','observed_window',path='/result/quality/'+key)
+        add('rule_event_sum','各规则事件次数之和（可能重叠，非故障数）',sum(r['event_count'] for r in result['rules']),
+            'count','observed_window',path='derived:sum(/result/rules/*/event_count)')
+        add('rule_unknown_sample_sum','各规则未知样本次数之和（可能重复）',sum(r['unknown_samples'] for r in result['rules']),
+            'count','observed_window',path='derived:sum(/result/rules/*/unknown_samples)')
     return rows
 
 
@@ -88,8 +109,30 @@ def model_projection(record, kind):
     return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record['input']['name'],
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
+            'calculation_context': calculation_context(record, kind),
             'explanation_instruction': record['explanation_instruction'],
             'projection_notice': '这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。'}
+
+
+def calculation_context(record, kind):
+    result = record.get('result') or {}
+    if kind == 'engineering':
+        return {'support':record['input']['support'], 'model_screening':result.get('model_screening', []),
+                'missing':result.get('missing', []), 'notice':'超出模型筛查范围时不交付工程数值；无安全结论。'}
+    if kind == 'schedule':
+        return {'calendar':record['input']['calendar'], 'time_origin':record['input']['time_origin'],
+                'critical_tasks':(result.get('planned') or {}).get('critical_tasks'),
+                'resource_status':((result.get('planned') or {}).get('resources') or {}).get('status'),
+                'forecast_status':(result.get('forecast') or {}).get('status'),
+                'notice':'连续经过日；关键任务集合不等于唯一串行路径，情景不是履约保证。'}
+    if kind == 'operation':
+        quality = result.get('quality') or {}
+        return {'first_time':quality.get('first_time'), 'last_time':quality.get('last_time'),
+                'data_nature':record['input']['data_nature'], 'clock_basis':record['input']['clock_basis'],
+                'rule_states':[{'rule_id':r['rule_id'],'state':r['state'],'event_count':r['event_count'],
+                    'unknown_samples':r['unknown_samples']} for r in result.get('rules',[])],
+                'notice':'事件合计按规则求和，可能重复，不是故障数量；缺测不当作正常或零能耗。完整行号和事件跨度见同源报告。'}
+    return None
 
 
 class SemanticMismatch(ValueError):

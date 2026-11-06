@@ -33,11 +33,14 @@ class Chat(Contract):
     calculation_plans: list[calculations.CalculationPlan] = Field(default_factory=list, max_length=2)
     search_plan: Search | None = None
     cost_plan: Actions | None = None
-    objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle'] = 'open_ended'
+    objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle', 'inspect_engineering', 'inspect_schedule', 'inspect_operations'] = 'open_ended'
     target_run_id: str | None = None
     target_cost_id: str | None = Field(default=None, pattern=r'^cost_[a-f0-9]{32}$')
     target_thermal_id: str | None = Field(default=None, pattern=r'^thermal_[a-f0-9]{32}$')
     target_lifecycle_id: str | None = Field(default=None, pattern=r'^lifecycle_[a-f0-9]{32}$')
+    target_engineering_id: str | None = Field(default=None, pattern=r'^engineering_[a-f0-9]{32}$')
+    target_schedule_id: str | None = Field(default=None, pattern=r'^schedule_[a-f0-9]{32}$')
+    target_operation_id: str | None = Field(default=None, pattern=r'^operation_[a-f0-9]{32}$')
     previous_agent_id: str | None = None
 
     @model_validator(mode='after')
@@ -79,8 +82,8 @@ class ToolArgs(Contract):
 TOOLS = {
     'capability_lookup': '查询当前应用能做什么及明确边界，1到4个capability_ids。结构安全认证、碳信用签发、节能合规、缺失结构复原、设备根因确诊、施工安全审批属于应用能力边界，不能用缺记录或IDF/EPW准入解释。也说明有限计算实际支持范围；不检查项目资料充分性。',
     'capability_explain': '先查询capability_lookup，再按catalog_hash提交capability_explanation：每项capability_id、assessment、reason_code必须与当前应用范围一致。用于正式能力说明，不代表执行了计算或取得认证。最后所需说明可finish=true。',
-    'calculation_execute': '选择本轮用户明确提交的plan_key，按已锁定参数调用真实热工/阶段碳/材料成本计算器并保存新记录。不能在工具参数中添加或修改工程输入。随后按返回的next_tool读取并核验交付；不重复创建。',
-    'professional_deliver': '开放问答的正式交付：先用专业list/read选择并读取记录，再提交delivery，逐项核对数值、单位、期间及面积口径。只支持热工、阶段碳、材料成本；来源hash必填；不校验自由文字、不认证安全或碳信用。',
+    'calculation_execute': '选择本轮用户明确提交的plan_key，按已锁定参数调用热工/阶段碳/材料成本/梁/进度/设备规则计算器并保存新记录。不能修改工程输入或CSV；随后按返回的next_tool读取并核验交付；不重复创建。',
+    'professional_deliver': '开放问答的正式交付：先用专业list/read读取记录，再提交delivery，核对数值、单位、期间及面积口径。支持thermal/lifecycle/cost/engineering/schedule/operation；来源hash必填；不校验自由文字、不认证安全或碳信用。',
     'thermal_list': '只读列出最近6个热工构造的ID和当前状态，不生成材料参数',
     'thermal_read': '按thermal_id读取当前一维稳态热阻/U及单位、表面热阻、材料修正依据；U降低不是全年节能率，不判合规',
     'lifecycle_list': '建筑碳账/碳清单/生命周期阶段排放：只读列出最近6份阶段CO2e清单的ID和当前状态。阶段总量、每平方米量及期间通过lifecycle_read读取；不是运行碳重算或碳信用账户',
@@ -285,20 +288,6 @@ class Agent:
         if name == 'simulation_list':
             return [{'run_id': r['run_id'], 'scheme_id': r.get('scheme_id'), 'status': r['status']}
                     for r in self.store.jobs(project_id)[:6]]
-        if name == 'operations_list':
-            return [{'operation_id':r['operation_id'],'name':r['input']['name'],'status':Operations(d).view(project_id,r['operation_id'])['status']}
-                for r in self.store.list('operation',project_id)[:6]]
-        if name == 'operations_read':
-            if not args.operation_id:raise core.ValidationError('Provide operation_id')
-            if self.store.get('operation',args.operation_id)['project_id']!=project_id:raise ToolRefusal('Cross-project operations rejected')
-            return Operations(d).view(project_id,args.operation_id)
-        if name == 'schedule_list':
-            return [{'schedule_id':r['schedule_id'],'name':r['input']['name'],'status':Schedules(d).view(project_id,r['schedule_id'])['status']}
-                for r in self.store.list('schedule',project_id)[:6]]
-        if name == 'schedule_read':
-            if not args.schedule_id:raise core.ValidationError('Provide schedule_id')
-            if self.store.get('schedule',args.schedule_id)['project_id']!=project_id:raise ToolRefusal('Cross-project schedule rejected')
-            return Schedules(d).view(project_id,args.schedule_id)
         for spec in INSPECTIONS.values():
             if name == spec.list_tool:
                 return [{spec.record_key:r[spec.record_key], 'name':r['input']['name'],
@@ -310,15 +299,6 @@ class Agent:
                 if self.store.get(spec.kind,ident)['project_id'] != project_id:
                     raise ToolRefusal('Cross-project ' + spec.kind + ' read rejected')
                 return readable(spec.service(d).view(project_id,ident), spec.kind)
-        if name == 'beam_analysis_list':
-            return [{'engineering_id':r['engineering_id'],'name':r['input']['name'],'status':Engineering(d).view(project_id,r['engineering_id'])['status']}
-                for r in self.store.list('engineering',project_id)[:6]]
-        if name == 'beam_analysis_read':
-            if not args.engineering_id:
-                raise core.ValidationError('Provide engineering_id')
-            if self.store.get('engineering',args.engineering_id)['project_id'] != project_id:
-                raise ToolRefusal('Cross-project engineering read rejected')
-            return Engineering(d).view(project_id,args.engineering_id)
         if name == 'standards_search':
             if not args.standards_query:
                 raise core.ValidationError('Provide standards_query including as_of date')
