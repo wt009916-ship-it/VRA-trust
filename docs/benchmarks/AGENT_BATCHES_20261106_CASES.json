@@ -1,0 +1,2899 @@
+{
+  "scope": "Frozen synthetic inputs, old regressions and new cases explicitly separated. No real-building or certification claims.",
+  "stages": {
+    "initial": {
+      "regression": {
+        "sha256": "c59f7764a04bb04065bd8e1220d24f01180f5e7b0d781efa8aa0d4b3a0193cda",
+        "fixture": {
+          "application_commit": "fc9f23fba362517a88ea741bd3db11e408c5fdd9",
+          "scope": "Real 4B/8B inference, same five rounds / fifteen events. Known regressions separate from new cases. Synthetic calculators are not real-building validation.",
+          "independent_oracles": {
+            "B01": "R=.13+.04+.210/.7+.08/(.04*1.25)=2.07; cost=23.75*1.08*8.4 + ceil(5*1.15)*3.125=234.21 USD",
+            "B03": "carbon=1800*.51+125*.09+310*.41*9+80*.03=2075.55 kgCO2e; schedule=max(.8+.1+2.2,3.8)+1.3+.3+.7=6.1 days, C/D/E",
+            "B02_B04": "Both prior records stale; no numerical fields or new compute",
+            "B05": "Unknown conductivity remains unknown; only cost complete",
+            "B06": "Only selected wall executes; conditional carbon must remain unexecuted"
+          },
+          "manual_review": [
+            "Read every raw model response for fabricated claims and omissions.",
+            "Batch leaf operations are controller operations, never extra autonomous model choices.",
+            "Task succeeded is not sufficient; all requested facts and limits required.",
+            "No certification or real-building validity inferred."
+          ],
+          "cases": [
+            {
+              "id": "N03",
+              "cohort": "regression",
+              "message": "实际执行这两份新墙体与工序参数；交付总热阻R、计划工期和关键工序集合。",
+              "plans": [
+                {
+                  "plan_key": "fresh_wall_b",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "Second new wall",
+                    "rsi_m2k_w": 0.11,
+                    "rse_m2k_w": 0.05,
+                    "surface_basis": "Synthetic films",
+                    "application": "Uniform synthetic wall",
+                    "layers": [
+                      {
+                        "name": "A",
+                        "thickness": 0.12,
+                        "thickness_unit": "m",
+                        "conductivity": 0.6,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      },
+                      {
+                        "name": "B",
+                        "thickness": 0.075,
+                        "thickness_unit": "m",
+                        "conductivity": 0.05,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "fresh_sequence_b",
+                  "kind": "schedule",
+                  "input": {
+                    "name": "Second new independent network",
+                    "scope": "Synthetic sequencing only",
+                    "calendar": "continuous_elapsed_days",
+                    "time_origin": "Elapsed day zero",
+                    "tasks": [
+                      {
+                        "task_id": "A",
+                        "name": "Step A",
+                        "duration_days": 0.6,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "B",
+                        "name": "Step B",
+                        "duration_days": 1.7,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "A",
+                            "lag_days": 0.1,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "C",
+                        "name": "Step C",
+                        "duration_days": 2.9,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "D",
+                        "name": "Step D",
+                        "duration_days": 1.1,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "B",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          },
+                          {
+                            "task_id": "C",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "E",
+                        "name": "Step E",
+                        "duration_days": 0.4,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "D",
+                            "lag_days": 0.3,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "1.86",
+                "planned_duration_days": "4.7"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "critical": [
+                "C",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "id": "N04",
+              "cohort": "regression",
+              "message": "项目面积已经改为新值。请逐一重读上一轮墙体和工序记录，正式交付两份当前失效状态；不交付旧数值，也不继承旧授权重算。",
+              "previous": "N03",
+              "change_area": 1087.0,
+              "no_facts": true,
+              "no_writes": true,
+              "needs_stale_read": true,
+              "limit_states": {
+                "thermal": "stale",
+                "schedule": "stale"
+              }
+            },
+            {
+              "id": "H03",
+              "cohort": "regression",
+              "message": "两份输入均已批准执行。请完成新墙体热阻与这个五工序网络，分别提交R、总工期及关键工序。",
+              "plans": [
+                {
+                  "plan_key": "holdout_wall_c",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "Holdout wall C",
+                    "rsi_m2k_w": 0.1,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic films",
+                    "application": "Uniform synthetic wall",
+                    "layers": [
+                      {
+                        "name": "A",
+                        "thickness": 0.18,
+                        "thickness_unit": "m",
+                        "conductivity": 0.9,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      },
+                      {
+                        "name": "B",
+                        "thickness": 0.045,
+                        "thickness_unit": "m",
+                        "conductivity": 0.03,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "holdout_schedule_c",
+                  "kind": "schedule",
+                  "input": {
+                    "name": "Holdout schedule C",
+                    "scope": "Synthetic sequencing only",
+                    "calendar": "continuous_elapsed_days",
+                    "time_origin": "Elapsed day zero",
+                    "tasks": [
+                      {
+                        "task_id": "A",
+                        "name": "Step A",
+                        "duration_days": 0.6,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "B",
+                        "name": "Step B",
+                        "duration_days": 1.7,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "A",
+                            "lag_days": 0.1,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "C",
+                        "name": "Step C",
+                        "duration_days": 3.3,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "D",
+                        "name": "Step D",
+                        "duration_days": 1.1,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "B",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          },
+                          {
+                            "task_id": "C",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "E",
+                        "name": "Step E",
+                        "duration_days": 0.6,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "D",
+                            "lag_days": 0.3,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "1.84",
+                "planned_duration_days": "5.3"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "critical": [
+                "C",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "id": "H04",
+              "cohort": "regression",
+              "message": "建筑面积已经修订。重新读取上轮墙体和工期两个记录，各给出当前失效限制说明。不得沿用数字，也不要创建新计算。",
+              "previous": "H03",
+              "change_area": 1139.0,
+              "no_facts": true,
+              "no_writes": true,
+              "needs_stale_read": true,
+              "limit_states": {
+                "thermal": "stale",
+                "schedule": "stale"
+              }
+            }
+          ]
+        }
+      },
+      "fresh": {
+        "sha256": "9b48724ecde617ae2b0174ba1f494c37e048376079ef974f3509709d8077c1d9",
+        "fixture": {
+          "application_commit": "fc9f23fba362517a88ea741bd3db11e408c5fdd9",
+          "scope": "Real 4B/8B inference, same five rounds / fifteen events. Known regressions separate from new cases. Synthetic calculators are not real-building validation.",
+          "independent_oracles": {
+            "B01": "R=.13+.04+.210/.7+.08/(.04*1.25)=2.07; cost=23.75*1.08*8.4 + ceil(5*1.15)*3.125=234.21 USD",
+            "B03": "carbon=1800*.51+125*.09+310*.41*9+80*.03=2075.55 kgCO2e; schedule=max(.8+.1+2.2,3.8)+1.3+.3+.7=6.1 days, C/D/E",
+            "B02_B04": "Both prior records stale; no numerical fields or new compute",
+            "B05": "Unknown conductivity remains unknown; only cost complete",
+            "B06": "Only selected wall executes; conditional carbon must remain unexecuted"
+          },
+          "manual_review": [
+            "Read every raw model response for fabricated claims and omissions.",
+            "Batch leaf operations are controller operations, never extra autonomous model choices.",
+            "Task succeeded is not sufficient; all requested facts and limits required.",
+            "No certification or real-building validity inferred."
+          ],
+          "cases": [
+            {
+              "id": "B01",
+              "message": "两份计划都已批准，请实际计算墙体总热阻R及材料采购总价并分别正式交付；不要把采购价当成完整工程造价。",
+              "plans": [
+                {
+                  "plan_key": "wall_new",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "New mixed units batch wall",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 210.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.7,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 8.0,
+                        "thickness_unit": "cm",
+                        "conductivity": 40.0,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "cost_new",
+                  "kind": "cost",
+                  "input": {
+                    "name": "New batch material quantities",
+                    "region": "US-CO",
+                    "currency": "USD",
+                    "tax_basis": "excluded",
+                    "as_of": "2026-11-06",
+                    "functional_scope": "Synthetic procurement only",
+                    "exclusions": [
+                      "Transport",
+                      "Labour",
+                      "Tax"
+                    ],
+                    "lines": [
+                      {
+                        "line_id": "area",
+                        "material_id": "area",
+                        "name": "area",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "m2",
+                          "quantity": 23.75,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.08,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-area",
+                          "unit_price": 8.4,
+                          "per_unit": "m2",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      },
+                      {
+                        "line_id": "items",
+                        "material_id": "items",
+                        "name": "items",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "item",
+                          "quantity": 5,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.15,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-items",
+                          "unit_price": 3.125,
+                          "per_unit": "item",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "2.07",
+                "material_total": "234.21"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "cohort": "fresh"
+            },
+            {
+              "id": "B02",
+              "message": "项目面积已修改。请接着上一轮读取墙体和材料两条记录，分别提交当前失效限制；不要复用旧数值，也没有重新计算授权。",
+              "previous": "B01",
+              "change_area": 987.0,
+              "limit_states": {
+                "thermal": "stale",
+                "cost": "stale"
+              },
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "B03",
+              "message": "执行这两份已批准计划，分别正式提交九年声明边界碳排总量、施工总工期和关键工序。不得签发碳资产或施工安全结论。",
+              "plans": [
+                {
+                  "plan_key": "carbon_new",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 927.2,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "schedule_new",
+                  "kind": "schedule",
+                  "input": {
+                    "name": "New independent batch schedule",
+                    "scope": "Synthetic sequencing only",
+                    "calendar": "continuous_elapsed_days",
+                    "time_origin": "Elapsed day zero",
+                    "tasks": [
+                      {
+                        "task_id": "A",
+                        "name": "Step A",
+                        "duration_days": 0.8,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "B",
+                        "name": "Step B",
+                        "duration_days": 2.2,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "A",
+                            "lag_days": 0.1,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "C",
+                        "name": "Step C",
+                        "duration_days": 3.8,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "D",
+                        "name": "Step D",
+                        "duration_days": 1.3,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "B",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          },
+                          {
+                            "task_id": "C",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "E",
+                        "name": "Step E",
+                        "duration_days": 0.7,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "D",
+                            "lag_days": 0.3,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "boundary_total_kgco2e": "2075.55",
+                "planned_duration_days": "6.1"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "critical": [
+                "C",
+                "D",
+                "E"
+              ],
+              "cohort": "fresh"
+            },
+            {
+              "id": "B04",
+              "message": "面积修订后，继续上一轮读取碳排和工期两条记录，分别交付当前失效限制。不要创建计算或引用旧数值。",
+              "previous": "B03",
+              "change_area": 1283.0,
+              "limit_states": {
+                "lifecycle": "stale",
+                "schedule": "stale"
+              },
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "B05",
+              "message": "请执行两份计划：墙体有未知导热系数，应保存原输入并提交不完整限制；采购计划完整，请计算并正式交付总价。不要猜墙体R。",
+              "plans": [
+                {
+                  "plan_key": "unknown_wall",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "Unknown layer in batch",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 210.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.7,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 8.0,
+                        "thickness_unit": "cm",
+                        "conductivity": null,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "known_cost",
+                  "kind": "cost",
+                  "input": {
+                    "name": "New batch material quantities",
+                    "region": "US-CO",
+                    "currency": "USD",
+                    "tax_basis": "excluded",
+                    "as_of": "2026-11-06",
+                    "functional_scope": "Synthetic procurement only",
+                    "exclusions": [
+                      "Transport",
+                      "Labour",
+                      "Tax"
+                    ],
+                    "lines": [
+                      {
+                        "line_id": "area",
+                        "material_id": "area",
+                        "name": "area",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "m2",
+                          "quantity": 23.75,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.08,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-area",
+                          "unit_price": 8.4,
+                          "per_unit": "m2",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      },
+                      {
+                        "line_id": "items",
+                        "material_id": "items",
+                        "name": "items",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "item",
+                          "quantity": 5,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.15,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-items",
+                          "unit_price": 3.125,
+                          "per_unit": "item",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "material_total": "234.21"
+              },
+              "states": [
+                "limits_verified",
+                "verified"
+              ],
+              "limit_states": {
+                "thermal": "incomplete"
+              },
+              "forbidden_facts": [
+                "total_resistance_m2k_w",
+                "u_w_m2k"
+              ],
+              "cohort": "fresh"
+            },
+            {
+              "id": "B06",
+              "message": "只执行wall_selected墙体计划并交付总热阻R。carbon_conditional仅在我随后另行确认时才允许执行；本轮没有该确认，请明确保留未执行。",
+              "plans": [
+                {
+                  "plan_key": "wall_selected",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "New mixed units batch wall",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 210.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.7,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 8.0,
+                        "thickness_unit": "cm",
+                        "conductivity": 40.0,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "carbon_conditional",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 927.2,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "2.07"
+              },
+              "states": [
+                "verified",
+                "not_executed"
+              ],
+              "forbidden_execution": [
+                "carbon_conditional"
+              ],
+              "cohort": "fresh"
+            }
+          ]
+        }
+      }
+    },
+    "authorized": {
+      "regression": {
+        "sha256": "b5c262739ae077c670fe5e686a30118def198074580ef8e0e689aa4afbb182c5",
+        "fixture": {
+          "application_commit": "6315c6c81addb71840672fb65241bc039a2d80dd",
+          "scope": "Final explicit authorization implementation. Regression includes known and deliberately corrected inputs, never new blind results.",
+          "corrections": [
+            "B03/B06 carbon area changed from 927.2 to 721 to match declared project; original conflicts retained.",
+            "B06 adds execution_authorized=false; proves structured control, not natural-language conditional authorization."
+          ],
+          "independent_oracles": {
+            "C01": "cost: line half-up 220.745=>220.75 plus ceil(7*1.2)*1.45=13.05 =>233.80 USD; carbon 650*.31+90*.07+120*.29*7+30*.05=452.9 kgCO2e",
+            "C02": "Both prior records stale without numerical revival or compute",
+            "C03": "R=.13+.04+.15/.75+.09/(.04*1.25)=2.17; first plan forbidden",
+            "C04": "Missing first lambda, no wall R/U; cost233.80"
+          },
+          "manual_review": [
+            "Inspect all raw commentary and tool calls; checked output success does not prove prose correct.",
+            "All batch children counted and attributed to controller.",
+            "No general injection or real-building credit."
+          ],
+          "cases": [
+            {
+              "id": "N03",
+              "cohort": "regression",
+              "message": "实际执行这两份新墙体与工序参数；交付总热阻R、计划工期和关键工序集合。",
+              "plans": [
+                {
+                  "plan_key": "fresh_wall_b",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "Second new wall",
+                    "rsi_m2k_w": 0.11,
+                    "rse_m2k_w": 0.05,
+                    "surface_basis": "Synthetic films",
+                    "application": "Uniform synthetic wall",
+                    "layers": [
+                      {
+                        "name": "A",
+                        "thickness": 0.12,
+                        "thickness_unit": "m",
+                        "conductivity": 0.6,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      },
+                      {
+                        "name": "B",
+                        "thickness": 0.075,
+                        "thickness_unit": "m",
+                        "conductivity": 0.05,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "fresh_sequence_b",
+                  "kind": "schedule",
+                  "input": {
+                    "name": "Second new independent network",
+                    "scope": "Synthetic sequencing only",
+                    "calendar": "continuous_elapsed_days",
+                    "time_origin": "Elapsed day zero",
+                    "tasks": [
+                      {
+                        "task_id": "A",
+                        "name": "Step A",
+                        "duration_days": 0.6,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "B",
+                        "name": "Step B",
+                        "duration_days": 1.7,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "A",
+                            "lag_days": 0.1,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "C",
+                        "name": "Step C",
+                        "duration_days": 2.9,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "D",
+                        "name": "Step D",
+                        "duration_days": 1.1,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "B",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          },
+                          {
+                            "task_id": "C",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "E",
+                        "name": "Step E",
+                        "duration_days": 0.4,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "D",
+                            "lag_days": 0.3,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "1.86",
+                "planned_duration_days": "4.7"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "critical": [
+                "C",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "id": "N04",
+              "cohort": "regression",
+              "message": "项目面积已经改为新值。请逐一重读上一轮墙体和工序记录，正式交付两份当前失效状态；不交付旧数值，也不继承旧授权重算。",
+              "previous": "N03",
+              "change_area": 1087.0,
+              "no_facts": true,
+              "no_writes": true,
+              "needs_stale_read": true,
+              "limit_states": {
+                "thermal": "stale",
+                "schedule": "stale"
+              }
+            },
+            {
+              "id": "H03",
+              "cohort": "regression",
+              "message": "两份输入均已批准执行。请完成新墙体热阻与这个五工序网络，分别提交R、总工期及关键工序。",
+              "plans": [
+                {
+                  "plan_key": "holdout_wall_c",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "Holdout wall C",
+                    "rsi_m2k_w": 0.1,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic films",
+                    "application": "Uniform synthetic wall",
+                    "layers": [
+                      {
+                        "name": "A",
+                        "thickness": 0.18,
+                        "thickness_unit": "m",
+                        "conductivity": 0.9,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      },
+                      {
+                        "name": "B",
+                        "thickness": 0.045,
+                        "thickness_unit": "m",
+                        "conductivity": 0.03,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "holdout_schedule_c",
+                  "kind": "schedule",
+                  "input": {
+                    "name": "Holdout schedule C",
+                    "scope": "Synthetic sequencing only",
+                    "calendar": "continuous_elapsed_days",
+                    "time_origin": "Elapsed day zero",
+                    "tasks": [
+                      {
+                        "task_id": "A",
+                        "name": "Step A",
+                        "duration_days": 0.6,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "B",
+                        "name": "Step B",
+                        "duration_days": 1.7,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "A",
+                            "lag_days": 0.1,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "C",
+                        "name": "Step C",
+                        "duration_days": 3.3,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "D",
+                        "name": "Step D",
+                        "duration_days": 1.1,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "B",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          },
+                          {
+                            "task_id": "C",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "E",
+                        "name": "Step E",
+                        "duration_days": 0.6,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "D",
+                            "lag_days": 0.3,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "1.84",
+                "planned_duration_days": "5.3"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "critical": [
+                "C",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "id": "H04",
+              "cohort": "regression",
+              "message": "建筑面积已经修订。重新读取上轮墙体和工期两个记录，各给出当前失效限制说明。不得沿用数字，也不要创建新计算。",
+              "previous": "H03",
+              "change_area": 1139.0,
+              "no_facts": true,
+              "no_writes": true,
+              "needs_stale_read": true,
+              "limit_states": {
+                "thermal": "stale",
+                "schedule": "stale"
+              }
+            },
+            {
+              "id": "B01",
+              "message": "两份计划都已批准，请实际计算墙体总热阻R及材料采购总价并分别正式交付；不要把采购价当成完整工程造价。",
+              "plans": [
+                {
+                  "plan_key": "wall_new",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "New mixed units batch wall",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 210.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.7,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 8.0,
+                        "thickness_unit": "cm",
+                        "conductivity": 40.0,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "cost_new",
+                  "kind": "cost",
+                  "input": {
+                    "name": "New batch material quantities",
+                    "region": "US-CO",
+                    "currency": "USD",
+                    "tax_basis": "excluded",
+                    "as_of": "2026-11-06",
+                    "functional_scope": "Synthetic procurement only",
+                    "exclusions": [
+                      "Transport",
+                      "Labour",
+                      "Tax"
+                    ],
+                    "lines": [
+                      {
+                        "line_id": "area",
+                        "material_id": "area",
+                        "name": "area",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "m2",
+                          "quantity": 23.75,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.08,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-area",
+                          "unit_price": 8.4,
+                          "per_unit": "m2",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      },
+                      {
+                        "line_id": "items",
+                        "material_id": "items",
+                        "name": "items",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "item",
+                          "quantity": 5,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.15,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-items",
+                          "unit_price": 3.125,
+                          "per_unit": "item",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "2.07",
+                "material_total": "234.21"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "cohort": "regression"
+            },
+            {
+              "id": "B02",
+              "message": "项目面积已修改。请接着上一轮读取墙体和材料两条记录，分别提交当前失效限制；不要复用旧数值，也没有重新计算授权。",
+              "previous": "B01",
+              "change_area": 987.0,
+              "limit_states": {
+                "thermal": "stale",
+                "cost": "stale"
+              },
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "B03",
+              "message": "执行这两份已批准计划，分别正式提交九年声明边界碳排总量、施工总工期和关键工序。不得签发碳资产或施工安全结论。",
+              "plans": [
+                {
+                  "plan_key": "carbon_new",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 721.0,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "schedule_new",
+                  "kind": "schedule",
+                  "input": {
+                    "name": "New independent batch schedule",
+                    "scope": "Synthetic sequencing only",
+                    "calendar": "continuous_elapsed_days",
+                    "time_origin": "Elapsed day zero",
+                    "tasks": [
+                      {
+                        "task_id": "A",
+                        "name": "Step A",
+                        "duration_days": 0.8,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "B",
+                        "name": "Step B",
+                        "duration_days": 2.2,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "A",
+                            "lag_days": 0.1,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "C",
+                        "name": "Step C",
+                        "duration_days": 3.8,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "D",
+                        "name": "Step D",
+                        "duration_days": 1.3,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "B",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          },
+                          {
+                            "task_id": "C",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "E",
+                        "name": "Step E",
+                        "duration_days": 0.7,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "D",
+                            "lag_days": 0.3,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "boundary_total_kgco2e": "2075.55",
+                "planned_duration_days": "6.1"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "critical": [
+                "C",
+                "D",
+                "E"
+              ],
+              "cohort": "regression"
+            },
+            {
+              "id": "B04",
+              "message": "面积修订后，继续上一轮读取碳排和工期两条记录，分别交付当前失效限制。不要创建计算或引用旧数值。",
+              "previous": "B03",
+              "change_area": 1283.0,
+              "limit_states": {
+                "lifecycle": "stale",
+                "schedule": "stale"
+              },
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "B05",
+              "message": "请执行两份计划：墙体有未知导热系数，应保存原输入并提交不完整限制；采购计划完整，请计算并正式交付总价。不要猜墙体R。",
+              "plans": [
+                {
+                  "plan_key": "unknown_wall",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "Unknown layer in batch",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 210.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.7,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 8.0,
+                        "thickness_unit": "cm",
+                        "conductivity": null,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "known_cost",
+                  "kind": "cost",
+                  "input": {
+                    "name": "New batch material quantities",
+                    "region": "US-CO",
+                    "currency": "USD",
+                    "tax_basis": "excluded",
+                    "as_of": "2026-11-06",
+                    "functional_scope": "Synthetic procurement only",
+                    "exclusions": [
+                      "Transport",
+                      "Labour",
+                      "Tax"
+                    ],
+                    "lines": [
+                      {
+                        "line_id": "area",
+                        "material_id": "area",
+                        "name": "area",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "m2",
+                          "quantity": 23.75,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.08,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-area",
+                          "unit_price": 8.4,
+                          "per_unit": "m2",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      },
+                      {
+                        "line_id": "items",
+                        "material_id": "items",
+                        "name": "items",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "item",
+                          "quantity": 5,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.15,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-items",
+                          "unit_price": 3.125,
+                          "per_unit": "item",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "material_total": "234.21"
+              },
+              "states": [
+                "limits_verified",
+                "verified"
+              ],
+              "limit_states": {
+                "thermal": "incomplete"
+              },
+              "forbidden_facts": [
+                "total_resistance_m2k_w",
+                "u_w_m2k"
+              ],
+              "cohort": "regression"
+            },
+            {
+              "id": "B06",
+              "message": "只执行wall_selected墙体计划并交付总热阻R。carbon_conditional仅在我随后另行确认时才允许执行；本轮没有该确认，请明确保留未执行。",
+              "plans": [
+                {
+                  "plan_key": "wall_selected",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "New mixed units batch wall",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 210.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.7,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 8.0,
+                        "thickness_unit": "cm",
+                        "conductivity": 40.0,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "carbon_conditional",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 721.0,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  },
+                  "execution_authorized": false
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "2.07"
+              },
+              "states": [
+                "verified",
+                "not_authorized"
+              ],
+              "forbidden_execution": [
+                "carbon_conditional"
+              ],
+              "cohort": "regression"
+            }
+          ]
+        }
+      },
+      "fresh": {
+        "sha256": "b61bebb2b955a6b2e26c1f15d3551d3c24acd779832a3d4db5e1d7e0a1d59f5c",
+        "fixture": {
+          "application_commit": "6315c6c81addb71840672fb65241bc039a2d80dd",
+          "scope": "Final explicit authorization implementation. Regression includes known and deliberately corrected inputs, never new blind results.",
+          "corrections": [
+            "B03/B06 carbon area changed from 927.2 to 721 to match declared project; original conflicts retained.",
+            "B06 adds execution_authorized=false; proves structured control, not natural-language conditional authorization."
+          ],
+          "independent_oracles": {
+            "C01": "cost: line half-up 220.745=>220.75 plus ceil(7*1.2)*1.45=13.05 =>233.80 USD; carbon 650*.31+90*.07+120*.29*7+30*.05=452.9 kgCO2e",
+            "C02": "Both prior records stale without numerical revival or compute",
+            "C03": "R=.13+.04+.15/.75+.09/(.04*1.25)=2.17; first plan forbidden",
+            "C04": "Missing first lambda, no wall R/U; cost233.80"
+          },
+          "manual_review": [
+            "Inspect all raw commentary and tool calls; checked output success does not prove prose correct.",
+            "All batch children counted and attributed to controller.",
+            "No general injection or real-building credit."
+          ],
+          "cases": [
+            {
+              "id": "C01",
+              "message": "请执行两份批准计划，分别交付材料采购总价和七年声明边界碳排总量。报价不是完整造价，碳排不是碳资产。",
+              "plans": [
+                {
+                  "plan_key": "fresh_cost_d",
+                  "kind": "cost",
+                  "input": {
+                    "name": "New final cost D",
+                    "region": "US-CO",
+                    "currency": "USD",
+                    "tax_basis": "excluded",
+                    "as_of": "2026-11-06",
+                    "functional_scope": "Synthetic procurement only",
+                    "exclusions": [
+                      "Transport",
+                      "Labour",
+                      "Tax"
+                    ],
+                    "lines": [
+                      {
+                        "line_id": "area",
+                        "material_id": "area",
+                        "name": "area",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "m2",
+                          "quantity": 21.25,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.06,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-area",
+                          "unit_price": 9.8,
+                          "per_unit": "m2",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      },
+                      {
+                        "line_id": "items",
+                        "material_id": "items",
+                        "name": "items",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "item",
+                          "quantity": 7.0,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.2,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-items",
+                          "unit_price": 1.45,
+                          "per_unit": "item",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "fresh_carbon_d",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New final carbon D",
+                    "area_m2": 721.0,
+                    "study_years": 7,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over seven years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 0.65,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.31,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 90.0,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.07,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 120.0,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.29,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 30.0,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.05,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "material_total": "233.80",
+                "boundary_total_kgco2e": "452.9"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "cohort": "fresh"
+            },
+            {
+              "id": "C02",
+              "message": "项目面积已修改，请延续上一轮读取两份记录，分别正式说明当前失效限制。不授权重算，也不引用旧数值。",
+              "previous": "C01",
+              "change_area": 1391.0,
+              "no_facts": true,
+              "no_writes": true,
+              "limit_states": {
+                "cost": "stale",
+                "lifecycle": "stale"
+              },
+              "cohort": "fresh"
+            },
+            {
+              "id": "C03",
+              "message": "本轮只批准fresh_wall_d墙体。pending_schedule在结构化参数中标为未授权，请保留暂缓状态，不执行，也不为它追求交付。请提交墙体总热阻R。",
+              "plans": [
+                {
+                  "plan_key": "pending_schedule",
+                  "kind": "schedule",
+                  "input": {
+                    "name": "New independent batch schedule",
+                    "scope": "Synthetic sequencing only",
+                    "calendar": "continuous_elapsed_days",
+                    "time_origin": "Elapsed day zero",
+                    "tasks": [
+                      {
+                        "task_id": "A",
+                        "name": "Step A",
+                        "duration_days": 0.8,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "B",
+                        "name": "Step B",
+                        "duration_days": 2.2,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "A",
+                            "lag_days": 0.1,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "C",
+                        "name": "Step C",
+                        "duration_days": 3.8,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "D",
+                        "name": "Step D",
+                        "duration_days": 1.3,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "B",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          },
+                          {
+                            "task_id": "C",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "E",
+                        "name": "Step E",
+                        "duration_days": 0.7,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "D",
+                            "lag_days": 0.3,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "execution_authorized": false
+                },
+                {
+                  "plan_key": "fresh_wall_d",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "New final wall D",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 150.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.75,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 9.0,
+                        "thickness_unit": "cm",
+                        "conductivity": 40.0,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "2.17"
+              },
+              "states": [
+                "not_authorized",
+                "verified"
+              ],
+              "forbidden_execution": [
+                "pending_schedule"
+              ],
+              "cohort": "fresh"
+            },
+            {
+              "id": "C04",
+              "message": "同时执行未知导热系数墙体与完整采购计划。墙体只提交不完整限制，采购提交总价；不能编造墙体R或U。",
+              "plans": [
+                {
+                  "plan_key": "fresh_wall_d",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "New final wall D",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 150.0,
+                        "thickness_unit": "mm",
+                        "conductivity": null,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 9.0,
+                        "thickness_unit": "cm",
+                        "conductivity": 40.0,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "fresh_cost_d",
+                  "kind": "cost",
+                  "input": {
+                    "name": "New final cost D",
+                    "region": "US-CO",
+                    "currency": "USD",
+                    "tax_basis": "excluded",
+                    "as_of": "2026-11-06",
+                    "functional_scope": "Synthetic procurement only",
+                    "exclusions": [
+                      "Transport",
+                      "Labour",
+                      "Tax"
+                    ],
+                    "lines": [
+                      {
+                        "line_id": "area",
+                        "material_id": "area",
+                        "name": "area",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "m2",
+                          "quantity": 21.25,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.06,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-area",
+                          "unit_price": 9.8,
+                          "per_unit": "m2",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      },
+                      {
+                        "line_id": "items",
+                        "material_id": "items",
+                        "name": "items",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "item",
+                          "quantity": 7.0,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.2,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-items",
+                          "unit_price": 1.45,
+                          "per_unit": "item",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "material_total": "233.80"
+              },
+              "states": [
+                "limits_verified",
+                "verified"
+              ],
+              "limit_states": {
+                "thermal": "incomplete"
+              },
+              "forbidden_facts": [
+                "total_resistance_m2k_w",
+                "u_w_m2k"
+              ],
+              "cohort": "fresh"
+            }
+          ]
+        }
+      }
+    },
+    "compact_schema": {
+      "regression": {
+        "sha256": "2b55c466625f980fac93104c4eb20e3d32cf12659f57810ad1d0eb0caae5b1f5",
+        "fixture": {
+          "application_commit": "3b63d6e8148e607b70810fd544060c092508254f",
+          "scope": "After removal of repeated schema display title only; prior metadata failure and all model evidence retained. New numerical variants are not broad external validation.",
+          "independent_oracles": {
+            "D01": "R=.13+.04+.14/.7+.135/(.04*1.25)=3.07; cost=31.25*1.04*8.4+ceil(7*1.1)*2.6625=294.30",
+            "D02": "Both records stale without compute or numeric delivery"
+          },
+          "cases": [
+            {
+              "id": "N03",
+              "cohort": "regression",
+              "message": "实际执行这两份新墙体与工序参数；交付总热阻R、计划工期和关键工序集合。",
+              "plans": [
+                {
+                  "plan_key": "fresh_wall_b",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "Second new wall",
+                    "rsi_m2k_w": 0.11,
+                    "rse_m2k_w": 0.05,
+                    "surface_basis": "Synthetic films",
+                    "application": "Uniform synthetic wall",
+                    "layers": [
+                      {
+                        "name": "A",
+                        "thickness": 0.12,
+                        "thickness_unit": "m",
+                        "conductivity": 0.6,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      },
+                      {
+                        "name": "B",
+                        "thickness": 0.075,
+                        "thickness_unit": "m",
+                        "conductivity": 0.05,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic dry state",
+                        "source": "Synthetic comparison input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "fresh_sequence_b",
+                  "kind": "schedule",
+                  "input": {
+                    "name": "Second new independent network",
+                    "scope": "Synthetic sequencing only",
+                    "calendar": "continuous_elapsed_days",
+                    "time_origin": "Elapsed day zero",
+                    "tasks": [
+                      {
+                        "task_id": "A",
+                        "name": "Step A",
+                        "duration_days": 0.6,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "B",
+                        "name": "Step B",
+                        "duration_days": 1.7,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "A",
+                            "lag_days": 0.1,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "C",
+                        "name": "Step C",
+                        "duration_days": 2.9,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": []
+                      },
+                      {
+                        "task_id": "D",
+                        "name": "Step D",
+                        "duration_days": 1.1,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "B",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          },
+                          {
+                            "task_id": "C",
+                            "lag_days": 0.0,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      },
+                      {
+                        "task_id": "E",
+                        "name": "Step E",
+                        "duration_days": 0.4,
+                        "duration_source": "Independent synthetic duration",
+                        "predecessors": [
+                          {
+                            "task_id": "D",
+                            "lag_days": 0.3,
+                            "source": "Synthetic dependency"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "1.86",
+                "planned_duration_days": "4.7"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "critical": [
+                "C",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "id": "N04",
+              "cohort": "regression",
+              "message": "项目面积已经改为新值。请逐一重读上一轮墙体和工序记录，正式交付两份当前失效状态；不交付旧数值，也不继承旧授权重算。",
+              "previous": "N03",
+              "change_area": 1087.0,
+              "no_facts": true,
+              "no_writes": true,
+              "needs_stale_read": true,
+              "limit_states": {
+                "thermal": "stale",
+                "schedule": "stale"
+              }
+            },
+            {
+              "id": "B06",
+              "message": "只执行wall_selected墙体计划并交付总热阻R。carbon_conditional仅在我随后另行确认时才允许执行；本轮没有该确认，请明确保留未执行。",
+              "plans": [
+                {
+                  "plan_key": "wall_selected",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "New mixed units batch wall",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 210.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.7,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 8.0,
+                        "thickness_unit": "cm",
+                        "conductivity": 40.0,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "carbon_conditional",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 721.0,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  },
+                  "execution_authorized": false
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "2.07"
+              },
+              "states": [
+                "verified",
+                "not_authorized"
+              ],
+              "forbidden_execution": [
+                "carbon_conditional"
+              ],
+              "cohort": "regression"
+            }
+          ]
+        }
+      },
+      "fresh": {
+        "sha256": "93d1fd30451df85be1d4fe6e2e27e049210c1986eca34e3efa746ad73bfbd02b",
+        "fixture": {
+          "application_commit": "3b63d6e8148e607b70810fd544060c092508254f",
+          "scope": "After removal of repeated schema display title only; prior metadata failure and all model evidence retained. New numerical variants are not broad external validation.",
+          "independent_oracles": {
+            "D01": "R=.13+.04+.14/.7+.135/(.04*1.25)=3.07; cost=31.25*1.04*8.4+ceil(7*1.1)*2.6625=294.30",
+            "D02": "Both records stale without compute or numeric delivery"
+          },
+          "cases": [
+            {
+              "id": "D01",
+              "message": "请实际执行新的墙体和采购两份计划，分别正式提交总热阻R和材料总价；保持原单位与价格，不推断节能率。",
+              "plans": [
+                {
+                  "plan_key": "wall_e",
+                  "kind": "thermal",
+                  "input": {
+                    "name": "New compact-schema wall",
+                    "rsi_m2k_w": 0.13,
+                    "rse_m2k_w": 0.04,
+                    "surface_basis": "Synthetic declared films, not a standard default",
+                    "application": "Uniform opaque test layers",
+                    "layers": [
+                      {
+                        "name": "Layer A",
+                        "thickness": 140.0,
+                        "thickness_unit": "mm",
+                        "conductivity": 0.7,
+                        "conductivity_unit": "W/(m K)",
+                        "correction_factor": 1.0,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      },
+                      {
+                        "name": "Layer B",
+                        "thickness": 13.5,
+                        "thickness_unit": "cm",
+                        "conductivity": 40.0,
+                        "conductivity_unit": "mW/(m K)",
+                        "correction_factor": 1.25,
+                        "correction_basis": "Synthetic declared correction",
+                        "source": "Independent test input"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "plan_key": "cost_e",
+                  "kind": "cost",
+                  "input": {
+                    "name": "New compact-schema procurement",
+                    "region": "US-CO",
+                    "currency": "USD",
+                    "tax_basis": "excluded",
+                    "as_of": "2026-11-06",
+                    "functional_scope": "Synthetic procurement only",
+                    "exclusions": [
+                      "Transport",
+                      "Labour",
+                      "Tax"
+                    ],
+                    "lines": [
+                      {
+                        "line_id": "area",
+                        "material_id": "area",
+                        "name": "area",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "m2",
+                          "quantity": 31.25,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.04,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-area",
+                          "unit_price": 8.4,
+                          "per_unit": "m2",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      },
+                      {
+                        "line_id": "items",
+                        "material_id": "items",
+                        "name": "items",
+                        "measure": {
+                          "mode": "direct",
+                          "unit": "item",
+                          "quantity": 7.0,
+                          "source": "Independent synthetic quantity"
+                        },
+                        "waste_ratio": 0.1,
+                        "waste_basis": "Independent synthetic allowance",
+                        "quote": {
+                          "quote_id": "q-items",
+                          "unit_price": 2.6625,
+                          "per_unit": "item",
+                          "currency": "USD",
+                          "tax_basis": "excluded",
+                          "region": "US-CO",
+                          "valid_from": "2026-01-01",
+                          "valid_until": "2026-12-31",
+                          "source": "Synthetic price, not a market quotation",
+                          "version": "audit-2"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "facts": {
+                "total_resistance_m2k_w": "3.07",
+                "material_total": "294.30"
+              },
+              "states": [
+                "verified",
+                "verified"
+              ],
+              "cohort": "fresh"
+            },
+            {
+              "id": "D02",
+              "cohort": "fresh",
+              "message": "面积修订后，请延续上一轮，分别正式说明墙体和采购的当前失效限制；不要重算或引用历史数值。",
+              "previous": "D01",
+              "change_area": 1441.0,
+              "no_facts": true,
+              "no_writes": true,
+              "limit_states": {
+                "thermal": "stale",
+                "cost": "stale"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
