@@ -20,6 +20,6 @@ export function calculationPlanMarkup() {
 
 export function calculationProgressMarkup(rows = []) {
   if (!rows.length) return '';
-  const labels = {verified:'当前结果已核验', saved_unverified:'已创建记录 · 尚未形成有效交付', not_executed:'未执行'};
+  const labels = {verified:'当前结果已核验', limits_verified:'限制已核验 · 未形成完整可用结果', fields_verified:'所列字段已核对 · 结果仍不完整', saved_unverified:'已创建记录 · 尚未形成有效交付', not_executed:'未执行'};
   return `<section aria-label="本次计算计划"><h4>本次计算计划</h4><ul>${rows.map(row => `<li><strong>${esc(row.name)}</strong> · ${esc(labels[row.state] || row.state)}<small> ${esc(row.plan_key)}${row.record_id ? ' · ' + esc(row.record_id) : ''}</small></li>`).join('')}</ul><p class="subtle">已保存的记录可在对应专业工作台查看；部分执行或失败不会自动回滚已生成记录。</p></section>`;
 }

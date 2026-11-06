@@ -23,7 +23,9 @@ class Delivery(Contract):
     kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
     record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
-    statements: list[Statement] = Field(min_length=1, max_length=12)
+    statements: list[Statement] = Field(default_factory=list, max_length=12)
+    limitation_status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected'] | None = Field(default=None,
+        description='For a current incomplete/inapplicable record, copy its status here and use statements: []. This verifies a limitation, not an engineering result. Never invent a numeric status fact.')
     finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
 
     @model_validator(mode='after')
@@ -32,7 +34,21 @@ class Delivery(Contract):
             raise ValueError('Record kind and ID disagree')
         if len({s.fact for s in self.statements}) != len(self.statements):
             raise ValueError('Duplicate fact statements')
+        if bool(self.statements) == bool(self.limitation_status):
+            raise ValueError('Deliver either numeric statements or a current limitation status, not both or neither')
         return self
+
+
+class Limitation(Contract):
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
+    record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
+    status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected']
+    finish: bool = False
+
+    def delivery(self):
+        return Delivery(kind=self.kind,record_id=self.record_id,record_hash=self.record_hash,
+                        limitation_status=self.status,statements=[],finish=self.finish)
 
 
 def inspection(kind):
@@ -109,6 +125,9 @@ def model_projection(record, kind):
     return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record['input']['name'],
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
+            'limitation_delivery': None if artifact['verified'] or record['status']=='stale' else {
+                'limitation_status':record['status'], 'statements':[],
+                'instruction':'用professional_limit正式说明当前限制：status复制limitation_status，附kind/record_id/record_hash，不提供statements，不编造状态数值或安全结论。'},
             'calculation_context': calculation_context(record, kind),
             'explanation_instruction': record['explanation_instruction'],
             'projection_notice': '这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。'}
@@ -144,6 +163,13 @@ class SemanticMismatch(ValueError):
 def check(record, delivery):
     if record['hash'] != delivery.record_hash or record['status'] == 'stale':
         raise ValueError('Record changed or stale; read the current record again')
+    if delivery.limitation_status:
+        artifact = inspection(delivery.kind).artifact(record)
+        if delivery.limitation_status != record['status'] or artifact['verified']:
+            raise ValueError('Limitation does not match the current incomplete or inapplicable record')
+        return {'status':'verified', 'reference':delivery.model_dump(mode='json'), 'statements':[],
+                'limitation':{'record_id':delivery.record_id, 'state':record['status'], 'scope':artifact['scope']},
+                'notice':'只核验当前结果不完整或不适用的状态，不把限制说明当作有效工程数值。'}
     available = {f['fact']: f for f in facts(record, delivery.kind)}
     corrections, accepted = [], []
     for claim in delivery.statements:
@@ -165,7 +191,7 @@ def check(record, delivery):
 
 
 def current_answer(domain, project_id, deliveries, reader=None):
-    artifacts, statements, checks = [], [], []
+    artifacts, statements, checks, limitations = [], [], [], []
     for saved in deliveries:
         request = Delivery.model_validate(saved)
         spec = inspection(request.kind)
@@ -174,16 +200,20 @@ def current_answer(domain, project_id, deliveries, reader=None):
             record = reader(spec, request.record_id) if reader else spec.service(domain).view(project_id, request.record_id)
             checked = check(record, request)
             artifacts.append(spec.artifact(record))
-            statements.append({'record_id': request.record_id, 'name': record['input']['name'], 'facts': checked['statements']})
+            if checked['statements']:
+                statements.append({'record_id': request.record_id, 'name': record['input']['name'], 'facts': checked['statements']})
+            if checked.get('limitation'):
+                limitations.append(checked['limitation'])
             valid = True
         except (ValueError, KeyError, OSError):
             # Historical outputs remain audit snapshots; stale values never enter this answer.
             pass
-        checks.append({'record_id': request.record_id, 'passed': valid, 'meaning': '结构化数值、单位与期间对照当前记录'})
+        checks.append({'record_id': request.record_id, 'passed': valid, 'meaning': '当前记录限制已核对，不代表可用工程结果' if request.limitation_status else '结构化数值、单位与期间对照当前记录'})
     return {'can_simulate': None, 'can_recommend': False, 'workflow_completed': True,
             'task_completion': 'partial' if any(c['passed'] for c in checks) else 'incomplete',
             'execution_scope': 'checked_professional_deliveries', 'artifacts': artifacts, 'checked_statements': statements,
-            'verification': checks, 'summary': '已交付当前核验的专业事实；自由问题的完整覆盖度仍未评估。' if artifacts else '先前交付已失效或来源不可用，不能复用历史数值。',
+            'checked_limitations':limitations,
+            'verification': checks, 'summary': '已核验所选结果或限制；自由问题的完整覆盖度仍未评估。' if artifacts else '先前交付已失效或来源不可用，不能复用历史数值。',
             'task_notice': '模型选择记录与事实，应用核对字段；这不是对模型自由解释或整个复杂任务的认证。',
             'gaps': [] if all(c['passed'] for c in checks) else [{'message': '部分记录已变化或失效', 'action': '重新读取并核验当前记录'}],
             'limitations': ['未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。'],

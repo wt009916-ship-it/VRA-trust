@@ -34,6 +34,52 @@ def inputs(client,pid,kind):
 def make_plan(client,pid,kind):return {'plan_key':'new_'+kind,'kind':kind,'input':inputs(client,pid,kind)}
 
 
+def holdout_plan(client,pid,kind):
+    """Different topology, load case and noisy units, fixed before real-model holdout."""
+    if kind=='engineering':
+        b=beam();b.update(name='Holdout cantilever',support='cantilever',span=3.6,width=200.,depth=300.,elastic_modulus=28.,support_basis='Synthetic fixed left end, free right end')
+        b['loads']=[dict(type='point',name='Interior point force',magnitude=7.5,unit='kN',position=2.4,position_unit='m',source='Independent synthetic force')]
+    elif kind=='schedule':
+        b=inputs(client,pid,kind);b['name']='Holdout tied paths and progress'
+        b['tasks']=[dict(task_id=k,name='Task '+k,duration_days=d,duration_source='Independent synthetic duration',predecessors=[dict(task_id=p,lag_days=lag,source='Independent declared precedence') for p,lag in deps])
+            for k,d,deps in [('A',1.2,[]),('B',2.3,[('A',.4)]),('C',2.7,[('A',0.)]),('D',.6,[('B',0.),('C',0.)]),('E',1.1,[]),('F',0.,[('D',.2),('E',0.)])]]
+        b['progress']=dict(as_of_day=2.,source='Synthetic progress declaration',observations=[dict(task_id=k,state=state,source='Synthetic observation',**data) for k,state,data in
+            [('A','completed',dict(actual_start_day=0.,actual_finish_day=1.2)),('B','in_progress',dict(actual_start_day=1.6,remaining_days=3.)),('C','in_progress',dict(actual_start_day=1.2,remaining_days=2.)),('D','not_started',{}),('E','completed',dict(actual_start_day=0.,actual_finish_day=1.1)),('F','not_started',{})]])
+    else:
+        b=contract();b.update(name='Holdout Fahrenheit with missing sample and gap',channels=[dict(channel_id='t',column='t',name='Temperature',unit='degF',source='Declared Fahrenheit synthetic input')],rules=[dict(rule_id='hot',name='Declared upper band',kind='range',channel_id='t',unit='degC',upper=25.,minimum_duration_seconds=60.,source='Synthetic rule, not equipment diagnosis')])
+        text='time,t\n'+''.join(f'2026-03-03T00:{minute:02}:00Z,{v}\n' for minute,v in zip([0,1,2,3,4,8,9,10],[68,80.6,82.4,'',77,86,86,68]))
+        upload=client.post(f'/api/projects/{pid}/files',files={'file':('holdout.csv',text.encode())});assert upload.status_code==201
+        b['file_id']=upload.json()['file_id']
+    return dict(plan_key='holdout_'+kind,kind=kind,input=b)
+
+
+@pytest.mark.parametrize('kind',['engineering','schedule','operation'])
+def test_new_holdout_parameters_against_independent_oracles(client,kind):
+    pid=create_project(client)['project_id'];a=client.app.state.agent;p=holdout_plan(client,pid,kind)
+    plan=Chat(message='input',mode='provider',allow_compute=True,calculation_plans=[p]).calculation_plans[0]
+    r=inspection(kind).service(a.domain).save(pid,plan.input);v=r['result']
+    if kind=='engineering':
+        inertia=F(1,5)*F(3,10)**3/12
+        tip=7500*F(12,5)**2*(3*F(18,5)-F(12,5))/(6*28000000000*inertia)
+        assert r['status']=='calculated'
+        assert v['metrics']['left_reaction_n']==7500 and v['metrics']['max_abs_moment_nm']==18000
+        assert v['metrics']['max_deflection_m']==pytest.approx(float(tip),rel=1e-12)
+    elif kind=='schedule':
+        assert v['planned']['duration_days']=='4.7' and v['planned']['critical_tasks']==['A','B','C','D','F']
+        assert v['forecast']['finish_day']=='5.8' and v['forecast']['finish_variance_days']=='1.1'
+    else:
+        assert (v['quality']['sample_count'],v['quality']['cell_issue_count'],v['quality']['gap_count'])==(8,1,1)
+        assert [(e['first_line'],e['last_line'],e['observed_span_seconds']) for e in v['rules'][0]['events']]==[(3,4,60.),(7,8,60.)]
+        assert v['rules'][0]['unknown_samples']==1 and not inspection(kind).artifact(r)['verified']
+        claim=next(f for f in facts(r,kind) if f['fact']=='rule_event_sum')
+        d=Delivery(kind=kind,record_id=r['operation_id'],record_hash=r['hash'],statements=[{k:claim[k] for k in ('fact','value','unit','period','study_years','area_m2')}])
+        from backend.agent_semantics import current_answer
+        answer=current_answer(a.domain,pid,[d.model_dump()])
+        task={'calculation_plan_snapshot':{'items':[{'plan':p}]},'events':[{'tool':'calculation_execute','status':'succeeded','result':{'plan_key':p['plan_key'],'record_id':r['operation_id']}}]}
+        assert calculations.progress(task,answer)[0]['state']=='fields_verified'
+        assert answer['task_completion']=='partial' and not answer['can_recommend']
+
+
 EXPECTED={'engineering':[('left_reaction_n','15000','N','static_load_case'),('max_abs_moment_nm','18750','N m','static_load_case')],
           'schedule':[('planned_duration_days','8','day','elapsed_days')],
           'operation':[('sample_count','7','count','observed_window'),('rule_event_sum','2','count','observed_window')]}
@@ -165,3 +211,58 @@ def test_two_different_new_plans_remain_within_existing_event_budget(client,monk
     assert t['status']=='succeeded',t.get('error')
     assert len(t['events'])<=15 and len(t['answer']['artifacts'])==2
     assert all(r['state']=='verified' for r in t['calculation_progress'])
+
+
+def test_model_can_deliver_current_limit_without_inventing_numeric_fact(client,monkeypatch):
+    pid=create_project(client)['project_id'];a=client.app.state.agent;p=make_plan(client,pid,'engineering');p['input']['depth']=1000.
+    turn=0
+    def complete(messages,tools):
+        nonlocal turn;turn+=1
+        names={t['function']['name'] for t in tools}
+        if turn==1:
+            assert 'professional_limit' not in names and 'professional_deliver' not in names
+            return batch([('calculation_execute',{'plan_key':p['plan_key']})])
+        r=a.store.list('engineering',pid)[0]
+        if turn==2:return batch([('beam_analysis_read',{'engineering_id':r['engineering_id']})])
+        assert 'professional_limit' in names and 'professional_deliver' not in names
+        return batch([('professional_limit',{'limitation':dict(kind='engineering',record_id=r['engineering_id'],record_hash=r['hash'],status='outside_model_screen',finish=True)})])
+    monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True});monkeypatch.setattr(a.gateway,'complete',complete)
+    t=a.start(pid,Chat(message='Explain applicability',mode='provider',allow_compute=True,calculation_plans=[p]),background=False)
+    assert t['status']=='succeeded',t.get('error')
+    assert t['calculation_progress'][0]['state']=='limits_verified' and t['answer']['checked_statements']==[]
+    assert t['answer']['checked_limitations'][0]['state']=='outside_model_screen'
+    assert not t['answer']['artifacts'][0]['verified'] and t['answer']['task_completion']=='partial'
+    project=a.store.get('project',pid);project['name']='Source changed';a.store.put('project',project,project['revision'])
+    assert a.view(pid,t['agent_id'])['answer']['checked_limitations']==[]
+
+
+@pytest.mark.parametrize('mode',['complete','wrong_status','mixed','empty'])
+def test_limits_cannot_replace_valid_results_or_forge_states(client,mode):
+    pid=create_project(client)['project_id'];a=client.app.state.agent;p=make_plan(client,pid,'engineering')
+    if mode!='complete':p['input']['depth']=1000.
+    plan=Chat(message='input',mode='provider',allow_compute=True,calculation_plans=[p]).calculation_plans[0]
+    r=inspection('engineering').service(a.domain).save(pid,plan.input)
+    body=dict(kind='engineering',record_id=r['engineering_id'],record_hash=r['hash'],statements=[],limitation_status='outside_model_screen')
+    if mode=='wrong_status':body['limitation_status']='incomplete'
+    if mode=='mixed':body['statements']=[dict(fact='max_deflection_m',value='0',unit='m',period='static_load_case',study_years=None,area_m2=None)]
+    if mode=='empty':body['limitation_status']=None
+    with pytest.raises(ValueError):check(r,Delivery(**body))
+
+
+def test_numeric_and_limit_tools_have_separate_contracts(client):
+    a=client.app.state.agent
+    tools={t['function']['name']:t['function']['parameters'] for t in a.tools()}
+    numeric=tools['professional_deliver']['$defs']['Delivery']
+    assert 'limitation_status' not in numeric['properties']
+    assert numeric['properties']['statements']['minItems']==1 and 'statements' in numeric['required']
+    limited=tools['professional_limit']['$defs']['Limitation']
+    assert 'statements' not in limited['properties'] and 'status' in limited['required']
+    pid=create_project(client)['project_id'];p=make_plan(client,pid,'engineering');p['input']['depth']=1000.
+    plan=Chat(message='input',mode='provider',allow_compute=True,calculation_plans=[p]).calculation_plans[0]
+    r=inspection('engineering').service(a.domain).save(pid,plan.input)
+    ref=dict(kind='engineering',record_id=r['engineering_id'],record_hash=r['hash'],status='outside_model_screen')
+    assert a.call(pid,'professional_limit',{'limitation':ref},False)['status']=='verified'
+    other=create_project(client)['project_id']
+    with pytest.raises(ValueError,match='Cross-project'):a.call(other,'professional_limit',{'limitation':ref},False)
+    with pytest.raises(ValueError,match='professional_limit'):
+        a.call(pid,'professional_deliver',{'delivery':{k:v for k,v in ref.items() if k!='status'}|{'limitation_status':ref['status']}},False)

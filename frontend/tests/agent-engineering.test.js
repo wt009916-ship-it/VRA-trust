@@ -2,9 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {engineeringArtifactMarkup} from '../src/agent-engineering.js';
 import {professionalArtifactMarkup,checkedDeliveryMarkup} from '../src/agent-artifacts.js';
-import {parseCalculationPlans} from '../src/agent-calculations.js';
+import {parseCalculationPlans,calculationProgressMarkup} from '../src/agent-calculations.js';
 
 const base={name:'<svg>Declared source',record_id:'engineering_abc',project_id:'project_a',scope:'Not certification',status:'calculated',input:{}};
+test('partial numerical delivery remains visibly incomplete',()=>{
+ const html=calculationProgressMarkup([{name:'Missing samples',plan_key:'p',record_id:'operation_a',state:'fields_verified'}]);
+ assert.ok(html.includes('所列字段已核对 · 结果仍不完整')&&!html.includes('当前结果已核验'));
+});
 test('beam outside applicability does not render engineering values',()=>{
  const html=engineeringArtifactMarkup({...base,kind:'engineering_review',status:'outside_model_screen',result:{metrics:{max_deflection_m:99},model_screening:['<script>screen'],limitations:[]}});
  assert.ok(html.includes('不在本交付中作为工程结果显示'));
@@ -15,6 +19,10 @@ test('stale and absent engineering records retain no numerical output',()=>{
  assert.equal(engineeringArtifactMarkup(null),'');
  const html=professionalArtifactMarkup({...base,kind:'engineering_review',status:'stale',result:{metrics:{max_deflection_m:123}}});
  assert.ok(html.includes('不能复用历史数值')&&!html.includes('123'));
+});
+test('limit-only delivery renders actual boundary artifact without an empty facts panel',()=>{
+ const html=checkedDeliveryMarkup({checked_statements:[],artifacts:[{...base,kind:'engineering_review',status:'outside_model_screen',result:{model_screening:['Declared aspect ratio outside screening'],limitations:[]}}]});
+ assert.ok(html.includes('超出模型适用性筛查范围')&&!html.includes('经过核验的专业说明'));
 });
 test('schedule preserves unknown forecast and unresolved constraints',()=>{
  const html=engineeringArtifactMarkup({...base,kind:'schedule_review',status:'constraints_unresolved',input:{time_origin:'<svg> day zero'},result:{planned:{duration_days:'8',critical_tasks:['A','B','D'],resources:{status:'conflict'}},forecast:{as_of_day:'3',finish_day:null,finish_variance_days:null,status:'incomplete'},limitations:[]}});

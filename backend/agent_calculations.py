@@ -108,6 +108,8 @@ def execute(domain, pid, key, plans, frozen):
 def progress(record, answer):
     """Saved writes remain visible on partial/failure; current validity needs a read."""
     verified = {a.get('record_id') or a.get('cost_id') for a in (answer or {}).get('artifacts', []) if a.get('verified')}
+    limited = {x['record_id'] for x in (answer or {}).get('checked_limitations', [])}
+    fields = {x['record_id'] for x in (answer or {}).get('checked_statements', []) if x['facts']}
     rows = []
     for item in record.get('calculation_plan_snapshot', {}).get('items', []):
         plan = item['plan']
@@ -116,5 +118,5 @@ def progress(record, answer):
         result = events[-1]['result'] if events else {}
         rows.append({'plan_key': plan['plan_key'], 'kind': plan['kind'], 'name': plan['input']['name'],
                      'record_id': result.get('record_id'),
-                     'state': 'verified' if result.get('record_id') in verified else 'saved_unverified' if result else 'not_executed'})
+                     'state': 'verified' if result.get('record_id') in verified else 'limits_verified' if result.get('record_id') in limited else 'fields_verified' if result.get('record_id') in fields else 'saved_unverified' if result else 'not_executed'})
     return rows

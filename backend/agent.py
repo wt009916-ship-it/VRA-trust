@@ -21,7 +21,7 @@ from .construction import Schedules
 from .operations import Operations
 from .local_model import LocalModelGateway
 from .agent_inspections import INSPECTIONS
-from .agent_semantics import Delivery, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection
+from .agent_semantics import Delivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection
 from . import agent_calculations as calculations
 from . import agent_capabilities as capabilities
 
@@ -59,6 +59,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    limitation: Limitation | None = None
     capability_ids: list[capabilities.CapabilityId] | None = Field(default=None, min_length=1, max_length=4)
     capability_explanation: capabilities.Explanation | None = None
     plan_key: str | None = Field(default=None, pattern=r'^[A-Za-z0-9_-]{1,40}$')
@@ -83,7 +84,8 @@ TOOLS = {
     'capability_lookup': '查询当前应用能做什么及明确边界，1到4个capability_ids。结构安全认证、碳信用签发、节能合规、缺失结构复原、设备根因确诊、施工安全审批属于应用能力边界，不能用缺记录或IDF/EPW准入解释。也说明有限计算实际支持范围；不检查项目资料充分性。',
     'capability_explain': '先查询capability_lookup，再按catalog_hash提交capability_explanation：每项capability_id、assessment、reason_code必须与当前应用范围一致。用于正式能力说明，不代表执行了计算或取得认证。最后所需说明可finish=true。',
     'calculation_execute': '选择本轮用户明确提交的plan_key，按已锁定参数调用热工/阶段碳/材料成本/梁/进度/设备规则计算器并保存新记录。不能修改工程输入或CSV；随后按返回的next_tool读取并核验交付；不重复创建。',
-    'professional_deliver': '开放问答的正式交付：先用专业list/read读取记录，再提交delivery，核对数值、单位、期间及面积口径。支持thermal/lifecycle/cost/engineering/schedule/operation；来源hash必填；不校验自由文字、不认证安全或碳信用。',
+    'professional_deliver': '交付数值：先用专业list/read读取记录，再提交delivery的statements，核对数值、单位、期间及面积口径。支持thermal/lifecycle/cost/engineering/schedule/operation；来源hash必填。不提供limitation_status；若只说明不完整或不适用，请另用professional_limit。',
+    'professional_limit': '交付限制说明：先实际读取当前记录，再提交limitation含kind、record_id、record_hash、status（复制当前状态）及finish。只允许当前结果不完整或不适用；不填数值或statements，不把限制当作已完成工程计算。',
     'thermal_list': '只读列出最近6个热工构造的ID和当前状态，不生成材料参数',
     'thermal_read': '按thermal_id读取当前一维稳态热阻/U及单位、表面热阻、材料修正依据；U降低不是全年节能率，不判合规',
     'lifecycle_list': '建筑碳账/碳清单/生命周期阶段排放：只读列出最近6份阶段CO2e清单的ID和当前状态。阶段总量、每平方米量及期间通过lifecycle_read读取；不是运行碳重算或碳信用账户',
@@ -118,6 +120,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'professional_limit': ('limitation',),
     'capability_lookup': ('capability_ids',),
     'capability_explain': ('capability_explanation',),
     'calculation_execute': ('plan_key',),
@@ -210,6 +213,10 @@ class Agent:
                         collect(value)
 
             collect(parameters)
+            if name == 'professional_deliver':
+                definitions['Delivery']['properties'].pop('limitation_status')
+                definitions['Delivery']['properties']['statements']['minItems'] = 1
+                definitions['Delivery'].setdefault('required', []).append('statements')
             if definitions:
                 parameters['$defs'] = definitions
             tools.append({'type': 'function', 'function': {'name': name, 'description': desc, 'parameters': parameters}})
@@ -279,12 +286,15 @@ class Agent:
                 raise ToolRefusal('Calculation requires this task permission and frozen user inputs')
             plans, frozen = calculation_context
             return calculations.execute(d, project_id, args.plan_key, plans, frozen)
-        if name == 'professional_deliver':
-            if not args.delivery:raise core.ValidationError('Provide delivery')
-            spec = inspection(args.delivery.kind)
-            if self.store.get(spec.kind, args.delivery.record_id)['project_id'] != project_id:
+        if name in {'professional_deliver','professional_limit'}:
+            delivery = args.delivery if name == 'professional_deliver' else args.limitation.delivery() if args.limitation else None
+            if not delivery:raise core.ValidationError('Provide delivery or limitation')
+            if name == 'professional_deliver' and delivery.limitation_status:
+                raise core.ValidationError('Use professional_limit for a limitation; professional_deliver accepts numeric statements only')
+            spec = inspection(delivery.kind)
+            if self.store.get(spec.kind, delivery.record_id)['project_id'] != project_id:
                 raise ToolRefusal('Cross-project professional delivery rejected')
-            return check_explanation(spec.service(d).view(project_id, args.delivery.record_id), args.delivery)
+            return check_explanation(spec.service(d).view(project_id, delivery.record_id), delivery)
         if name == 'simulation_list':
             return [{'run_id': r['run_id'], 'scheme_id': r.get('scheme_id'), 'status': r['status']}
                     for r in self.store.jobs(project_id)[:6]]
@@ -385,9 +395,9 @@ class Agent:
         spec = INSPECTIONS.get(body.objective)
         offered = {'project_get', spec.list_tool, spec.read_tool} if spec else (set(TOOLS) if body.allow_compute else set(TOOLS) - WRITE_TOOLS)
         if body.calculation_plans:
-            offered = {'project_get', 'calculation_execute', 'professional_deliver'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
+            offered = {'project_get', 'calculation_execute', 'professional_deliver','professional_limit'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
         if not body.calculation_plans:offered.discard('calculation_execute')
-        if body.objective != 'open_ended':offered.discard('professional_deliver')
+        if body.objective != 'open_ended':offered -= {'professional_deliver','professional_limit'}
         if body.objective != 'open_ended':offered -= {'capability_lookup', 'capability_explain'}
         def reserved_reads():
             return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + int(bool(record.get('capability_delivery')))
@@ -413,7 +423,8 @@ class Agent:
                             read_records.append((ds, e['result']))
                     if not ids:available.discard(ds.read_tool)
                     else:choices[ds.read_tool] = (ds.argument, sorted(ids))
-                if not read_any:available.discard('professional_deliver')
+                if not read_any or not any(r.get('explanation_facts') for _,r in read_records):available.discard('professional_deliver')
+                if not any(r['status']!='stale' and not ds.artifact(r)['verified'] for ds,r in read_records):available.discard('professional_limit')
             result = self.tools(available)
             for tool in result:
                 name = tool['function']['name'];parameters = tool['function']['parameters']
@@ -434,12 +445,16 @@ class Agent:
                     parameters['$defs']['Explanation']['required'].append('finish')
                     parameters['$defs']['Explanation']['properties']['catalog_hash'] = {'type':'string','enum':sorted({r['catalog_hash'] for r in capability_reads})}
                     parameters['$defs']['Claim']['properties']['capability_id'] = {'type':'string','enum':sorted({c['capability_id'] for r in capability_reads for c in r['capabilities']})}
-                if name == 'professional_deliver' and read_records:
-                    properties = parameters['$defs']['Delivery']['properties']
-                    properties['record_id'] = {'type':'string','enum':sorted({r[ds.record_key] for ds, r in read_records})}
-                    properties['record_hash'] = {'type':'string','enum':sorted({r['hash'] for _, r in read_records})}
-                    parameters['$defs']['Delivery']['required'].append('finish')
-                    parameters['required'] = ['delivery']
+                if name in {'professional_deliver','professional_limit'} and read_records:
+                    limited = name == 'professional_limit';definition = 'Limitation' if limited else 'Delivery'
+                    candidates = ([(ds,r) for ds,r in read_records if r['status']!='stale' and not ds.artifact(r)['verified']]
+                                  if limited else [(ds,r) for ds,r in read_records if r.get('explanation_facts')])
+                    properties = parameters['$defs'][definition]['properties']
+                    properties['record_id'] = {'type':'string','enum':sorted({r[ds.record_key] for ds,r in candidates})}
+                    properties['record_hash'] = {'type':'string','enum':sorted({r['hash'] for _,r in candidates})}
+                    if limited:properties['status'] = {'type':'string','enum':sorted({r['status'] for _,r in candidates})}
+                    parameters['$defs'][definition]['required'].append('finish')
+                    parameters['required'] = ['limitation' if limited else 'delivery']
             return result
         def save():
             nonlocal record
@@ -479,8 +494,8 @@ class Agent:
                                       and e['result']['kind'] == ds.kind and e['result']['record_id'] == args.get(ds.argument)
                                       for e in record['events']):
                         raise ToolRefusal('Calculation-plan tasks may read only records created by this task')
-                if name == 'professional_deliver':
-                    delivery = Delivery.model_validate(args.get('delivery'))
+                if name in {'professional_deliver','professional_limit'}:
+                    delivery = Delivery.model_validate(args.get('delivery')) if name == 'professional_deliver' else Limitation.model_validate(args.get('limitation')).delivery()
                     ds = inspection(delivery.kind)
                     if not any(e['tool'] == ds.read_tool and e['status'] == 'succeeded'
                                and e.get('result', {}).get(ds.record_key) == delivery.record_id
@@ -500,7 +515,7 @@ class Agent:
                     attempts[key] = None
                 context = {'calculation_context': (body.calculation_plans, record.get('calculation_plan_snapshot'))} if name == 'calculation_execute' else {}
                 result = self.call(record['project_id'], name, args, body.allow_compute, **context)
-                if name == 'professional_deliver':
+                if name in {'professional_deliver','professional_limit'}:
                     record['professional_deliveries'] = [x for x in record['professional_deliveries'] if x['record_id'] != delivery.record_id] + [result['reference']]
                 if name == 'capability_explain':
                     record['capability_delivery'] = result['reference']
@@ -560,7 +575,8 @@ class Agent:
                     '按用户最终要求的产物选择能力编号；用户提到材料、因子或梁记录，不代表最终要求就是材料成本、碳清单或梁计算。'
                     'not_supported/outside_application_scope意味着应用本身不支持，资料齐全或存在计算记录也不能解锁；supported_with_limits/implemented_bounded_method只说明已实现有限方法，不证明项目输入或依赖就绪。'
                     '同次最多说明四项能力；一次提交全部所需claims，新的说明替换此前说明。不得用查询能力替代用户要求的实际计算。'
-                    'open_ended的热工/阶段碳/材料清单任务：先自主选择对应list/read，再调用professional_deliver交付所问事实。'
+                    'open_ended的热工/阶段碳/材料清单/梁分析/施工进度/设备规则任务：先自主选择对应list/read，再调用professional_deliver交付所问数值事实。'
+                    '记录不完整或模型不适用时，可用professional_limit提交当前status，正式说明限制；该工具不提交数值或statements。professional_deliver仅提交数值，不能包含limitation_status。'
                     'read返回explanation_facts，按该事实项的value、unit、period、study_years、area_m2提交，record_hash来自hash。'
                     '无记录或没有对应事实就说明未完成，不伪造交付。不把总量改称单位面积，不把整个评估期改称年量。'
                     'TOOL_ERROR含corrections时先修正结构化事实，再交付；仅自由文字不能替代工具交付。最多三个不同记录。'
@@ -605,7 +621,7 @@ class Agent:
                             messages.append({'role':'user','content':'你已查询应用能力，但尚未完成正式说明。检查问题中的每个不同要求；遗漏的能力请用capability_lookup补查，可参考related_capabilities。随后capability_explain一次提交全部所需claims和catalog_hash；最后说明finish=true。自由文字不会成为正式结果；不要把计算支持与认证能力合并成一项。'})
                             continue
                         break
-                    new_deliveries = sum(c['function']['name'] == 'professional_deliver' for c in calls)
+                    new_deliveries = sum(c['function']['name'] in {'professional_deliver','professional_limit'} for c in calls)
                     new_deliveries += int(not record.get('capability_delivery') and any(c['function']['name']=='capability_explain' for c in calls))
                     if len(calls) > 4 or len(record['events']) + len(calls) + reserved_reads() + new_deliveries > 15:
                         raise core.ValidationError('Tool budget exceeded; no further actions executed')
@@ -613,13 +629,13 @@ class Agent:
                     for call in calls:
                         result = invoke(call['function']['name'], call['function']['arguments'], recoverable=True, origin='model')
                         batch_failed |= isinstance(result, dict) and result.get('status') == 'TOOL_ERROR'
-                        if call['function']['name'] in {'professional_deliver','capability_explain'} and result.get('status') == 'verified':
+                        if call['function']['name'] in {'professional_deliver','professional_limit','capability_explain'} and result.get('status') == 'verified':
                             finish_requested |= result['reference']['finish']
                         if body.objective == 'open_ended':
                             ds = next((s for s in INSPECTIONS.values() if s.read_tool == call['function']['name']), None)
                             if ds and isinstance(result, dict) and ds.record_key in result:
                                 result = model_projection(result, ds.kind)
-                            elif call['function']['name'] == 'professional_deliver' and result.get('status') == 'verified':
+                            elif call['function']['name'] in {'professional_deliver','professional_limit'} and result.get('status') == 'verified':
                                 result = {'status': 'verified', 'record_id': result['reference']['record_id'],
                                           'accepted_facts': [f['fact'] for f in result['statements']],
                                           'notice': '这些字段已核验并保存；完整交付在工具审计中。不重复发送刚已读取的数值。若无其他所需记录可结束，否则继续处理未交付目标。'}
