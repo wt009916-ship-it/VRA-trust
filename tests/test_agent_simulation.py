@@ -140,6 +140,7 @@ def test_initial_inspection_is_projected_and_current_result_rechecked(client, mo
     monkeypatch.setattr(agent.domain, 'view', lambda _: deepcopy(view))
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
     def complete(messages, tools):
+        assert all(t['function']['name'] != 'professional_read_many' for t in tools)
         initial = json.loads(messages[4]['content'].split('：', 1)[1])
         run = next(v for v in initial if isinstance(v, dict) and v.get('run_id'))
         assert run['metrics']['zone_design_loads']['details_delivered'] is False
@@ -149,3 +150,22 @@ def test_initial_inspection_is_projected_and_current_result_rechecked(client, mo
     assert task['status'] == 'succeeded', task['error']
     events = [e for e in task['events'] if e['tool'] == 'simulation_result']
     assert len(events) == 2 and all(e['result'] == view for e in events)
+
+
+@pytest.mark.parametrize('objective', ['inspect_results', 'inspect_evidence', 'inspect_thermal'])
+def test_every_offered_schema_has_nonempty_enums_in_inspection_modes(client, monkeypatch, objective):
+    agent = client.app.state.agent; pid = create_project(client)['project_id']
+    monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
+    def inspect(node):
+        if isinstance(node, dict):
+            if 'enum' in node:
+                assert node['enum'], 'llama.cpp rejects empty enum schemas before inference'
+            for value in node.values(): inspect(value)
+        elif isinstance(node, list):
+            for value in node: inspect(value)
+    def complete(messages, tools):
+        inspect(tools)
+        return {'role': 'assistant', 'content': 'Schema protocol fixture, no native or model claim'}
+    monkeypatch.setattr(agent.gateway, 'complete', complete)
+    task = agent.start(pid, Chat(message='Inspect current evidence', mode='provider', objective=objective), background=False)
+    assert task['status'] == 'succeeded', task['error']

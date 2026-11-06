@@ -48,6 +48,8 @@
 
 ## 后续与评分
 
+真实模型首轮发现DL-003（高）：`inspect_results`模式仍提供`professional_read_many`，但此模式没有专业记录候选，生成`record_ids.items.enum=[]`。原生llama.cpp在推理前拒绝该JSON Schema，4B三次真实请求均失败，尚未执行分页。`live-4b-v1.json`及原始服务日志保留。修复把“无候选就不提供批量工具”判断移到所有任务模式共用位置；预期任何已提供工具的enum非空，且不把不存在的记录伪装为候选。新增结果/证据/热工核验模式的动态Schema回归；需重新进行真实调用。该问题是既有模式集成缺陷，不能归咎为模型幻觉。
+
 全量完成后，核验源码/证据摘要、历史未被覆盖和发布树一致，再复评、PR合并、更新本机原型。独立稳态设计负荷有新增证据，但完整动态负荷、当地设计工况资料、实楼/专家验收继续扣分。RS-07混合Agent、RS-09 CPU触发顺序、一般注入、净工程量、DWG/转换和图纸修复仍开放；不启动扩大训练，不提前整体视觉改版。
 
 固定版本来源：[SizingManager.cc](https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008)、[SQLiteProcedures.cc](https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SQLiteProcedures.cc#L1689)。本地源码下载摘要与原生证据在`validation/designload-20261107`；来源网页旧字段列表不能代替实际9.0.1表结构。

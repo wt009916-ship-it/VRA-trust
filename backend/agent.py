@@ -510,7 +510,7 @@ class Agent:
                     else:choices[ds.read_tool] = (ds.argument, sorted(ids))
                 if not read_any or not any(r.get('explanation_facts') for _,r in read_records):available.discard('professional_deliver')
                 if not any(not ds.artifact(r)['verified'] for ds,r in read_records):available.discard('professional_limit')
-                if not choices:available.discard('professional_read_many')
+            if not choices:available.discard('professional_read_many')
             result = self.tools(available)
             for tool in result:
                 name = tool['function']['name'];parameters = tool['function']['parameters']
