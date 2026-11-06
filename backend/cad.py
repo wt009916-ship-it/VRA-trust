@@ -20,6 +20,7 @@ def parser_version():
         'dxf_geometry':core.sha(Path(__file__).with_name('dxf_geometry.py')),
         'ifc_details':core.sha(Path(__file__).with_name('ifc_details.py')),
         'ifc_geometry':core.sha(Path(__file__).with_name('ifc_geometry.py')),
+        'mesh_topology':core.sha(Path(__file__).with_name('mesh_topology.py')),
         'ezdxf': version('ezdxf'), 'ifcopenshell': version('ifcopenshell')})
 
 

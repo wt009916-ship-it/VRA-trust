@@ -4,11 +4,16 @@ from collections import defaultdict
 
 import numpy as np
 
+try:
+    from . import mesh_topology
+except ImportError:
+    import mesh_topology
+
 MAX_VERTICES = 100000
 MAX_TRIANGLES = 200000
 
 
-def mesh_measurements(vertices, faces):
+def mesh_measurements(vertices, faces, topology_budget=None):
     """Origin-shifted integration; never assign volume to open/inconsistently oriented mesh."""
     verts = np.asarray(vertices, dtype=float).reshape((-1, 3))
     tris = np.asarray(faces, dtype=np.int64).reshape((-1, 3))
@@ -34,7 +39,8 @@ def mesh_measurements(vertices, faces):
     degenerate = int(np.count_nonzero(areas == 0))
     duplicate = len(tris) - len({tuple(sorted(t)) for t in tris})
     volume = None
-    components = 0
+    components = []
+    topology = {'status':'not_checked','reason':'open_or_invalid_topology'}
     if not bad_edges and not degenerate and not duplicate:
         adjacency = [[] for _ in tris]
         for pairs in edges.values():
@@ -53,21 +59,22 @@ def mesh_measurements(vertices, faces):
                     if neighbor in unseen:
                         unseen.remove(neighbor)
                         todo.append(neighbor)
-            components += 1
+            components.append(component)
             p = points[component]
             origin = p[0, 0]
             shifted = p - origin
             terms = np.einsum('ij,ij->i', shifted[:, 0], np.cross(shifted[:, 1], shifted[:, 2])) / 6
             signed_volumes.append(math.fsum(float(v) for v in terms))
-        # Cavity shells retain their sign. Overlapping shells are not boolean-unioned.
-        volume = abs(math.fsum(signed_volumes))
+        topology = mesh_topology.validate(verts,tris,components,signed_volumes,edges,topology_budget)
+        if topology['status']=='checked':volume = abs(math.fsum(signed_volumes))
     area = math.fsum(float(a) for a in areas)
     if not math.isfinite(area) or (volume is not None and not math.isfinite(volume)):
         raise ValueError('IFC measurement overflow')
     return {'surface_area_m2': area, 'volume_m3': volume,
             'mesh_status': 'oriented_edge_closed' if volume is not None else 'open_or_invalid_topology',
             'bad_edges': bad_edges, 'degenerate_triangles': degenerate, 'duplicate_triangles': duplicate,
-            'connected_shells': components if volume is not None else None,
+            'connected_shells': len(components) if components else None,
+            'topology':topology,'surface_area_kind':'sum_of_input_triangles_not_union_area',
             'vertices': len(verts), 'triangles': len(tris)}
 
 
@@ -83,6 +90,7 @@ def inspect_shapes(doc, products, length_scale):
         settings.set(key, value)
     rows = []
     used_vertices = used_triangles = 0
+    topology_budget = mesh_topology.Budget()
     for element in products:
         row = {'id': element.id(), 'global_id': element.GlobalId, 'type': element.is_a(), 'name': element.Name,
                'surface_area_m2': None, 'volume_m3': None, 'bbox_world_m': None,
@@ -113,7 +121,7 @@ def inspect_shapes(doc, products, length_scale):
             used_triangles += len(faces)
             if used_vertices > MAX_VERTICES or used_triangles > MAX_TRIANGLES:
                 raise ValueError('IFC total mesh budget exceeded')
-            row.update(mesh_measurements(verts, faces))
+            row.update(mesh_measurements(verts, faces, topology_budget))
             if len(verts):
                 matrix = get_shape_matrix(shape)
                 world = verts @ matrix[:3, :3].T + matrix[:3, 3]
@@ -126,6 +134,7 @@ def inspect_shapes(doc, products, length_scale):
     return {'objects': rows, 'settings': values, 'vertices_processed': used_vertices, 'triangles_processed': used_triangles,
             'limitations': ['三角网格表面积及定向闭合边界积分体积为近似几何量，不是模型声明工程量或专业认证。',
                            '保留原模型开洞关系；不做跨构件去重叠、相交检查或工程量规则扣减。',
-                           '闭合边检查不证明无自交、壳嵌套正确或完整流形；混合方向按原网格带符号求和。',
+                           '体积须通过边/顶点流形、三角面接触及壳嵌套方向检查；拒绝或预算内未能核验时为未知，不自动修复或布尔合并。',
+                           '检查针对原生三角化后的二进制浮点坐标；不能证明原CAD曲面精度或专业净量。面积始终是原网格三角面之和，非去重叠并集面积。',
                            '局部SI坐标用于测量，世界米制包围盒用于定位；未应用地图投影转换。',
                            '仅处理唯一Body表示；缺单位/位置/Body及原生转换失败保持缺口，不默认补齐。']}

@@ -29,7 +29,7 @@ from . import parser_runtime_cache
 ROOT=Path(__file__).resolve().parent
 PACKAGES={'cad':('ezdxf','ifcopenshell'),'standards':('pypdf',),
           'drawing':('rapidocr','onnxruntime','Pillow','pypdfium2')}
-MODULES={'cad':('cad_worker.py','dxf_geometry.py','ifc_details.py','ifc_geometry.py'),
+MODULES={'cad':('cad_worker.py','dxf_geometry.py','ifc_details.py','ifc_geometry.py','mesh_topology.py'),
          'standards':('standards_worker.py',),'drawing':('drawing_worker.py','drawing_models.py')}
 MAX_BYTES=1024**3
 MAX_FILES=20000
