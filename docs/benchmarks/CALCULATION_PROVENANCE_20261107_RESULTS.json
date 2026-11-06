@@ -1,0 +1,2206 @@
+{
+  "scope": "Actual model responses and structured checks. Free prose is not verified engineering output.",
+  "groups": {
+    "regression-4b": {
+      "application_commit": "4042381046fbf282a50a969c4037b5a427366833",
+      "model_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+      "runtime_commit": "cd959bae99ff4bed22bef2604f45241c09bbb8c8",
+      "loopback_verified": true,
+      "unauthenticated_status": 401,
+      "server_stopped": true,
+      "cases": [
+        {
+          "id": "N03",
+          "cohort": "regression",
+          "seconds": 8.922,
+          "model_calls": 2,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "facts": true,
+            "progress_states": true,
+            "critical_tasks": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "calculation_prepare",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [
+            {
+              "record_id": "thermal_49e21ae75c42476f8b2a1d352705aa36",
+              "name": "Second new wall",
+              "facts": [
+                {
+                  "fact": "total_resistance_m2k_w",
+                  "label": "总热阻 R",
+                  "value": "1.86",
+                  "source_value": "1.8599999999999999",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "m2 K/W",
+                  "period": "steady_state",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/total_resistance_m2k_w"
+                }
+              ]
+            },
+            {
+              "record_id": "schedule_f82e71427715465884d4e9ad451b5890",
+              "name": "Second new independent network",
+              "facts": [
+                {
+                  "fact": "planned_duration_days",
+                  "label": "声明计划总工期",
+                  "value": "4.7",
+                  "source_value": "4.7",
+                  "value_policy": "exact_decimal",
+                  "unit": "day",
+                  "period": "elapsed_days",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/planned/duration_days"
+                }
+              ]
+            }
+          ],
+          "checked_limitations": []
+        },
+        {
+          "id": "N04",
+          "cohort": "regression",
+          "seconds": 11.015,
+          "model_calls": 3,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "no_numeric_delivery": true,
+            "all_current_limits": true,
+            "no_new_compute": true,
+            "stale_read": true,
+            "exact_observed_reasons": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_read_many",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [],
+          "checked_limitations": [
+            {
+              "record_id": "thermal_49e21ae75c42476f8b2a1d352705aa36",
+              "state": "stale",
+              "scope": "一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_64badbbca9904b768dd280b92ad2b354",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            },
+            {
+              "record_id": "schedule_f82e71427715465884d4e9ad451b5890",
+              "state": "stale",
+              "scope": "连续经过日、FS关系的关键路径及显式剩余工期情景；资源冲突未调平，不是施工安全审批或履约保证。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_64badbbca9904b768dd280b92ad2b354",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B03",
+          "cohort": "regression",
+          "seconds": 7.891,
+          "model_calls": 2,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "facts": true,
+            "progress_states": true,
+            "critical_tasks": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "calculation_prepare",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "lifecycle_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "lifecycle_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [
+            {
+              "record_id": "lifecycle_772138ff03984a3f8aa1ad407f013a7a",
+              "name": "New batch carbon boundary",
+              "facts": [
+                {
+                  "fact": "boundary_total_kgco2e",
+                  "label": "声明边界碳排总量",
+                  "value": "2075.55",
+                  "source_value": "2075.5499999999997",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "kgCO2e",
+                  "period": "study_period",
+                  "study_years": 9,
+                  "area_m2": null,
+                  "source_path": "/result/boundary_total_kgco2e"
+                }
+              ]
+            },
+            {
+              "record_id": "schedule_e768da3c42744e14801ffe43cab48f25",
+              "name": "New independent batch schedule",
+              "facts": [
+                {
+                  "fact": "planned_duration_days",
+                  "label": "声明计划总工期",
+                  "value": "6.1",
+                  "source_value": "6.1",
+                  "value_policy": "exact_decimal",
+                  "unit": "day",
+                  "period": "elapsed_days",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/planned/duration_days"
+                }
+              ]
+            }
+          ],
+          "checked_limitations": []
+        },
+        {
+          "id": "B04",
+          "cohort": "regression",
+          "seconds": 11.187,
+          "model_calls": 3,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "no_numeric_delivery": true,
+            "all_current_limits": true,
+            "no_new_compute": true,
+            "exact_observed_reasons": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_read_many",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "lifecycle_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "lifecycle_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [],
+          "checked_limitations": [
+            {
+              "record_id": "lifecycle_772138ff03984a3f8aa1ad407f013a7a",
+              "state": "stale",
+              "scope": "声明边界内的阶段CO₂e清单；不是完整性认证、碳核证或可交易碳资产。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_49b32e98f7c048479b0c3db148297fda",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            },
+            {
+              "record_id": "schedule_e768da3c42744e14801ffe43cab48f25",
+              "state": "stale",
+              "scope": "连续经过日、FS关系的关键路径及显式剩余工期情景；资源冲突未调平，不是施工安全审批或履约保证。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_49b32e98f7c048479b0c3db148297fda",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            }
+          ]
+        }
+      ],
+      "model_responses": [
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-001.json",
+          "sha256": "86615c5ab7ca85926b6e00cbb5f2876a9b9d18a4e5a6f17bee30eb0c8c50f862",
+          "case": "N03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "calculation_prepare",
+                  "arguments": "{\"plan_keys\": [\"fresh_wall_b\", \"fresh_sequence_b\"]}"
+                },
+                "id": "ThPfsglQ3YmC0p7ybpJG5UPa0IRaxQyt"
+              }
+            ]
+          },
+          "seconds": 1.672
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-002.json",
+          "sha256": "d7d7159496864f590b37d9d39f2706acd83ab1d544c86c0345eef5e91412178d",
+          "case": "N03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_49e21ae75c42476f8b2a1d352705aa36\", \"record_hash\": \"753e0dcfe49dee9ff089ee6964b953eb9243d591dec679bc2ffee8828fb2117a\", \"statements\": [{\"fact\": \"total_resistance_m2k_w\", \"value\": \"1.86\", \"unit\": \"m2 K/W\", \"period\": \"steady_state\", \"study_years\": null, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "8xiBIfrjj5z9dqU1rn9EgtWWW1wqth5z"
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"schedule\", \"record_id\": \"schedule_f82e71427715465884d4e9ad451b5890\", \"record_hash\": \"935b0e184be902c35f644f1376bf01b7bbd8ad2380291f6b7e272ed3cde83df6\", \"statements\": [{\"fact\": \"planned_duration_days\", \"value\": \"4.7\", \"unit\": \"day\", \"period\": \"elapsed_days\", \"study_years\": null, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "8u3dv04s0uCECklwHHOJvyjHg1ScxtKA"
+              }
+            ]
+          },
+          "seconds": 6.766
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-003.json",
+          "sha256": "3e2c6b8b4738f48b677ab3d5858bdd539264c60400e72d3bd272fbd1c2618dca",
+          "case": "N04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_read_many",
+                  "arguments": "{\"record_ids\": [\"thermal_49e21ae75c42476f8b2a1d352705aa36\", \"schedule_f82e71427715465884d4e9ad451b5890\"]}"
+                },
+                "id": "pF0IsaHW8Xqlq1AbHwmcRRUrmDCdLIIc"
+              }
+            ]
+          },
+          "seconds": 2.515
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-004.json",
+          "sha256": "154a4d4c83150c348ddfd8b421df7ae3961f8a07d9725ad65d974bfb95137ba1",
+          "case": "N04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"thermal\", \"record_id\": \"thermal_49e21ae75c42476f8b2a1d352705aa36\", \"record_hash\": \"753e0dcfe49dee9ff089ee6964b953eb9243d591dec679bc2ffee8828fb2117a\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "4xndxexnQAONgmvBcqY0OgFakebfvPgS"
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"schedule\", \"record_id\": \"schedule_f82e71427715465884d4e9ad451b5890\", \"record_hash\": \"935b0e184be902c35f644f1376bf01b7bbd8ad2380291f6b7e272ed3cde83df6\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "Tqocm86It9TUgSOuQYEqKtjuxr3QjY9P"
+              }
+            ]
+          },
+          "seconds": 5.484
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-005.json",
+          "sha256": "d4f38f05d217b47ee76d7d05533b1f6b9f212d8ad9908db4c65326513b2ec5d9",
+          "case": "N04",
+          "response": {
+            "role": "assistant",
+            "content": "根据当前工具结果和限制说明，两份记录的失效状态已正式核验。原记录状态未改变，工程数值仍不可因此认定有效。若无其他所需交付，可以结束本次任务。"
+          },
+          "seconds": 2.531
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-006.json",
+          "sha256": "d68c62e1da7922a705cbad26cbc251a5d0e84f7c1e0e895170e7cdbae29f0802",
+          "case": "B03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "calculation_prepare",
+                  "arguments": "{\"plan_keys\": [\"carbon_new\", \"schedule_new\"]}"
+                },
+                "id": "6B87NXJ5QCfTCyNXllvEPQdryXlIVNKS"
+              }
+            ]
+          },
+          "seconds": 0.657
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-007.json",
+          "sha256": "ea1b8cfdc9235ad9ac2a8d6e9baea6ba4728e18257dcbca24e60cef2ea0e3a7b",
+          "case": "B03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"lifecycle\", \"record_id\": \"lifecycle_772138ff03984a3f8aa1ad407f013a7a\", \"record_hash\": \"e997b4e51cb42ca3a631b5748c1f45366c7b8ea614e60ee162c184619310fd1f\", \"statements\": [{\"fact\": \"boundary_total_kgco2e\", \"value\": \"2075.55\", \"unit\": \"kgCO2e\", \"period\": \"study_period\", \"study_years\": 9, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "ruQ8zruTIextOy75W6sERXJU8RHfecA4"
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"schedule\", \"record_id\": \"schedule_e768da3c42744e14801ffe43cab48f25\", \"record_hash\": \"5dae8fcf04cddbd72bb5e2767412c7e105f6c4bc5bc58dcb8f5719c50cb27a7d\", \"statements\": [{\"fact\": \"planned_duration_days\", \"value\": \"6.1\", \"unit\": \"day\", \"period\": \"elapsed_days\", \"study_years\": null, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "NX5gnfMc9A381gbykKbmRhwUtctaQA4n"
+              }
+            ]
+          },
+          "seconds": 6.516
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-008.json",
+          "sha256": "59b2934a3d04de366aec59cc7853c4a58e324b99413d191b1b9f5336b6787ff3",
+          "case": "B04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_read_many",
+                  "arguments": "{\"record_ids\": [\"lifecycle_772138ff03984a3f8aa1ad407f013a7a\", \"schedule_e768da3c42744e14801ffe43cab48f25\"]}"
+                },
+                "id": "DpzUiyTDGFf4qiUjBdkCVd0TQfGrpnYP"
+              }
+            ]
+          },
+          "seconds": 2.25
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-009.json",
+          "sha256": "e42663b01d4924186caa2fa1a7b0426c9da54ee22ca977d7a5a2816024744ec1",
+          "case": "B04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"lifecycle\", \"record_id\": \"lifecycle_772138ff03984a3f8aa1ad407f013a7a\", \"record_hash\": \"e997b4e51cb42ca3a631b5748c1f45366c7b8ea614e60ee162c184619310fd1f\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "Or4gMsbAoHvEICjJzrtmt4NY2XHVxXYA"
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"schedule\", \"record_id\": \"schedule_e768da3c42744e14801ffe43cab48f25\", \"record_hash\": \"5dae8fcf04cddbd72bb5e2767412c7e105f6c4bc5bc58dcb8f5719c50cb27a7d\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "8aicd50SAtlPx1OM1Yx3Yijtd1rwyfld"
+              }
+            ]
+          },
+          "seconds": 5.531
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-4b/model-call-010.json",
+          "sha256": "9b5b9d1a45bf767ba0d1b1f734163db03d37d800b1142c5eb6eb069d6eaac480",
+          "case": "B04",
+          "response": {
+            "role": "assistant",
+            "content": "根据当前工具结果和限制说明，两份记录均处于失效状态（stale），且已通过professional_limit正式说明当前限制。由于用户要求继续上一轮读取碳排和工期两条记录，并分别交付当前失效限制，但未涉及新的计算或引用旧数值，因此已满足任务要求。\n\n若无其他所需交付，可结束当前任务。"
+          },
+          "seconds": 3.016
+        }
+      ],
+      "manual_review": {
+        "tasks": 4,
+        "structured_checks_passed": 4,
+        "requests": 10,
+        "manual_review": "No invented cause or restored numeric value observed in these responses; general hallucination and injection remain unverified.",
+        "prose_observation": "No numeric reuse or invented stale cause observed in N04/B04; detailed reasons present in checked limitations."
+      }
+    },
+    "regression-8b": {
+      "application_commit": "4042381046fbf282a50a969c4037b5a427366833",
+      "model_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+      "runtime_commit": "cd959bae99ff4bed22bef2604f45241c09bbb8c8",
+      "loopback_verified": true,
+      "unauthenticated_status": 401,
+      "server_stopped": true,
+      "cases": [
+        {
+          "id": "N03",
+          "cohort": "regression",
+          "seconds": 13.875,
+          "model_calls": 3,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "facts": true,
+            "progress_states": true,
+            "critical_tasks": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "calculation_prepare",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [
+            {
+              "record_id": "thermal_718f2fa05bf849d1bfcb26d457efcf4e",
+              "name": "Second new wall",
+              "facts": [
+                {
+                  "fact": "total_resistance_m2k_w",
+                  "label": "总热阻 R",
+                  "value": "1.86",
+                  "source_value": "1.8599999999999999",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "m2 K/W",
+                  "period": "steady_state",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/total_resistance_m2k_w"
+                }
+              ]
+            },
+            {
+              "record_id": "schedule_fe9c99443df142c8bf9f5a60fd91a5e1",
+              "name": "Second new independent network",
+              "facts": [
+                {
+                  "fact": "planned_duration_days",
+                  "label": "声明计划总工期",
+                  "value": "4.7",
+                  "source_value": "4.7",
+                  "value_policy": "exact_decimal",
+                  "unit": "day",
+                  "period": "elapsed_days",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/planned/duration_days"
+                }
+              ]
+            }
+          ],
+          "checked_limitations": []
+        },
+        {
+          "id": "N04",
+          "cohort": "regression",
+          "seconds": 18.453,
+          "model_calls": 4,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "no_numeric_delivery": true,
+            "all_current_limits": true,
+            "no_new_compute": true,
+            "stale_read": true,
+            "exact_observed_reasons": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_read_many",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [],
+          "checked_limitations": [
+            {
+              "record_id": "thermal_718f2fa05bf849d1bfcb26d457efcf4e",
+              "state": "stale",
+              "scope": "一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_6b157170e54e41948a53cb1b4a9ef32b",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            },
+            {
+              "record_id": "schedule_fe9c99443df142c8bf9f5a60fd91a5e1",
+              "state": "stale",
+              "scope": "连续经过日、FS关系的关键路径及显式剩余工期情景；资源冲突未调平，不是施工安全审批或履约保证。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_6b157170e54e41948a53cb1b4a9ef32b",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B03",
+          "cohort": "regression",
+          "seconds": 14.203,
+          "model_calls": 3,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "facts": true,
+            "progress_states": true,
+            "critical_tasks": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "calculation_prepare",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "lifecycle_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "lifecycle_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [
+            {
+              "record_id": "lifecycle_00aa3ee5d3714a09b6e2abe1180e738e",
+              "name": "New batch carbon boundary",
+              "facts": [
+                {
+                  "fact": "boundary_total_kgco2e",
+                  "label": "声明边界碳排总量",
+                  "value": "2075.55",
+                  "source_value": "2075.5499999999997",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "kgCO2e",
+                  "period": "study_period",
+                  "study_years": 9,
+                  "area_m2": null,
+                  "source_path": "/result/boundary_total_kgco2e"
+                }
+              ]
+            },
+            {
+              "record_id": "schedule_93dd67096aae473fa7fc05cd2d9b6533",
+              "name": "New independent batch schedule",
+              "facts": [
+                {
+                  "fact": "planned_duration_days",
+                  "label": "声明计划总工期",
+                  "value": "6.1",
+                  "source_value": "6.1",
+                  "value_policy": "exact_decimal",
+                  "unit": "day",
+                  "period": "elapsed_days",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/planned/duration_days"
+                }
+              ]
+            }
+          ],
+          "checked_limitations": []
+        },
+        {
+          "id": "B04",
+          "cohort": "regression",
+          "seconds": 18.875,
+          "model_calls": 4,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "no_numeric_delivery": true,
+            "all_current_limits": true,
+            "no_new_compute": true,
+            "exact_observed_reasons": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_read_many",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "lifecycle_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "lifecycle_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "schedule_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [],
+          "checked_limitations": [
+            {
+              "record_id": "lifecycle_00aa3ee5d3714a09b6e2abe1180e738e",
+              "state": "stale",
+              "scope": "声明边界内的阶段CO₂e清单；不是完整性认证、碳核证或可交易碳资产。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_01cdd53ee9914dcaa4d4339e14744608",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            },
+            {
+              "record_id": "schedule_93dd67096aae473fa7fc05cd2d9b6533",
+              "state": "stale",
+              "scope": "连续经过日、FS关系的关键路径及显式剩余工期情景；资源冲突未调平，不是施工安全审批或履约保证。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_01cdd53ee9914dcaa4d4339e14744608",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            }
+          ]
+        }
+      ],
+      "model_responses": [
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-001.json",
+          "sha256": "cd681929f384c00e25e6bc9f6dc41da5f9f91d54c4f534fcdec7e69c266012be",
+          "case": "N03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "calculation_prepare",
+                  "arguments": "{\"plan_keys\": [\"fresh_wall_b\", \"fresh_sequence_b\"]}"
+                },
+                "id": "LcXDxXU8Zk1yB9kmY5Wp3geJTMD0YKuK"
+              }
+            ]
+          },
+          "seconds": 1.937
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-002.json",
+          "sha256": "482d2d2791d50e1403676132b6590654f3d60975c4b2db56d7ede53790493815",
+          "case": "N03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_718f2fa05bf849d1bfcb26d457efcf4e\", \"record_hash\": \"057e1de8fc0ae5c3195eba2c0f6f56deb9bdcb00e18464ede2e57c1daf840f24\", \"statements\": [{\"fact\": \"total_resistance_m2k_w\", \"value\": \"1.86\", \"unit\": \"m2 K/W\", \"period\": \"steady_state\", \"study_years\": null, \"area_m2\": null}], \"finish\": false}}"
+                },
+                "id": "Pe2CKZb6lAeqWVMYNcbCj3NetMWGTcez"
+              }
+            ]
+          },
+          "seconds": 5.641
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-003.json",
+          "sha256": "bc96d5749af46b0512c0d1d691ba90f7be015f93e975a302129a4ebdde1e6b2d",
+          "case": "N03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"schedule\", \"record_id\": \"schedule_fe9c99443df142c8bf9f5a60fd91a5e1\", \"record_hash\": \"f4a49b2e83c9690724950c03154051ccd112332644650022a71976085de50e52\", \"statements\": [{\"fact\": \"planned_duration_days\", \"value\": \"4.7\", \"unit\": \"day\", \"period\": \"elapsed_days\", \"study_years\": null, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "wzEJa2i8U5usROquKZuWzQOLBt1DVrCE"
+              }
+            ]
+          },
+          "seconds": 5.61
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-004.json",
+          "sha256": "9383cbff87052bf2a060ff3bbfda6b1231b2eef99e161bbea335633f4c6ea1f7",
+          "case": "N04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_read_many",
+                  "arguments": "{\"record_ids\": [\"thermal_718f2fa05bf849d1bfcb26d457efcf4e\", \"schedule_fe9c99443df142c8bf9f5a60fd91a5e1\"]}"
+                },
+                "id": "suE6AezcurPtz7pbxiqJS3sQK1ozM5Jh"
+              }
+            ]
+          },
+          "seconds": 3.64
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-005.json",
+          "sha256": "aadf444d6ab113c7bdf504231947a33e1ff3ab1bd711d8cfef9e5a95a43b8eb9",
+          "case": "N04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"thermal\", \"record_id\": \"thermal_718f2fa05bf849d1bfcb26d457efcf4e\", \"record_hash\": \"057e1de8fc0ae5c3195eba2c0f6f56deb9bdcb00e18464ede2e57c1daf840f24\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "GHkXqZM2ZbybLSfwG18f834E7y6qFNx4"
+              }
+            ]
+          },
+          "seconds": 5.453
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-006.json",
+          "sha256": "9a82e3a302817cf7df7723714a33df0642883bf4a87594250afbaaae5fed17f6",
+          "case": "N04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"schedule\", \"record_id\": \"schedule_fe9c99443df142c8bf9f5a60fd91a5e1\", \"record_hash\": \"f4a49b2e83c9690724950c03154051ccd112332644650022a71976085de50e52\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "qVYFDXnem19MuSP0LwQgnR6QsIZ5Bd4s"
+              }
+            ]
+          },
+          "seconds": 5.594
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-007.json",
+          "sha256": "cbd9c95f31c1a7df73695463164b4f811f761de77af82142c03295c7787ad391",
+          "case": "N04",
+          "response": {
+            "role": "assistant",
+            "content": "本轮任务已正式交付两份当前失效状态，无需进一步操作。若无其他所需交付，任务结束。"
+          },
+          "seconds": 3.359
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-008.json",
+          "sha256": "4a9f65b8f5b826322d9dbe08eb6928480eff378db30831552c035b7553f3939c",
+          "case": "B03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "calculation_prepare",
+                  "arguments": "{\"plan_keys\": [\"carbon_new\", \"schedule_new\"]}"
+                },
+                "id": "3hxKhTLP1BPFXWBj7kNHbal9A2dOCYtj"
+              }
+            ]
+          },
+          "seconds": 0.969
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-009.json",
+          "sha256": "2e92663392a940008f1599a596ab2bf320f9c9ae7ca33f55fb3a2c3a597911cf",
+          "case": "B03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"lifecycle\", \"record_id\": \"lifecycle_00aa3ee5d3714a09b6e2abe1180e738e\", \"record_hash\": \"904fb70a0f22d71b8ddcc0653aa0a277d2a3241537084fdf0fea82f9fb6b3c3b\", \"statements\": [{\"fact\": \"boundary_total_kgco2e\", \"value\": \"2075.55\", \"unit\": \"kgCO2e\", \"period\": \"study_period\", \"study_years\": 9, \"area_m2\": null}], \"finish\": false}}"
+                },
+                "id": "9GMdZ54n4FiPxYQXXKVtJAlvqFntZ0vk"
+              }
+            ]
+          },
+          "seconds": 5.953
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-010.json",
+          "sha256": "be48cc47e2592c38c1a3a3f6216b61cb8aca68728845613e7efba33e5f80da86",
+          "case": "B03",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"schedule\", \"record_id\": \"schedule_93dd67096aae473fa7fc05cd2d9b6533\", \"record_hash\": \"2f9789e965080b210912b6748f708278d4efa40ba56b0e658812fe65e4cedb0f\", \"statements\": [{\"fact\": \"planned_duration_days\", \"value\": \"6.1\", \"unit\": \"day\", \"period\": \"elapsed_days\", \"study_years\": null, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "HRSIDuf5bivCbslyncDBnr9uh7bbHP02"
+              }
+            ]
+          },
+          "seconds": 5.719
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-011.json",
+          "sha256": "d649c9bdc9418d3bf3d44ad6155a598e1fbd51be69a9378b9bf7d8582dbe31ab",
+          "case": "B04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_read_many",
+                  "arguments": "{\"record_ids\": [\"lifecycle_00aa3ee5d3714a09b6e2abe1180e738e\", \"schedule_93dd67096aae473fa7fc05cd2d9b6533\"]}"
+                },
+                "id": "53XHgv3FA64lLK826GsYvGf0Vd5EdoVu"
+              }
+            ]
+          },
+          "seconds": 3.469
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-012.json",
+          "sha256": "b030053eb9ddd6dcdefea1195f6f7c5872d7a8d0e74230f1851d58278df4e70f",
+          "case": "B04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"lifecycle\", \"record_id\": \"lifecycle_00aa3ee5d3714a09b6e2abe1180e738e\", \"record_hash\": \"904fb70a0f22d71b8ddcc0653aa0a277d2a3241537084fdf0fea82f9fb6b3c3b\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "yNieJOU32lu24Gl8Joj0zr4sLcdlg022"
+              }
+            ]
+          },
+          "seconds": 5.469
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-013.json",
+          "sha256": "6fc346653258260153776e782fa3becd62a66f4e3c9afd063e0c47871128ce40",
+          "case": "B04",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"schedule\", \"record_id\": \"schedule_93dd67096aae473fa7fc05cd2d9b6533\", \"record_hash\": \"2f9789e965080b210912b6748f708278d4efa40ba56b0e658812fe65e4cedb0f\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "pmMIwIbmJnqiJcVY86IalQPomqfMhLNv"
+              }
+            ]
+          },
+          "seconds": 6.125
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/regression-8b/model-call-014.json",
+          "sha256": "3dfb3239f8a1c7f1cec573dd91df4fb611295aa5a0590d84dc9cca09ef41e84a",
+          "case": "B04",
+          "response": {
+            "role": "assistant",
+            "content": "{\n  \"finish\": true\n}"
+          },
+          "seconds": 3.36
+        }
+      ],
+      "manual_review": {
+        "tasks": 4,
+        "structured_checks_passed": 4,
+        "requests": 14,
+        "manual_review": "No invented cause or restored numeric value observed in these responses; general hallucination and injection remain unverified.",
+        "prose_observation": "8B B04 emitted a JSON finish object as prose after formal limitations; not counted as an actual finish tool call."
+      }
+    },
+    "fresh-4b": {
+      "application_commit": "4042381046fbf282a50a969c4037b5a427366833",
+      "model_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+      "runtime_commit": "cd959bae99ff4bed22bef2604f45241c09bbb8c8",
+      "loopback_verified": true,
+      "unauthenticated_status": 401,
+      "server_stopped": true,
+      "cases": [
+        {
+          "id": "P01",
+          "cohort": "fresh",
+          "seconds": 11.579,
+          "model_calls": 3,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "facts": true,
+            "progress_states": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "material_cost_read",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "material_cost_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [
+            {
+              "record_id": "thermal_f3974eb97b994cc7842599357e69fb39",
+              "name": "Provenance holdout wall",
+              "facts": [
+                {
+                  "fact": "total_resistance_m2k_w",
+                  "label": "总热阻 R",
+                  "value": "3.57",
+                  "source_value": "3.57",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "m2 K/W",
+                  "period": "steady_state",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/total_resistance_m2k_w"
+                }
+              ]
+            },
+            {
+              "record_id": "cost_44bbe36765904ae688d56c67a8c7b8f5",
+              "name": "New compact-schema procurement",
+              "facts": [
+                {
+                  "fact": "material_total",
+                  "label": "声明材料清单合计（日期 2026-11-06）",
+                  "value": "294.30",
+                  "source_value": "294.30",
+                  "value_policy": "exact_decimal",
+                  "unit": "USD",
+                  "period": "quote_date",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/material_total"
+                }
+              ]
+            }
+          ],
+          "checked_limitations": []
+        },
+        {
+          "id": "P02",
+          "cohort": "fresh",
+          "seconds": 14.312,
+          "model_calls": 3,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "no_numeric_delivery": true,
+            "all_current_limits": true,
+            "no_new_compute": true,
+            "exact_observed_reasons": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_read_many",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "material_cost_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "material_cost_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [],
+          "checked_limitations": [
+            {
+              "record_id": "thermal_f3974eb97b994cc7842599357e69fb39",
+              "state": "stale",
+              "scope": "一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_8c019194d53e45daa4e1505d7ab21cd2",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            },
+            {
+              "record_id": "cost_44bbe36765904ae688d56c67a8c7b8f5",
+              "state": "stale",
+              "scope": "已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_8c019194d53e45daa4e1505d7ab21cd2",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            }
+          ]
+        }
+      ],
+      "model_responses": [
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-4b/model-call-001.json",
+          "sha256": "e95fa17a868efde85eb599cca9bfe9804b2ae8a7d026921004d747257eb4d15f",
+          "case": "P01",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "calculation_execute",
+                  "arguments": "{\"plan_key\": \"wall_e\"}"
+                },
+                "id": "p5fWTazjN5sRVLSR6rCuNw8reApgwwa3"
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "calculation_execute",
+                  "arguments": "{\"plan_key\": \"cost_e\"}"
+                },
+                "id": "GNhuRc02rhVdcP8exxa0DAZYR6pGJs3U"
+              }
+            ]
+          },
+          "seconds": 1.531
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-4b/model-call-002.json",
+          "sha256": "d6f8465318734f764d27478ceb3e9a0b39a7ce3a54f826d0490c1d90a564d781",
+          "case": "P01",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "thermal_read",
+                  "arguments": "{\"thermal_id\": \"thermal_f3974eb97b994cc7842599357e69fb39\"}"
+                },
+                "id": "4aqUImqxL6LPYRqyCDuKsqENIyywg2qw"
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "material_cost_read",
+                  "arguments": "{\"material_cost_id\": \"cost_44bbe36765904ae688d56c67a8c7b8f5\"}"
+                },
+                "id": "3C7XA0R1vES7CtmjK97lmoBZXDpsDtgF"
+              }
+            ]
+          },
+          "seconds": 2.016
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-4b/model-call-003.json",
+          "sha256": "2f55718d7046449d623b53747d6cecc69e59534193268392efc1653569d4f1be",
+          "case": "P01",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_f3974eb97b994cc7842599357e69fb39\", \"record_hash\": \"40e1c807b9fa3f02a4f632b107baf43fba02e9928efd5b9d8269f5bbb3dc46f7\", \"statements\": [{\"fact\": \"total_resistance_m2k_w\", \"value\": \"3.57\", \"unit\": \"m2 K/W\", \"period\": \"steady_state\", \"study_years\": null, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "A0Jzi2kfuwGbjSLPDoCz4VeUjPVxx8Og"
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"cost\", \"record_id\": \"cost_44bbe36765904ae688d56c67a8c7b8f5\", \"record_hash\": \"3f816e44bc7dd3065b2609ec6705612d1cf6788879a2dd79b30f1984af92f906\", \"statements\": [{\"fact\": \"material_total\", \"value\": \"294.30\", \"unit\": \"USD\", \"period\": \"quote_date\", \"study_years\": null, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "A2VTrty3sybYhA3kypzzrOGxEoMnYAVZ"
+              }
+            ]
+          },
+          "seconds": 6.219
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-4b/model-call-004.json",
+          "sha256": "5049a68c46dfcc417596ca186b8a8534a2a54e51998e956aca248d416ba9a12a",
+          "case": "P02",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_read_many",
+                  "arguments": "{\"record_ids\": [\"thermal_f3974eb97b994cc7842599357e69fb39\", \"cost_44bbe36765904ae688d56c67a8c7b8f5\"]}"
+                },
+                "id": "zNE49eBWEGgWEsAipE9UJi6C2MYzQ9L6"
+              }
+            ]
+          },
+          "seconds": 2.438
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-4b/model-call-005.json",
+          "sha256": "04007f5878d2900071b71341bf9feffc1c8cb3096a07da8a80938eff1dbb5b68",
+          "case": "P02",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"thermal\", \"record_id\": \"thermal_f3974eb97b994cc7842599357e69fb39\", \"record_hash\": \"40e1c807b9fa3f02a4f632b107baf43fba02e9928efd5b9d8269f5bbb3dc46f7\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "SiUttIN1xznPKRNqMUVJzH6WLEFvzp9P"
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"cost\", \"record_id\": \"cost_44bbe36765904ae688d56c67a8c7b8f5\", \"record_hash\": \"3f816e44bc7dd3065b2609ec6705612d1cf6788879a2dd79b30f1984af92f906\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "wtQUiHF80HzOlY0NXr7SotWOQCP0MEV5"
+              }
+            ]
+          },
+          "seconds": 5.875
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-4b/model-call-006.json",
+          "sha256": "2f952fc87720570405674c4594f7310a3676446b065bb90fb3c0f6303c858525",
+          "case": "P02",
+          "response": {
+            "role": "assistant",
+            "content": "根据当前工具结果和限制说明，墙体和采购记录均处于失效状态（stale）。以下是各自已观察到的失效原因：\n\n1. **墙体记录（thermal_f3974eb97b994cc7842599357e69fb39）**：\n   - 失效原因：项目修订（project_revision）。\n   - 项目修订后，记录状态变为失效（stale）。\n   - 该记录的当前状态为失效，且未提供任何具体的热阻（R）值或单位。\n\n2. **采购记录（cost_44bbe36765904ae688d56c67a8c7b8f5）**：\n   - 失效原因：项目修订（project_revision）。\n   - 项目修订后，记录状态变为失效（stale）。\n   - 该记录的当前状态为失效，且未提供任何具体的材料总价或单位。\n\n由于记录均处于失效状态，无法提供具体的热阻（R）值或材料总价。建议重新执行计算以获取最新的数值。若无其他所需交付，可结束当前任务。"
+          },
+          "seconds": 5.437
+        }
+      ],
+      "manual_review": {
+        "tasks": 2,
+        "structured_checks_passed": 2,
+        "requests": 6,
+        "manual_review": "No invented cause or restored numeric value observed in these responses; general hallucination and injection remain unverified.",
+        "prose_observation": "Current structured limitation cause is project_revision; explicit P02 prose agrees."
+      }
+    },
+    "fresh-8b": {
+      "application_commit": "4042381046fbf282a50a969c4037b5a427366833",
+      "model_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+      "runtime_commit": "cd959bae99ff4bed22bef2604f45241c09bbb8c8",
+      "loopback_verified": true,
+      "unauthenticated_status": 401,
+      "server_stopped": true,
+      "cases": [
+        {
+          "id": "P01",
+          "cohort": "fresh",
+          "seconds": 13.61,
+          "model_calls": 3,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "facts": true,
+            "progress_states": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "calculation_prepare",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "calculation_execute",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "material_cost_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_deliver",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "material_cost_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [
+            {
+              "record_id": "thermal_3d47311bc60b4a11a158330cdb9ee313",
+              "name": "Provenance holdout wall",
+              "facts": [
+                {
+                  "fact": "total_resistance_m2k_w",
+                  "label": "总热阻 R",
+                  "value": "3.57",
+                  "source_value": "3.57",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "m2 K/W",
+                  "period": "steady_state",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/total_resistance_m2k_w"
+                }
+              ]
+            },
+            {
+              "record_id": "cost_789461fe9d7944d2a140ad42dedb8a60",
+              "name": "New compact-schema procurement",
+              "facts": [
+                {
+                  "fact": "material_total",
+                  "label": "声明材料清单合计（日期 2026-11-06）",
+                  "value": "294.30",
+                  "source_value": "294.30",
+                  "value_policy": "exact_decimal",
+                  "unit": "USD",
+                  "period": "quote_date",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/material_total"
+                }
+              ]
+            }
+          ],
+          "checked_limitations": []
+        },
+        {
+          "id": "P02",
+          "cohort": "fresh",
+          "seconds": 18.75,
+          "model_calls": 4,
+          "checks": {
+            "task_succeeded": true,
+            "bounded_events": true,
+            "no_numeric_delivery": true,
+            "all_current_limits": true,
+            "no_new_compute": true,
+            "exact_observed_reasons": true
+          },
+          "automated_pass": true,
+          "task_status": "succeeded",
+          "error": null,
+          "events": [
+            {
+              "tool": "project_get",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_read_many",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "material_cost_read",
+              "status": "succeeded",
+              "origin": "controller",
+              "parent_event": 2
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "professional_limit",
+              "status": "succeeded",
+              "origin": "model"
+            },
+            {
+              "tool": "llm.request",
+              "status": "succeeded"
+            },
+            {
+              "tool": "thermal_read",
+              "status": "succeeded",
+              "origin": "controller"
+            },
+            {
+              "tool": "material_cost_read",
+              "status": "succeeded",
+              "origin": "controller"
+            }
+          ],
+          "checked_statements": [],
+          "checked_limitations": [
+            {
+              "record_id": "thermal_3d47311bc60b4a11a158330cdb9ee313",
+              "state": "stale",
+              "scope": "一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_36fb698f04064372981b05ec9fab9834",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            },
+            {
+              "record_id": "cost_789461fe9d7944d2a140ad42dedb8a60",
+              "state": "stale",
+              "scope": "已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。",
+              "stale_details": [
+                {
+                  "code": "project_revision",
+                  "subject_id": "project_36fb698f04064372981b05ec9fab9834",
+                  "expected": 1,
+                  "current": 2
+                }
+              ],
+              "stale_reasons": [
+                "project_revision"
+              ]
+            }
+          ]
+        }
+      ],
+      "model_responses": [
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-8b/model-call-001.json",
+          "sha256": "457c2f0e18825dc813b5a2246f4d86bc9884f29ae82718c371151a5c4c009e8f",
+          "case": "P01",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "calculation_prepare",
+                  "arguments": "{\"plan_keys\": [\"wall_e\", \"cost_e\"]}"
+                },
+                "id": "oj0UdkLvRpSMdAtCNir3xHK4AXRWMJR3"
+              }
+            ]
+          },
+          "seconds": 2.203
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-8b/model-call-002.json",
+          "sha256": "da52184c5d94c8404c5a6926930f6baa6d44f129078caf0e48e76c54bcaf4d37",
+          "case": "P01",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_3d47311bc60b4a11a158330cdb9ee313\", \"record_hash\": \"6ece979afe87f5f6d31e1c9d6a5a65e756b06e146129d7255ec9e5c94fa19a32\", \"statements\": [{\"fact\": \"total_resistance_m2k_w\", \"value\": \"3.57\", \"unit\": \"m2 K/W\", \"period\": \"steady_state\", \"study_years\": null, \"area_m2\": null}], \"finish\": false}}"
+                },
+                "id": "NipmQhFHVSmJv2ASHBDjSGYXflSicUrS"
+              }
+            ]
+          },
+          "seconds": 5.391
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-8b/model-call-003.json",
+          "sha256": "74c5cf19f38ae59af54e67e9083d0773e4e9d2fefb3f5e0f859eb5c4642b3e8e",
+          "case": "P01",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_deliver",
+                  "arguments": "{\"delivery\": {\"kind\": \"cost\", \"record_id\": \"cost_789461fe9d7944d2a140ad42dedb8a60\", \"record_hash\": \"8855fe69fd0c542b4f7990644ec8d9d303a0c89b5d234177c1dfccd6a2a7f85f\", \"statements\": [{\"fact\": \"material_total\", \"value\": \"294.30\", \"unit\": \"USD\", \"period\": \"quote_date\", \"study_years\": null, \"area_m2\": null}], \"finish\": true}}"
+                },
+                "id": "s6Inxf2exMNOVwDTu6Q1xJJzYaOcqeTV"
+              }
+            ]
+          },
+          "seconds": 5.375
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-8b/model-call-004.json",
+          "sha256": "002d3771ec2e72babbdf1b0b3ec13fa4a755f94f8de32883e481b966118b67b3",
+          "case": "P02",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_read_many",
+                  "arguments": "{\"record_ids\": [\"thermal_3d47311bc60b4a11a158330cdb9ee313\", \"cost_789461fe9d7944d2a140ad42dedb8a60\"]}"
+                },
+                "id": "SYuYoQt0YrrFHvYluejyQWBdl89a2oke"
+              }
+            ]
+          },
+          "seconds": 3.468
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-8b/model-call-005.json",
+          "sha256": "8578f35df6b4196aa6f32dd2a6fc4bed7fe1fb7270e7a0a349cac97aaea39411",
+          "case": "P02",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"thermal\", \"record_id\": \"thermal_3d47311bc60b4a11a158330cdb9ee313\", \"record_hash\": \"6ece979afe87f5f6d31e1c9d6a5a65e756b06e146129d7255ec9e5c94fa19a32\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "ftDfrhXwozXYpoXFrDozAvYYfWGYUJI4"
+              }
+            ]
+          },
+          "seconds": 5.359
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-8b/model-call-006.json",
+          "sha256": "c5dd58697de426e2e7620a00773999b04d6ea5b1ef71e1c9659062247e440ea6",
+          "case": "P02",
+          "response": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "professional_limit",
+                  "arguments": "{\"limitation\": {\"kind\": \"cost\", \"record_id\": \"cost_789461fe9d7944d2a140ad42dedb8a60\", \"record_hash\": \"8855fe69fd0c542b4f7990644ec8d9d303a0c89b5d234177c1dfccd6a2a7f85f\", \"status\": \"stale\", \"finish\": false}}"
+                },
+                "id": "rQRv1HUEsbdEshzLVJ4PxvJ951q9RTUF"
+              }
+            ]
+          },
+          "seconds": 5.594
+        },
+        {
+          "path": "validation/calculation-provenance-20261107/fresh-8b/model-call-007.json",
+          "sha256": "341dd498d33f129ff7d41b13f51889f7e1f447f94bb91a1a331bfd2b39a655b4",
+          "case": "P02",
+          "response": {
+            "role": "assistant",
+            "content": "本轮任务已正式提交当前失效限制，并说明各自已观察到的失效原因。墙体记录和采购记录均因项目修订而失效，无法复用历史数值。若无其他所需交付，任务结束。"
+          },
+          "seconds": 3.766
+        }
+      ],
+      "manual_review": {
+        "tasks": 2,
+        "structured_checks_passed": 2,
+        "requests": 7,
+        "manual_review": "No invented cause or restored numeric value observed in these responses; general hallucination and injection remain unverified.",
+        "prose_observation": "Current structured limitation cause is project_revision; explicit P02 prose agrees."
+      }
+    }
+  }
+}
