@@ -88,7 +88,8 @@ def snapshot(domain, pid, plans):
     return {'items': items, 'hash': core.hash_json(items)}
 
 
-def execute(domain, pid, key, plans, frozen):
+def resolve(domain, pid, key, plans, frozen):
+    """Side-effect-free validation, also used to preflight a selected plan batch."""
     if not frozen or core.hash_json(frozen['items']) != frozen['hash']:
         raise core.ValidationError('Calculation plan snapshot integrity failed')
     plan = next((p for p in plans if p.plan_key == key), None)
@@ -97,6 +98,11 @@ def execute(domain, pid, key, plans, frozen):
         raise core.ValidationError('Select an explicit user calculation plan; do not invent parameters')
     if bindings(domain, pid, plan) != saved['bindings']:
         raise core.ValidationError('Project or calculation-plan sources changed; submit a new reviewed plan')
+    return plan, saved
+
+
+def execute(domain, pid, key, plans, frozen):
+    plan, saved = resolve(domain, pid, key, plans, frozen)
     spec = inspection(plan.kind)
     record = spec.service(domain).save(pid, plan.input)
     return {'plan_key': key, 'kind': plan.kind, 'record_id': record[spec.record_key],
