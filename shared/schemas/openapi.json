@@ -6210,7 +6210,9 @@
               "open_ended",
               "inspect_evidence",
               "inspect_results",
-              "inspect_material_cost"
+              "inspect_material_cost",
+              "inspect_thermal",
+              "inspect_lifecycle"
             ],
             "title": "Objective",
             "default": "open_ended"
@@ -6237,6 +6239,30 @@
               }
             ],
             "title": "Target Cost Id"
+          },
+          "target_thermal_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^thermal_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Thermal Id"
+          },
+          "target_lifecycle_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^lifecycle_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Lifecycle Id"
           },
           "previous_agent_id": {
             "anyOf": [
