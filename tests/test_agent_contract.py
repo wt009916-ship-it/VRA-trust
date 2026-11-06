@@ -134,10 +134,12 @@ def test_excess_context_fails_before_provider_and_capacity_recovers(client, monk
     pid = create_project(client)['project_id']; agent = client.app.state.agent
     original = agent.call
     def huge(project_id, name, args, allow):
-        return {'source': 'x'*65000} if name == 'project_get' else original(project_id, name, args, allow)
+        # Project metadata is deliberately projected before inference. Exercise
+        # evidence that must actually reach the provider, not discarded metadata.
+        return {'source': 'x'*65000} if name == 'evidence_validate' else original(project_id, name, args, allow)
     monkeypatch.setattr(agent, 'call', huge)
     captured = scripted(agent, monkeypatch, [DONE])
-    task = agent.start(pid, Chat(message='check', mode='provider'), background=False)
+    task = agent.start(pid, Chat(message='check', mode='provider', objective='inspect_evidence'), background=False)
     assert task['status'] == 'failed' and 'Context budget' in task['error'] and captured == []
     monkeypatch.setattr(agent, 'call', original)
     assert agent.start(pid, Chat(message='Retry smaller', mode='provider'), background=False)['status'] == 'succeeded'

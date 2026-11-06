@@ -35,7 +35,7 @@ export function professionalArtifactMarkup(a) {
 }
 
 export function checkedDeliveryMarkup(answer) {
-  if(!answer?.checked_statements)return '';
+  if(!answer?.checked_statements?.length)return '';
   const periods={steady_state:'稳态构造',study_period:'整个评估期',quote_date:'清单声明日期'};
   return `<section aria-label="经过核验的专业说明"><h3>模型选择 · 当前记录核验</h3><p>以下字段已与当前记录逐项核对。自由问题的完整覆盖度及模型原始文字未获核验。</p>${answer.checked_statements.map(s=>`<h4>${esc(s.name)}</h4><dl>${s.facts.map(f=>`<dt>${esc(f.label)}</dt><dd>${f.period==='quote_date'?value(f.value):engineeringValue(f.value===null?null:Number(f.value))} ${esc(f.unit)} · ${esc(periods[f.period]||f.period)}${f.study_years!==null?' '+value(f.study_years)+' 年':''}${f.area_m2!==null?' · 面积分母 '+value(f.area_m2)+' m²':''}<small> 来源字段 ${esc(f.source_path)}</small></dd>`).join('')}</dl><small class="mono">${esc(s.record_id)}</small>`).join('')}</section>${(answer.artifacts||[]).map(professionalArtifactMarkup).join('')}`;
 }
