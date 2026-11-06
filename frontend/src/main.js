@@ -88,7 +88,7 @@ function projectForm(edit = false) {
     const building = Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'name'));
     for (const key of ['area_m2', 'floors', 'floor_height_m', 'window_wall_ratio']) building[key] = building[key] === '' ? null : Number(building[key]);
     const result = edit ? await request('/projects/' + p.project_id + '/building', { method: 'PUT', body: JSON.stringify({ expected_revision: p.revision, building }) }) : await post('/projects', { name: data.name, building });
-    dialog.close(); await refreshProjects(); await selectProject(result.project_id);
+    await refreshProjects(); await selectProject(result.project_id); dialog.close();
   }, e.submitter); };
 }
 async function refreshProjects() { state.projects = await request('/projects'); }
