@@ -1,0 +1,809 @@
+{
+  "scope": "Explicit user declarations are a changed input condition, not proof of unconstrained language understanding.",
+  "fixtures": {
+    "regression": {
+      "sha256": "2ed7e64f8db7732b6ab01407ff282daadf78a99dfe9d8444bba8fc2a8c16213b",
+      "fixture": {
+        "application_commit": "5a1ae508382a27acfc218e6f9e6ff0af11608952",
+        "scope": "Fourteen unchanged previously seen cases, no declared scopes; not unseen validation.",
+        "independent_oracles": {
+          "R01": "Declared area differs from721m2; must reject without carbon record, not count as completed calculation",
+          "absence": "Check actual isolated full project catalog; no default numerical outputs",
+          "M02": "5*q*L^4/(384*E*I), I=b*h^3/12; exact rational=25/33792; deflection_m=0.00073982007575757575757575757575757576",
+          "N01": "One real beam record exists, but specifically requested ID is unavailable only in this project.",
+          "N02": {
+            "formula": "5*q*L^4/(384*E*I), I=b*h^3/12",
+            "exact_fraction": "76840601/105054982400",
+            "max_deflection_m": "0.00073143223904818816094532989993628326951"
+          },
+          "N03": "Exactly the five requested full catalogs are empty; not numerical zero.",
+          "A01": "A beam exists but is not requested. The explicit thermal ID and complete procurement catalog are both absent.",
+          "A02": "The three explicitly named complete catalogs have no records. No write or zero-valued result is authorized."
+        },
+        "cases": [
+          {
+            "id": "R01",
+            "message": "请实际执行提交的阶段碳计划；不能修改参数，也不能改成热工或能耗计算。",
+            "plans": [
+              {
+                "plan_key": "carbon_new",
+                "kind": "lifecycle",
+                "input": {
+                  "name": "New batch carbon boundary",
+                  "area_m2": 927.2,
+                  "study_years": 9,
+                  "region": "US-CO",
+                  "method": "Synthetic GWP arithmetic",
+                  "functional_unit": "Declared area over nine years",
+                  "boundaries": [
+                    {
+                      "stage": "production",
+                      "included": true,
+                      "reason": "Explicit synthetic boundary, construction excluded"
+                    },
+                    {
+                      "stage": "transport",
+                      "included": true,
+                      "reason": "Explicit synthetic boundary, construction excluded"
+                    },
+                    {
+                      "stage": "construction",
+                      "included": false,
+                      "reason": "Explicit synthetic boundary, construction excluded"
+                    },
+                    {
+                      "stage": "operation",
+                      "included": true,
+                      "reason": "Explicit synthetic boundary, construction excluded"
+                    },
+                    {
+                      "stage": "end_of_life",
+                      "included": true,
+                      "reason": "Explicit synthetic boundary, construction excluded"
+                    }
+                  ],
+                  "activities": [
+                    {
+                      "activity_id": "production",
+                      "name": "production",
+                      "stage": "production",
+                      "quantity": 1.8,
+                      "unit": "t",
+                      "period": "whole_period",
+                      "source": "Independent activity input",
+                      "factor": {
+                        "factor_id": "production-f",
+                        "value": 0.51,
+                        "denominator": "kg",
+                        "stage": "production",
+                        "source": "Synthetic factor; not certified",
+                        "publisher": "Audit fixture",
+                        "version": "new-2",
+                        "year": 2026,
+                        "region": "*",
+                        "method": "Synthetic GWP arithmetic"
+                      }
+                    },
+                    {
+                      "activity_id": "transport",
+                      "name": "transport",
+                      "stage": "transport",
+                      "quantity": 125,
+                      "unit": "tkm",
+                      "period": "whole_period",
+                      "source": "Independent activity input",
+                      "factor": {
+                        "factor_id": "transport-f",
+                        "value": 0.09,
+                        "denominator": "tkm",
+                        "stage": "transport",
+                        "source": "Synthetic factor; not certified",
+                        "publisher": "Audit fixture",
+                        "version": "new-2",
+                        "year": 2026,
+                        "region": "*",
+                        "method": "Synthetic GWP arithmetic"
+                      }
+                    },
+                    {
+                      "activity_id": "operation",
+                      "name": "operation",
+                      "stage": "operation",
+                      "quantity": 310,
+                      "unit": "kWh",
+                      "period": "annual",
+                      "source": "Independent activity input",
+                      "factor": {
+                        "factor_id": "operation-f",
+                        "value": 0.41,
+                        "denominator": "kWh",
+                        "stage": "operation",
+                        "source": "Synthetic factor; not certified",
+                        "publisher": "Audit fixture",
+                        "version": "new-2",
+                        "year": 2026,
+                        "region": "*",
+                        "method": "Synthetic GWP arithmetic"
+                      }
+                    },
+                    {
+                      "activity_id": "end_of_life",
+                      "name": "end_of_life",
+                      "stage": "end_of_life",
+                      "quantity": 80,
+                      "unit": "kg",
+                      "period": "whole_period",
+                      "source": "Independent activity input",
+                      "factor": {
+                        "factor_id": "end_of_life-f",
+                        "value": 0.03,
+                        "denominator": "kg",
+                        "stage": "end_of_life",
+                        "source": "Synthetic factor; not certified",
+                        "publisher": "Audit fixture",
+                        "version": "new-2",
+                        "year": 2026,
+                        "region": "*",
+                        "method": "Synthetic GWP arithmetic"
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "expected_task_status": "failed",
+            "expected_error": "Inventory region/area",
+            "required_attempt": true,
+            "expected_empty": [
+              "lifecycle"
+            ],
+            "cohort": "regression"
+          },
+          {
+            "id": "R02",
+            "previous": "R01",
+            "message": "上一轮阶段碳计算被拒绝。只查询当前项目是否有碳清单并正式说明缺失；不要猜编号，不要重试计算。",
+            "missing_kinds": [
+              "lifecycle"
+            ],
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "R03",
+            "previous": "R02",
+            "message": "继续检查本项目的阶段碳清单和施工进度记录，两类都需给出正式的当前可用性说明；没有记录就说明缺失，不要调用仿真或编造ID。",
+            "missing_kinds": [
+              "lifecycle",
+              "schedule"
+            ],
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "M01",
+            "message": "只核验当前项目是否已有热工、材料成本和设备运行核查记录。逐类正式说明缺失，不填零值，不新建计算。",
+            "missing_kinds": [
+              "thermal",
+              "cost",
+              "operation"
+            ],
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "M02",
+            "seed_beam": {
+              "name": "Fresh 4.5m synthetic beam",
+              "support": "simply_supported",
+              "span": 4.5,
+              "span_unit": "m",
+              "width": 220.0,
+              "depth": 360.0,
+              "section_unit": "mm",
+              "elastic_modulus": 27.0,
+              "modulus_unit": "GPa",
+              "geometry_source": "Independent synthetic geometry",
+              "material_source": "Synthetic modulus, not measured material",
+              "support_basis": "Ideal pin and roller supports for calculation test",
+              "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+              "loads": [
+                {
+                  "type": "uniform",
+                  "name": "Audit UDL",
+                  "magnitude": 3.2,
+                  "unit": "kN/m",
+                  "start": 0,
+                  "end": 4.5,
+                  "position_unit": "m",
+                  "source": "Independent synthetic load, self-weight excluded"
+                }
+              ]
+            },
+            "message": "请读取现有梁分析并正式交付最大向下挠度，另外核验本项目材料成本记录是否缺失。两项分别说明，不给结构安全或报价认证结论。",
+            "facts": {
+              "max_deflection_m": "0.00073982007575757575757575757575757576"
+            },
+            "missing_kinds": [
+              "cost"
+            ],
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "M03",
+            "message": "只检查明确编号 thermal_00000000000000000000000000000000 是否在当前项目可用；不可用就正式说明，不能据此说所有项目都没有它。",
+            "missing_kinds": [
+              "thermal"
+            ],
+            "missing_scope": "requested_record_in_project",
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "M04",
+            "message": "请检查当前项目全部六类专业记录的可用性：热工构造、阶段碳清单、材料成本、梁分析、施工进度、设备运行规则。缺失的逐类正式交付说明；不要新建计算，不要漏项，不编造编号。",
+            "missing_kinds": [
+              "thermal",
+              "lifecycle",
+              "cost",
+              "engineering",
+              "schedule",
+              "operation"
+            ],
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "N01",
+            "seed_beam": {
+              "name": "New 3.7m synthetic reference beam",
+              "support": "simply_supported",
+              "span": 3.7,
+              "span_unit": "m",
+              "width": 190.0,
+              "depth": 310.0,
+              "section_unit": "mm",
+              "elastic_modulus": 29.0,
+              "modulus_unit": "GPa",
+              "geometry_source": "Independent synthetic geometry",
+              "material_source": "Synthetic modulus, not measured material",
+              "support_basis": "Ideal pin and roller supports for calculation test",
+              "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+              "loads": [
+                {
+                  "type": "uniform",
+                  "name": "Audit UDL",
+                  "magnitude": 4.1,
+                  "unit": "kN/m",
+                  "start": 0,
+                  "end": 3.7,
+                  "position_unit": "m",
+                  "source": "Independent synthetic load, self-weight excluded"
+                }
+              ]
+            },
+            "message": "当前项目里可能有其他梁记录。只核验指定 engineering_11111111111111111111111111111111 是否可用；缺失需正式说明，不能说本项目没有任何梁记录。",
+            "missing_kinds": [
+              "engineering"
+            ],
+            "missing_scope": "requested_record_in_project",
+            "missing_count": 1,
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "N02",
+            "seed_beam": {
+              "name": "New 3.7m synthetic reference beam",
+              "support": "simply_supported",
+              "span": 3.7,
+              "span_unit": "m",
+              "width": 190.0,
+              "depth": 310.0,
+              "section_unit": "mm",
+              "elastic_modulus": 29.0,
+              "modulus_unit": "GPa",
+              "geometry_source": "Independent synthetic geometry",
+              "material_source": "Synthetic modulus, not measured material",
+              "support_basis": "Ideal pin and roller supports for calculation test",
+              "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+              "loads": [
+                {
+                  "type": "uniform",
+                  "name": "Audit UDL",
+                  "magnitude": 4.1,
+                  "unit": "kN/m",
+                  "start": 0,
+                  "end": 3.7,
+                  "position_unit": "m",
+                  "source": "Independent synthetic load, self-weight excluded"
+                }
+              ]
+            },
+            "message": "读取已有梁分析并交付最大向下挠度；同时核验阶段碳与设备运行记录是否缺失，三项分别正式交付。此次不新建任何计算，不评定结构安全。",
+            "facts": {
+              "max_deflection_m": "0.00073143223904818816094532989993628326951"
+            },
+            "missing_kinds": [
+              "lifecycle",
+              "operation"
+            ],
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "N03",
+            "message": "逐项核验本项目的阶段碳、采购成本、梁分析、施工进度、设备运行这五类记录是否可用。对缺失逐项形成正式说明，不能填零，也不要另查热工或创建计算。",
+            "missing_kinds": [
+              "lifecycle",
+              "cost",
+              "engineering",
+              "schedule",
+              "operation"
+            ],
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "A01",
+            "seed_beam": {
+              "name": "New 3.7m synthetic reference beam",
+              "support": "simply_supported",
+              "span": 3.7,
+              "span_unit": "m",
+              "width": 190.0,
+              "depth": 310.0,
+              "section_unit": "mm",
+              "elastic_modulus": 29.0,
+              "modulus_unit": "GPa",
+              "geometry_source": "Independent synthetic geometry",
+              "material_source": "Synthetic modulus, not measured material",
+              "support_basis": "Ideal pin and roller supports for calculation test",
+              "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+              "loads": [
+                {
+                  "type": "uniform",
+                  "name": "Audit UDL",
+                  "magnitude": 4.1,
+                  "unit": "kN/m",
+                  "start": 0,
+                  "end": 3.7,
+                  "position_unit": "m",
+                  "source": "Independent synthetic load, self-weight excluded"
+                }
+              ]
+            },
+            "message": "只核验 thermal_22222222222222222222222222222222 在本项目是否可用，并检查本项目材料成本记录是否为空。分别正式交付缺失范围，不检查其他已有专业记录，也不新建计算。",
+            "missing_kinds": [
+              "thermal",
+              "cost"
+            ],
+            "missing_scopes": {
+              "thermal": "requested_record_in_project",
+              "cost": "entire_project_kind"
+            },
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "A02",
+            "message": "请正式核验阶段碳清单、施工进度和设备运行核查的记录可用性，三项都要覆盖。缺失仍保留为未知，不授权创建或重试任何计算。",
+            "missing_kinds": [
+              "lifecycle",
+              "schedule",
+              "operation"
+            ],
+            "missing_scope": "entire_project_kind",
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "C01",
+            "seed_beam": {
+              "name": "New 3.7m synthetic reference beam",
+              "support": "simply_supported",
+              "span": 3.7,
+              "span_unit": "m",
+              "width": 190.0,
+              "depth": 310.0,
+              "section_unit": "mm",
+              "elastic_modulus": 29.0,
+              "modulus_unit": "GPa",
+              "geometry_source": "Independent synthetic geometry",
+              "material_source": "Synthetic modulus, not measured material",
+              "support_basis": "Ideal pin and roller supports for calculation test",
+              "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+              "loads": [
+                {
+                  "type": "uniform",
+                  "name": "Audit UDL",
+                  "magnitude": 4.1,
+                  "unit": "kN/m",
+                  "start": 0,
+                  "end": 3.7,
+                  "position_unit": "m",
+                  "source": "Independent synthetic load, self-weight excluded"
+                }
+              ]
+            },
+            "message": "只检查 engineering_66666666666666666666666666666666 在本项目是否可用，并正式说明设备运行记录是否缺失。本项目已有的其他梁记录不在请求范围内，不新建计算。",
+            "missing_kinds": [
+              "engineering",
+              "operation"
+            ],
+            "missing_scopes": {
+              "engineering": "requested_record_in_project",
+              "operation": "entire_project_kind"
+            },
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          },
+          {
+            "id": "C02",
+            "message": "分别核验 thermal_44444444444444444444444444444444 和 operation_55555555555555555555555555555555 两个明确编号在当前项目中的可用性，并逐项正式交付。不要用整类为空代替编号检查，也不创建或重试计算。",
+            "missing_kinds": [
+              "thermal",
+              "operation"
+            ],
+            "missing_scope": "requested_record_in_project",
+            "no_facts": true,
+            "no_writes": true,
+            "cohort": "regression"
+          }
+        ]
+      }
+    },
+    "fresh": {
+      "sha256": "0192282fe938f662be81d10af3f9d9b8e6e73feee7ae3ef349176f7b3b165c5f",
+      "fixture": {
+        "application_commit": "5a1ae508382a27acfc218e6f9e6ff0af11608952",
+        "scope": "User-declared scope conditions, frozen before inference. These are not evidence of free-language parsing improvement.",
+        "independent_oracles": {
+          "thermal_A": "R=0.11+0.06+0.245/0.175=1.57 m2 K/W",
+          "thermal_B": "R=0.11+0.06+0.385/0.175=2.37 m2 K/W",
+          "availability": "Only existence within isolated project; no engineering numeric delivery",
+          "stale": "Area change after seeding invalidates original record, no new calculation"
+        },
+        "cases": [
+          {
+            "id": "S01",
+            "message": "分别检查热工、材料成本、设备运行记录是否存在，不读取数值。",
+            "read_requests": [
+              {
+                "request_key": "wall",
+                "kind": "thermal",
+                "purpose": "availability",
+                "record_id": null
+              },
+              {
+                "request_key": "cost",
+                "kind": "cost",
+                "purpose": "availability",
+                "record_id": null
+              },
+              {
+                "request_key": "device",
+                "kind": "operation",
+                "purpose": "availability",
+                "record_id": null
+              }
+            ],
+            "availability_states": [
+              "no_record_available",
+              "no_record_available",
+              "no_record_available"
+            ],
+            "read_states": [
+              "availability_verified",
+              "availability_verified",
+              "availability_verified"
+            ],
+            "no_facts": true,
+            "cohort": "declared-new",
+            "no_writes": true
+          },
+          {
+            "id": "S02",
+            "message": "备注 thermal_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 不要检查。本轮只检查设备记录。",
+            "read_requests": [
+              {
+                "request_key": "device",
+                "kind": "operation",
+                "purpose": "availability",
+                "record_id": null
+              }
+            ],
+            "availability_states": [
+              "no_record_available"
+            ],
+            "read_states": [
+              "availability_verified"
+            ],
+            "no_facts": true,
+            "cohort": "declared-new",
+            "no_writes": true
+          },
+          {
+            "id": "S03",
+            "message": "只读取 {{a}} 和 {{b}} 的总热阻，逐条交付，不能只给其中一条。",
+            "seed_thermal": {
+              "a": {
+                "name": "Scope independent wall A",
+                "rsi_m2k_w": 0.11,
+                "rse_m2k_w": 0.06,
+                "surface_basis": "Synthetic declared boundary, no compliance default",
+                "application": "Uniform opaque reference layers",
+                "layers": [
+                  {
+                    "name": "Test layer",
+                    "thickness": 245,
+                    "thickness_unit": "mm",
+                    "conductivity": 0.175,
+                    "conductivity_unit": "W/(m K)",
+                    "correction_factor": 1.0,
+                    "correction_basis": "Synthetic declared correction",
+                    "source": "Synthetic independent arithmetic input"
+                  }
+                ]
+              },
+              "b": {
+                "name": "Scope independent wall B",
+                "rsi_m2k_w": 0.11,
+                "rse_m2k_w": 0.06,
+                "surface_basis": "Synthetic declared boundary, no compliance default",
+                "application": "Uniform opaque reference layers",
+                "layers": [
+                  {
+                    "name": "Test layer",
+                    "thickness": 385,
+                    "thickness_unit": "mm",
+                    "conductivity": 0.175,
+                    "conductivity_unit": "W/(m K)",
+                    "correction_factor": 1.0,
+                    "correction_basis": "Synthetic declared correction",
+                    "source": "Synthetic independent arithmetic input"
+                  }
+                ]
+              }
+            },
+            "read_requests": [
+              {
+                "request_key": "first",
+                "kind": "thermal",
+                "purpose": "results",
+                "record_id": "{{a}}"
+              },
+              {
+                "request_key": "second",
+                "kind": "thermal",
+                "purpose": "results",
+                "record_id": "{{b}}"
+              }
+            ],
+            "read_states": [
+              "result_verified",
+              "result_verified"
+            ],
+            "record_facts": {
+              "{{a}}": {
+                "total_resistance_m2k_w": "1.57"
+              },
+              "{{b}}": {
+                "total_resistance_m2k_w": "2.37"
+              }
+            },
+            "cohort": "declared-new",
+            "no_writes": true
+          },
+          {
+            "id": "S04",
+            "message": "读取 {{a}} 总热阻；另检查材料成本和设备运行记录是否存在，不得编数值。",
+            "seed_thermal": {
+              "a": {
+                "name": "Scope independent wall A",
+                "rsi_m2k_w": 0.11,
+                "rse_m2k_w": 0.06,
+                "surface_basis": "Synthetic declared boundary, no compliance default",
+                "application": "Uniform opaque reference layers",
+                "layers": [
+                  {
+                    "name": "Test layer",
+                    "thickness": 245,
+                    "thickness_unit": "mm",
+                    "conductivity": 0.175,
+                    "conductivity_unit": "W/(m K)",
+                    "correction_factor": 1.0,
+                    "correction_basis": "Synthetic declared correction",
+                    "source": "Synthetic independent arithmetic input"
+                  }
+                ]
+              }
+            },
+            "read_requests": [
+              {
+                "request_key": "wall",
+                "kind": "thermal",
+                "purpose": "results",
+                "record_id": "{{a}}"
+              },
+              {
+                "request_key": "cost",
+                "kind": "cost",
+                "purpose": "availability",
+                "record_id": null
+              },
+              {
+                "request_key": "device",
+                "kind": "operation",
+                "purpose": "availability",
+                "record_id": null
+              }
+            ],
+            "read_states": [
+              "result_verified",
+              "availability_verified",
+              "availability_verified"
+            ],
+            "availability_states": [
+              "no_record_available",
+              "no_record_available"
+            ],
+            "record_facts": {
+              "{{a}}": {
+                "total_resistance_m2k_w": "1.57"
+              }
+            },
+            "cohort": "declared-new",
+            "no_writes": true
+          },
+          {
+            "id": "S05",
+            "message": "检查声明的构造 {{a}} 是否存在，再读取其结果；如失效只交付当前限制。",
+            "seed_thermal": {
+              "a": {
+                "name": "Scope independent wall A",
+                "rsi_m2k_w": 0.11,
+                "rse_m2k_w": 0.06,
+                "surface_basis": "Synthetic declared boundary, no compliance default",
+                "application": "Uniform opaque reference layers",
+                "layers": [
+                  {
+                    "name": "Test layer",
+                    "thickness": 245,
+                    "thickness_unit": "mm",
+                    "conductivity": 0.175,
+                    "conductivity_unit": "W/(m K)",
+                    "correction_factor": 1.0,
+                    "correction_basis": "Synthetic declared correction",
+                    "source": "Synthetic independent arithmetic input"
+                  }
+                ]
+              }
+            },
+            "stale_seed": true,
+            "read_requests": [
+              {
+                "request_key": "exists",
+                "kind": "thermal",
+                "purpose": "availability",
+                "record_id": "{{a}}"
+              },
+              {
+                "request_key": "value",
+                "kind": "thermal",
+                "purpose": "results",
+                "record_id": "{{a}}"
+              }
+            ],
+            "read_states": [
+              "availability_verified",
+              "limitation_verified"
+            ],
+            "availability_states": [
+              "records_present"
+            ],
+            "no_facts": true,
+            "limit_status": "stale",
+            "cohort": "declared-new",
+            "no_writes": true
+          },
+          {
+            "id": "S06",
+            "message": "读取 thermal_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee 的结果。另有 {{a}} 仅为排除项，禁止替换。",
+            "seed_thermal": {
+              "a": {
+                "name": "Scope independent wall A",
+                "rsi_m2k_w": 0.11,
+                "rse_m2k_w": 0.06,
+                "surface_basis": "Synthetic declared boundary, no compliance default",
+                "application": "Uniform opaque reference layers",
+                "layers": [
+                  {
+                    "name": "Test layer",
+                    "thickness": 245,
+                    "thickness_unit": "mm",
+                    "conductivity": 0.175,
+                    "conductivity_unit": "W/(m K)",
+                    "correction_factor": 1.0,
+                    "correction_basis": "Synthetic declared correction",
+                    "source": "Synthetic independent arithmetic input"
+                  }
+                ]
+              }
+            },
+            "read_requests": [
+              {
+                "request_key": "missing",
+                "kind": "thermal",
+                "purpose": "results",
+                "record_id": "thermal_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+              }
+            ],
+            "read_states": [
+              "record_unavailable"
+            ],
+            "missing_kinds": [
+              "thermal"
+            ],
+            "missing_count": 1,
+            "missing_scope": "requested_record_in_project",
+            "no_facts": true,
+            "cohort": "declared-new",
+            "no_writes": true
+          }
+        ]
+      }
+    }
+  },
+  "independent_oracles": {
+    "method": "stdlib Fraction, raw declared millimetres and SI conductivity; no product code imported",
+    "checks": [
+      {
+        "case": "S03",
+        "binding": "a",
+        "exact_R": "157/100",
+        "exact_U": "100/157",
+        "frozen_expected_checked": true
+      },
+      {
+        "case": "S03",
+        "binding": "b",
+        "exact_R": "237/100",
+        "exact_U": "100/237",
+        "frozen_expected_checked": true
+      },
+      {
+        "case": "S04",
+        "binding": "a",
+        "exact_R": "157/100",
+        "exact_U": "100/157",
+        "frozen_expected_checked": true
+      },
+      {
+        "case": "S05",
+        "binding": "a",
+        "exact_R": "157/100",
+        "exact_U": "100/157",
+        "frozen_expected_checked": false
+      },
+      {
+        "case": "S06",
+        "binding": "a",
+        "exact_R": "157/100",
+        "exact_U": "100/157",
+        "frozen_expected_checked": false
+      }
+    ]
+  }
+}
