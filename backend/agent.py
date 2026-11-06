@@ -219,7 +219,8 @@ class Agent:
         for name, desc in TOOLS.items():
             if allowed is not None and name not in allowed:
                 continue
-            parameters = {k: v for k, v in schema.items() if k not in {'$defs', 'properties', 'required'}}
+            # The same root display title adds no constraint and repeats for every tool.
+            parameters = {k: v for k, v in schema.items() if k not in {'$defs', 'properties', 'required', 'title'}}
             parameters['properties'] = {k: schema['properties'][k] for k in TOOL_FIELDS[name]}
             definitions = {}
 
