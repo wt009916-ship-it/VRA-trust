@@ -1,0 +1,1538 @@
+{
+  "scope": "Synthetic inputs. Previously observed cases become regression in later stages; no combined accuracy claim.",
+  "stages": {
+    "agent-missing-20261107": {
+      "regression": {
+        "sha256": "03a80da12cdb2b368db45718221ba1cc0e0f8ebfbf1abf5f1c15ef23357b75db",
+        "fixture": {
+          "application_commit": "cf00b496be4df23abe80143da922c9e3988f9e9b",
+          "scope": "Actual model scenarios. Regression reconstructs prior rejected-carbon/empty-record failure class; it is not a byte-identical rerun of prior two-plan fixtures. New cases frozen before inference.",
+          "independent_oracles": {
+            "R01": "Declared area differs from721m2; must reject without carbon record, not count as completed calculation",
+            "absence": "Check actual isolated full project catalog; no default numerical outputs",
+            "M02": "5*q*L^4/(384*E*I), I=b*h^3/12; exact rational=25/33792; deflection_m=0.00073982007575757575757575757575757576"
+          },
+          "cases": [
+            {
+              "id": "R01",
+              "message": "请实际执行提交的阶段碳计划；不能修改参数，也不能改成热工或能耗计算。",
+              "plans": [
+                {
+                  "plan_key": "carbon_new",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 927.2,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "expected_task_status": "failed",
+              "expected_error": "Inventory region/area",
+              "required_attempt": true,
+              "expected_empty": [
+                "lifecycle"
+              ],
+              "cohort": "regression"
+            },
+            {
+              "id": "R02",
+              "previous": "R01",
+              "message": "上一轮阶段碳计算被拒绝。只查询当前项目是否有碳清单并正式说明缺失；不要猜编号，不要重试计算。",
+              "missing_kinds": [
+                "lifecycle"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "R03",
+              "previous": "R02",
+              "message": "继续检查本项目的阶段碳清单和施工进度记录，两类都需给出正式的当前可用性说明；没有记录就说明缺失，不要调用仿真或编造ID。",
+              "missing_kinds": [
+                "lifecycle",
+                "schedule"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            }
+          ]
+        }
+      },
+      "fresh": {
+        "sha256": "141a98bdd10c501fe6826ec56ba0aa99263cb29bb614a3ced7b7f68beac05f97",
+        "fixture": {
+          "application_commit": "cf00b496be4df23abe80143da922c9e3988f9e9b",
+          "scope": "Actual model scenarios. Regression reconstructs prior rejected-carbon/empty-record failure class; it is not a byte-identical rerun of prior two-plan fixtures. New cases frozen before inference.",
+          "independent_oracles": {
+            "R01": "Declared area differs from721m2; must reject without carbon record, not count as completed calculation",
+            "absence": "Check actual isolated full project catalog; no default numerical outputs",
+            "M02": "5*q*L^4/(384*E*I), I=b*h^3/12; exact rational=25/33792; deflection_m=0.00073982007575757575757575757575757576"
+          },
+          "cases": [
+            {
+              "id": "M01",
+              "message": "只核验当前项目是否已有热工、材料成本和设备运行核查记录。逐类正式说明缺失，不填零值，不新建计算。",
+              "missing_kinds": [
+                "thermal",
+                "cost",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "M02",
+              "seed_beam": {
+                "name": "Fresh 4.5m synthetic beam",
+                "support": "simply_supported",
+                "span": 4.5,
+                "span_unit": "m",
+                "width": 220.0,
+                "depth": 360.0,
+                "section_unit": "mm",
+                "elastic_modulus": 27.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 3.2,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 4.5,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "请读取现有梁分析并正式交付最大向下挠度，另外核验本项目材料成本记录是否缺失。两项分别说明，不给结构安全或报价认证结论。",
+              "facts": {
+                "max_deflection_m": "0.00073982007575757575757575757575757576"
+              },
+              "missing_kinds": [
+                "cost"
+              ],
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "M03",
+              "message": "只检查明确编号 thermal_00000000000000000000000000000000 是否在当前项目可用；不可用就正式说明，不能据此说所有项目都没有它。",
+              "missing_kinds": [
+                "thermal"
+              ],
+              "missing_scope": "requested_record_in_project",
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "M04",
+              "message": "请检查当前项目全部六类专业记录的可用性：热工构造、阶段碳清单、材料成本、梁分析、施工进度、设备运行规则。缺失的逐类正式交付说明；不要新建计算，不要漏项，不编造编号。",
+              "missing_kinds": [
+                "thermal",
+                "lifecycle",
+                "cost",
+                "engineering",
+                "schedule",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            }
+          ]
+        }
+      }
+    },
+    "agent-missing-recovery-20261107": {
+      "regression": {
+        "sha256": "581266973cded51e461d20a2b9178117cb857c7a75facb1e1ec5e080bb72a980",
+        "fixture": {
+          "application_commit": "f38b0ba123d109129c5d82f704ed8b29204c78ab",
+          "scope": "All seven previously observed cases are regression, including original model failures. Original raw evidence remains unchanged.",
+          "independent_oracles": {
+            "R01": "Declared area differs from721m2; must reject without carbon record, not count as completed calculation",
+            "absence": "Check actual isolated full project catalog; no default numerical outputs",
+            "M02": "5*q*L^4/(384*E*I), I=b*h^3/12; exact rational=25/33792; deflection_m=0.00073982007575757575757575757575757576"
+          },
+          "cases": [
+            {
+              "id": "R01",
+              "message": "请实际执行提交的阶段碳计划；不能修改参数，也不能改成热工或能耗计算。",
+              "plans": [
+                {
+                  "plan_key": "carbon_new",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 927.2,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "expected_task_status": "failed",
+              "expected_error": "Inventory region/area",
+              "required_attempt": true,
+              "expected_empty": [
+                "lifecycle"
+              ],
+              "cohort": "regression"
+            },
+            {
+              "id": "R02",
+              "previous": "R01",
+              "message": "上一轮阶段碳计算被拒绝。只查询当前项目是否有碳清单并正式说明缺失；不要猜编号，不要重试计算。",
+              "missing_kinds": [
+                "lifecycle"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "R03",
+              "previous": "R02",
+              "message": "继续检查本项目的阶段碳清单和施工进度记录，两类都需给出正式的当前可用性说明；没有记录就说明缺失，不要调用仿真或编造ID。",
+              "missing_kinds": [
+                "lifecycle",
+                "schedule"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M01",
+              "message": "只核验当前项目是否已有热工、材料成本和设备运行核查记录。逐类正式说明缺失，不填零值，不新建计算。",
+              "missing_kinds": [
+                "thermal",
+                "cost",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M02",
+              "seed_beam": {
+                "name": "Fresh 4.5m synthetic beam",
+                "support": "simply_supported",
+                "span": 4.5,
+                "span_unit": "m",
+                "width": 220.0,
+                "depth": 360.0,
+                "section_unit": "mm",
+                "elastic_modulus": 27.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 3.2,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 4.5,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "请读取现有梁分析并正式交付最大向下挠度，另外核验本项目材料成本记录是否缺失。两项分别说明，不给结构安全或报价认证结论。",
+              "facts": {
+                "max_deflection_m": "0.00073982007575757575757575757575757576"
+              },
+              "missing_kinds": [
+                "cost"
+              ],
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M03",
+              "message": "只检查明确编号 thermal_00000000000000000000000000000000 是否在当前项目可用；不可用就正式说明，不能据此说所有项目都没有它。",
+              "missing_kinds": [
+                "thermal"
+              ],
+              "missing_scope": "requested_record_in_project",
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M04",
+              "message": "请检查当前项目全部六类专业记录的可用性：热工构造、阶段碳清单、材料成本、梁分析、施工进度、设备运行规则。缺失的逐类正式交付说明；不要新建计算，不要漏项，不编造编号。",
+              "missing_kinds": [
+                "thermal",
+                "lifecycle",
+                "cost",
+                "engineering",
+                "schedule",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            }
+          ]
+        }
+      },
+      "fresh": {
+        "sha256": "2b8ba8d6f29a2d634f4e7d0af2c2eb562e7ab342c1fb4ed27d5508b6eade6b3e",
+        "fixture": {
+          "application_commit": "f38b0ba123d109129c5d82f704ed8b29204c78ab",
+          "scope": "New cases frozen before inference, synthetic references only.",
+          "independent_oracles": {
+            "N01": "One real beam record exists, but specifically requested ID is unavailable only in this project.",
+            "N02": {
+              "formula": "5*q*L^4/(384*E*I), I=b*h^3/12",
+              "exact_fraction": "76840601/105054982400",
+              "max_deflection_m": "0.00073143223904818816094532989993628326951"
+            },
+            "N03": "Exactly the five requested full catalogs are empty; not numerical zero."
+          },
+          "cases": [
+            {
+              "id": "N01",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "当前项目里可能有其他梁记录。只核验指定 engineering_11111111111111111111111111111111 是否可用；缺失需正式说明，不能说本项目没有任何梁记录。",
+              "missing_kinds": [
+                "engineering"
+              ],
+              "missing_scope": "requested_record_in_project",
+              "missing_count": 1,
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "N02",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "读取已有梁分析并交付最大向下挠度；同时核验阶段碳与设备运行记录是否缺失，三项分别正式交付。此次不新建任何计算，不评定结构安全。",
+              "facts": {
+                "max_deflection_m": "0.00073143223904818816094532989993628326951"
+              },
+              "missing_kinds": [
+                "lifecycle",
+                "operation"
+              ],
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "N03",
+              "message": "逐项核验本项目的阶段碳、采购成本、梁分析、施工进度、设备运行这五类记录是否可用。对缺失逐项形成正式说明，不能填零，也不要另查热工或创建计算。",
+              "missing_kinds": [
+                "lifecycle",
+                "cost",
+                "engineering",
+                "schedule",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            }
+          ]
+        }
+      }
+    },
+    "agent-missing-atomic-20261107": {
+      "regression": {
+        "sha256": "e218d0339eccb7f362fa93e1cbdea95a21378fc28af57b27a375be44c69a3c35",
+        "fixture": {
+          "application_commit": "5120497c329b653510b50bbab9163fa7c176a60d",
+          "scope": "All ten cases already observed on the prior source; regression only.",
+          "independent_oracles": {
+            "R01": "Declared area differs from721m2; must reject without carbon record, not count as completed calculation",
+            "absence": "Check actual isolated full project catalog; no default numerical outputs",
+            "M02": "5*q*L^4/(384*E*I), I=b*h^3/12; exact rational=25/33792; deflection_m=0.00073982007575757575757575757575757576",
+            "N01": "One real beam record exists, but specifically requested ID is unavailable only in this project.",
+            "N02": {
+              "formula": "5*q*L^4/(384*E*I), I=b*h^3/12",
+              "exact_fraction": "76840601/105054982400",
+              "max_deflection_m": "0.00073143223904818816094532989993628326951"
+            },
+            "N03": "Exactly the five requested full catalogs are empty; not numerical zero."
+          },
+          "cases": [
+            {
+              "id": "R01",
+              "message": "请实际执行提交的阶段碳计划；不能修改参数，也不能改成热工或能耗计算。",
+              "plans": [
+                {
+                  "plan_key": "carbon_new",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 927.2,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "expected_task_status": "failed",
+              "expected_error": "Inventory region/area",
+              "required_attempt": true,
+              "expected_empty": [
+                "lifecycle"
+              ],
+              "cohort": "regression"
+            },
+            {
+              "id": "R02",
+              "previous": "R01",
+              "message": "上一轮阶段碳计算被拒绝。只查询当前项目是否有碳清单并正式说明缺失；不要猜编号，不要重试计算。",
+              "missing_kinds": [
+                "lifecycle"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "R03",
+              "previous": "R02",
+              "message": "继续检查本项目的阶段碳清单和施工进度记录，两类都需给出正式的当前可用性说明；没有记录就说明缺失，不要调用仿真或编造ID。",
+              "missing_kinds": [
+                "lifecycle",
+                "schedule"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M01",
+              "message": "只核验当前项目是否已有热工、材料成本和设备运行核查记录。逐类正式说明缺失，不填零值，不新建计算。",
+              "missing_kinds": [
+                "thermal",
+                "cost",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M02",
+              "seed_beam": {
+                "name": "Fresh 4.5m synthetic beam",
+                "support": "simply_supported",
+                "span": 4.5,
+                "span_unit": "m",
+                "width": 220.0,
+                "depth": 360.0,
+                "section_unit": "mm",
+                "elastic_modulus": 27.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 3.2,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 4.5,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "请读取现有梁分析并正式交付最大向下挠度，另外核验本项目材料成本记录是否缺失。两项分别说明，不给结构安全或报价认证结论。",
+              "facts": {
+                "max_deflection_m": "0.00073982007575757575757575757575757576"
+              },
+              "missing_kinds": [
+                "cost"
+              ],
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M03",
+              "message": "只检查明确编号 thermal_00000000000000000000000000000000 是否在当前项目可用；不可用就正式说明，不能据此说所有项目都没有它。",
+              "missing_kinds": [
+                "thermal"
+              ],
+              "missing_scope": "requested_record_in_project",
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M04",
+              "message": "请检查当前项目全部六类专业记录的可用性：热工构造、阶段碳清单、材料成本、梁分析、施工进度、设备运行规则。缺失的逐类正式交付说明；不要新建计算，不要漏项，不编造编号。",
+              "missing_kinds": [
+                "thermal",
+                "lifecycle",
+                "cost",
+                "engineering",
+                "schedule",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "N01",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "当前项目里可能有其他梁记录。只核验指定 engineering_11111111111111111111111111111111 是否可用；缺失需正式说明，不能说本项目没有任何梁记录。",
+              "missing_kinds": [
+                "engineering"
+              ],
+              "missing_scope": "requested_record_in_project",
+              "missing_count": 1,
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "N02",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "读取已有梁分析并交付最大向下挠度；同时核验阶段碳与设备运行记录是否缺失，三项分别正式交付。此次不新建任何计算，不评定结构安全。",
+              "facts": {
+                "max_deflection_m": "0.00073143223904818816094532989993628326951"
+              },
+              "missing_kinds": [
+                "lifecycle",
+                "operation"
+              ],
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "N03",
+              "message": "逐项核验本项目的阶段碳、采购成本、梁分析、施工进度、设备运行这五类记录是否可用。对缺失逐项形成正式说明，不能填零，也不要另查热工或创建计算。",
+              "missing_kinds": [
+                "lifecycle",
+                "cost",
+                "engineering",
+                "schedule",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            }
+          ]
+        }
+      },
+      "fresh": {
+        "sha256": "62666407afd7223048ec687eb1139c5cbcc01d0ad3b869bd30d13ad6b2b42b2c",
+        "fixture": {
+          "application_commit": "5120497c329b653510b50bbab9163fa7c176a60d",
+          "scope": "Two new scope combinations frozen before actual inference; not new formulas or real buildings.",
+          "independent_oracles": {
+            "A01": "A beam exists but is not requested. The explicit thermal ID and complete procurement catalog are both absent.",
+            "A02": "The three explicitly named complete catalogs have no records. No write or zero-valued result is authorized."
+          },
+          "cases": [
+            {
+              "id": "A01",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "只核验 thermal_22222222222222222222222222222222 在本项目是否可用，并检查本项目材料成本记录是否为空。分别正式交付缺失范围，不检查其他已有专业记录，也不新建计算。",
+              "missing_kinds": [
+                "thermal",
+                "cost"
+              ],
+              "missing_scopes": {
+                "thermal": "requested_record_in_project",
+                "cost": "entire_project_kind"
+              },
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "A02",
+              "message": "请正式核验阶段碳清单、施工进度和设备运行核查的记录可用性，三项都要覆盖。缺失仍保留为未知，不授权创建或重试任何计算。",
+              "missing_kinds": [
+                "lifecycle",
+                "schedule",
+                "operation"
+              ],
+              "missing_scope": "entire_project_kind",
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            }
+          ]
+        }
+      }
+    },
+    "agent-missing-canonical-20261107": {
+      "regression": {
+        "sha256": "0173564b8e30d7473067a7d719a779fb65cc9b52f4df1f56120062497ebfffe5",
+        "fixture": {
+          "application_commit": "54ad5905787403b5c03cb9a2aad25a0e0791d38f",
+          "scope": "All twelve previously observed cases are regression, including failures.",
+          "independent_oracles": {
+            "R01": "Declared area differs from721m2; must reject without carbon record, not count as completed calculation",
+            "absence": "Check actual isolated full project catalog; no default numerical outputs",
+            "M02": "5*q*L^4/(384*E*I), I=b*h^3/12; exact rational=25/33792; deflection_m=0.00073982007575757575757575757575757576",
+            "N01": "One real beam record exists, but specifically requested ID is unavailable only in this project.",
+            "N02": {
+              "formula": "5*q*L^4/(384*E*I), I=b*h^3/12",
+              "exact_fraction": "76840601/105054982400",
+              "max_deflection_m": "0.00073143223904818816094532989993628326951"
+            },
+            "N03": "Exactly the five requested full catalogs are empty; not numerical zero.",
+            "A01": "A beam exists but is not requested. The explicit thermal ID and complete procurement catalog are both absent.",
+            "A02": "The three explicitly named complete catalogs have no records. No write or zero-valued result is authorized."
+          },
+          "cases": [
+            {
+              "id": "R01",
+              "message": "请实际执行提交的阶段碳计划；不能修改参数，也不能改成热工或能耗计算。",
+              "plans": [
+                {
+                  "plan_key": "carbon_new",
+                  "kind": "lifecycle",
+                  "input": {
+                    "name": "New batch carbon boundary",
+                    "area_m2": 927.2,
+                    "study_years": 9,
+                    "region": "US-CO",
+                    "method": "Synthetic GWP arithmetic",
+                    "functional_unit": "Declared area over nine years",
+                    "boundaries": [
+                      {
+                        "stage": "production",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "transport",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "construction",
+                        "included": false,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "operation",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      },
+                      {
+                        "stage": "end_of_life",
+                        "included": true,
+                        "reason": "Explicit synthetic boundary, construction excluded"
+                      }
+                    ],
+                    "activities": [
+                      {
+                        "activity_id": "production",
+                        "name": "production",
+                        "stage": "production",
+                        "quantity": 1.8,
+                        "unit": "t",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "production-f",
+                          "value": 0.51,
+                          "denominator": "kg",
+                          "stage": "production",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "transport",
+                        "name": "transport",
+                        "stage": "transport",
+                        "quantity": 125,
+                        "unit": "tkm",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "transport-f",
+                          "value": 0.09,
+                          "denominator": "tkm",
+                          "stage": "transport",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "operation",
+                        "name": "operation",
+                        "stage": "operation",
+                        "quantity": 310,
+                        "unit": "kWh",
+                        "period": "annual",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "operation-f",
+                          "value": 0.41,
+                          "denominator": "kWh",
+                          "stage": "operation",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      },
+                      {
+                        "activity_id": "end_of_life",
+                        "name": "end_of_life",
+                        "stage": "end_of_life",
+                        "quantity": 80,
+                        "unit": "kg",
+                        "period": "whole_period",
+                        "source": "Independent activity input",
+                        "factor": {
+                          "factor_id": "end_of_life-f",
+                          "value": 0.03,
+                          "denominator": "kg",
+                          "stage": "end_of_life",
+                          "source": "Synthetic factor; not certified",
+                          "publisher": "Audit fixture",
+                          "version": "new-2",
+                          "year": 2026,
+                          "region": "*",
+                          "method": "Synthetic GWP arithmetic"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "expected_task_status": "failed",
+              "expected_error": "Inventory region/area",
+              "required_attempt": true,
+              "expected_empty": [
+                "lifecycle"
+              ],
+              "cohort": "regression"
+            },
+            {
+              "id": "R02",
+              "previous": "R01",
+              "message": "上一轮阶段碳计算被拒绝。只查询当前项目是否有碳清单并正式说明缺失；不要猜编号，不要重试计算。",
+              "missing_kinds": [
+                "lifecycle"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "R03",
+              "previous": "R02",
+              "message": "继续检查本项目的阶段碳清单和施工进度记录，两类都需给出正式的当前可用性说明；没有记录就说明缺失，不要调用仿真或编造ID。",
+              "missing_kinds": [
+                "lifecycle",
+                "schedule"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M01",
+              "message": "只核验当前项目是否已有热工、材料成本和设备运行核查记录。逐类正式说明缺失，不填零值，不新建计算。",
+              "missing_kinds": [
+                "thermal",
+                "cost",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M02",
+              "seed_beam": {
+                "name": "Fresh 4.5m synthetic beam",
+                "support": "simply_supported",
+                "span": 4.5,
+                "span_unit": "m",
+                "width": 220.0,
+                "depth": 360.0,
+                "section_unit": "mm",
+                "elastic_modulus": 27.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 3.2,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 4.5,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "请读取现有梁分析并正式交付最大向下挠度，另外核验本项目材料成本记录是否缺失。两项分别说明，不给结构安全或报价认证结论。",
+              "facts": {
+                "max_deflection_m": "0.00073982007575757575757575757575757576"
+              },
+              "missing_kinds": [
+                "cost"
+              ],
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M03",
+              "message": "只检查明确编号 thermal_00000000000000000000000000000000 是否在当前项目可用；不可用就正式说明，不能据此说所有项目都没有它。",
+              "missing_kinds": [
+                "thermal"
+              ],
+              "missing_scope": "requested_record_in_project",
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "M04",
+              "message": "请检查当前项目全部六类专业记录的可用性：热工构造、阶段碳清单、材料成本、梁分析、施工进度、设备运行规则。缺失的逐类正式交付说明；不要新建计算，不要漏项，不编造编号。",
+              "missing_kinds": [
+                "thermal",
+                "lifecycle",
+                "cost",
+                "engineering",
+                "schedule",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "N01",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "当前项目里可能有其他梁记录。只核验指定 engineering_11111111111111111111111111111111 是否可用；缺失需正式说明，不能说本项目没有任何梁记录。",
+              "missing_kinds": [
+                "engineering"
+              ],
+              "missing_scope": "requested_record_in_project",
+              "missing_count": 1,
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "N02",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "读取已有梁分析并交付最大向下挠度；同时核验阶段碳与设备运行记录是否缺失，三项分别正式交付。此次不新建任何计算，不评定结构安全。",
+              "facts": {
+                "max_deflection_m": "0.00073143223904818816094532989993628326951"
+              },
+              "missing_kinds": [
+                "lifecycle",
+                "operation"
+              ],
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "N03",
+              "message": "逐项核验本项目的阶段碳、采购成本、梁分析、施工进度、设备运行这五类记录是否可用。对缺失逐项形成正式说明，不能填零，也不要另查热工或创建计算。",
+              "missing_kinds": [
+                "lifecycle",
+                "cost",
+                "engineering",
+                "schedule",
+                "operation"
+              ],
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "A01",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "只核验 thermal_22222222222222222222222222222222 在本项目是否可用，并检查本项目材料成本记录是否为空。分别正式交付缺失范围，不检查其他已有专业记录，也不新建计算。",
+              "missing_kinds": [
+                "thermal",
+                "cost"
+              ],
+              "missing_scopes": {
+                "thermal": "requested_record_in_project",
+                "cost": "entire_project_kind"
+              },
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            },
+            {
+              "id": "A02",
+              "message": "请正式核验阶段碳清单、施工进度和设备运行核查的记录可用性，三项都要覆盖。缺失仍保留为未知，不授权创建或重试任何计算。",
+              "missing_kinds": [
+                "lifecycle",
+                "schedule",
+                "operation"
+              ],
+              "missing_scope": "entire_project_kind",
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "regression"
+            }
+          ]
+        }
+      },
+      "fresh": {
+        "sha256": "e07dd0aa522ff9f972b74d37e7030d9179ce838240c8d26f43a694d4f50de6fb",
+        "fixture": {
+          "application_commit": "54ad5905787403b5c03cb9a2aad25a0e0791d38f",
+          "scope": "Two unseen explicit-ID combinations, frozen before inference. No new formula or real-building claim.",
+          "independent_oracles": {
+            "C01": "One beam exists, but the specified engineering ID does not; operation catalog is empty.",
+            "C02": "Each specified ID is unavailable in this project; neither can be substituted by an entire-kind statement."
+          },
+          "cases": [
+            {
+              "id": "C01",
+              "seed_beam": {
+                "name": "New 3.7m synthetic reference beam",
+                "support": "simply_supported",
+                "span": 3.7,
+                "span_unit": "m",
+                "width": 190.0,
+                "depth": 310.0,
+                "section_unit": "mm",
+                "elastic_modulus": 29.0,
+                "modulus_unit": "GPa",
+                "geometry_source": "Independent synthetic geometry",
+                "material_source": "Synthetic modulus, not measured material",
+                "support_basis": "Ideal pin and roller supports for calculation test",
+                "analysis_basis": "Constant EI, linear elastic small-deflection synthetic test; no safety assessment.",
+                "loads": [
+                  {
+                    "type": "uniform",
+                    "name": "Audit UDL",
+                    "magnitude": 4.1,
+                    "unit": "kN/m",
+                    "start": 0,
+                    "end": 3.7,
+                    "position_unit": "m",
+                    "source": "Independent synthetic load, self-weight excluded"
+                  }
+                ]
+              },
+              "message": "只检查 engineering_66666666666666666666666666666666 在本项目是否可用，并正式说明设备运行记录是否缺失。本项目已有的其他梁记录不在请求范围内，不新建计算。",
+              "missing_kinds": [
+                "engineering",
+                "operation"
+              ],
+              "missing_scopes": {
+                "engineering": "requested_record_in_project",
+                "operation": "entire_project_kind"
+              },
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            },
+            {
+              "id": "C02",
+              "message": "分别核验 thermal_44444444444444444444444444444444 和 operation_55555555555555555555555555555555 两个明确编号在当前项目中的可用性，并逐项正式交付。不要用整类为空代替编号检查，也不创建或重试计算。",
+              "missing_kinds": [
+                "thermal",
+                "operation"
+              ],
+              "missing_scope": "requested_record_in_project",
+              "no_facts": true,
+              "no_writes": true,
+              "cohort": "fresh"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
