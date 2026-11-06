@@ -6222,6 +6222,14 @@
             "maxItems": 2,
             "title": "Calculation Plans"
           },
+          "read_requests": {
+            "items": {
+              "$ref": "#/components/schemas/ReadRequest"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Read Requests"
+          },
           "search_plan": {
             "anyOf": [
               {
@@ -8428,6 +8436,55 @@
           "version"
         ],
         "title": "Quote"
+      },
+      "ReadRequest": {
+        "properties": {
+          "request_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Request Key"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "thermal",
+              "lifecycle",
+              "cost",
+              "engineering",
+              "schedule",
+              "operation"
+            ],
+            "title": "Kind"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "availability",
+              "results"
+            ],
+            "title": "Purpose"
+          },
+          "record_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_key",
+          "kind",
+          "purpose"
+        ],
+        "title": "ReadRequest"
       },
       "Reconstruction": {
         "properties": {
