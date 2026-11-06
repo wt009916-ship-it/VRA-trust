@@ -1,5 +1,7 @@
 import {bindSimulationGate} from './simulation-gate.js';
 import {weatherQualityMarkup} from './weather-quality.js';
+import {designLoadsMarkup} from './design-loads.js';
+import './design-loads.css';
 import {refreshAgentMode, createAgentModePreference} from './agent-mode-status.js';
 import {bindReadRequests,collectReadRequests} from './agent-requests.js';
 import {storageDescription, createEvidenceIntake} from './storage-intake.js';
@@ -206,7 +208,7 @@ async function trace(id, scroll = true) {
   const report = await request('/runs/' + id + '/report.json');
   const r = report.run;
   document.querySelector('#trace-content').className = 'trace-content';
-  document.querySelector('#trace-content').innerHTML = '<div class="trace-heading"><strong class="mono">' + esc(id) + '</strong>' + badge(label[r.status]) + '</div><div class="graph">' + graphMarkup(report.claims.nodes) + '</div><div class="report-actions">' + link('/api/runs/' + id + '/report.json', '完整 JSON') + link('/api/runs/' + id + '/report.html', '证据报告') + link('/api/runs/' + id + '/report.pdf', '下载 PDF') + link('/api/runs/' + id + '/artifacts', '原始证据 ZIP') + '</div>' + weatherQualityMarkup(r.weather_quality) + '<div class="certificate"><p class="eyebrow">DECISION CERTIFICATE · DRAFT</p><h3>当前拒绝给出确定最优推荐</h3><p>状态：' + esc(report.certificate.status) + ' · 工程师未签署</p><p>成立条件：当前输入适用；失效条件：证据、模型、代码或引擎版本变化。</p><p>尚未排除：模型偏差、舒适性问题、方案翻转风险。建议先复核 Warning，再补充账单和运行时段。</p></div><details><summary>完整版本、SQL 来源定位及未满足设定点时间</summary><pre>' + esc(JSON.stringify({ provenance: r.provenance, metrics: r.metrics, evidence: report.evidence, limitations: r.limitations }, null, 2)) + '</pre></details>';
+  document.querySelector('#trace-content').innerHTML = '<div class="trace-heading"><strong class="mono">' + esc(id) + '</strong>' + badge(label[r.status]) + '</div><div class="graph">' + graphMarkup(report.claims.nodes) + '</div><div class="report-actions">' + link('/api/runs/' + id + '/report.json', '完整 JSON') + link('/api/runs/' + id + '/report.html', '证据报告') + link('/api/runs/' + id + '/report.pdf', '下载 PDF') + link('/api/runs/' + id + '/artifacts', '原始证据 ZIP') + '</div>' + weatherQualityMarkup(r.weather_quality) + designLoadsMarkup(r.metrics?.zone_design_loads) + '<div class="certificate"><p class="eyebrow">DECISION CERTIFICATE · DRAFT</p><h3>当前拒绝给出确定最优推荐</h3><p>状态：' + esc(report.certificate.status) + ' · 工程师未签署</p><p>成立条件：当前输入适用；失效条件：证据、模型、代码或引擎版本变化。</p><p>尚未排除：模型偏差、舒适性问题、方案翻转风险。建议先复核 Warning，再补充账单和运行时段。</p></div><details><summary>完整版本、SQL 来源定位及未满足设定点时间</summary><pre>' + esc(JSON.stringify({ provenance: r.provenance, metrics: r.metrics, evidence: report.evidence, limitations: r.limitations }, null, 2)) + '</pre></details>';
   document.querySelectorAll('[data-node]').forEach(b => { b.onclick = () => { const ev = report.evidence.find(e => e.evidence_id === report.claims.nodes.find(n=>n.id===b.dataset.node)?.evidence_id); if (ev) evidenceDetail(ev); else {const node=report.claims.nodes.find(n=>n.id===b.dataset.node);modal('结论节点与依赖','<pre>'+esc(JSON.stringify(node,null,2))+'</pre>');} }; });
   if (scroll) switchView('trace');
 }

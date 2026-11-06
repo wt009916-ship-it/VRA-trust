@@ -106,6 +106,30 @@ def report_pdf(report):
         section('05.2  独立碳派生版本（不改写原仿真）')
         for key in ['carbon_id', 'run_id', 'factor_hash', 'source_result_hash', 'calculator_version', 'timestamp', 'energyplus_calls']:
             story.append(para(key + ': ' + str(carbon['provenance'].get(key))))
+    sizing = metrics.get('zone_design_loads')
+    if sizing:
+        section('05.3  分区设计显热负荷（模型情景）')
+        rows([('状态', sizing['status']), ('项目适用性', '待专业复核，不是当地规范设计或设备选型结论'),
+              ('模型 / SQL SHA256', sizing['model_sha256'] + ' / ' + sizing['sql_sha256']),
+              ('方法 / 解析器', sizing['policy_version'] + ' / ' + sizing['parser_sha256'])])
+        if sizing['status'] == 'calculated_model_scenario':
+            if len(sizing['rows']) > 100:
+                story.append(para('PDF展示前100行，共' + str(len(sizing['rows'])) + '行；完整结果见同源JSON报告。'))
+            for item in sizing['rows'][:100]:
+                peak = item['peak']
+                rows([('分区 / 工况', item['zone_name'] + ' / ' + ('采暖' if item['load_type'] == 'Heating' else '制冷')),
+                      ('计算显热 / 用户调整后 kW', numeric(item['calculated_sensible_load_W'] / 1000) + ' / ' + numeric(item['user_adjusted_sensible_load_W'] / 1000)),
+                      ('峰值设计日 / 时刻', (peak['design_day'] + ' / ' + peak['date_time']) if peak else '无正负荷峰值'),
+                      ('分区倍率 / 分组倍率', str(item['zone_multiplier']) + ' / ' + str(item['zone_list_multiplier']) + '；已包含于原生负荷'),
+                      ('SQL 行 / 单位', str(item['locator']['row_id']) + ' / W')])
+        else:
+            story.append(para('未取得可核验的分区负荷：' + sizing.get('reason', '缺少依据')))
+        if sizing['site_comparison'] == 'declared_site_differs_from_weather':
+            story.append(para('IDF 声明位置与 EPW 站点不同；须核对设计日来源及原生引擎采用的位置，不能按天气站名称重标设计负荷。'))
+        for day in (sizing.get('basis') or {}).get('design_days', []):
+            story.append(para(day['name'] + '：最高干球 ' + str(day['maximum_dry_bulb_C']) + ' °C，日温差 ' + str(day['daily_dry_bulb_range_K']) + ' K；统计来源未独立核验。'))
+        for note in sizing['limitations']:
+            story.append(para(note))
     section("06  SQL 来源定位")
     for key, locator in metrics.get("locators", {}).items():
         story.append(para(key + " : " + " / ".join(str(locator.get(k, "")) for k in ["table", "row", "column", "unit", "raw_value"])))
