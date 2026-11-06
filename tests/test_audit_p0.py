@@ -47,7 +47,9 @@ def test_free_text_is_not_reported_as_completed_engineering_task(client):
     task = client.app.state.agent.start(pid, Chat(message='Compute structural safety and remember room Q731'), background=False)
     assert task['answer']['workflow_completed'] is True
     assert task['answer']['task_completion'] == 'not_assessed'
-    assert task['answer']['execution_scope'] == 'evidence_gate_only'
+    assert task['answer']['execution_scope'] == 'open_task_unverified'
+    assert task['answer']['can_simulate'] is None
+    assert not any(e['tool'] == 'evidence_validate' for e in task['events'])
     assert task['answer']['task_notice']
 
 

@@ -33,3 +33,9 @@ export function professionalArtifactMarkup(a) {
   const thermal=a.kind==='thermal_review',path=thermal?'thermal':'lifecycle';
   return `<section class="agent-artifact" aria-label="${thermal?'已核验的热工构造结果':'已核验的阶段碳清单结果'}"><h3>${esc(a.name)}</h3><p><strong>${esc(statusText[a.status]||a.status)}</strong> · ${esc(a.scope)}</p>${thermal?thermalMarkup(a):lifecycleMarkup(a)}<p class="subtle">数值至多显示12位有效数字，不代表输入精度；完整原始值保留在同源记录中。</p><small class="mono">${esc(a.record_id)} · 核验时间 ${esc(a.checked_at)}</small><p><a href="/api/projects/${encodeURIComponent(a.project_id)}/${path}/${encodeURIComponent(a.record_id)}/report.html" target="_blank" rel="noopener">打开同源${thermal?'热工':'碳清单'}报告</a></p></section>`;
 }
+
+export function checkedDeliveryMarkup(answer) {
+  if(!answer?.checked_statements)return '';
+  const periods={steady_state:'稳态构造',study_period:'整个评估期',quote_date:'清单声明日期'};
+  return `<section aria-label="经过核验的专业说明"><h3>模型选择 · 当前记录核验</h3><p>以下字段已与当前记录逐项核对。自由问题的完整覆盖度及模型原始文字未获核验。</p>${answer.checked_statements.map(s=>`<h4>${esc(s.name)}</h4><dl>${s.facts.map(f=>`<dt>${esc(f.label)}</dt><dd>${f.period==='quote_date'?value(f.value):engineeringValue(f.value===null?null:Number(f.value))} ${esc(f.unit)} · ${esc(periods[f.period]||f.period)}${f.study_years!==null?' '+value(f.study_years)+' 年':''}${f.area_m2!==null?' · 面积分母 '+value(f.area_m2)+' m²':''}<small> 来源字段 ${esc(f.source_path)}</small></dd>`).join('')}</dl><small class="mono">${esc(s.record_id)}</small>`).join('')}</section>${(answer.artifacts||[]).map(professionalArtifactMarkup).join('')}`;
+}

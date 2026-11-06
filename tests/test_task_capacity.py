@@ -119,7 +119,7 @@ def test_persistent_agent_slots_prevent_new_instance_bypass(client):
     for _ in range(2):assert other.capacity.acquire(blocking=False)
     for _ in range(2):other.capacity.release()
     service.recover()
-    result=service.start(pid,Chat(message='inspect evidence'),background=False)
+    result=service.start(pid,Chat(message='inspect evidence',objective='inspect_evidence'),background=False)
     assert result['status']=='succeeded' and result['answer']['can_simulate'] is False
 
 
