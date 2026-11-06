@@ -292,14 +292,14 @@ def register_extensions(app, domain, auth):
     @app.get('/api/projects/{project_id}/agent-tasks')
     def agent_history(project_id: str):
         return [{k: task.get(k) for k in ('agent_id', 'question', 'mode', 'objective', 'status', 'created_at', 'answer', 'previous_agent_id')}
-                for task in domain.store.list('agent', project_id)[:20]]
+                for task in (agent.view(project_id, row['agent_id']) for row in domain.store.list('agent', project_id)[:20])]
 
     @app.get('/api/projects/{project_id}/agent/{agent_id}')
     def agent_task(project_id: str, agent_id: str):
         task = domain.store.get('agent', agent_id)
         if task['project_id'] != project_id:
             raise HTTPException(404)
-        return task
+        return agent.view(project_id, agent_id)
 
     @app.get('/api/projects/{project_id}/carbon-factors')
     def factor(project_id: str):
