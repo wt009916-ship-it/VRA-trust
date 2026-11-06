@@ -187,7 +187,7 @@ def test_api_auth_project_integrity_and_agent_guards(client):
     assert client.get('/api/projects/'+other+'/schedules/'+sid).status_code==409
     agent=client.app.state.agent
     assert agent.call(pid,'schedule_read',{'schedule_id':sid},False)['result']['planned']['duration_days']=='7'
-    assert agent.call(pid,'schedule_list',{},False)[0]['schedule_id']==sid
+    assert agent.call(pid,'schedule_list',{},False)['records'][0]['schedule_id']==sid
     with pytest.raises(ToolRefusal):agent.call(other,'schedule_read',{'schedule_id':sid},False)
     with pytest.raises(ValueError):agent.call(pid,'schedule_read',{'schedule_id':sid,'duration_days':1},False)
     b['tasks'][0]['duration_days']=-1

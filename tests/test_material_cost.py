@@ -167,7 +167,7 @@ def test_agent_reads_costs_without_inventing_prices_or_cross_project_access(clie
     from backend.agent import ToolRefusal
     pid=create_project(client)['project_id'];base='/api/projects/'+pid
     record=client.post(base+'/material-costs',json=estimate()).json();agent=client.app.state.agent
-    assert agent.call(pid,'material_cost_list',{},False)[0]['cost_id']==record['cost_id']
+    assert agent.call(pid,'material_cost_list',{},False)['records'][0]['cost_id']==record['cost_id']
     args={'material_cost_id':record['cost_id']}
     assert agent.call(pid,'material_cost_read',args,False)['result']['material_total']=='4651.85'
     other=create_project(client)['project_id']

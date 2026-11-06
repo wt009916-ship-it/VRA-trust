@@ -129,7 +129,8 @@ def test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs(
     for tool in tools:
         name = tool['function']['name']; schema = tool['function']['parameters']
         assert schema['additionalProperties'] is False
-        assert schema['properties'] == {k: source['properties'][k] for k in TOOL_FIELDS[name]}
+        # Only field display titles are omitted; every constraint and reachable definition is unchanged.
+        assert schema['properties'] == {k:{a:b for a,b in source['properties'][k].items() if a!='title'} for k in TOOL_FIELDS[name]}
         references = set()
         def walk(node):
             if isinstance(node, dict):

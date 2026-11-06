@@ -2,6 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {checkedDeliveryMarkup, staleReasonMarkup} from '../src/agent-artifacts.js';
 
+test('missing catalog evidence is separate from zero numerical results and capability rejection',()=>{
+ const html=checkedDeliveryMarkup({checked_missing:[{kind:'thermal',scope:'entire_project_kind',record_id:null,checked_at:'2026-11-07'},
+  {kind:'cost',scope:'requested_record_in_project',record_id:'cost_<script>',checked_at:'2026-11-07'}]});
+ assert.ok(html.includes('当前记录缺失说明') && html.includes('完整项目目录中没有该类记录'));
+ assert.ok(html.includes('不能据此判断其他项目') && html.includes('不代表工程计算完成'));
+ assert.ok(html.includes('不自动重试写操作') && html.includes('缺失结果不记为零'));
+ assert.ok(!html.includes('<script>') && !html.includes('m²·K/W') && !html.includes('已核验的材料清单结果'));
+});
+
 test('stale provenance explains observed revision without turning method scope into cause',()=>{
  const html=staleReasonMarkup({stale_details:[{code:'project_revision',subject_id:'project_<script>',expected:1,current:2},
    {code:'evidence_rejected',subject_id:'evidence_a',expected:'confirmed',current:'rejected'}]});

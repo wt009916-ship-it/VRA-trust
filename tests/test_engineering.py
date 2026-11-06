@@ -191,7 +191,7 @@ def test_agent_reads_current_calculation_and_refuses_foreign_project(client):
     from backend.agent import ToolRefusal
     pid=create_project(client)['project_id']; base='/api/projects/'+pid
     r=client.post(base+'/beam-analyses',json=beam()).json();agent=client.app.state.agent
-    assert agent.call(pid,'beam_analysis_list',{},False)[0]['engineering_id']==r['engineering_id']
+    assert agent.call(pid,'beam_analysis_list',{},False)['records'][0]['engineering_id']==r['engineering_id']
     read=agent.call(pid,'beam_analysis_read',{'engineering_id':r['engineering_id']},False)
     assert read['result']['metrics']['max_deflection_m']==pytest.approx(.0125)
     assert read['result']['structural_safety']=='NOT_ASSESSED'
