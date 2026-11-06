@@ -250,3 +250,63 @@ def test_incomplete_final_recheck_cannot_silently_drop_a_requested_scope(client)
     references=[agent_missing.assess(domain,pid,Missing(kind=k))['reference'] for k in ['thermal','cost']]
     with pytest.raises(ValueError,match='Incomplete absence recheck'):
         agent_missing.attach({},domain,pid,references,reader=lambda:{'checks':[]})
+
+
+def test_multiple_missing_scopes_are_one_atomic_read_with_all_scope_receipts(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    original=agent.store.connect;connections=[];statements=[]
+    def connect():
+        con=original();connections.append(con);con.set_trace_callback(statements.append);return con
+    monkeypatch.setattr(agent.store,'connect',connect)
+    result=agent.call(pid,'professional_missing',{'missing':{'kinds':KINDS,'finish':True}},False)
+    assert len(connections)==1 and len([s for s in statements if s.startswith('SELECT')])==2
+    assert result['snapshot_count']==1 and len(result['references'])==len(result['missing'])==6
+    assert [r['request']['kind'] for r in result['references']]==KINDS
+
+
+def test_atomic_missing_delivery_fits_budget_without_hiding_suboperations(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_inventory',{'kinds':KINDS}),
+        tool('professional_missing',{'missing':{'kinds':KINDS,'finish':True}})])
+    task=agent.start(pid,Chat(message='Check all six project catalogs',mode='provider'),background=False)
+    assert task['status']=='succeeded' and len(task['events'])==6
+    assert len(task['answer']['checked_missing'])==6 and task['answer']['task_completion']=='incomplete'
+    assert task['events'][4]['result']['snapshot_count']==task['events'][5]['result']['snapshot_count']==1
+
+
+def test_atomic_missing_rejects_whole_selection_when_one_kind_exists(client,monkeypatch):
+    pid=create_project(client)['project_id'];create_record(client,pid,'thermal');agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kinds':['cost','thermal'],'finish':True}}),
+                               {'role':'assistant','content':'Read existing thermal record before proceeding.'}])
+    task=agent.start(pid,Chat(message='Check availability',mode='provider'),background=False)
+    assert not task['missing_deliveries'] and task['events'][2]['status']=='failed'
+    assert 'Record available' in task['events'][2]['error']
+
+
+@pytest.mark.parametrize('payload',[{'kinds':[]},{'kinds':['thermal','thermal']},
+    {'kind':'thermal','kinds':['cost']},{'kinds':['thermal'],'record_id':'thermal_'+'1'*32}])
+def test_atomic_missing_selection_rejects_ambiguous_scope(payload):
+    with pytest.raises(ValueError):Missing.model_validate(payload)
+
+
+def test_existing_catalog_reminds_model_before_missing_only_finish(client,monkeypatch):
+    pid=create_project(client)['project_id'];record=create_record(client,pid,'thermal');agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_inventory',{'kinds':['thermal','cost']}),
+        tool('professional_missing',{'missing':{'kind':'cost','finish':True}}),
+        tool('thermal_read',{'thermal_id':record['thermal_id']}),
+        tool('professional_deliver',{'delivery':{**delivery(record),'finish':True}})])
+    task=agent.start(pid,Chat(message='Read thermal value and missing procurement scope',mode='provider'),background=False)
+    assert task['status']=='succeeded' and task['available_delivery_reminded']==['thermal']
+    assert len(task['answer']['checked_statements'])==len(task['answer']['checked_missing'])==1
+
+
+def test_atomic_absence_history_rechecks_each_scope_after_one_kind_is_created(client,monkeypatch):
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('professional_missing',{'missing':{'kinds':['thermal','cost','operation'],'finish':True}})])
+    task=agent.start(pid,Chat(message='Check three missing kinds',mode='provider'),background=False)
+    saved=agent.store.get('agent',task['agent_id'])
+    create_record(client,pid,'thermal')
+    current=agent.view(pid,task['agent_id'])
+    assert [r['kind'] for r in current['answer']['checked_missing']]==['cost','operation']
+    assert len(current['answer']['verification'])==3 and not current['answer']['verification'][0]['passed']
+    assert agent.store.get('agent',task['agent_id'])==saved

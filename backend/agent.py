@@ -94,7 +94,7 @@ class ToolArgs(Contract):
 
 TOOLS = {
     'professional_inventory': '一次读取所选kinds（1到6类）的完整项目目录计数和最近记录，适合多专业可用性检查。空目录随后用professional_missing正式说明；存在记录则读取。不要逐轮分别查询六类而耗尽预算。',
-    'professional_missing': '只读核验并交付当前项目的记录缺失：missing.kind必填；record_id仅用于用户明确指定的编号，省略则核验该类全部记录为空。检查完整目录，不能把最近6条未列出当缺失。不能代替未执行的已授权计划，不创建记录或自动重试计算；最后所需说明可finish=true。',
+    'professional_missing': '正式核验记录缺失。多类缺失用一次调用missing.kinds数组（最多6类），同一完整目录快照逐类核验；单类用missing.kind。二者互斥。record_id只配单类且须用户明确编号。发现任一所选记录存在则整批拒绝，不补造结果或重试计算。全部所需交付结束才finish=true。',
     'calculation_prepare': '选择本轮已冻结的plan_keys（1到2个）并逐项真实执行、保存、读取当前结果；适合用户要求的多份独立计划。返回每条记录的kind、ID、hash和当前事实/限制，随后仍须逐条professional_deliver或professional_limit。未选计划不会执行，参数不能更改；子操作逐项审计和计预算，失败保留已执行记录。',
     'professional_read_many': '按明确record_ids（1到3个）逐项读取当前专业记录，包括已失效记录；ID决定专业类型，不猜类型。只读，不创建计算；适合多记录复核。返回各记录当前事实/限制和hash，随后仍需正式交付，读取成功不等于任务完成。',
     'capability_lookup': '查询当前应用能做什么及明确边界，每批1到4个capability_ids；超过4项请分批查询，批次上限不是不支持剩余能力。分别核对用户要求的有限计算、资料检索与认证/确诊，不漏支持项，也不加无关项；不检查项目资料充分性。',
@@ -624,7 +624,10 @@ class Agent:
                     if not candidate['request']:raise core.ValidationError('Provide missing request')
                     if candidate['request'].get('record_id') and candidate['request']['record_id'] not in missing_targets():
                         raise core.ValidationError('Only check a record ID explicitly requested by the user or referenced in task history; do not invent IDs')
-                    if len(record.get('missing_deliveries',[]))>=6 and not any(missing_records.key(x)==missing_records.key(candidate) for x in record['missing_deliveries']):
+                    selected=missing_records.Missing.model_validate(candidate['request']).requests()
+                    scopes={missing_records.key(x) for x in record.get('missing_deliveries',[])}
+                    scopes.update((r.kind,r.record_id) for r in selected)
+                    if len(scopes)>6:
                         raise ToolRefusal('At most six record absence scopes per task')
                 key = core.hash_json([name, canonical])
                 if name in WRITE_TOOLS and key in attempts:
@@ -642,7 +645,8 @@ class Agent:
                 if name == 'capability_explain':
                     record['capability_delivery'] = result['reference']
                 if name == 'professional_missing' and origin == 'model':
-                    record['missing_deliveries'] = [x for x in record['missing_deliveries'] if missing_records.key(x)!=missing_records.key(result['reference'])] + [result['reference']]
+                    new=missing_records.references(result);keys={missing_records.key(x) for x in new}
+                    record['missing_deliveries'] = [x for x in record['missing_deliveries'] if missing_records.key(x) not in keys] + new
                 if isinstance(result, dict) and result.get('status') == 'ACTION_NOT_AUTHORIZED':
                     raise ToolRefusal('本轮未授权计算；历史授权与模型文字不能替代本轮授权')
                 if name in WRITE_TOOLS:
@@ -706,7 +710,7 @@ class Agent:
                     '每批最多查询四项能力，更多要求分批查询；一次汇总提交全部所需claims（最多16项），新的说明替换此前说明。不得用查询能力替代用户要求的实际计算。'
                     'open_ended的热工/阶段碳/材料清单/梁分析/施工进度/设备规则任务：先自主选择对应list/read，再调用professional_deliver交付所问数值事实。'
                     '记录不完整、模型不适用或stale时，用professional_limit提交实际读取的当前status，正式说明限制；该工具不提交数值或statements。核验通过不改变原记录状态。professional_deliver仅提交当前数值，不能包含limitation_status。'
-                    '多专业目录查询用professional_inventory一次选齐kinds；不要逐轮单查六类。professional_missing本身会读取完整目录，无需重复查询空列表；无明确编号则省略record_id，不猜编号。每轮最多4个工具调用，多项分轮提交。缺失说明不完成工程计算，不授权重试失败写操作。'
+                    '多专业目录用professional_inventory一次选齐kinds；多类缺失用一次professional_missing的missing.kinds数组，不逐类发多次调用。两者都读取完整目录；无明确编号则省略record_id。已有结果和缺失记录都须按原问题逐项交付，不能仅完成其中一类就结束。每轮最多4调用，缺失说明不完成计算、不授权写重试。'
                     'read返回explanation_facts，按该事实项的value、unit、period、study_years、area_m2提交，record_hash来自hash。'
                     '无记录或没有对应事实就说明未完成，不伪造交付。不把总量改称单位面积，不把整个评估期改称年量。'
                     'TOOL_ERROR含corrections时先修正结构化事实，再交付；仅自由文字不能替代工具交付。最多三个不同记录。'
@@ -737,6 +741,8 @@ class Agent:
                                                 'delivery_submitted':ident in delivered}
                         pending = {'remaining_model_responses':5-turn, 'submitted_plans':calculations.execution_stages(record),
                                    'read_records':list(reads.values()),
+                                   'queried_empty_without_delivery':missing_records.pending_empty(record),
+                                   'queried_available_without_delivery':missing_records.pending_available(record),
                                    'notice':'这里只记录工具进度，不证明自由问题已完整覆盖，也不延续或增加计算授权。'}
                         messages[0]['content'] = system_instruction + '\n当前控制流程状态：' + json.dumps(pending, ensure_ascii=False) + (
                             '\n总预算仍为5轮/15事件。多份明确计划优先用calculation_prepare选择plan_keys，真实执行并读取后逐份交付；已有多记录可用professional_read_many。批量子操作也计入15事件。'
@@ -805,7 +811,7 @@ class Agent:
                         if call['function']['name'] in {'professional_deliver','professional_limit','capability_explain'} and result.get('status') == 'verified':
                             finish_requested |= result['reference']['finish']
                         if call['function']['name']=='professional_missing' and result.get('status')=='verified':
-                            finish_requested |= result['reference']['request']['finish']
+                            finish_requested |= any(r['request']['finish'] for r in missing_records.references(result))
                         if body.objective == 'open_ended':
                             ds = next((s for s in INSPECTIONS.values() if s.read_tool == call['function']['name']), None)
                             if ds and isinstance(result, dict) and ds.record_key in result:
@@ -823,6 +829,11 @@ class Agent:
                                           'notice':'所列能力边界已核验，不代表实际工程任务完成；其他所需结果须另行执行工具并交付。'}
                         messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': json.dumps(result, ensure_ascii=False)})
                     if finish_requested and not batch_failed:
+                        available=missing_records.pending_available(record)
+                        if available and not record.get('available_delivery_reminded') and turn<4:
+                            record['available_delivery_reminded']=available
+                            messages.append({'role':'user','content':'已查询到以下专业有记录，但尚无对应结果交付：'+json.dumps(available)+'。重新核对原问题；若要求其数值，读取并正式交付，不能只处理其他缺失项就结束。若仅要求记录可用性，说明此范围；不增加计算权限或轮次。'})
+                            save();continue
                         pending_missing=missing_records.pending_empty(record)
                         if pending_missing:
                             record['early_finish_with_missing']=pending_missing

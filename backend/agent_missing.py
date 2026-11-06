@@ -11,15 +11,27 @@ from .agent_semantics import inspection
 
 
 class Missing(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation'] | None = None
+    kinds: list[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']] | None = Field(default=None,min_length=1,max_length=6)
     record_id: str | None = Field(default=None, pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
     finish: StrictBool = False
 
     @model_validator(mode='after')
     def matching_kind(self):
+        if (self.kind is None)==(self.kinds is None):
+            raise ValueError('Select either one kind or multiple kinds, not both')
+        if self.kinds is not None and (len(set(self.kinds))!=len(self.kinds) or self.record_id is not None):
+            raise ValueError('Multiple kinds must be distinct and cannot select a record ID')
         if self.record_id and not self.record_id.startswith(self.kind+'_'):
             raise ValueError('Record identifier must match the selected kind')
         return self
+
+    def requests(self):
+        return [Missing(kind=k,finish=self.finish) for k in self.kinds] if self.kinds else [self]
+
+
+def references(result):
+    return result.get('references') or [result['reference']]
 
 
 def snapshot_many(domain, pid, kinds):
@@ -79,6 +91,11 @@ def key(reference):
 
 def assess(domain, pid, request, captured=None):
     if not request: raise core.ValidationError('Provide missing kind and optional explicit record_id')
+    if request.kinds:
+        snapshots=snapshot_many(domain,pid,request.kinds)
+        results=[assess(domain,pid,r,snapshots[r.kind]) for r in request.requests()]
+        return {'status':'verified','references':[r['reference'] for r in results],
+                'missing':[r['missing'] for r in results],'finish':request.finish,'snapshot_count':1}
     records, digest = captured if captured is not None else snapshot(domain, pid, request.kind)
     record_key = inspection(request.kind).record_key
     if (request.record_id is None and records) or any(r[record_key]==request.record_id for r in records):
@@ -149,3 +166,13 @@ def pending_empty(record):
                 if event['tool']==spec.list_tool and isinstance(result,dict):last[kind]=result['total_count']
                 if event['tool']==spec.read_tool:read.add(kind)
     return sorted(kind for kind,count in last.items() if count==0 and kind not in delivered|read)
+
+
+def pending_available(record):
+    """A bounded reminder, not an inferred interpretation of the user's requested facts."""
+    catalogs={}
+    for event in record['events']:
+        if event['status']=='succeeded' and event['tool']=='professional_inventory':
+            for catalog in event['result']['catalogs']:catalogs[catalog['kind']]=catalog['total_count']
+    delivered={r['kind'] for r in record.get('professional_deliveries',[])}
+    return sorted(k for k,count in catalogs.items() if count and k not in delivered)
