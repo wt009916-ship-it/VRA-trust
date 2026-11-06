@@ -2,6 +2,15 @@ import {escape as esc} from './api.js';
 import {engineeringArtifactMarkup} from './agent-engineering.js';
 
 const value=x=>esc(x??'—');
+export function staleReasonMarkup(record) {
+  const labels={project_revision:'项目声明版本已变化',calculator_version:'计算器或来源核验版本已变化',
+    evidence_revision:'依据的版本或内容摘要已变化',evidence_rejected:'依据已撤回',evidence_missing:'依据记录不可用',
+    evidence_project_mismatch:'依据项目归属不一致',source_file_revision:'原件记录已变化',source_file_unavailable:'原件缺失或完整性核验失败'};
+  if(record.stale_details?.length)return '<ul>'+record.stale_details.map(d=>'<li>'+esc(labels[d.code]||'来源核验未通过')+
+    (d.code==='project_revision'?'：v'+value(d.expected)+' → v'+value(d.current):'')+
+    ' <small class="mono">'+esc(d.subject_id)+'</small></li>').join('')+'</ul>';
+  return record.stale_reasons?.length?'<p>失效依据：'+record.stale_reasons.map(esc).join('、')+'</p>':'';
+}
 export function costArtifactMarkup(artifact) {
   if(!artifact || artifact.kind!=='material_cost_review')return '';
   const status={calculated:'当前清单完整',incomplete:'缺参 · 合计不可用',stale:'来源或版本已变化'};
@@ -43,6 +52,6 @@ export function checkedDeliveryMarkup(answer) {
   const section=checked.length?`<section aria-label="经过核验的专业说明"><h3>模型选择 · 当前记录核验</h3><p>以下字段已与当前记录逐项核对。自由问题的完整覆盖度及模型原始文字未获核验。</p>${checked.map(s=>`<h4>${esc(s.name)}</h4><dl>${s.facts.map(f=>`<dt>${esc(f.label)}</dt><dd>${f.period==='quote_date'?value(f.value):engineeringValue(f.value===null?null:Number(f.value))} ${esc(f.unit)} · ${esc(periods[f.period]||f.period)}${f.study_years!==null?' '+value(f.study_years)+' 年':''}${f.area_m2!==null?' · 面积分母 '+value(f.area_m2)+' m²':''}<small> 来源字段 ${esc(f.source_path)}</small></dd>`).join('')}</dl><small class="mono">${esc(s.record_id)}</small>`).join('')}</section>`:'';
   const limitationStates={stale:'来源或版本已失效',incomplete:'资料不完整',outside_model_screen:'超出模型适用范围',constraints_unresolved:'资源约束未解决',incomplete_progress:'进度情景不完整',insufficient_evidence:'证据不充分',events_detected:'检出规则事件'};
   const limits=answer.checked_limitations||[];
-  const limitations=limits.length?`<section aria-label="当前记录限制说明"><h3>限制说明已核验</h3><p>核验的是当前限制；不改变记录状态，不代表工程结果有效，也不会恢复历史数值。</p>${limits.map(r=>`<article><h4>${esc(limitationStates[r.state]||r.state)}</h4><p>${esc(r.scope)}</p>${r.state==='stale'?`<p>历史数值不可交付。请先复核来源变化，再另行提交计算。</p>${r.stale_reasons?.length?`<p>失效依据：${r.stale_reasons.map(esc).join('、')}</p>`:''}`:''}<small class="mono">${esc(r.record_id)}</small></article>`).join('')}</section>`:'';
+  const limitations=limits.length?`<section aria-label="当前记录限制说明"><h3>限制说明已核验</h3><p>核验的是当前限制；不改变记录状态，不代表工程结果有效，也不会恢复历史数值。</p>${limits.map(r=>`<article><h4>${esc(limitationStates[r.state]||r.state)}</h4><p>${esc(r.scope)}</p>${r.state==='stale'?`<p>历史数值不可交付。请先复核来源变化，再另行提交计算。</p>${staleReasonMarkup(r)}`:''}<small class="mono">${esc(r.record_id)}</small></article>`).join('')}</section>`:'';
   return section+limitations+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
 }

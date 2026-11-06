@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 from typing import Literal
 from pydantic import Field, StrictFloat, StrictInt, model_validator
+from .calculation_provenance import validity, persist, version as provenance_version
 from . import core
 from .schema import Contract
 
@@ -133,7 +134,7 @@ class Lifecycle:
     def __init__(self, domain):
         self.domain, self.store = domain, domain.store
 
-    def save(self, pid, body):
+    def save(self, pid, body, *, expected_bindings=None):
         project = self.store.get('project', pid)
         if body.region != project['building']['region'] or not math.isclose(body.area_m2, project['building']['area_m2'], rel_tol=1e-9):
             raise core.ValidationError('Inventory region/area must match current project declaration')
@@ -152,9 +153,9 @@ class Lifecycle:
             evidence.append(ev)
         obj = {'lifecycle_id': 'lifecycle_'+uuid.uuid4().hex, 'project_id': pid, 'project_revision': project['revision'],
             'input': body.model_dump(), 'result': calculate(body), 'source_snapshot': evidence, 'import_source': imported,
-            'calculator_hash': core.sha(Path(__file__)), 'created_at': core.now()}
+            'calculator_hash': provenance_version(Path(__file__)), 'created_at': core.now()}
         obj['hash'] = core.hash_json(obj)
-        self.store.put('lifecycle', obj)
+        persist(self.domain, 'lifecycle', obj, expected_bindings)
         return self.view(pid, obj['lifecycle_id'])
 
     def view(self, pid, lid):
@@ -163,21 +164,9 @@ class Lifecycle:
             raise core.ValidationError('Cross-project lifecycle record rejected')
         if core.hash_json({k:v for k,v in obj.items() if k not in {'hash','revision'}}) != obj['hash']:
             raise core.ValidationError('Lifecycle record integrity failed')
-        stale = obj['calculator_hash'] != core.sha(Path(__file__)) or obj['project_revision'] != self.store.get('project',pid)['revision']
-        if obj.get('import_source'):
-            try:
-                self.domain.file_record(pid, obj['import_source']['file_id'])
-            except (OSError, ValueError, KeyError):
-                stale = True
-        for old in obj['source_snapshot']:
-            ev = self.store.get('evidence', old['evidence_id'])
-            stale |= ev['review_state'] == 'rejected' or ev['revision'] != old['revision'] or ev['hash'] != old['hash']
-            if ev['source_file']:
-                try:
-                    self.domain.file_record(pid, ev['source_file'])
-                except (OSError, ValueError, KeyError):
-                    stale = True
-        return {**obj, 'status': 'stale' if stale else obj['result']['status'], 'result': None if stale else obj['result']}
+        provenance = validity(self.domain, obj, provenance_version(Path(__file__)))
+        stale = provenance['stale_reasons']
+        return {**obj, **provenance, 'status': 'stale' if stale else obj['result']['status'], 'result': None if stale else obj['result']}
 
 
 def report(record):

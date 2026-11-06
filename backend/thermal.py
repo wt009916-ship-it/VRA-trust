@@ -8,6 +8,7 @@ from typing import Literal
 
 from pydantic import Field, StrictFloat, model_validator
 
+from .calculation_provenance import validity, persist, version as provenance_version
 from . import core
 from .schema import Contract
 
@@ -83,14 +84,14 @@ def calculate(body):
 
 
 def version():
-    return core.sha(Path(__file__))
+    return provenance_version(Path(__file__))
 
 
 class Thermal:
     def __init__(self, domain):
         self.domain, self.store = domain, domain.store
 
-    def save(self, project_id, body):
+    def save(self, project_id, body, *, expected_bindings=None):
         project = self.store.get('project', project_id)
         snapshots = []
         for eid in sorted({layer.evidence_id for layer in body.layers if layer.evidence_id}):
@@ -106,7 +107,7 @@ class Thermal:
                'project_revision': project['revision'], 'input': body.model_dump(), 'result': calculate(body),
                'calculator_version': version(), 'evidence_snapshot': snapshots, 'created_at': core.now()}
         obj['hash'] = core.hash_json(obj)
-        record = self.store.put('thermal', obj)
+        record = persist(self.domain, 'thermal', obj, expected_bindings)
         return self.view(project_id, record['thermal_id'])
 
     def view(self, project_id, thermal_id):
@@ -116,25 +117,13 @@ class Thermal:
         payload = {k: v for k, v in obj.items() if k not in {'hash', 'revision'}}
         if core.hash_json(payload) != obj['hash']:
             raise core.ValidationError('Thermal record integrity failed')
-        stale = []
-        if obj['calculator_version'] != version():
-            stale.append('calculator_version')
-        if self.store.get('project', project_id)['revision'] != obj['project_revision']:
-            stale.append('project_revision')
-        for old in obj['evidence_snapshot']:
-            current = self.store.get('evidence', old['evidence_id'])
-            if current['review_state'] == 'rejected' or (old['revision'], old['hash']) != (current['revision'], current['hash']):
-                stale.append(old['evidence_id'])
-            if current['source_file']:
-                try:
-                    self.domain.file_record(project_id, current['source_file'])
-                except (OSError, core.ValidationError, KeyError):
-                    stale.append(old['evidence_id'] + ':file')
+        provenance = validity(self.domain, obj, version())
+        stale = provenance['stale_reasons']
         verified = bool(obj['evidence_snapshot']) and all(
             layer['evidence_id'] and any(ev['evidence_id'] == layer['evidence_id'] and ev['review_state'] == 'confirmed'
                 and ev['status'] not in {'ASSUMED', 'AI_INFERRED', 'MISSING'} for ev in obj['evidence_snapshot']) for layer in obj['input']['layers'])
         return {**obj, 'status': 'stale' if stale else obj['result']['status'],
-                'result': None if stale else obj['result'], 'stale_reasons': stale,
+                'result': None if stale else obj['result'], **provenance,
                 'source_status': 'HUMAN_REVIEWED_SOURCES' if verified and not stale else 'USER_DECLARED',
                 'source_notice': '来源人工复核不代表材料性能实测或法定认证。'}
 

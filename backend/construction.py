@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, StrictFloat, field_validator, model_validator
+from .calculation_provenance import validity, persist, version as provenance_version
 from . import core
 from .domain import identifier
 from .schema import Contract
@@ -240,7 +241,7 @@ def calculate(body):
 class Schedules:
     def __init__(self,domain):self.domain,self.store=domain,domain.store
 
-    def save(self,pid,body):
+    def save(self,pid,body, *, expected_bindings=None):
         project=self.store.get('project',pid);sources=[];imported=None
         for eid in body.evidence_ids:
             ev=self.store.get('evidence',eid)
@@ -250,8 +251,8 @@ class Schedules:
         if body.import_file_id:imported,_=self.domain.file_record(pid,body.import_file_id)
         obj={'schedule_id':identifier('schedule'),'project_id':pid,'project_revision':project['revision'],
             'input':body.model_dump(),'result':calculate(body),'source_snapshot':sources,'import_source':imported,
-            'calculator_hash':core.sha(Path(__file__)),'created_at':core.now()}
-        obj['hash']=core.hash_json(obj);self.store.put('schedule',obj)
+            'calculator_hash':provenance_version(Path(__file__)),'created_at':core.now()}
+        obj['hash']=core.hash_json(obj);persist(self.domain, 'schedule', obj, expected_bindings)
         return self.view(pid,obj['schedule_id'])
 
     def view(self,pid,sid):
@@ -259,16 +260,9 @@ class Schedules:
         if obj['project_id']!=pid:raise core.ValidationError('Cross-project schedule rejected')
         if core.hash_json({k:v for k,v in obj.items() if k not in {'hash','revision'}})!=obj['hash']:
             raise core.ValidationError('Schedule integrity check failed')
-        stale=obj['project_revision']!=self.store.get('project',pid)['revision'] or obj['calculator_hash']!=core.sha(Path(__file__))
-        files=[obj['import_source']['file_id']] if obj['import_source'] else []
-        for old in obj['source_snapshot']:
-            current=self.store.get('evidence',old['evidence_id'])
-            stale |= current['review_state']=='rejected' or current['revision']!=old['revision'] or current['hash']!=old['hash']
-            if current['source_file']:files.append(current['source_file'])
-        for fid in files:
-            try:self.domain.file_record(pid,fid)
-            except (ValueError,KeyError,OSError):stale=True
-        return {**obj,'status':'stale' if stale else obj['result']['status'],'result':None if stale else obj['result']}
+        provenance = validity(self.domain, obj, provenance_version(Path(__file__)))
+        stale = provenance['stale_reasons']
+        return {**obj, **provenance,'status':'stale' if stale else obj['result']['status'],'result':None if stale else obj['result']}
 
 
 def report(record):

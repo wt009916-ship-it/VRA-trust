@@ -34,7 +34,7 @@ def bounded_review(record, kind, key, scope):
             r['evaluated_samples'] > 0 and r['unknown_samples'] == 0 for r in result['rules'])
     route = {'engineering':'beam-analyses', 'schedule':'schedules', 'operation':'operations'}[kind]
     return {'kind':kind + '_review', 'record_id':record[key], 'project_id':record['project_id'],
-            'record_hash':record['hash'], 'name':record['input']['name'], 'status':record['status'],
+            'record_hash':record['hash'], 'name':record['input']['name'], 'status':record['status'], 'stale_reasons':record.get('stale_reasons', []), 'stale_details':record.get('stale_details', []),
             'checked_at':core.now(), 'source_status':'USER_DECLARED', 'scope':scope,
             'input':record['input'], 'result':result, 'verified':bool(result and complete),
             'report_path':f"/api/projects/{record['project_id']}/{route}/{record[key]}/report.html"}
@@ -43,19 +43,18 @@ def bounded_review(record, kind, key, scope):
 def thermal_review(record):
     result = record['result']
     return {'kind': 'thermal_review', 'record_id': record['thermal_id'], 'project_id': record['project_id'],
-            'record_hash': record['hash'], 'name': record['input']['name'], 'status': record['status'],
+            'record_hash': record['hash'], 'name': record['input']['name'], 'status': record['status'], 'stale_reasons':record.get('stale_reasons', []), 'stale_details':record.get('stale_details', []),
             'checked_at': core.now(), 'source_status': record['source_status'], 'source_notice': record['source_notice'],
             'input': record['input'], 'result': result,
             'verified': record['status'] == 'calculated' and result is not None and result['u_w_m2k'] is not None,
             'scope': '一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。',
-            'stale_reasons': record['stale_reasons'],
             'report_path': f"/api/projects/{record['project_id']}/thermal/{record['thermal_id']}/report.html"}
 
 
 def lifecycle_review(record):
     result = record['result']
     return {'kind': 'lifecycle_review', 'record_id': record['lifecycle_id'], 'project_id': record['project_id'],
-            'record_hash': record['hash'], 'name': record['input']['name'], 'status': record['status'],
+            'record_hash': record['hash'], 'name': record['input']['name'], 'status': record['status'], 'stale_reasons':record.get('stale_reasons', []), 'stale_details':record.get('stale_details', []),
             'checked_at': core.now(), 'source_status': 'USER_DECLARED',
             'input': record['input'], 'result': result,
             'verified': record['status'] == 'calculated' and result is not None and result['boundary_total_kgco2e'] is not None,

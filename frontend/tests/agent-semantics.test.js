@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {checkedDeliveryMarkup} from '../src/agent-artifacts.js';
+import {checkedDeliveryMarkup, staleReasonMarkup} from '../src/agent-artifacts.js';
+
+test('stale provenance explains observed revision without turning method scope into cause',()=>{
+ const html=staleReasonMarkup({stale_details:[{code:'project_revision',subject_id:'project_<script>',expected:1,current:2},
+   {code:'evidence_rejected',subject_id:'evidence_a',expected:'confirmed',current:'rejected'}]});
+ assert.ok(html.includes('项目声明版本已变化：v1 → v2'));
+ assert.ok(html.includes('依据已撤回') && !html.includes('<script>'));
+ assert.ok(!html.includes('资源约束') && !html.includes('安全'));
+});
 
 test('checked stale limitation remains distinct from an effective numerical result',()=>{
   const html=checkedDeliveryMarkup({checked_limitations:[{record_id:'thermal_test',state:'stale',scope:'One-dimensional wall',stale_reasons:['project_revision','<script>bad</script>']}],checked_statements:[],artifacts:[]});

@@ -1,5 +1,22 @@
 import {request} from './api.js';
 
+// Session-only UI preference. Never retain compute permission or submitted inputs.
+export function createAgentModePreference() {
+  let owner=null, project=null, selected='local';
+  return {
+    bind(mode, userId, projectId) {
+      if(!mode)return;
+      if(owner!==userId||project!==projectId){selected='local';owner=userId;project=projectId;}
+      mode.value=selected;
+      mode.onchange=()=>{
+        if(owner===userId&&project===projectId&&mode.isConnected)
+          selected=['local','provider','local_model'].includes(mode.value)?mode.value:'local';
+      };
+    },
+    clear(){owner=null;project=null;selected='local';}
+  };
+}
+
 let latestRequest=0;
 export async function refreshAgentMode(mode=document.querySelector('#agent-mode'),read=()=>request('/agent/status')) {
   if(!mode)return;

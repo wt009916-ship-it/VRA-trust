@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, StrictFloat, field_validator, model_validator
+from .calculation_provenance import validity, persist, version as provenance_version
 from . import core
 from .domain import identifier
 from .schema import Contract
@@ -238,7 +239,7 @@ class Operations:
                 sample.append(row)
             return {'file_id':fid,'name':file['name'],'hash':file['hash'],'headers':header,'sample_rows':sample,'note':'仅预览前5行；完整时间、数值和规则检查在分析时执行。'}
         except (UnicodeError,csv.Error,StopIteration) as exc:raise core.ValidationError('Malformed UTF-8 CSV') from exc
-    def save(self,pid,body):
+    def save(self,pid,body, *, expected_bindings=None):
         project=self.store.get('project',pid);file,path=self.domain.file_record(pid,body.file_id);snapshots=[]
         if path.suffix.lower()!='.csv':raise core.ValidationError('Operations input must be CSV')
         for eid in body.evidence_ids:
@@ -247,21 +248,15 @@ class Operations:
             if ev['source_file']:self.domain.file_record(pid,ev['source_file'])
             snapshots.append(ev)
         obj={'operation_id':identifier('operation'),'project_id':pid,'project_revision':project['revision'],'input':body.model_dump(),
-            'result':analyze(path,body),'file_snapshot':file,'source_snapshot':snapshots,'calculator_hash':core.sha(Path(__file__)),'created_at':core.now()}
-        obj['hash']=core.hash_json(obj);self.store.put('operation',obj);return self.view(pid,obj['operation_id'])
+            'result':analyze(path,body),'file_snapshot':file,'source_snapshot':snapshots,'calculator_hash':provenance_version(Path(__file__)),'created_at':core.now()}
+        obj['hash']=core.hash_json(obj);persist(self.domain, 'operation', obj, expected_bindings);return self.view(pid,obj['operation_id'])
     def view(self,pid,oid):
         obj=self.store.get('operation',oid)
         if obj['project_id']!=pid:raise core.ValidationError('Cross-project operations record rejected')
         if core.hash_json({k:v for k,v in obj.items() if k not in {'hash','revision'}})!=obj['hash']:raise core.ValidationError('Operations record integrity failed')
-        stale=obj['project_revision']!=self.store.get('project',pid)['revision'] or obj['calculator_hash']!=core.sha(Path(__file__))
-        files=[obj['file_snapshot']['file_id']]
-        for old in obj['source_snapshot']:
-            ev=self.store.get('evidence',old['evidence_id']);stale |= ev['review_state']=='rejected' or ev['revision']!=old['revision'] or ev['hash']!=old['hash']
-            if ev['source_file']:files.append(ev['source_file'])
-        for fid in files:
-            try:self.domain.file_record(pid,fid)
-            except (ValueError,KeyError,OSError):stale=True
-        return {**obj,'status':'stale' if stale else obj['result']['status'],'result':None if stale else obj['result']}
+        provenance = validity(self.domain, obj, provenance_version(Path(__file__)))
+        stale = provenance['stale_reasons']
+        return {**obj, **provenance,'status':'stale' if stale else obj['result']['status'],'result':None if stale else obj['result']}
 
 
 def report(record):
