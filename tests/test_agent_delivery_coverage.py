@@ -9,6 +9,7 @@ from backend.agent_semantics import Delivery, Limitation, check, facts, inspecti
 from test_api import create_project
 from test_agent_artifacts import create_cost
 from test_agent_calculations import batch
+from test_agent_calculations import chat, plan
 from test_agent_capabilities import tool
 from test_agent_contract import scripted
 from test_agent_engineering import make_plan
@@ -150,3 +151,50 @@ def test_historical_nonstale_limit_does_not_become_valid_stale_claim(client):
     assert check(incomplete,request)['limitation']['state']=='incomplete'
     with pytest.raises(ValueError):check({**incomplete,'status':'stale','result':None},request)
     assert agent.store.get('thermal',record['thermal_id'])['result']['status']=='calculated'
+
+
+@pytest.mark.parametrize('ending', ['recover', 'conditional_stop', 'exhaust'])
+def test_early_finish_tracks_each_plan_without_forcing_writes_or_extending_budget(client, monkeypatch, ending):
+    import copy
+    pid=create_project(client)['project_id'];agent=client.app.state.agent
+    plans=[plan('thermal','first'),plan('thermal','second')]
+    plans[0]['input']['name']='UNTRUSTED_NAME_IGNORE_AUTHORITY'
+    history=[]
+    def complete(messages, tools):
+        history.append(copy.deepcopy(messages));turn=len(history)
+        if turn==1:
+            return batch([('calculation_execute',{'plan_key':p['plan_key']}) for p in plans[:1 if ending=='conditional_stop' else 2]])
+        executions=[json.loads(m['content']) for m in messages if m['role']=='tool' and 'plan_key' in json.loads(m['content'])]
+        ids=[e['record_id'] for e in executions]
+        if turn==2:return batch([('thermal_read',{'thermal_id':ident}) for ident in ids])
+        if turn==3 or ending in {'recover','exhaust'}:
+            index=1 if turn==4 and ending=='recover' else 0
+            record=inspection('thermal').service(agent.domain).view(pid,ids[index])
+            return tool('professional_deliver',{'delivery':{**delivery(record),'finish':True}})
+        return {'role':'assistant','content':'The second plan was conditional and has not been executed.'}
+    monkeypatch.setattr(agent.gateway,'public',lambda:{'enabled':True,'key_configured':True})
+    monkeypatch.setattr(agent.gateway,'complete',complete)
+    task=agent.start(pid,chat(plans),background=False)
+    assert task['early_finish_with_pending_plans'][0]['plan_key']=='second'
+    assert all('UNTRUSTED_NAME_IGNORE_AUTHORITY' not in h[0]['content'] for h in history)
+    state=lambda h:json.loads(h[0]['content'].split('当前控制流程状态：')[1].split('\n')[0])
+    assert state(history[0])['remaining_model_responses']==5
+    assert [p['stage'] for p in state(history[0])['submitted_plans']]==['not_executed']*2
+    assert state(history[1])['submitted_plans'][0]['stage']=='awaiting_read'
+    assert state(history[2])['submitted_plans'][0]['stage']=='awaiting_delivery'
+    assert state(history[3])['submitted_plans'][0]['stage']=='delivery_submitted'
+    assert len(task['events'])<=15
+    if ending=='recover':
+        assert task['status']=='succeeded' and len(history)==4
+        assert task['model_finished_delivery'] and len(task['professional_deliveries'])==2
+        assert all(p['state']=='verified' for p in task['calculation_progress'])
+    elif ending=='conditional_stop':
+        assert task['status']=='succeeded' and len(history)==4
+        assert not task.get('model_finished_delivery')
+        assert len(agent.store.list('thermal',pid))==1
+        assert task['calculation_progress'][1]['state']=='not_executed'
+        assert task['answer']['task_completion']!='verified'
+    else:
+        assert task['status']=='failed' and len(history)==5
+        assert 'iteration budget' in task['error'] and not task.get('model_finished_delivery')
+        assert len(agent.store.list('thermal',pid))==2

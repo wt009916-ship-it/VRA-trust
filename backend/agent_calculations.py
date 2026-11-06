@@ -105,6 +105,23 @@ def execute(domain, pid, key, plans, frozen):
             'notice': '已保存真实计算记录；需读取当前结果并交付核验事实。保存成功不等于结果完整、来源独立核证或任务完成。'}
 
 
+def execution_stages(record):
+    """Task-local tool history, not a claim that the full user request is satisfied."""
+    delivered = {d['record_id'] for d in record.get('professional_deliveries', [])}
+    rows = []
+    for item in record.get('calculation_plan_snapshot', {}).get('items', []):
+        plan = item['plan'];spec = inspection(plan['kind'])
+        executions = [e['result'] for e in record['events'] if e['tool']=='calculation_execute'
+                      and e['status']=='succeeded' and e['result']['plan_key']==plan['plan_key']]
+        result = executions[-1] if executions else {}
+        ident = result.get('record_id')
+        read = bool(ident and any(e['tool']==spec.read_tool and e['status']=='succeeded'
+                    and e['result'][spec.record_key]==ident for e in record['events']))
+        stage = 'delivery_submitted' if ident in delivered else 'awaiting_delivery' if read else 'awaiting_read' if ident else 'not_executed'
+        rows.append({'plan_key':plan['plan_key'], 'kind':plan['kind'], 'record_id':ident, 'stage':stage})
+    return rows
+
+
 def progress(record, answer):
     """Saved writes remain visible on partial/failure; current validity needs a read."""
     verified = {a.get('record_id') or a.get('cost_id') for a in (answer or {}).get('artifacts', []) if a.get('verified')}
