@@ -1,0 +1,277 @@
+diff --git a/backend/backup.py b/backend/backup.py
+index 00c375d..e4bc540 100644
+--- a/backend/backup.py
++++ b/backend/backup.py
+@@ -73,7 +73,12 @@ def schema(con):
+ def check_database(con, entries, read_json):
+     with closing(sqlite3.connect(':memory:')) as reference:
+         reference.executescript(SCHEMA)
+-        if schema(con) != schema(reference):
++        legacy_schema = schema(reference)
++        reference.execute('CREATE INDEX records_catalog_scope ON records(kind,project_id)')
++        current_schema = schema(reference)
++        # Accept exactly the legacy or current trusted schema, never arbitrary
++        # indexes/triggers from an archive. The archive SQL is never executed.
++        if schema(con) not in (legacy_schema, current_schema):
+             raise ValueError('Unsupported database schema; do not execute archive migrations')
+     if con.execute('PRAGMA integrity_check').fetchall() != [('ok',)]:
+         raise ValueError('Database integrity check failed')
+diff --git a/backend/extensions.py b/backend/extensions.py
+index 105457b..3cb2a20 100644
+--- a/backend/extensions.py
++++ b/backend/extensions.py
+@@ -2,7 +2,7 @@
+ import json
+ import zipfile
+ from fastapi.responses import FileResponse, HTMLResponse
+-from fastapi import HTTPException, Request
++from fastapi import HTTPException, Request, Query
+ from .agent import Agent, Chat
+ from .gateway import Gateway, ProviderSettings
+ from .local_model import LocalModelSettings
+@@ -11,6 +11,7 @@ from .robustness import Robustness, Search, Actions
+ from .spatial import Spatial, Reconstruction
+ from .thermal import Thermal, Assembly, ThermalCompare, compare as compare_thermal, render_html as thermal_html
+ from .cad import Cad, Inspection, CurrentStates
++from .cad_catalog import CadCatalog
+ from .cad_union import IfcUnions, UnionRequest, union_report
+ from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, compare as lifecycle_compare, report as lifecycle_report
+ from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
+@@ -229,6 +230,19 @@ def register_extensions(app, domain, auth):
+     def lifecycle_html(project_id: str, lifecycle_id: str):
+         return lifecycle_report(lifecycle.view(project_id, lifecycle_id))
+ 
++    catalog = CadCatalog(domain.store)
++    app.state.cad_catalog = catalog
++
++    @app.get('/api/projects/{project_id}/cad-catalog')
++    def cad_catalog(project_id: str, limit: int = Query(default=20, ge=1, le=20),
++                    cursor: str | None = Query(default=None, max_length=1024)):
++        return catalog.page(project_id, 'cad', limit, cursor)
++
++    @app.get('/api/projects/{project_id}/ifc-union-catalog')
++    def union_catalog(project_id: str, limit: int = Query(default=20, ge=1, le=20),
++                      cursor: str | None = Query(default=None, max_length=1024)):
++        return catalog.page(project_id, 'union', limit, cursor)
++
+     @app.post('/api/projects/{project_id}/cad-current-states')
+     def cad_current_states(project_id: str, body: CurrentStates):
+         return cad.current_states(project_id, body)
+diff --git a/backend/store.py b/backend/store.py
+index 2028a39..d668b58 100644
+--- a/backend/store.py
++++ b/backend/store.py
+@@ -21,6 +21,7 @@ class Store:
+                     kind TEXT NOT NULL, id TEXT NOT NULL, revision INTEGER NOT NULL,
+                     project_id TEXT NOT NULL, body TEXT NOT NULL,
+                     PRIMARY KEY(kind,id,revision));
++                CREATE INDEX IF NOT EXISTS records_catalog_scope ON records(kind,project_id);
+                 CREATE TABLE IF NOT EXISTS jobs (
+                     id TEXT PRIMARY KEY, project_id TEXT NOT NULL, state TEXT NOT NULL,
+                     body TEXT NOT NULL, error TEXT);
+diff --git a/shared/schemas/openapi.json b/shared/schemas/openapi.json
+index 465becf..32589e0 100644
+--- a/shared/schemas/openapi.json
++++ b/shared/schemas/openapi.json
+@@ -4625,6 +4625,160 @@
+         ]
+       }
+     },
++    "/api/projects/{project_id}/cad-catalog": {
++      "get": {
++        "summary": "Cad Catalog",
++        "operationId": "cad_catalog_api_projects__project_id__cad_catalog_get",
++        "parameters": [
++          {
++            "name": "project_id",
++            "in": "path",
++            "required": true,
++            "schema": {
++              "type": "string",
++              "title": "Project Id"
++            }
++          },
++          {
++            "name": "limit",
++            "in": "query",
++            "required": false,
++            "schema": {
++              "type": "integer",
++              "maximum": 20,
++              "minimum": 1,
++              "default": 20,
++              "title": "Limit"
++            }
++          },
++          {
++            "name": "cursor",
++            "in": "query",
++            "required": false,
++            "schema": {
++              "anyOf": [
++                {
++                  "type": "string",
++                  "maxLength": 1024
++                },
++                {
++                  "type": "null"
++                }
++              ],
++              "title": "Cursor"
++            }
++          }
++        ],
++        "responses": {
++          "200": {
++            "description": "Successful Response",
++            "content": {
++              "application/json": {
++                "schema": {}
++              }
++            }
++          },
++          "422": {
++            "description": "Validation Error",
++            "content": {
++              "application/json": {
++                "schema": {
++                  "$ref": "#/components/schemas/HTTPValidationError"
++                }
++              }
++            }
++          },
++          "401": {
++            "description": "Authentication required"
++          },
++          "403": {
++            "description": "CSRF or origin rejected"
++          }
++        },
++        "security": [
++          {
++            "sessionCookie": []
++          }
++        ]
++      }
++    },
++    "/api/projects/{project_id}/ifc-union-catalog": {
++      "get": {
++        "summary": "Union Catalog",
++        "operationId": "union_catalog_api_projects__project_id__ifc_union_catalog_get",
++        "parameters": [
++          {
++            "name": "project_id",
++            "in": "path",
++            "required": true,
++            "schema": {
++              "type": "string",
++              "title": "Project Id"
++            }
++          },
++          {
++            "name": "limit",
++            "in": "query",
++            "required": false,
++            "schema": {
++              "type": "integer",
++              "maximum": 20,
++              "minimum": 1,
++              "default": 20,
++              "title": "Limit"
++            }
++          },
++          {
++            "name": "cursor",
++            "in": "query",
++            "required": false,
++            "schema": {
++              "anyOf": [
++                {
++                  "type": "string",
++                  "maxLength": 1024
++                },
++                {
++                  "type": "null"
++                }
++              ],
++              "title": "Cursor"
++            }
++          }
++        ],
++        "responses": {
++          "200": {
++            "description": "Successful Response",
++            "content": {
++              "application/json": {
++                "schema": {}
++              }
++            }
++          },
++          "422": {
++            "description": "Validation Error",
++            "content": {
++              "application/json": {
++                "schema": {
++                  "$ref": "#/components/schemas/HTTPValidationError"
++                }
++              }
++            }
++          },
++          "401": {
++            "description": "Authentication required"
++          },
++          "403": {
++            "description": "CSRF or origin rejected"
++          }
++        },
++        "security": [
++          {
++            "sessionCookie": []
++          }
++        ]
++      }
++    },
+     "/api/projects/{project_id}/cad-current-states": {
+       "post": {
+         "summary": "Cad Current States",
+diff --git a/tests/test_backup.py b/tests/test_backup.py
+index 25cc63d..8576ff4 100644
+--- a/tests/test_backup.py
++++ b/tests/test_backup.py
+@@ -321,3 +321,36 @@ def test_claimed_success_without_native_artifacts_is_not_recoverable(cold,tmp_pa
+     with closing(sqlite3.connect(root/'vra.sqlite3')) as con,con:
+         con.execute('INSERT INTO jobs VALUES (?,?,?,?,NULL)', ('run_'+'d'*32,pid,'succeeded','{}'))
+     with pytest.raises(ValueError,match='missing artifacts'):make(cold,tmp_path)
++
++
++@pytest.mark.parametrize('ddl', [
++    'CREATE INDEX records_catalog_scope ON records(project_id,kind)',
++    "CREATE INDEX records_catalog_scope ON records(kind,project_id) WHERE kind='cad'",
++    'CREATE INDEX unexpected_catalog ON records(kind,project_id)',
++    'CREATE TRIGGER records_catalog_scope AFTER INSERT ON records BEGIN DELETE FROM jobs; END',
++])
++def test_catalog_index_schema_allowlist_rejects_altered_sql(ddl):
++    with closing(sqlite3.connect(':memory:')) as con:
++        con.executescript(backup.SCHEMA)
++        con.execute(ddl)
++        with pytest.raises(ValueError, match='Unsupported database schema'):
++            backup.check_database(con, {}, lambda _: None)
++
++
++def test_legacy_backup_without_catalog_index_restores_then_app_builds_trusted_index(cold, tmp_path):
++    root, pid, fid, _ = cold
++    with closing(sqlite3.connect(root/'vra.sqlite3')) as con:
++        con.execute('DROP INDEX records_catalog_scope')
++        con.commit()
++        before = con.execute('SELECT * FROM records ORDER BY kind,id,revision').fetchall()
++    archive, digest = make(cold, tmp_path)
++    target = tmp_path/'restored_legacy'
++    backup.restore_backup(archive, target, digest)
++    with TestClient(create_app(target, start_worker=False)) as client:
++        result = client.post('/api/auth/login', json={'username':'backup_owner','password':'Backup-test-password-2026'})
++        assert result.status_code == 200
++        assert client.get(f'/api/projects/{pid}/files/{fid}').content == b'unit,value\nkWh,123.45\n'
++        assert client.get(f'/api/projects/{pid}/cad-catalog').json()['items'] == []
++    with closing(sqlite3.connect(target/'vra.sqlite3')) as con:
++        assert con.execute('SELECT * FROM records ORDER BY kind,id,revision').fetchall() == before
++        assert con.execute("SELECT sql FROM sqlite_master WHERE name='records_catalog_scope'").fetchone()[0] == 'CREATE INDEX records_catalog_scope ON records(kind,project_id)'

@@ -528,6 +528,15 @@ class Agent:
                 if not read_any or not any(r.get('explanation_facts') for _,r in read_records):available.discard('professional_deliver')
                 if not any(not ds.artifact(r)['verified'] for ds,r in read_records):available.discard('professional_limit')
             if not choices:available.discard('professional_read_many')
+            declared_missing = []
+            if body.read_requests:
+                # Existence checks have their own receipt. Never suggest an absence
+                # delivery for an availability-only scope or an already read record.
+                present = {r[ds.record_key] for ds, r in read_records}
+                absent = {r['request'].get('record_id') for r in record.get('missing_deliveries', [])}
+                declared_missing = [r for r in body.read_requests
+                                    if r.purpose == 'results' and r.record_id not in present | absent]
+                if not declared_missing:available.discard('professional_missing')
             result = self.tools(available)
             for tool in result:
                 name = tool['function']['name'];parameters = tool['function']['parameters']
@@ -541,6 +550,14 @@ class Agent:
                 if name == 'professional_missing':
                     parameters['required'] = ['missing']
                     parameters['$defs']['Missing']['properties']['record_id']['enum']=[None]+sorted(missing_targets())
+                    if body.read_requests:
+                        definition = parameters['$defs']['Missing']
+                        definition['properties']['record_id'] = {
+                            'type': 'string', 'enum': sorted({r.record_id for r in declared_missing})}
+                        definition['properties']['kinds'] = {
+                            'type': 'array', 'minItems': 1, 'maxItems': 1,
+                            'items': {'type': 'string', 'enum': sorted({r.kind for r in declared_missing})}}
+                        definition['required'] = ['kinds', 'record_id', 'finish']
                 if name == 'professional_inventory':parameters['required']=['kinds']
                 if name == 'requested_availability':
                     parameters['properties']['request_keys']={'type':'array','minItems':1,'maxItems':6,'uniqueItems':True,
