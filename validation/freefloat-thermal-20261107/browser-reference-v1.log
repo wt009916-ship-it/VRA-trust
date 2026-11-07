@@ -1,0 +1,22 @@
+### Result
+{"before":{"hidden":false,"visibility":"visible","animationFrame":false},"after":{"hidden":false,"visibility":"visible","animationFrame":false},"clickError":"TimeoutError: locator.click: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: '探索参考项目', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button id=\"load-reference\" class=\"nav-action subtle-action\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n"}
+### Ran Playwright code
+```js
+await (async (page) => {
+  const before = await page.evaluate(async () => ({hidden: document.hidden, visibility: document.visibilityState,
+    animationFrame: await Promise.race([new Promise(r => requestAnimationFrame(() => r(true))), new Promise(r => setTimeout(() => r(false), 500))])}));
+  await page.bringToFront();
+  const after = await page.evaluate(async () => ({hidden: document.hidden, visibility: document.visibilityState,
+    animationFrame: await Promise.race([new Promise(r => requestAnimationFrame(() => r(true))), new Promise(r => setTimeout(() => r(false), 500))])}));
+  let clickError = null;
+  try { await page.getByRole('button', {name:'探索参考项目',exact:true}).click({timeout:3000}); }
+  catch(error) {
+    clickError = String(error);
+    await page.getByRole('button', {name:'探索参考项目',exact:true}).focus();
+    await page.keyboard.press('Enter');
+  }
+  await page.getByRole('button',{name:'运行仿真',exact:true}).waitFor({state:'attached',timeout:15000}).catch(() => {});
+  return {before,after,clickError};
+}
+)(page);
+```
