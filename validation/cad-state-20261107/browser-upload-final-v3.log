@@ -1,0 +1,15 @@
+### Result
+{"project_id":"project_6ba9b6188ad24056bc4f9093695471c5","cad_id":"cad_5ab407c2cfbe47798195b4e4d1c64d63","file_id":"file_c7c83ee99a074ba7ba43c08fa28d0716","source_hash":"ff00c32e0cf8a89d114911c76d3f752627fe9ebf8430bd5fe339bddf7b46d277","hash":"d9bfa0ab22bffc32368d61b96eef319c11254977c85b0634bf6c218b7c556dd0","objects":[{"id":34,"type":"IfcWall","name":"Synthetic union operand"},{"id":45,"type":"IfcWall","name":"Synthetic union operand"}],"parsed":true}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ await page.getByLabel('选择 DXF / IFC（最大10 MiB）',{exact:true}).setInputFiles('validation/cad-state-20261107/browser-original-overlap-v1.ifc');
+ const parsed=page.waitForResponse(r=>r.url().endsWith('/cad-inspections')&&r.request().method()==='POST',{timeout:90000});
+ await page.getByRole('button',{name:'上传并读取',exact:true}).click();
+ const response=await parsed,record=await response.json();if(response.status()!==201)throw Error(JSON.stringify(record));
+ await page.locator('[data-cad-record="'+record.cad_id+'"] [data-ifc-record]').waitFor({state:'visible',timeout:15000});
+ return {project_id:record.project_id,cad_id:record.cad_id,file_id:record.source.file_id,source_hash:record.source.hash,hash:record.hash,
+ objects:record.result.objects.map(r=>({id:r.id,type:r.type,name:r.name})),parsed:true};
+}
+)(page);
+```

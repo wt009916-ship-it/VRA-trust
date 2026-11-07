@@ -37,7 +37,9 @@ export function mountUnionWorkspace(records,host,base,action){
  host.innerHTML=unionWorkspaceMarkup(records);
  const form=host.querySelector('[data-union-form]'),source=form.elements.cad,products=form.elements.products;
  const status=host.querySelector('[data-union-status]'),history=host.querySelector('[data-union-history]');
- let closed=false,epoch=0,busy=false,sourceCurrent=true;
+ let closed=false,epoch=0,busy=false,sourceCurrent=false,active=null;
+ const owner=host.closest('.work-view')||host;
+ const visible=()=>!closed&&host.isConnected&&!owner.hidden&&!document.hidden;
  function selection(){
   const ids=[...products.selectedOptions].map(o=>Number(o.value));
   host.querySelector('[data-union-selection]').textContent=ids.length?'已选 '+ids.length+' 个构件：'+ids.map(x=>'#'+x).join('、'):'尚未选择构件。';
@@ -45,24 +47,27 @@ export function mountUnionWorkspace(records,host,base,action){
   return ids;
  }
  source.onchange=()=>{
-  epoch++;sourceCurrent=true;status.textContent='';
+  epoch++;sourceCurrent=false;status.textContent='正在核验所选来源…';
   const record=records.find(r=>r.cad_id===source.value);
   products.innerHTML=(record?.result?.objects||[]).filter(p=>p.eligible_for_union).map(p=>`<option value="${p.id}">#${p.id} · ${esc(p.name||p.type)} · ${esc(p.type)}</option>`).join('');
   selection();void refresh();
  };
  products.onchange=()=>{selection();};
  async function refresh(){
-  const ticket=++epoch,cadId=source.value;
+  if(!visible())return;
+  const ticket=++epoch,cadId=source.value;active?.abort();
+  const controller=new AbortController();active=controller;
+  const timeout=setTimeout(()=>controller.abort(),4000);
   try{
-   const [saved,current]=await Promise.all([request(base+'/ifc-unions'),cadId?request(base+'/cad-inspections/'+cadId):Promise.resolve(null)]);
-   if(closed||!host.isConnected||ticket!==epoch)return;
+   const [saved,current]=await Promise.all([request(base+'/ifc-unions',{signal:controller.signal}),cadId?request(base+'/cad-inspections/'+cadId,{signal:controller.signal}):Promise.resolve(null)]);
+   if(!visible()||ticket!==epoch)return;
    sourceCurrent=!current||current.status==='parsed';selection();
-   if(!sourceCurrent)status.textContent='所选来源已失效，请重新读取原文件后计算。';
+   status.textContent=sourceCurrent?'':'所选来源已失效，请重新读取原文件后计算。';
    history.innerHTML=saved.map(r=>unionRecordMarkup(r,base)).join('')||'<p>尚无已保存的并集核验。</p>';
   }catch(error){
-   if(closed||!host.isConnected||ticket!==epoch)return;
-   sourceCurrent=false;selection();history.innerHTML='<p>当前状态无法核验，历史数量暂不展示。</p>';status.textContent=error.message;
-  }
+   if(!visible()||ticket!==epoch)return;
+   sourceCurrent=false;selection();history.innerHTML='<p>当前状态无法核验，历史数量暂不展示。</p>';status.textContent=controller.signal.aborted?'状态核验超时，请重试。':error.message;
+  }finally{clearTimeout(timeout);if(active===controller)active=null;}
  }
  form.onsubmit=event=>{
   event.preventDefault();const ids=selection(),cadId=source.value;
@@ -71,16 +76,25 @@ export function mountUnionWorkspace(records,host,base,action){
   action(async()=>{
    try{
     const saved=await post(base+'/ifc-unions',{cad_id:cadId,product_ids:ids});
-    if(closed||!host.isConnected)return;
+    if(!visible())return;
     status.textContent=saved.status==='measured'?'核验已保存。下方记录列明本次实际参与的构件。':'核验已保存，但未取得可交付的并集量，请查看原因。';
     await refresh();
    }catch(error){
-    if(!closed&&host.isConnected){status.textContent='本次计算失败：'+error.message;await refresh();}
+    if(visible()){status.textContent='本次计算失败：'+error.message;await refresh();}
     throw error;
-   }finally{busy=false;if(!closed&&host.isConnected)selection();}
+   }finally{busy=false;if(visible())selection();}
   });
  };
+ function visibility(){
+  epoch++;active?.abort();active=null;sourceCurrent=false;selection();
+  history.innerHTML='<p>当前数量暂不展示，返回页面后重新核验。</p>';
+  status.textContent=visible()?'正在核验当前来源…':'页面已切至后台，需要重新核验。';
+  if(visible()&&!busy)void refresh();
+ }
+ const observer=new MutationObserver(visibility);observer.observe(owner,{attributes:true,attributeFilter:['hidden']});
+ document.addEventListener('visibilitychange',visibility);
+ const dispose=()=>{closed=true;epoch++;active?.abort();clearInterval(timer);observer.disconnect();document.removeEventListener('visibilitychange',visibility);};
+ const timer=setInterval(()=>{if(!host.isConnected)dispose();else if(visible()&&!busy)void refresh();},5000);
  void refresh();
- const timer=setInterval(()=>{if(!host.isConnected){closed=true;clearInterval(timer);}else if(!busy)void refresh();},5000);
- return ()=>{closed=true;epoch++;clearInterval(timer);};
+ return dispose;
 }

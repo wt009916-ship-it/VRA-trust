@@ -1,3 +1,4 @@
+import {createCadMonitor} from './cad-current.js';
 import {mountUnionWorkspace} from './ifc-union-ui.js';
 import {ifcMarkup,ifcObjectMarkup} from './ifc-ui.js';
 import {request,post,escape as esc,number as fmt} from './api.js';
@@ -19,28 +20,78 @@ export function geometryMarkup(geometry){
   return `<section class="cad-geometry"><h3>块展开与几何测量</h3><p>展开叶实体 ${geometry.objects.length}；遍历节点 ${geometry.visited_entities}；缺口 ${geometry.issue_count}。${geometry.coverage==='partial'?'部分信息未取得，请查看缺口。':'已提取支持实体；不代表工程图完整或合规。'}</p><p>${Object.entries(geometry.expanded_counts).map(([k,v])=>esc(k)+' '+v).join(' · ')}</p>${dxfProjection(geometry)}<div class="table-scroll"><table><thead><tr><th>原句柄 / 实例路径</th><th>类型 / 图层</th><th>几何长度 m</th><th>边界面积 m²</th><th>面积口径 / 缺口</th></tr></thead><tbody>${geometry.objects.slice(0,300).map(r=>`<tr><td>${esc(r.path.join(' / '))}</td><td>${esc(r.type)} / ${esc(r.layer)}</td><td>${fmt(r.length_m,6)}</td><td>${fmt(r.area_m2,6)}</td><td>${esc(r.area_status||r.geometry_status)}</td></tr>`).join('')}</tbody></table></div><p>表格最多300行；完整实体见JSON。几何量不直接作为墙体/建筑面积或材料净用量，不自动去重叠、扣洞或识别构件语义。</p><ul>${geometry.limitations.map(t=>'<li>'+esc(t)+'</li>').join('')}</ul><details><summary>未提取实体及面积缺口${geometry.issues_truncated?'（明细截断）':''}</summary><pre>${esc(JSON.stringify(geometry.issues,null,2))}</pre></details></section>`;
 }
 
+
+const cadStateReasons={unchecked:'尚未核验',checking:'正在重新核验',parser_changed:'解析器版本已变化',
+ parser_unavailable:'解析器当前不可用',source_unavailable:'原件缺失或校验失败',source_binding_changed:'原件与读取时的哈希不一致',
+ verification_timeout:'当前状态核验超时',verification_unavailable:'当前状态无法核验',
+ source_changed_during_refresh:'读取详情时来源发生变化',page_hidden:'页面已切至后台，需要重新核验'};
+export const cadStateReason=reason=>cadStateReasons[reason]||'当前状态无法核验';
+export function cadRecordMarkup(r,base){
+ return `<article data-cad-record="${esc(r.cad_id)}"><h2>${esc(r.source.name)} · ${r.status==='parsed'?'已读取 · 待工程复核':r.status==='stale'?'已失效':'当前状态待核验'}</h2><p data-cad-check>正在核验当前状态…</p><p>读取时来源 SHA256：<code>${esc(r.source.hash)}</code></p>${r.status==='parsed'&&r.result?`<p>${esc(r.result.parser)} · ${esc(r.result.version)} · 长度换算至米：${r.result.length_scale_to_m??'未知，禁止默认换算'}</p><table><tr><th>原文件顶层类别（IFC为产品类别）</th><th>数量</th></tr>${Object.entries(r.result.counts).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')}</table>${geometryMarkup(r.result.geometry)}${ifcMarkup(r.result,r.cad_id)}<ul>${r.result.limitations.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.result.format==='IFC'?'':`<details><summary>顶层实体、属性、空间归属与缺口</summary><pre>${esc(JSON.stringify({objects:r.result.objects,issues:r.result.issues||[]},null,2))}</pre></details>`}`:'<p role="status">'+esc(cadStateReason(r.stale_reasons?.[0]))+'；数量暂不展示。请核验状态，来源或版本变化时新建读取记录。</p>'}<p><a target="_blank" rel="noopener" href="/api${base}/files/${r.source.file_id}">下载原文件（服务器重新核验）</a> · <a target="_blank" rel="noopener" href="/api${base}/cad-inspections/${r.cad_id}">导出完整JSON</a></p></article>`;
+}
+function bindCadSelection(article,record){
+ for(const select of article.querySelectorAll('[data-ifc-record]')){
+  select.onchange=()=>{
+   if(record.status!=='parsed'||!record.result)return;
+   const id=Number(select.value),product=record.result.objects.find(p=>p.id===id);
+   const geometry=record.result.ifc_geometry.objects.find(p=>p.id===id);
+   select.closest('section').querySelector('[data-ifc-detail]').innerHTML=ifcObjectMarkup(product,geometry);
+  };
+ }
+}
+
+
 export async function cadWorkspace(state,host,action) {
-  const base='/projects/'+state.project.project_id;
-  let disposeUnion=()=>{};
-  host.innerHTML=`<div class="view-heading"><div><h1>CAD / BIM 文件核验</h1><p>只读解析原文件，保留来源和缺口。实体统计不等于建筑工程量。</p></div></div><form id="cad-upload"><label>选择 DXF / IFC（最大10 MiB）<input name="file" type="file" accept=".dxf,.ifc" required></label><button class="primary">上传并读取</button></form><p>DXF支持限定块展开和几何量；IFC支持类型/实例属性、声明数量与限定网格测量。扫描图片/PDF文字可在“图纸识别”页处理。DWG转换、几何修复和合规认证尚不支持。</p><div id="cad-source"></div><div id="cad-union"></div><div id="cad-results" aria-live="polite"></div>`;
-  async function history(){
-    const records=await request(base+'/cad-inspections');if(!host.isConnected)return;
-    disposeUnion();disposeUnion=mountUnionWorkspace(records,host.querySelector('#cad-union'),base,action);
-    host.querySelector('#cad-results').innerHTML=records.map(r=>`<article><h2>${esc(r.source.name)} · ${r.status==='parsed'?'已读取 · 待工程复核':'已失效'}</h2><p>来源 SHA256：<code>${esc(r.source.hash)}</code></p>${r.result?`<p>${esc(r.result.parser)} · ${esc(r.result.version)} · 长度换算至米：${r.result.length_scale_to_m??'未知，禁止默认换算'}</p><table><tr><th>原文件顶层类别（IFC为产品类别）</th><th>数量</th></tr>${Object.entries(r.result.counts).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')}</table>${geometryMarkup(r.result.geometry)}${ifcMarkup(r.result,r.cad_id)}<ul>${r.result.limitations.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.result.format==='IFC'?'':`<details><summary>顶层实体、属性、空间归属与缺口</summary><pre>${esc(JSON.stringify({objects:r.result.objects,issues:r.result.issues||[]},null,2))}</pre></details>`}`:'<p>来源或解析器已变化，请新建读取记录。</p>'}<p><a target="_blank" rel="noopener" href="/api${base}/files/${r.source.file_id}">下载原文件</a> · <a target="_blank" rel="noopener" href="/api${base}/cad-inspections/${r.cad_id}">导出完整JSON</a></p></article>`).join('')||'<p>尚无文件读取记录。</p>';
-    for(const select of host.querySelectorAll('[data-ifc-record]')){
-      const record=records.find(r=>r.cad_id===select.dataset.ifcRecord);
-      select.onchange=()=>{
-        const id=Number(select.value),product=record.result.objects.find(p=>p.id===id);
-        const geometry=record.result.ifc_geometry.objects.find(p=>p.id===id);
-        select.closest('section').querySelector('[data-ifc-detail]').innerHTML=ifcObjectMarkup(product,geometry);
-      };
-    }
+ const base='/projects/'+state.project.project_id;
+ let disposeUnion=()=>{},monitor=null,catalog=[],page=0,historyTicket=0;
+ host.innerHTML=`<div class="view-heading"><div><h1>CAD / BIM 文件核验</h1><p>只读解析原文件，保留来源和缺口。实体统计不等于建筑工程量。</p></div></div><form id="cad-upload"><label>选择 DXF / IFC（最大10 MiB）<input name="file" type="file" accept=".dxf,.ifc" required></label><button class="primary">上传并读取</button></form><p>DXF支持限定块展开和几何量；IFC支持类型/实例属性、声明数量与限定网格测量。扫描图片/PDF文字可在“图纸识别”页处理。DWG转换、几何修复和合规认证尚不支持。</p><div id="cad-source"></div><div id="cad-union"></div><div id="cad-pager"><button data-cad-prev>上一页</button><span data-cad-page></span><button data-cad-next>下一页</button><button data-cad-refresh>立即核验状态</button></div><p>每页最多20条，每5秒核验可见记录；核验失败或超时会撤下数量。最近核验时间不代表持续实时保证。</p><div id="cad-results" aria-live="polite"></div>`;
+ const list=host.querySelector('#cad-results'),pager=host.querySelector('#cad-pager'),pageSize=20;
+ const alive=()=>host.isConnected&&host.contains(list);
+ const visible=()=>alive()&&!host.hidden&&!document.hidden;
+ function renderPage(){
+  monitor?.stop();
+  const visible=catalog.slice(page*pageSize,(page+1)*pageSize);
+  pager.querySelector('[data-cad-prev]').disabled=page===0;
+  pager.querySelector('[data-cad-next]').disabled=(page+1)*pageSize>=catalog.length;
+  pager.querySelector('[data-cad-page]').textContent=catalog.length?`${page*pageSize+1}–${page*pageSize+visible.length} / ${catalog.length}条`:'0条';
+  list.innerHTML=visible.map(r=>cadRecordMarkup({...r,status:'unverified',result:null,stale_reasons:['unchecked']},base)).join('')||'<p>尚无文件读取记录。</p>';
+  function replace(record){
+   if(!alive())return;
+   const previous=list.querySelector('[data-cad-record="'+record.cad_id+'"]');if(!previous)return;
+   previous.outerHTML=cadRecordMarkup(record,base);
+   bindCadSelection(list.querySelector('[data-cad-record="'+record.cad_id+'"]'),record);
   }
-  host.querySelector('#cad-upload').onsubmit=e=>{e.preventDefault();const body=new FormData(e.currentTarget);action(async()=>{
-    const file=body.get('file');if(file.size>10*1024*1024)throw Error('文件超过10 MiB，请先提供范围更小的副本。');
-    const source=await request(base+'/files',{method:'POST',body});
-    if(host.isConnected)host.querySelector('#cad-source').innerHTML=`<p>原件已保留：<a target="_blank" rel="noopener" href="/api${base}/files/${source.file_id}">${esc(source.name)}</a>。读取失败也不会覆盖原件。</p>`;
-    await post(base+'/cad-inspections',{file_id:source.file_id});await history();
-  },e.submitter);};
-  await history();
+  monitor=createCadMonitor({
+   ids:visible.map(r=>r.cad_id),
+   fetchStates:(ids,signal)=>request(base+'/cad-current-states',{method:'POST',body:JSON.stringify({cad_ids:ids}),signal}),
+   fetchRecord:(id,signal)=>request(base+'/cad-inspections/'+id,{signal}),
+   onRecord:replace,
+   onUnknown:(id,reason)=>{const row=visible.find(r=>r.cad_id===id);if(row)replace({...row,status:['parser_changed','source_unavailable','source_binding_changed'].includes(reason)?'stale':'unverified',result:null,stale_reasons:[reason]});},
+   onChecked:(id,when)=>{const label=list.querySelector('[data-cad-record="'+id+'"] [data-cad-check]');if(label)label.textContent='最近核验：'+new Date(when).toLocaleString('zh-CN');}
+  });
+  if(!host.hidden&&!document.hidden)void monitor.refresh();
+ }
+ async function history(){
+  const ticket=++historyTicket,records=await request(base+'/cad-inspections');
+  if(!alive()||ticket!==historyTicket)return;
+  disposeUnion();disposeUnion=mountUnionWorkspace(records,host.querySelector('#cad-union'),base,action);
+  catalog=records.map(({cad_id,source,hash})=>({cad_id,source,hash}));page=0;renderPage();
+ }
+ pager.querySelector('[data-cad-prev]').onclick=()=>{if(page>0){page--;renderPage();}};
+ pager.querySelector('[data-cad-next]').onclick=()=>{if((page+1)*pageSize<catalog.length){page++;renderPage();}};
+ pager.querySelector('[data-cad-refresh]').onclick=()=>{monitor?.invalidate('checking');void monitor?.refresh();};
+ host.querySelector('#cad-upload').onsubmit=e=>{e.preventDefault();const body=new FormData(e.currentTarget);action(async()=>{
+  const file=body.get('file');if(file.size>10*1024*1024)throw Error('文件超过10 MiB，请先提供范围更小的副本。');
+  const source=await request(base+'/files',{method:'POST',body});
+  if(alive())host.querySelector('#cad-source').innerHTML=`<p>原件已保留：<a target="_blank" rel="noopener" href="/api${base}/files/${source.file_id}">${esc(source.name)}</a>。读取失败也不会覆盖原件。</p>`;
+  await post(base+'/cad-inspections',{file_id:source.file_id});await history();
+ },e.submitter);};
+ const visibility=()=>{if(alive()){monitor?.invalidate(visible()?'checking':'page_hidden');if(visible())void monitor?.refresh();}};
+ const observer=new MutationObserver(visibility);observer.observe(host,{attributes:true,attributeFilter:['hidden']});
+ document.addEventListener('visibilitychange',visibility);
+ const timer=setInterval(()=>{
+  if(!alive()){monitor?.stop();disposeUnion();clearInterval(timer);document.removeEventListener('visibilitychange',visibility);observer.disconnect();}
+  else if(visible())void monitor?.refresh();
+ },5000);
+ await history();
 }

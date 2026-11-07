@@ -1,0 +1,17 @@
+### Result
+{"cad_id":"cad_970df543018e4224b1debafcb76a5415","status":"stale","result":null,"stale_details_removed":true,"original_history_hash":"4581fe07d9ec76af096e5b41880483a8288a824601d98ac7578c8fac11c95374"}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ const cid='cad_970df543018e4224b1debafcb76a5415',pid='project_d6ecd4de55c84eb98621ecb9a3c0acf4';
+ const card=page.locator('[data-cad-record="'+cid+'"]');
+ await card.getByRole('status').filter({hasText:'原件缺失或校验失败'}).waitFor({state:'visible',timeout:15000});
+ if(await card.locator('[data-ifc-detail],table').count())throw Error('Stale numbers remained in DOM');
+ if((await card.innerText()).includes('24 m³'))throw Error('Stale volume remained');
+ const response=await page.request.get('http://127.0.0.1:18774/api/projects/'+pid+'/cad-inspections/'+cid);
+ const body=await response.json();if(body.status!=='stale'||body.result!==null)throw Error('API did not fail closed');
+ await card.screenshot({path:'output/playwright/cad-current-stale.png'});
+ return {cad_id:cid,status:body.status,result:body.result,stale_details_removed:true,original_history_hash:body.hash};
+}
+)(page);
+```

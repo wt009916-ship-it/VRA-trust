@@ -1,0 +1,17 @@
+### Result
+{"actual_native_parses":[{"cad_id":"cad_7e25f54d05844657bc073da57fdb79de","hash":"55f07a971ec4068ae1a1623479a972f774eb1306fa49237cd9f84e2ebe34e5ec","duration_ms":4553},{"cad_id":"cad_20cfcfd6d34749fcaae82323e4e15721","hash":"e1070d1c0ee9a389fb006f686953bfbd6fad089235fae7101d93ba9d32496a1c","duration_ms":4399},{"cad_id":"cad_9e4cc8c256514d02a057d308cfacda10","hash":"5d265247a5c6579c2d1a12a053c8eeac866cfd0f0ee41193f3429db648afa2ac","duration_ms":4444},{"cad_id":"cad_b59972b7ad824910bea00b719be2ffc6","hash":"0240778de7ae5df83935594d19e490dd120f52361d228ef8a58f0b354d3dbac4","duration_ms":4380},{"cad_id":"cad_311642ddfac14035988a5ec9f918ab53","hash":"37a32bf7ce313d3e6177825153412585966d57e45ec1a4287abacd61cf3bb635","duration_ms":4403}],"credentials_saved":false}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ const pid='project_d6ecd4de55c84eb98621ecb9a3c0acf4',fid='file_1556f9e32db24f229dbf85e5968849b5',url='http://127.0.0.1:18774/api/projects/'+pid+'/cad-inspections';
+ const auth=await(await page.request.get('http://127.0.0.1:18774/api/auth/me')).json(),created=[];
+ for(let i=0;i<5;i++){
+  const start=Date.now();
+  const response=await page.request.post(url,{data:{file_id:fid},headers:{'X-CSRF-Token':auth.csrf_token},timeout:90000}),record=await response.json();
+  if(response.status()!==201||record.status!=='parsed')throw Error('Actual repeat inspection failed: '+response.status());
+  created.push({cad_id:record.cad_id,hash:record.hash,duration_ms:Date.now()-start});
+ }
+ return {actual_native_parses:created,credentials_saved:false};
+}
+)(page);
+```

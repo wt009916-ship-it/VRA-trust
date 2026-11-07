@@ -10,7 +10,7 @@ from .trust import FactorUpdate, FactorReview, Trust
 from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
 from .thermal import Thermal, Assembly, ThermalCompare, compare as compare_thermal, render_html as thermal_html
-from .cad import Cad, Inspection
+from .cad import Cad, Inspection, CurrentStates
 from .cad_union import IfcUnions, UnionRequest, union_report
 from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, compare as lifecycle_compare, report as lifecycle_report
 from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
@@ -228,6 +228,10 @@ def register_extensions(app, domain, auth):
     @app.get('/api/projects/{project_id}/lifecycle/{lifecycle_id}/report.html', response_class=HTMLResponse)
     def lifecycle_html(project_id: str, lifecycle_id: str):
         return lifecycle_report(lifecycle.view(project_id, lifecycle_id))
+
+    @app.post('/api/projects/{project_id}/cad-current-states')
+    def cad_current_states(project_id: str, body: CurrentStates):
+        return cad.current_states(project_id, body)
 
     @app.post('/api/projects/{project_id}/cad-inspections', status_code=201)
     def inspect_cad(project_id: str, body: Inspection):

@@ -1,0 +1,28 @@
+### Result
+{"network_failure_cleared":true,"recovery_fresh_get":true,"quantity":24}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ const cid='cad_970df543018e4224b1debafcb76a5415',card=page.locator('[data-cad-record="'+cid+'"]');
+ const pattern='**/cad-current-states',abort=route=>route.abort('failed');
+ await page.route(pattern,abort);
+ try{
+ await page.getByRole('button',{name:'立即核验状态',exact:true}).click();
+ await card.getByRole('status').filter({hasText:'当前状态无法核验'}).waitFor({state:'visible',timeout:10000});
+ if(await card.locator('[data-ifc-detail],table').count())throw Error('Network failure retained quantity');
+ }finally{await page.unroute(pattern,abort);}
+ const fresh=page.waitForResponse(r=>r.url().endsWith('/cad-inspections/'+cid)&&r.status()===200,{timeout:15000});
+ await page.getByRole('button',{name:'立即核验状态',exact:true}).click();
+ const record=await(await fresh).json();
+ await card.getByRole('combobox',{name:'查看构件来源、数量与属性',exact:true}).waitFor({state:'visible'});
+ if(record.status!=='parsed'||!(await card.innerText()).includes('体积 24 m³'))throw Error('Recovery missing');
+ return {network_failure_cleared:true,recovery_fresh_get:true,quantity:24};
+}
+)(page);
+```
+### Page
+- Page URL: http://127.0.0.1:18774/
+- Page Title: 稀土智暖 · VRA-Trust
+- Console: 2 errors, 0 warnings
+### Events
+- New console entries: .playwright-cli\console-2026-11-07T09-09-17-409Z.log#L2

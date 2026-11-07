@@ -1,0 +1,14 @@
+### Result
+{"viewport":390,"quantity_text":"已取得近似几何量；网格表面积（三角面之和，非并集面积） 52 m²；体积 24 m³。表面积不是建筑面积，体积不是材料净用量。","screenshot_scope":"visible viewport and actual quantity paragraph; whole tall article is clipped by scrolling workspace"}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ const cid='cad_970df543018e4224b1debafcb76a5415';
+ const quantity=page.locator('[data-ifc-detail="'+cid+'"] p').filter({hasText:'体积 24 m³'});
+ await quantity.scrollIntoViewIfNeeded();
+ await quantity.screenshot({path:'output/playwright/cad-current-quantity-mobile.png'});
+ await page.screenshot({path:'output/playwright/cad-current-viewport-mobile.png'});
+ return {viewport:await page.evaluate(()=>innerWidth),quantity_text:await quantity.innerText(),screenshot_scope:'visible viewport and actual quantity paragraph; whole tall article is clipped by scrolling workspace'};
+}
+)(page);
+```
