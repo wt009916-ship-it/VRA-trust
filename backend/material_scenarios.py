@@ -9,7 +9,7 @@ from typing import Literal
 from fastapi.responses import HTMLResponse
 from pydantic import Field, StrictFloat, StrictInt, ValidationError as SchemaError, field_validator, model_validator
 
-from . import core, lifecycle, material_cost
+from . import core, lifecycle, material_cost, material_transport
 from .calculation_provenance import persist, validity
 from .domain import identifier
 from .schema import Contract
@@ -47,15 +47,28 @@ class LayerMaterial(Contract):
         return self
 
 
+class ScenarioActivity(lifecycle.Activity):
+    source_evidence_ids: list[str] = Field(default_factory=list, max_length=30)
+
+    @model_validator(mode='after')
+    def unique_source_evidence(self):
+        if len(set(self.source_evidence_ids)) != len(self.source_evidence_ids):
+            raise ValueError('Duplicate activity source evidence')
+        return self
+
+
 class Alternative(Contract):
     name: str = Field(min_length=1, max_length=160)
     layers: list[LayerMaterial] = Field(min_length=1, max_length=32)
-    other_activities: list[lifecycle.Activity] = Field(default_factory=list, max_length=300)
+    other_activities: list[ScenarioActivity] = Field(default_factory=list, max_length=300)
+    transport_legs: list[material_transport.TransportLeg] = Field(default_factory=list, max_length=30)
 
     @model_validator(mode='after')
     def unique(self):
         if len({r.layer_id for r in self.layers}) != len(self.layers):
             raise ValueError('Duplicate material layer; double counting rejected')
+        if len({leg.leg_id for leg in self.transport_legs}) != len(self.transport_legs):
+            raise ValueError('Duplicate transport leg ID')
         if any(a.stage == 'production' for a in self.other_activities):
             raise ValueError('Production is derived from mapped layers, not extra manual activities')
         return self
@@ -92,7 +105,7 @@ class ScenarioRequest(Contract):
             raise ValueError('Material alternatives must include production')
         factors, quotes = {}, {}
         for alt in self.alternatives:
-            for factor in [r.factor for r in alt.layers] + [a.factor for a in alt.other_activities]:
+            for factor in [r.factor for r in alt.layers] + [a.factor for a in alt.other_activities] + [leg.factor for leg in alt.transport_legs]:
                 data = factor.model_dump(mode='json')
                 if factor.factor_id in factors and factors[factor.factor_id] != data:
                     raise ValueError('Same factor ID has conflicting source/value/version across alternatives')
@@ -107,7 +120,7 @@ class ScenarioRequest(Contract):
 
 def calculator_version():
     return core.hash_json({name: core.sha(Path(__file__).with_name(name)) for name in
-        ['material_scenarios.py', 'material_cost.py', 'lifecycle.py', 'schema.py', 'calculation_provenance.py']})
+        ['material_scenarios.py', 'material_transport.py', 'material_cost.py', 'lifecycle.py', 'schema.py', 'calculation_provenance.py']})
 
 
 def calculate(body, takeoff, project):
@@ -152,6 +165,8 @@ def calculate(body, takeoff, project):
                     'production_unit':mapping.factor.denominator, 'source_locator':locator,
                     'formula':'envelope * declared solid_fraction; purchase = net * (1+waste); mass = purchase * density',
                     'source_status':'MODEL_GEOMETRY_WITH_USER_DECLARED_MAPPING'})
+            transport_activities, transport_receipts = material_transport.derive(alternative.transport_legs, alternative.layers, derivations, takeoff)
+            activities.extend(transport_activities)
             cost_input = material_cost.Estimate(name=alternative.name, region=body.region, currency=body.currency,
                 tax_basis=body.tax_basis, as_of=body.as_of, functional_scope=body.functional_scope,
                 exclusions=body.exclusions, lines=costs)
@@ -159,7 +174,7 @@ def calculate(body, takeoff, project):
                 area_m2=project['building']['area_m2'], study_years=body.study_years, method=body.method,
                 functional_unit=body.functional_scope, boundaries=body.boundaries, activities=activities)
             cost, carbon = material_cost.calculate(cost_input), lifecycle.calculate(carbon_input)
-            results.append({'name':alternative.name, 'derivations':derivations, 'cost':cost, 'carbon':carbon,
+            results.append({'name':alternative.name, 'derivations':derivations, 'transport':transport_receipts, 'cost':cost, 'carbon':carbon,
                 'cost_input':cost_input.model_dump(mode='json'), 'carbon_input':carbon_input.model_dump(mode='json')})
         complete = all(r['cost']['status'] == r['carbon']['status'] == 'calculated' for r in results)
         comparison = None
@@ -177,7 +192,7 @@ def calculate(body, takeoff, project):
         'functional_equivalence':'NOT_ASSESSED', 'certification':'NOT_ASSESSED', 'issued_credits_t':None,
         'limitations':['限定同一构件及相同声明边界；材料功能等效、耐火、结构和节能效果未验证。',
             '层包络乘显式实体比例得到条件材料量；比例、密度、损耗、价格和因子来源仍需专业复核。',
-            '生产碳按含损耗采购量计；其他阶段仅使用明确录入的活动，不自动补齐全生命周期。',
+            '生产碳按含损耗采购量计；材料运输由采购质量、分批比例、附加质量和距离派生，其他活动须显式录入。阶段齐全不证明清单无遗漏或符合LCA标准。',
             '单位面积分母来自项目建筑面积，不是所选墙面积；材料成本不等于工程总造价。']}
 
 
@@ -199,6 +214,9 @@ class MaterialScenarios:
                 evidence_ids.update(row.evidence_ids)
                 if row.factor.evidence_id: evidence_ids.add(row.factor.evidence_id)
             evidence_ids.update(a.factor.evidence_id for a in alt.other_activities if a.factor.evidence_id)
+            evidence_ids.update(leg.factor.evidence_id for leg in alt.transport_legs if leg.factor.evidence_id)
+            for activity in alt.other_activities:evidence_ids.update(activity.source_evidence_ids)
+            for leg in alt.transport_legs:evidence_ids.update(leg.evidence_ids)
         evidence = []
         for eid in sorted(evidence_ids):
             ev = self.store.get('evidence', eid)
@@ -239,6 +257,41 @@ class MaterialScenarios:
             'result':None if reasons else record['result']}
 
 
+
+def carbon_report(alternative, declared, study_years):
+    """Readable stage and activity receipts; raw JSON remains available separately."""
+    esc = lambda value: html.escape(str(value))
+    display = lambda value: '缺数据' if value is None else format(Decimal(str(value)), '.8g')
+    labels = {'production':'材料生产', 'transport':'材料运输', 'construction':'施工',
+              'operation':'建筑运行', 'end_of_life':'寿命末期'}
+    statuses = {'calculated':'已计算', 'incomplete':'资料不完整', 'excluded':'未纳入（不等于零）'}
+    carbon = alternative['carbon']
+    content = '<h3>阶段边界与排放</h3><p>评估期 '+esc(study_years)+' 年。单位面积分母为项目建筑面积；五阶段有数值不等于已完成清单完整性核证。</p>'
+    content += '<div class="table-scroll" tabindex="0" role="region" aria-label="阶段排放表"><table><tr><th>阶段</th><th>状态</th><th>kgCO₂e</th><th>纳入范围或排除理由</th></tr>'
+    for stage, row in carbon['stages'].items():
+        content += '<tr><td>'+labels[stage]+'</td><td>'+statuses[row['status']]+'</td><td>'+('未纳入' if not row['included'] else display(row['kgco2e']))+'</td><td class="prose">'+esc(row['reason'])+'</td></tr>'
+    content += '</table></div>'
+    rows = {r['activity_id']:r for r in carbon['rows']}
+    legs = {r['leg_id']:r for r in declared.get('transport_legs', [])}
+    for leg in alternative.get('transport', []):
+        source = legs[leg['leg_id']]
+        content += '<details><summary>材料运段 · '+esc(leg['name'])+' · '+display(rows[leg['activity_id']]['kgco2e'])+' kgCO₂e</summary>'
+        content += '<p>所选层：'+esc(', '.join('#'+str(r['layer_id']) for r in leg['layers']))+'；采购质量 '+display(leg['purchase_mass_kg'])+' kg × 承运比例 '+display(leg['purchase_fraction'])+' + 附加包装/托盘质量 '+display(leg['additional_mass_kg'])+' kg = 承运质量 '+display(leg['shipped_mass_kg'])+' kg。</p>'
+        content += '<p>承运质量 ÷ 1000 × '+display(leg['distance_km'])+' km = '+display(leg['quantity_tkm'])+' tkm。空白输入保持未知；距离和分批均为声明值。</p>'
+        content += '<ul>'+''.join('<li>'+label+'：'+esc(source[key])+'</li>' for label,key in [('分批依据','fraction_source'),('距离依据','distance_source'),('附加质量依据','additional_mass_source')])+'</ul></details>'
+    activities = [a for a in alternative['carbon_input']['activities'] if a['stage'] != 'production']
+    if activities:
+        content += '<h3>非生产阶段逐项复算与来源</h3>'
+    for activity in activities:
+        row, factor = rows[activity['activity_id']], activity['factor']
+        period = '每年' if activity['period'] == 'annual' else '整个评估期'
+        content += '<details><summary>'+labels[activity['stage']]+' · '+esc(activity['name'])+' · '+display(row['kgco2e'])+' kgCO₂e</summary>'
+        content += '<p>输入 '+display(activity['quantity'])+' '+esc(activity['unit'])+'（'+period+'）；期间倍数 '+esc(row['period_multiplier'])+'；换算后整个评估期活动量 '+display(row['quantity_in_factor_unit'])+' '+esc(factor['denominator'])+' × 因子 '+display(factor['value'])+' kgCO₂e/'+esc(factor['denominator'])+'。</p>'
+        content += '<p>活动来源：'+esc(activity['source'])+'。</p><p>因子 '+esc(factor['factor_id'])+'：'+esc(factor['source'])+'；发布方 '+esc(factor['publisher'])+'；版本 '+esc(factor['version'])+'；年份 '+esc(factor['year'])+'；地区 '+esc(factor['region'])+'；方法 '+esc(factor['method'])+'。</p></details>'
+    content += '<ul>'+''.join('<li>'+esc(note)+'</li>' for note in carbon['limitations'])+'</ul>'
+    return content
+
+
 def report(record):
     esc = lambda value: html.escape(str(value))
     display = lambda value: '缺数据' if value is None else format(Decimal(str(value)), '.8g')
@@ -256,8 +309,9 @@ def report(record):
         for alternative, declared in zip(result['alternatives'], record['input']['alternatives']):
             content += '<h2>'+esc(alternative['name'])+' · 逐层数量与依据</h2>'
             content += '<div class="table-scroll" tabindex="0" role="region" aria-label="逐层计量表"><table><tr><th>来源层 / 拟用材料</th><th>包络 m³</th><th>实体材料 m³</th><th>含损耗采购 m³</th><th>材料金额</th><th>生产碳 kgCO₂e</th></tr>'
-            for row, cost, carbon, mapping in zip(alternative['derivations'], alternative['cost']['rows'],
-                    alternative['carbon']['rows'][-len(alternative['derivations']):], declared['layers']):
+            carbon_rows = {r['activity_id']:r for r in alternative['carbon']['rows']}
+            for row, cost, mapping in zip(alternative['derivations'], alternative['cost']['rows'], declared['layers']):
+                carbon = carbon_rows['layer_'+str(row['layer_id'])]
                 values = ['#'+str(row['layer_id'])+' '+(row['source_material_name'] or '未命名材料')+' → '+mapping['name'],
                     display(row['envelope_volume_m3']),display(row['net_material_volume_m3']),display(row['purchase_volume_m3']),cost['amount'],display(carbon['kgco2e'])]
                 content += '<tr>'+''.join('<td>'+esc(v if v is not None else '缺数据')+'</td>' for v in values)+'</tr>'
@@ -265,8 +319,9 @@ def report(record):
             for mapping in declared['layers']:
                 content += '<li>'+esc(mapping['name'])+'：实体比例 '+esc(mapping['solid_fraction'])+'（'+esc(mapping['fraction_source'])+'）；损耗 '+esc(mapping['waste_ratio'])+'（'+esc(mapping['waste_basis'])+'）；报价 '+esc(mapping['quote']['source'])+' / '+esc(mapping['quote']['version'])+'；因子 '+esc(mapping['factor']['source'])+' / '+esc(mapping['factor']['version'])+'</li>'
             content += '</ul></details>'
+            content += carbon_report(alternative, declared, record['input']['study_years'])
 
-    return '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>材料方案比较</title><style>body{font:16px/1.7 system-ui;max-width:1000px;margin:30px auto;padding:20px}body{overflow-wrap:anywhere;box-sizing:border-box}.table-scroll{max-width:100%;overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px}td,th{border:1px solid #ccd6d4;padding:10px;text-align:left}td:not(:first-child){white-space:nowrap;overflow-wrap:normal}td:first-child,th:first-child{min-width:180px;max-width:260px;white-space:normal}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>材料方案比较</h1><p>状态：'+esc(state)+' · 功能等效性未核验，非总造价或碳资产认证。</p><p>表格数值按8位有效数字展示；金额保留分，原始精度见计算回执。窄屏可在表格内横向滚动。</p>'+content+'<details><summary>输入、逐层公式及来源回执</summary><pre>'+esc(json.dumps(record,ensure_ascii=False,indent=2))+'</pre></details></html>'
+    return '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>材料方案比较</title><style>body{font:16px/1.7 system-ui;max-width:1000px;margin:30px auto;padding:20px}body{overflow-wrap:anywhere;box-sizing:border-box}.table-scroll{max-width:100%;overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px}td,th{border:1px solid #ccd6d4;padding:10px;text-align:left}td:not(:first-child){white-space:nowrap;overflow-wrap:normal}td:first-child,th:first-child{min-width:180px;max-width:260px;white-space:normal}td.prose{white-space:normal;min-width:200px;max-width:360px}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>材料方案比较</h1><p>状态：'+esc(state)+' · 功能等效性未核验，非总造价或碳资产认证。</p><p>表格数值按8位有效数字展示；金额保留分，原始精度见计算回执。窄屏可在表格内横向滚动。</p>'+content+'<details><summary>输入、逐层公式及来源回执</summary><pre>'+esc(json.dumps(record,ensure_ascii=False,indent=2))+'</pre></details></html>'
 
 
 def register(app, takeoffs):
