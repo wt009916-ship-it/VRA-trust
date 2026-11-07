@@ -66,7 +66,7 @@ ENTRIES = {
         '已接入DXF/IFC的限定只读解析、属性、关系及部分几何；不支持原生DWG或任意无损格式转换。',
         '需受支持且有效的文件和解析依赖；几何近似、声明量、遗漏与单位必须分别核对。'),
     'drawing_ocr': ('图纸文字候选与人工复核', 'drawings.py', True,
-        '支持图像/PDF页的文字候选、位置、原件保留和人工更正；OCR分数不是工程信息正确概率。',
+        '支持图像/PDF页文字候选、人工更正、独立纠偏/过滤版本、坐标回溯与用户声明尺度冲突检查；OCR分数和线方向支持率不是正确概率。',
         '需可用OCR依赖与有效文件；不自动推断缺失墙体、尺寸、配筋或跨图工程关系。'),
     'structural_safety_certification': ('结构安全认证', 'engineering.py', False,
         '应用没有结构安全认证或完整承载能力评估能力。即使梁记录和全部资料齐全，也不能由本应用签发结构安全结论。',
@@ -116,7 +116,7 @@ def catalog(ids):
     if not ids or len(ids) > 4 or len(set(ids)) != len(ids) or any(key not in ENTRIES for key in ids):
         raise ValueError('Select one to four distinct supported capability identifiers')
     root = Path(__file__).parent
-    versions = {name: core.sha(root / name) for name in sorted({x[1] for x in ENTRIES.values()} | {Path(__file__).name, 'design_loads.py'})}
+    versions = {name: core.sha(root / name) for name in sorted({x[1] for x in ENTRIES.values()} | {Path(__file__).name, 'design_loads.py', 'drawing_processing.py', 'drawing_scale.py'})}
     digest = core.hash_json({'entries': ENTRIES, 'source_versions': versions})
     rows = []
     for key in ids:

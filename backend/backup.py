@@ -84,6 +84,11 @@ def check_database(con, entries, read_json):
         expected = obj['hash'] if kind == 'file' else obj['result']['preview_sha256']
         if name not in entries or entries[name]['sha256'] != expected:
             raise ValueError('Missing or corrupt registered source/preview')
+        if kind=='drawing':
+            for derivative in obj.get('derivatives',{}).values():
+                derivative_name=name_ok(derivative['path'])
+                if derivative_name not in entries or entries[derivative_name]['sha256']!=derivative['sha256']:
+                    raise ValueError('Missing or corrupt registered drawing derivative')
     for rid, state, body in con.execute('SELECT id,state,body FROM jobs'):
         if not re.fullmatch('run_[a-f0-9]{32}', rid):
             raise ValueError('Invalid archived run identifier')

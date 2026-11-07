@@ -1818,6 +1818,338 @@
         ]
       }
     },
+    "/api/projects/{project_id}/drawings/{drawing_id}/derivatives/{name}": {
+      "get": {
+        "summary": "Drawing Derivative",
+        "operationId": "drawing_derivative_api_projects__project_id__drawings__drawing_id__derivatives__name__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawings/{drawing_id}/scales": {
+      "post": {
+        "summary": "Drawing Scale Create",
+        "operationId": "drawing_scale_create_api_projects__project_id__drawings__drawing_id__scales_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScaleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Drawing Scale List",
+        "operationId": "drawing_scale_list_api_projects__project_id__drawings__drawing_id__scales_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawings/{drawing_id}/scales/{scale_id}": {
+      "get": {
+        "summary": "Drawing Scale Get",
+        "operationId": "drawing_scale_get_api_projects__project_id__drawings__drawing_id__scales__scale_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          },
+          {
+            "name": "scale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scale Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawings/{drawing_id}/scales/{scale_id}/measure": {
+      "post": {
+        "summary": "Drawing Measure",
+        "operationId": "drawing_measure_api_projects__project_id__drawings__drawing_id__scales__scale_id__measure_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          },
+          {
+            "name": "scale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scale Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LengthInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/operation-inputs": {
       "get": {
         "summary": "Operations Inputs",
@@ -6571,6 +6903,9 @@
             "minimum": 1.0,
             "title": "Page",
             "default": 1
+          },
+          "processing": {
+            "$ref": "#/components/schemas/DrawingProcessing"
           }
         },
         "additionalProperties": false,
@@ -6579,6 +6914,35 @@
           "file_id"
         ],
         "title": "DrawingInput"
+      },
+      "DrawingProcessing": {
+        "properties": {
+          "deskew_mode": {
+            "type": "string",
+            "enum": [
+              "none",
+              "manual",
+              "auto"
+            ],
+            "title": "Deskew Mode",
+            "default": "none"
+          },
+          "angle_degrees": {
+            "type": "number",
+            "maximum": 15.0,
+            "minimum": -15.0,
+            "title": "Angle Degrees",
+            "default": 0.0
+          },
+          "median_filter": {
+            "type": "boolean",
+            "title": "Median Filter",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DrawingProcessing"
       },
       "DrawingReview": {
         "properties": {
@@ -7587,6 +7951,32 @@
         ],
         "title": "Layer"
       },
+      "LengthInput": {
+        "properties": {
+          "start": {
+            "$ref": "#/components/schemas/PixelPoint"
+          },
+          "end": {
+            "$ref": "#/components/schemas/PixelPoint"
+          },
+          "coordinates": {
+            "type": "string",
+            "enum": [
+              "source",
+              "preview"
+            ],
+            "title": "Coordinates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "coordinates"
+        ],
+        "title": "LengthInput"
+      },
       "LifecyclePlan": {
         "properties": {
           "execution_authorized": {
@@ -7972,6 +8362,29 @@
           "input"
         ],
         "title": "OperationPlan"
+      },
+      "PixelPoint": {
+        "properties": {
+          "x": {
+            "type": "number",
+            "maximum": 6000.0,
+            "minimum": 0.0,
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "maximum": 6000.0,
+            "minimum": 0.0,
+            "title": "Y"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "title": "PixelPoint"
       },
       "PointLoad": {
         "properties": {
@@ -8984,6 +9397,106 @@
           "created_at"
         ],
         "title": "RunView"
+      },
+      "ScaleInput": {
+        "properties": {
+          "basis_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Basis Hash"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/ScaleReference"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "References"
+          },
+          "relative_tolerance": {
+            "type": "number",
+            "maximum": 0.05,
+            "minimum": 0.0,
+            "title": "Relative Tolerance"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          },
+          "plane_assumption": {
+            "type": "string",
+            "const": "user_declares_uniform_scale_on_this_page",
+            "title": "Plane Assumption"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "basis_hash",
+          "references",
+          "relative_tolerance",
+          "basis",
+          "plane_assumption"
+        ],
+        "title": "ScaleInput"
+      },
+      "ScaleReference": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "start": {
+            "$ref": "#/components/schemas/PixelPoint"
+          },
+          "end": {
+            "$ref": "#/components/schemas/PixelPoint"
+          },
+          "length": {
+            "type": "number",
+            "maximum": 1000000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Length"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "mm",
+              "cm",
+              "m"
+            ],
+            "title": "Unit"
+          },
+          "length_uncertainty": {
+            "type": "number",
+            "maximum": 100000000.0,
+            "minimum": 0.0,
+            "title": "Length Uncertainty"
+          },
+          "point_uncertainty_px": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Point Uncertainty Px"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "start",
+          "end",
+          "length",
+          "unit",
+          "length_uncertainty",
+          "point_uncertainty_px"
+        ],
+        "title": "ScaleReference"
       },
       "ScheduleInput": {
         "properties": {

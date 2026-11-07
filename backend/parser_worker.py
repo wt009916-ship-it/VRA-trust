@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def main():
-    kind,source,target,page=sys.argv[1:]
+    kind,source,target,page,*options=sys.argv[1:]
     source,target=Path(source),Path(target)
     # Windows process creation retains profile variables needed by LPAC. Once
     # inside the boundary, libraries must use only this task's monitored cache.
@@ -23,7 +23,8 @@ def main():
             result=extract(source);maximum=4*1024**2
         elif kind=='drawing':
             from drawing_worker import parse
-            result=parse(source,int(page),target.with_name('preview.png'));maximum=2*1024**2
+            if len(options)>1:raise ValueError('Unexpected drawing options')
+            result=parse(source,int(page),target.with_name('preview.png'),json.loads(options[0]) if options else None);maximum=2*1024**2
         else:raise ValueError('Unknown parser')
         text=json.dumps(result,ensure_ascii=False,allow_nan=False)
         if len(text.encode('utf-8'))>maximum:raise ValueError('Parser result exceeds budget')

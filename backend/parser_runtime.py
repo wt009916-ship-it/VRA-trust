@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from dataclasses import replace
 from importlib.metadata import distribution
 import os
+import json
 import re
 from pathlib import Path, PurePosixPath
 import shutil
@@ -30,7 +31,7 @@ ROOT=Path(__file__).resolve().parent
 PACKAGES={'cad':('ezdxf','ifcopenshell'),'standards':('pypdf',),
           'drawing':('rapidocr','onnxruntime','Pillow','pypdfium2')}
 MODULES={'cad':('cad_worker.py','dxf_geometry.py','ifc_details.py','ifc_geometry.py','mesh_topology.py'),
-         'standards':('standards_worker.py',),'drawing':('drawing_worker.py','drawing_models.py')}
+         'standards':('standards_worker.py',),'drawing':('drawing_worker.py','drawing_models.py','drawing_processing.py')}
 MAX_BYTES=1024**3
 MAX_FILES=20000
 _capacity=threading.BoundedSemaphore(2)
@@ -138,8 +139,10 @@ def _workspace():
 
 
 @contextmanager
-def run(kind,source,page=1):
+def run(kind,source,page=1,options=None):
     if kind not in PACKAGES:raise core.ValidationError('Unknown parser')
+    encoded=json.dumps(options,allow_nan=False,separators=(',',':')) if options is not None else None
+    if encoded is not None and (kind!='drawing' or len(encoded)>1024):raise core.ValidationError('Invalid parser options')
     if not _capacity.acquire(False):raise core.ValidationError('Native parsers busy; retry later')
     started=time.monotonic()
     try:
@@ -158,6 +161,7 @@ def run(kind,source,page=1):
             if sys.platform=='linux':input_path.chmod(0o400)
             python=runtime_root/'python/python.exe' if sys.platform=='win32' else scope['python']
             args=[str(runtime_root/'code/parser_worker.py'),kind,str(input_path),str(work/'result.json'),str(page)]
+            if encoded is not None:args.append(encoded)
             bootstrap='import sys,runpy;sys.path[:0]='+repr([str(runtime_root/'code'),str(runtime_root/'packages')])+';sys.argv='+repr(args)+';runpy.run_path(sys.argv[0],run_name="__main__")'
             policy=replace(execution.Policy(),**POLICIES[kind],output_bytes=(64 if kind=='drawing' else 16)*1024**2,
                            output_files=128,log_bytes=256*1024)
