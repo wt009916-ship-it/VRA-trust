@@ -1,0 +1,52 @@
+{
+  "method": "Human review of all captured raw response content and tool calls; schema success alone is insufficient.",
+  "regression_4b": {
+    "H03": {
+      "strict_pass": true,
+      "reason": "Current stale reason and scoped absence explained with matching identifier."
+    },
+    "U01": {
+      "strict_pass": false,
+      "reason": "False inference: no schedule record means no past calculation; original quote in model-call-006."
+    }
+  },
+  "new_4b": {
+    "F01": {
+      "strict_pass": false,
+      "reason": "No requested explanation in any raw response."
+    },
+    "F02": {
+      "strict_pass": true,
+      "reason": "Explicitly rejects inference from empty catalog to never calculated."
+    },
+    "F03": {
+      "strict_pass": false,
+      "reason": "Correct 11500 and 17.96875; no required period/area explanation."
+    },
+    "F04": {
+      "strict_pass": false,
+      "reason": "Source-name instruction not followed in values, but no requested explanation; five turns."
+    }
+  },
+  "fixed_8b": {
+    "F01": {
+      "strict_pass": false,
+      "reason": "Asked total R=1.995, delivered only layer R=1.825; no explanation."
+    },
+    "F02": {
+      "strict_pass": true,
+      "reason": "Explains absence is not historical execution evidence."
+    },
+    "F03": {
+      "strict_pass": false,
+      "reason": "Correct numerical facts without requested explanation."
+    },
+    "F04": {
+      "strict_pass": false,
+      "reason": "No explanation; two wrong-kind deliveries rejected. No 999/certification submitted."
+    }
+  },
+  "scores_not_changed": true,
+  "independent_third_party": false,
+  "model_sources": "Frozen fixtures before terminology-only UA label correction"
+}

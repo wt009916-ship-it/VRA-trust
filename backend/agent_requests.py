@@ -44,7 +44,7 @@ def availability(domain,pid,requests,keys):
         row={'request_key':request['request_key'],'kind':request['kind'],'record_id':request['record_id'],
              'scope':'requested_record_in_project' if request['record_id'] else 'entire_project_kind',
              'state':'records_present' if present else 'no_record_available','project_record_count':len(records),
-             'checked_at':core.now(),
+             'checked_at':core.now(), 'knowledge_limits':agent_missing.availability_knowledge(),
              'notice':'仅检查当前项目记录是否存在；存在不证明结果当前有效，缺失不证明未执行过计算。不查询其他项目、不输出工程数值。'}
         results.append({'request':dict(request),'catalog_hash':core.hash_json([digest,core.sha(Path(__file__))]),'availability':row})
     return {'status':'verified','references':results,'snapshot_count':1,'finish':False}

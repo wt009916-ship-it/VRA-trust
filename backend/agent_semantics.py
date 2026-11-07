@@ -16,7 +16,7 @@ class Statement(Contract):
     unit: str = Field(min_length=1, max_length=40)
     period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window']
     study_years: int | None = Field(ge=1, le=200, description='Required: copy the fact study_years; null for a non-period calculation.')
-    area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='Required: copy the fact area_m2; null for a total rather than a per-area quantity.')
+    area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='Required: copy fact area_m2. Null means no explicit area denominator; see area_basis. R/U are intrinsic area-normalized properties, not totals.')
 
 
 class Delivery(Contract):
@@ -89,6 +89,9 @@ def facts(record, kind):
         rows.append({'fact': key, 'label': label, 'value': display, 'source_value': raw,
                      'value_policy': '12_significant_digits_display' if isinstance(value, float) else 'exact_decimal',
                      'unit': unit, 'period': period, 'study_years': years, 'area_m2': area,
+                     'area_basis': 'intrinsic_area_normalized_property' if kind == 'thermal' else (
+                         'explicit_area_denominator' if area is not None else 'no_area_normalization'),
+                     'time_basis': 'whole_study_period_not_annual' if period == 'study_period' else 'not_a_study_duration',
                      'source_path': path or '/result/' + key})
 
     if kind == 'thermal':
@@ -156,6 +159,16 @@ def model_projection(record, kind):
 
 def calculation_context(record, kind):
     result = record.get('result') or {}
+    if kind == 'thermal':
+        return {'method': 'one_dimensional_steady_state_opaque_assembly',
+                'resistance_definition': 'R=sum(d/lambda_effective)+Rsi+Rse; m2 K/W',
+                'transmittance_definition': 'U=1/R; W/(m2 K)',
+                'area_basis': 'intrinsic_area_normalized_property',
+                'notice': 'R是面积热阻，U是单位面积传热系数；两者不需要建筑总面积。area_m2=null不是面积缺测，也不妨碍本记录的R/U计算。构件整体热阻为R/A（K/W），整体传热导度UA为W/K，需另有构件面积；不能用建筑面积代替。未计算全年能耗或节能率。'}
+    if kind == 'lifecycle':
+        return {'study_years': record['input']['study_years'], 'area_m2': record['input']['area_m2'],
+                'excluded_stages': [b['stage'] for b in record['input']['boundaries'] if not b['included']],
+                'notice': '阶段量及边界总量均覆盖声明评估期，不是年量。只有单位面积指标使用声明面积作分母；总量事实area_m2=null不表示建筑面积未知。排除阶段未知，不能视为零或完整生命周期；不签发碳资产。'}
     if kind == 'engineering':
         return {'support':record['input']['support'], 'model_screening':result.get('model_screening', []),
                 'missing':result.get('missing', []), 'notice':'超出模型筛查范围时不交付工程数值；无安全结论。'}
