@@ -99,6 +99,10 @@ def progress(record,answer):
 def attach(answer,domain,pid,record,reader=None):
     if not record.get('read_requests'):return answer
     answer={**answer,'verification':list(answer.get('verification',[])),'gaps':list(answer.get('gaps',[]))}
+    answer['read_execution'] = record.get('read_execution', 'model')
+    answer['read_execution_receipt'] = record.get('read_execution_receipt')
+    if record.get('read_execution') == 'application':
+        answer['task_notice'] = '模型解析所需字段；应用执行用户声明范围的读取与查询，并重验来源。执行记录不证明模型自主选工具、完整理解意图或工程合规。'
     refs=record.get('availability_deliveries',[]);checked=[]
     if refs:
         result=reader() if reader else recheck(domain,pid,record['read_requests'],refs)

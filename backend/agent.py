@@ -26,6 +26,7 @@ from . import agent_recovery as read_recovery
 from . import agent_requests as requested_scopes
 from . import agent_simulation
 from . import agent_outputs
+from . import agent_read_execution
 
 
 class Chat(Contract):
@@ -35,6 +36,7 @@ class Chat(Contract):
     calculation_plans: list[calculations.CalculationPlan] = Field(default_factory=list, max_length=2)
     read_requests: list[requested_scopes.ReadRequest] = Field(default_factory=list, max_length=6)
     infer_outputs: bool = True
+    read_execution: Literal['application', 'model'] = 'application'
     search_plan: Search | None = None
     cost_plan: Actions | None = None
     objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle', 'inspect_engineering', 'inspect_schedule', 'inspect_operations'] = 'open_ended'
@@ -466,7 +468,8 @@ class Agent:
         if body.objective == 'open_ended':
             record.update(professional_deliveries=[], missing_deliveries=[], llm_commentary_policy='audit_only')
         if body.read_requests:
-            record.update(read_requests=[r.model_dump(mode='json') for r in body.read_requests],availability_deliveries=[], infer_outputs=body.infer_outputs)
+            record.update(read_requests=[r.model_dump(mode='json') for r in body.read_requests],availability_deliveries=[], infer_outputs=body.infer_outputs,
+                          read_execution=body.read_execution if body.infer_outputs else 'model')
         if body.calculation_plans:
             record['calculation_plan_snapshot'] = calculations.snapshot(self.domain, project_id, body.calculation_plans)
         if spec:
@@ -753,7 +756,7 @@ class Agent:
                     previous = record['professional_deliveries']
                     if len(previous) >= 3 and not any(x['record_id'] == delivery.record_id for x in previous):
                         raise ToolRefusal('At most three professional records per task')
-                if name == 'professional_missing' and origin == 'model':
+                if name == 'professional_missing':
                     candidate = {'request':canonical['missing']}
                     if not candidate['request']:raise core.ValidationError('Provide missing request')
                     if candidate['request'].get('record_id') and candidate['request']['record_id'] not in missing_targets():
@@ -784,7 +787,7 @@ class Agent:
                     record['professional_deliveries'] = accumulate(record['professional_deliveries'], result['reference'])
                 if name == 'capability_explain':
                     record['capability_delivery'] = result['reference']
-                if name == 'professional_missing' and origin == 'model':
+                if name == 'professional_missing':
                     new=missing_records.references(result);keys={missing_records.key(x) for x in new}
                     record['missing_deliveries'] = [x for x in record['missing_deliveries'] if missing_records.key(x) not in keys] + new
                 if isinstance(result, dict) and result.get('status') == 'ACTION_NOT_AUTHORIZED':
@@ -968,6 +971,9 @@ class Agent:
                             messages.append({'role':'user','content':'你已查询应用能力，但尚未完成正式说明。检查问题中的每个不同要求；遗漏的能力请用capability_lookup补查，可参考related_capabilities。随后capability_explain一次提交全部所需claims和catalog_hash；最后说明finish=true。自由文字不会成为正式结果；不要把计算支持与认证能力合并成一项。'})
                             continue
                         break
+                    if (record.get('read_execution') == 'application' and not record.get('output_plan')
+                            and len(calls) != 1):
+                        raise core.ValidationError('Application read execution requires one frozen plan call before source access')
                     new_deliveries = sum(c['function']['name'] in {'professional_deliver','professional_limit','professional_missing'} for c in calls)
                     if not record.get('availability_deliveries') and any(c['function']['name']=='requested_availability' for c in calls):new_deliveries+=1
                     current_capability_reads = capabilities.read_count(record.get('capability_delivery'))
@@ -1019,6 +1025,17 @@ class Agent:
                                 result = {'status':'verified', 'accepted_capabilities':[c['capability_id'] for c in result['capability_assessments']],
                                           'notice':'所列能力边界已核验，不代表实际工程任务完成；其他所需结果须另行执行工具并交付。'}
                         messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': json.dumps(agent_simulation.model_result(call['function']['name'], result), ensure_ascii=False)})
+                    if (record.get('read_execution') == 'application' and record.get('output_plan')
+                            and not batch_failed):
+                        needed = agent_read_execution.event_reserve(record['read_requests'])
+                        if len(record['events']) + reserved_reads() + needed > 15:
+                            raise ToolRefusal('Tool budget exceeded before declared read execution; no plan reads executed')
+                        record['read_execution_receipt'] = agent_read_execution.execute(
+                            record, invoke, cancelled=self.domain.stop.is_set)
+                        record['termination'] = {'reason':'application_read_plan_executed',
+                            'model_declared_finished':False, 'pending_request_keys':requested_scopes.pending(record)}
+                        save()
+                        break  # Source revalidation below remains mandatory, including partial execution.
                     if body.read_requests and body.infer_outputs and record.get('output_plan') and not batch_failed and not requested_scopes.pending(record):
                         record['termination'] = {'reason':'planned_outputs_submitted',
                             'model_declared_finished':bool(finish_requested), 'pending_request_keys':[]}

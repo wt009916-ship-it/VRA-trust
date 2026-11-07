@@ -257,7 +257,7 @@ def current_answer(domain, project_id, deliveries, reader=None):
         try:
             record = reader(spec, request.record_id) if reader else spec.service(domain).view(project_id, request.record_id)
             checked = check(record, request)
-            artifacts.append(spec.artifact(record))
+            artifacts.append({**spec.artifact(record), 'record_id': request.record_id})
             if checked['statements']:
                 statements.append({'record_id': request.record_id, 'name': record['input']['name'], 'facts': checked['statements']})
             if checked.get('limitation'):

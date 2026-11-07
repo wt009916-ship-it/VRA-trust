@@ -23,12 +23,12 @@ def plan(key='wall', excerpt='Give total R and explain area.', facts=None, topic
             'explanation_topics': topics if topics is not None else ['area']}
 
 
-def test_default_flow_freezes_requirements_then_delivers_current_explanation(client, monkeypatch):
+def test_model_managed_flow_freezes_requirements_then_delivers_current_explanation(client, monkeypatch):
     pid = create_project(client)['project_id'];a = client.app.state.agent;r = create_record(client,pid,'thermal')
     messages = scripted(a,monkeypatch,[
         tool('requested_output_plan',{'output_plan':[plan()]}),
         tool('thermal_read',{'thermal_id':r['thermal_id']}), claim(r)])
-    t = a.start(pid,Chat(message='Give total R and explain area.',mode='provider',read_requests=[scope(r)]),background=False)
+    t = a.start(pid,Chat(read_execution='model', message='Give total R and explain area.',mode='provider',read_requests=[scope(r)]),background=False)
     assert t['status']=='succeeded',t.get('error')
     assert len(messages)==3
     answer=t['answer']
@@ -51,7 +51,7 @@ def test_layer_R_does_not_satisfy_total_R_even_when_model_finishes(client, monke
     scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[plan()]}),
         tool('thermal_read',{'thermal_id':r['thermal_id']}),wrong,
         {'role':'assistant','content':'Everything is done.'},{'role':'assistant','content':'Everything is done.'}])
-    t=a.start(pid,Chat(message='Give total R and explain area.',mode='provider',read_requests=[scope(r)]),background=False)
+    t=a.start(pid,Chat(read_execution='model', message='Give total R and explain area.',mode='provider',read_requests=[scope(r)]),background=False)
     assert t['status']=='succeeded',t.get('error')
     assert t['answer']['read_request_coverage']=='incomplete'
     assert t['answer']['output_contract_coverage']=='incomplete'
@@ -67,7 +67,7 @@ def test_corrected_fact_satisfies_same_frozen_plan(client, monkeypatch):
     args['delivery']['statements'][0].update(fact='layer_resistance_m2k_w',value='1.8')
     scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[plan()]}),
         tool('thermal_read',{'thermal_id':r['thermal_id']}),tool('professional_deliver',args),claim(r)])
-    t=a.start(pid,Chat(message='Give total R and explain area.',mode='provider',read_requests=[scope(r)]),background=False)
+    t=a.start(pid,Chat(read_execution='model', message='Give total R and explain area.',mode='provider',read_requests=[scope(r)]),background=False)
     assert t['status']=='succeeded',t.get('error')
     assert t['answer']['output_contract_coverage']=='fulfilled'
     assert t['answer']['output_plan']['items'][0]['fact_keys']==['total_resistance_m2k_w']
@@ -79,7 +79,7 @@ def test_availability_explanation_is_scoped_and_current(client,monkeypatch):
     item=plan('history','Does no record mean never calculated?',[],['history'])
     scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[item]}),
         tool('requested_availability',{'request_keys':['history'],'finish':True})])
-    t=a.start(p['project_id'],Chat(message=item['question_excerpt'],mode='provider',read_requests=[request]),background=False)
+    t=a.start(p['project_id'],Chat(read_execution='model', message=item['question_excerpt'],mode='provider',read_requests=[request]),background=False)
     assert t['status']=='succeeded',t.get('error')
     assert '不能证明从未计算' in t['answer']['requested_outputs'][0]['explanations'][0]['text']
     assert len(t['answer']['requested_outputs'][0]['source_hash']) == 64
@@ -95,7 +95,7 @@ def test_source_change_withdraws_explanation_without_rewriting_history(client,mo
     p=create_project(client);pid=p['project_id'];a=client.app.state.agent;r=create_record(client,pid,'thermal')
     scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[plan()]}),
         tool('thermal_read',{'thermal_id':r['thermal_id']}),claim(r)])
-    t=a.start(pid,Chat(message='Give total R and explain area.',mode='provider',read_requests=[scope(r)]),background=False)
+    t=a.start(pid,Chat(read_execution='model', message='Give total R and explain area.',mode='provider',read_requests=[scope(r)]),background=False)
     assert t['answer']['output_contract_coverage']=='fulfilled'
     assert client.put(f'/api/projects/{pid}/building',json={'expected_revision':p['revision'],
         'building':{**p['building'],'area_m2':1234}}).status_code==200
@@ -133,7 +133,7 @@ def test_planning_schema_requires_every_scope_and_forbids_availability_numbers(c
         definitions.extend(tools)
         return {'role':'assistant','content':'Unable to plan.'}
     monkeypatch.setattr(a.gateway,'complete',capture)
-    t=a.start(pid,Chat(message='Give total R and explain area.',mode='provider',read_requests=requests),background=False)
+    t=a.start(pid,Chat(read_execution='model', message='Give total R and explain area.',mode='provider',read_requests=requests),background=False)
     assert not t.get('output_plan')
     assert t['answer']['output_contract_coverage']=='plan_missing'
     assert all(d['function']['name']=='requested_output_plan' for d in definitions)
@@ -158,7 +158,7 @@ def test_finished_metric_tools_leave_remaining_goal_and_stop_without_extra_prose
         definitions.append({t['function']['name'] for t in tools})
         return original(messages,tools)
     monkeypatch.setattr(a.gateway,'complete',capture)
-    t=a.start(pid,Chat(message=message,mode='provider',read_requests=[scope(r),request]),background=False)
+    t=a.start(pid,Chat(read_execution='model', message=message,mode='provider',read_requests=[scope(r),request]),background=False)
     assert t['status']=='succeeded',t.get('error')
     assert definitions[-1]=={'project_get','requested_availability'}
     assert len(definitions)==4 and t['answer']['output_contract_coverage']=='fulfilled'
