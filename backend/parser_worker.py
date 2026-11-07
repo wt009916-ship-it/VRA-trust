@@ -19,11 +19,16 @@ def main():
             from cad_worker import parse
             if len(options)>1:raise ValueError('Unexpected CAD options')
             if options:
-                from ifc_union import measure_union
                 values=json.loads(options[0])
-                if not isinstance(values,dict) or set(values)!={'operation','product_ids'} or values['operation']!='ifc_union':
+                if not isinstance(values,dict):raise ValueError('Invalid CAD operation')
+                if set(values)=={'operation','product_ids'} and values['operation']=='ifc_union':
+                    from ifc_union import measure_union
+                    result=measure_union(source,values['product_ids'])
+                elif set(values)=={'operation','product_id'} and values['operation']=='ifc_layers':
+                    from ifc_layer_quantities import measure_layers
+                    result=measure_layers(source,values['product_id'])
+                else:
                     raise ValueError('Invalid CAD operation')
-                result=measure_union(source,values['product_ids'])
             else:
                 result=parse(source)
             maximum=8*1024**2

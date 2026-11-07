@@ -30,6 +30,8 @@ def register_extensions(app, domain, auth):
     domain.robustness = robustness
     thermal = Thermal(domain)
     cad = Cad(domain)
+    from .material_takeoff import register as register_material_takeoff
+    register_material_takeoff(app, cad)
     lifecycle = Lifecycle(domain)
     standards = Standards(domain)
     engineering = Engineering(domain)
