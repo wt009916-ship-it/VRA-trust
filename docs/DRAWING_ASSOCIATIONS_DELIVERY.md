@@ -38,3 +38,9 @@
 4dfbdcb的前端CI为135通过、1失败：旧drawing-events测试仅模拟原页面节点，没有新挂载模块需要的document/window/MutationObserver。浏览器产品路径未发生该错误；专项10项未覆盖此旧组合测试，属验收遗漏。补齐测试内页面对象、列表API和定时器清理，并断言新面板实际挂载读取；保留原“手动空角度可见报错、零POST”断言，没有跳过用例或添加产品环境判断。最终本机前端全量136通过。产品源码没有变化，78项后端及浏览器证据仍对应相同产品逻辑；原失败日志摘录和完整新前端输出入库。新提交CI另验。
 
 DA-T02（测试集成/中）：复现npm test；预期旧图纸事件测试与新面板共存，实际缺document导致1失败，证据frontend-ci-first-excerpt.txt；修复测试环境并全量136通过，今后修改页面挂载时包含页面组合测试。历史证据索引仍指向4dfbdcb，不改写其哈希；修正索引见DRAWING_ASSOCIATIONS_FOLLOWUP.json。
+
+## 同提交CI分歧：时间戳误匹配
+
+ee848cf的PR后端1279通过/22跳过/6子测试，push后端1278通过/1失败/22跳过/6子测试。失败断言为“整份HTML不得含950”，误匹配复核时间戳372950；stale/result=null/reviews=null已正确。修正为解析嵌入记录并核验结果及复核为null，检查尺寸展示section/pre不存在，同时新增含950的名称/时间戳/hash元数据反例。产品源码未改，不通过重复跑同提交碰运气消除失败。2项有针对性的真实OCR流程/元数据回归通过，新提交CI另验。
+
+DA-T03（不稳定测试/中）：运行真实双页来源变更测试；预期验证撤下结果而保留来源元数据，实际全文子串误报时间戳，证据backend-ci-stale-assertion-failure.txt。已改结构化断言并覆盖具体反例，保留失败；旧manifest不重签，追加DRAWING_ASSOCIATIONS_STALE_ASSERTION.json。
