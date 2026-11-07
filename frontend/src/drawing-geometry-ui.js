@@ -34,7 +34,7 @@ export function scaleResult(scale){
 
 export async function attachGeometry(host,record,base,action){
   const section=host.querySelector('#drawing-geometry');if(!section)return;
-  const url=base+'/drawings/'+record.drawing_id+'/scales';let current=null;
+  const url=base+'/drawings/'+record.drawing_id+'/scales';let current=null,measurementSequence=0,scaleSequence=0,measurementPending=0;
   const scaleForm=section.querySelector('#drawing-scale-form'),lengthForm=section.querySelector('#drawing-length-form'),select=section.querySelector('#drawing-scale-select');
   function points(){
     const svg=section.querySelector('#scale-points');
@@ -45,18 +45,21 @@ export async function attachGeometry(host,record,base,action){
       return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${['#167d92','#ac6f13','#a33b64'][index]}" stroke-width="3"/>`;
     }).join('');
   }
-  scaleForm.oninput=points;lengthForm.oninput=points;
+  function clearMeasurement(){measurementSequence++;section.querySelector('#drawing-length-result').innerHTML='';}
+  function measurementButton(){lengthForm.querySelector('button').disabled=measurementPending>0||current?.status!=='consistent_declared_references';}
+  scaleForm.oninput=points;lengthForm.oninput=()=>{clearMeasurement();points();};
   section.querySelector('#drawing-source-pick').onclick=e=>{
     const rect=e.currentTarget.getBoundingClientRect(),size=record.result.processing.transform.source_size;
     const target=section.querySelector('#scale-pick-target').value,form=target.startsWith('m')?lengthForm:scaleForm;
     form.elements[target+'_x'].value=((e.clientX-rect.left)*size[0]/rect.width).toFixed(3);
-    form.elements[target+'_y'].value=((e.clientY-rect.top)*size[1]/rect.height).toFixed(3);points();
+    form.elements[target+'_y'].value=((e.clientY-rect.top)*size[1]/rect.height).toFixed(3);if(form===lengthForm)clearMeasurement();points();
   };
   async function show(id){
-    current=null;lengthForm.querySelector('button').disabled=true;section.querySelector('#drawing-length-result').innerHTML='';
-    const row=await request(url+'/'+id);if(!section.isConnected||select.value!==id)return;
+    const sequence=++scaleSequence;current=null;lengthForm.querySelector('button').disabled=true;clearMeasurement();
+    section.querySelector('#drawing-scale-result').textContent='正在核验所选尺度…';
+    const row=await request(url+'/'+id);if(!section.isConnected||select.value!==id||sequence!==scaleSequence)return;
     current=row;section.querySelector('#drawing-scale-result').innerHTML=scaleResult(row)+`<p><a href="/api${url}/${id}" target="_blank" rel="noopener">导出当前尺度核验 JSON</a></p>`;
-    lengthForm.querySelector('button').disabled=row.status!=='consistent_declared_references';
+    measurementButton();
   }
   async function refresh(id){
     const rows=await request(url);if(!section.isConnected)return;
@@ -69,14 +72,16 @@ export async function attachGeometry(host,record,base,action){
     const body={basis_hash:record.geometry_basis_hash,references:['a','b'].map((key,i)=>({label:'用户参考 '+['A','B'][i],start:readPoint(f,key,'start'),end:readPoint(f,key,'end'),length:Number(f.get(key+'_length')),unit:f.get(key+'_unit'),length_uncertainty:Number(f.get(key+'_length_uncertainty')),point_uncertainty_px:Number(f.get(key+'_point_uncertainty'))})),relative_tolerance:Number(f.get('relative_tolerance')),basis:f.get('basis'),plane_assumption:'user_declares_uniform_scale_on_this_page'};
     const row=await post(url,body);await refresh(row.scale_id);
   },e.submitter);};
-  lengthForm.onsubmit=e=>{e.preventDefault();if(!current)return;const id=current.scale_id,f=new FormData(lengthForm);action(async()=>{
-    const row=await post(url+'/'+id+'/measure',{start:readPoint(f,'m','start'),end:readPoint(f,'m','end'),coordinates:'source'});
-    if(!section.isConnected||current?.scale_id!==id)return;
+  lengthForm.onsubmit=e=>{e.preventDefault();clearMeasurement();if(current?.status!=='consistent_declared_references'||measurementPending)return;const sequence=measurementSequence,id=current.scale_id,f=new FormData(lengthForm);measurementPending++;measurementButton();action(async()=>{
+    try{
+      const row=await post(url+'/'+id+'/measure',{start:readPoint(f,'m','start'),end:readPoint(f,'m','end'),coordinates:'source'});
+      if(!section.isConnected||current?.scale_id!==id||sequence!==measurementSequence)return;
     section.querySelector('#drawing-length-result').innerHTML=`<p>条件长度 ${fmt(row.length_m,4)} m；仅传播尺度区间：${row.scale_interval_length_m.map(x=>fmt(x,4)).join(' ～ ')} m。</p><p>${esc(row.notice)}</p><button type="button" id="drawing-length-export">导出本次条件长度 JSON</button>`;
     section.querySelector('#drawing-length-export').onclick=()=>{
       const objectUrl=URL.createObjectURL(new Blob([JSON.stringify(row,null,2)],{type:'application/json'}));
       const link=document.createElement('a');link.href=objectUrl;link.download='conditional-drawing-length.json';link.click();setTimeout(()=>URL.revokeObjectURL(objectUrl),1000);
     };
-  },e.submitter);};
+    }finally{measurementPending--;if(section.isConnected)measurementButton();}
+  });};
   await refresh();
 }
