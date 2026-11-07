@@ -30,7 +30,7 @@ export async function drawingWorkspace(state,host,action){
     host.querySelector('#drawing-history-result').innerHTML='';
     await attachGeometry(host,record,base,action);
     const reprocess=host.querySelector('#drawing-reprocess');
-    if(reprocess)reprocess.onsubmit=e=>{e.preventDefault();const processing=processingInput(new FormData(reprocess));action(async()=>{const next=await post(base+'/drawings',{file_id:record.source.file_id,page:record.input.page,processing});await history(next.drawing_id);},e.submitter);};
+    if(reprocess)reprocess.onsubmit=e=>{e.preventDefault();action(async()=>{const processing=processingInput(new FormData(reprocess));const next=await post(base+'/drawings',{file_id:record.source.file_id,page:record.input.page,processing});await history(next.drawing_id);},e.submitter);};
     const form=host.querySelector('#drawing-review');if(!form)return;
     const candidate=form.elements.candidate_id,decision=form.elements.decision,correction=form.elements.corrected_text;
     function select(){

@@ -43,6 +43,7 @@ def code_hash():
                       'input_validation':sha(ROOT/'backend/input_validation.py'),
                       'weather_quality':sha(ROOT/'backend/weather_quality.py'),
                       'design_loads':sha(ROOT/'backend/design_loads.py'),
+                      'hourly_thermal':sha(ROOT/'backend/hourly_thermal.py'),
                       'execution':{name:sha(ROOT/'backend'/name) for name in
                                    ('execution.py','execution_lifetime.py','native_ownership.py','private_storage.py','runtime_lock.py','engine_limits.py','engine_worker.py','worker_limits.py',
                                     'native_environment.py','native_windows.py','native_linux.py','native_staging.py')}})
@@ -257,6 +258,10 @@ def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_over
         sizing=inspect_design_loads(rd/'output/eplusout.sql',inp/'model.idf',weather_quality)
         metrics['zone_design_loads']=sizing
         manifest['zone_design_loads']={'policy_version':sizing['policy_version'],'parser_sha256':sizing['parser_sha256']}
+        from .hourly_thermal import inspect_hourly_thermal
+        hourly=inspect_hourly_thermal(rd/'output/eplusout.sql',inp/'model.idf')
+        metrics['hourly_thermal']=hourly
+        manifest['hourly_thermal']={'policy_version':hourly['policy_version'],'parser_sha256':hourly['parser_sha256']}
         if source_fingerprints(case,scheme,profile,engine,root)!=manifest['fingerprints']:raise ValidationError('Inputs changed while simulation was running')
         result={**identity,'status':'succeeded','finished_at':now(),'data_nature':case['data_nature'],'scheme_name':scheme['name'],'metrics':metrics,'carbon':calculate_carbon(metrics['energy_by_carrier_kwh'],profile,case['region']),'cost':scheme.get('cost'),'limitations':case['notes'],'warnings_count':manifest['warnings'],'geometry_status':case['geometry_status'],'ccer':{'status':'not_assessed','issued_credits_t':None,'reason':'参考算例无真实业主、合规历史监测及开发核证证据。'}}
         manifest['status']='succeeded'
@@ -297,6 +302,14 @@ def read_validated(rd,check_current=True):
                 or sizing.get('weather_sha256') not in (None,manifest['fingerprints']['weather'])
                 or (sizing.get('status')!='calculated_model_scenario' and sizing.get('rows') is not None)):
             raise ValidationError('Zone design-load receipt binding mismatch')
+    if manifest.get('hourly_thermal') is not None or manifest['fingerprints'].get('code')==code_hash():
+        hourly=(result.get('metrics') or {}).get('hourly_thermal')
+        if (not isinstance(hourly,dict) or manifest.get('hourly_thermal')!=
+                {'policy_version':hourly.get('policy_version'),'parser_sha256':hourly.get('parser_sha256')}
+                or hourly.get('model_sha256')!=manifest['fingerprints']['model']
+                or hourly.get('sql_sha256')!=manifest['artifact_hashes']['output/eplusout.sql']
+                or (hourly.get('status')!='calculated_model_scenario' and hourly.get('summary') is not None)):
+            raise ValidationError('Hourly thermal receipt binding mismatch')
     plan={'changed':[],'invalid':[],'action':'reuse'}
     if check_current:
         case=load_case(manifest['case_id']);scheme=get_scheme(case,manifest['scheme_id']);profile=get_profile(manifest['factor_profile_id']);engine=engine_path()

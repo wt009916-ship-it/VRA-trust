@@ -130,6 +130,24 @@ def report_pdf(report):
             story.append(para(day['name'] + '：最高干球 ' + str(day['maximum_dry_bulb_C']) + ' °C，日温差 ' + str(day['daily_dry_bulb_range_K']) + ' K；统计来源未独立核验。'))
         for note in sizing['limitations']:
             story.append(para(note))
+    hourly = metrics.get('hourly_thermal')
+    if hourly:
+        section('05.4  逐时热工分析（模型情景）')
+        rows([('状态', hourly['status']), ('模型 / SQL SHA256', hourly['model_sha256'] + ' / ' + hourly['sql_sha256'])])
+        summary = hourly.get('summary') if hourly['status'] == 'calculated_model_scenario' else None
+        if summary:
+            rows([('原生环境', summary['environment']['EnvironmentName']), ('完整覆盖小时数', summary['hour_count'])])
+            for mode, name in [('heating', '采暖'), ('cooling', '制冷')]:
+                peak = summary['building'][mode + '_peak']
+                clock = peak['time']
+                rows([(name + '同时峰值 kW', numeric(peak['value_W'] / 1000)),
+                      ('小时结束时刻', f"{clock['month']}/{clock['day']} {clock['hour_ending']:02d}:00"),
+                      (name + '显热交付量 kWh', numeric(summary['building'][mode + '_delivered_sensible_kWh']))])
+            story.append(para('峰值日 24 小时曲线及分区明细见同源 JSON；完整原生时序见证据 ZIP 的 SQL。'))
+        else:
+            story.append(para('当前没有可核验的逐时热工结果：' + hourly.get('reason', '缺少依据')))
+        for note in hourly['limitations']:
+            story.append(para(note))
     section("06  SQL 来源定位")
     for key, locator in metrics.get("locators", {}).items():
         story.append(para(key + " : " + " / ".join(str(locator.get(k, "")) for k in ["table", "row", "column", "unit", "raw_value"])))
