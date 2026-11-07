@@ -35,3 +35,7 @@
 下一步：浏览器原件/处理/坐标点选/尺度相符与冲突/失效和下载验收；同一输入Linux原生验证、双平台全量与精确Git字节/发布核验。完成后再按原评分子项复评，当前仍76。缺失结构复原、完整构件识别/跨图关联、净工程量、通用Agent恢复/注入、动态热工/实楼/专家及生产验收继续开放。
 
 实现参考：[Pillow 13仿射变换](https://pillow.readthedocs.io/en/stable/reference/ImageTransform.html)、[OpenCV Hough原理](https://docs.opencv.org/4.13.0/d6/d10/tutorial_py_houghlines.html)。后者页面为4.13，本机实际5.0.0.93返回布局以真实运行核验；5.x文档页面本次访问未成功，不据旧网页假定接口形状。
+
+## 本批本地验收收口
+
+后续限定检查、版本差异、DG-004修复、双平台全量和未通过的视觉截图，见DRAWING_GEOMETRY_DELIVERY.md与机器证据索引。上述“待验收”是各阶段当时状态，原失败保留。当前复评76，GitHub/原型发布以release回执为准，95+目标继续。
