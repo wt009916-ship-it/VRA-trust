@@ -3,9 +3,10 @@ import copy
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
+from pydantic.json_schema import SkipJsonSchema
 
-from . import core
+from . import core, agent_intent_catalog as intent_catalog
 from .schema import Contract
 
 FACTS = {
@@ -24,16 +25,26 @@ Topic = Literal['meaning', 'area', 'period', 'scope', 'status', 'history']
 
 class OutputItem(Contract):
     request_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
-    question_excerpt: str = Field(min_length=1, max_length=500,
-        description='Exact substring of the current user question that this output addresses.')
+    question_excerpt: SkipJsonSchema[str | None] = Field(default=None, min_length=1, max_length=500)
+    question_fragment_ids: list[str] | None = Field(default=None, min_length=1, max_length=16,
+        description='Select IDs from the application-provided original question fragments. Do not copy, rewrite or invent text.')
     fact_keys: list[str] = Field(max_length=12,
         description='Exact numeric fact keys requested by the user. Availability requests use []. Total R is total_resistance_m2k_w, not layer resistance.')
     explanation_topics: list[Topic] = Field(max_length=6,
         description='Requested explanation topics: meaning, area, period, scope, status, history. Availability supports history/status only.')
 
 
+    @model_validator(mode='after')
+    def source_anchor(self):
+        if (self.question_excerpt is None) == (self.question_fragment_ids is None):
+            raise ValueError('Provide either legacy exact excerpt or original question fragment IDs')
+        if self.question_fragment_ids and len(set(self.question_fragment_ids)) != len(self.question_fragment_ids):
+            raise ValueError('Question fragments must be distinct')
+        return self
+
+
 def version():
-    return core.hash_json([core.sha(Path(__file__)), core.sha(Path(__file__).with_name('agent_semantics.py'))])
+    return core.hash_json([core.sha(Path(__file__)), core.sha(Path(__file__).with_name('agent_semantics.py')), core.sha(Path(intent_catalog.__file__))])
 
 
 def catalog(requests):
@@ -44,7 +55,7 @@ def catalog(requests):
             for r in requests]
 
 
-def constrain_tool(tool, requests):
+def constrain_tool(tool, requests, question):
     tool = copy.deepcopy(tool)
     parameters = tool['function']['parameters']
     prototype = parameters['$defs']['OutputItem']
@@ -53,9 +64,13 @@ def constrain_tool(tool, requests):
         item = copy.deepcopy(prototype)
         props = item['properties']
         props['request_key'] = {'type': 'string', 'const': entry['request_key']}
+        props['question_fragment_ids'] = {'type':'array','minItems':1,'maxItems':16,'uniqueItems':True,
+            'items':{'type':'string','enum':[f['fragment_id'] for f in intent_catalog.fragments(question)]},
+            'description':'Select original question fragment IDs supporting this request. The application retains their exact text.'}
+        item['required'] = ['request_key','question_fragment_ids','fact_keys','explanation_topics']
         props['fact_keys'] = ({'type': 'array', 'minItems': 1, 'maxItems': 12, 'uniqueItems': True,
                                'items': {'type': 'string', 'enum': entry['available_fact_keys']},
-                               'description': 'Select only the metrics asked for, not all available metrics.'}
+                               'description': intent_catalog.meaning_description(entry['kind'])}
                               if entry['purpose'] == 'results' else {'type': 'array', 'maxItems': 0})
         props['explanation_topics'] = {'type': 'array', 'maxItems': 6, 'uniqueItems': True,
                                        'items': {'type': 'string', 'enum': entry['available_explanation_topics']},
@@ -77,10 +92,20 @@ def freeze(record, items):
                                    repr(sorted(set(requests) - {i.request_key for i in items})) +
                                    '; unexpected=' + repr(sorted({i.request_key for i in items} - set(requests))))
     allowed = {r['request_key']: r for r in catalog(record['read_requests'])}
+    anchors = {f['fragment_id']:f for f in intent_catalog.fragments(record['question'])}
+    normalized = []
     for item in items:
         entry = allowed[item.request_key]
-        if item.question_excerpt not in record['question']:
+        saved = item.model_dump(mode='json', exclude_none=True)
+        if item.question_fragment_ids is not None:
+            if not set(item.question_fragment_ids) <= set(anchors):
+                raise core.ValidationError('Question fragment IDs must belong to this original question')
+            selected = sorted((anchors[k] for k in item.question_fragment_ids), key=lambda f:f['start'])
+            saved['question_spans'] = selected
+            saved['question_excerpt'] = '\n'.join(f['text'] for f in selected)
+        elif item.question_excerpt not in record['question']:
             raise core.ValidationError('Quote an exact substring of the current user question, not source data')
+        normalized.append(saved)
         if len(set(item.fact_keys)) != len(item.fact_keys) or not set(item.fact_keys) <= set(entry['available_fact_keys']):
             raise core.ValidationError('Unknown, duplicate or out-of-scope fact keys')
         if entry['purpose'] == 'results' and not item.fact_keys:
@@ -89,7 +114,7 @@ def freeze(record, items):
             raise core.ValidationError('Unsupported or duplicate explanation topics')
     return {'origin': 'model_inferred_from_user_question', 'version': version(),
             'question_hash': core.hash_json(record['question']),
-            'items': [i.model_dump(mode='json') for i in items],
+            'items': normalized,
             'intent_verified': False,
             'notice': '模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。'}
 

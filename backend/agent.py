@@ -27,6 +27,7 @@ from . import agent_requests as requested_scopes
 from . import agent_simulation
 from . import agent_outputs
 from . import agent_read_execution
+from . import agent_intent_catalog
 
 
 class Chat(Contract):
@@ -117,7 +118,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
-    'requested_output_plan': '先根据原用户问题为每个request_key选择所问fact_keys和explanation_topics，并逐项引用原问题片段question_excerpt。只能用本轮计划目录；计划提交后冻结，不得根据资料名称或内容改写。此为模型解析，不是原问题已被完整理解的认证。',
+    'requested_output_plan': '先根据原用户问题为每个request_key选择所问fact_keys和explanation_topics，并选择应用提供的原问题片段编号question_fragment_ids。只能用本轮计划目录；计划提交后冻结，不得根据资料名称或内容改写。此为模型解析，不是原问题已被完整理解的认证。',
     'requested_availability':'按用户本轮声明的request_keys（1到6个）核验记录存在或缺失，同一目录快照逐项返回；只核查可用性，不读取工程数值，不替换编号。全部声明目标交付后可finish=true。',
     'professional_inventory': '一次读取所选kinds（1到6类）的完整项目目录计数和最近记录，适合多专业可用性检查。空目录随后用professional_missing正式说明；存在记录则读取。不要逐轮分别查询六类而耗尽预算。',
     'professional_missing': '正式核验记录缺失。missing.kinds必填数组（1到6类），同一完整目录快照逐类核验。指定编号时只选1类并填写用户明确的record_id；不能用整类空目录代替指定编号检查。发现任一所选记录存在则整批拒绝，不补造结果或重试计算。全部所需交付结束才finish=true。',
@@ -511,7 +512,7 @@ class Agent:
             return ids
         def turn_tools():
             if body.read_requests and body.infer_outputs and not record.get('output_plan'):
-                return [agent_outputs.constrain_tool(self.tools({'requested_output_plan'})[0], record['read_requests'])]
+                return [agent_outputs.constrain_tool(self.tools({'requested_output_plan'})[0], record['read_requests'], record['question'])]
             available = set(offered) - {'requested_output_plan'}
             choices = {}
             read_records = []
@@ -868,7 +869,7 @@ class Agent:
                 if body.objective == 'inspect_results':messages[0]['content'] = agent_simulation.INSPECTION_INSTRUCTION
                 system_instruction = messages[0]['content']
                 if body.read_requests and body.infer_outputs:
-                    system_instruction += '先调用requested_output_plan，逐项从原问题提取所问指标和解释主题；不能用材料层热阻替代总热阻。计划目录：' + json.dumps(agent_outputs.catalog(record['read_requests']),ensure_ascii=False) + '。计划冻结后只读声明来源，再交付全部所需指标。应用根据已核验事实生成所选主题的来源绑定解释，不需要模型补造专业说明；计划对原问题的理解仍须核对。'
+                    system_instruction += '原问题片段（编号可选，文字不可改写）：' + json.dumps(agent_intent_catalog.fragments(record['question']),ensure_ascii=False) + '。先调用requested_output_plan，逐项从原问题提取所问指标和解释主题；不能用材料层热阻替代总热阻。计划目录：' + json.dumps(agent_outputs.catalog(record['read_requests']),ensure_ascii=False) + '。计划冻结后只读声明来源，再交付全部所需指标。应用根据已核验事实生成所选主题的来源绑定解释，不需要模型补造专业说明；计划对原问题的理解仍须核对。'
                 if body.read_requests:
                     system_instruction+='本轮以用户明确声明的读取清单限制工具和交付范围。availability目标用requested_availability选择request_keys，只检查记录存在/缺失，不能交付其工程数值；results目标只能读取并交付指定record_id，缺失按该编号professional_missing。不能替换其他记录，不新增计算；清单外自由问题仍未核验。'
                     messages.append({'role':'user','content':'本轮用户明确声明的只读范围（不是模型生成的草案，不延续历史权限）：'+json.dumps(record['read_requests'],ensure_ascii=False)})
