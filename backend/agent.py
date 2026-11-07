@@ -876,6 +876,7 @@ class Agent:
                             coverage = agent_simulation.progress(record, agent_simulation.observed_view(record))
                             if coverage['state'] == 'partial' and turn < 4:
                                 provider_event['incomplete_sizing_commentary'] = answer.get('content')
+                                messages[-1] = {'role': 'assistant', 'content': '上一段提前结束的解释已保留审计，未作为完整交付；其文字不在后续上下文重复发送。'}
                                 messages.append({'role': 'user', 'content': '本次已选择的负荷读取尚有未覆盖行：' + json.dumps(coverage, ensure_ascii=False) + '。未读行不能说成不存在；按next_read继续，或明确本次预算内未完成。总预算不增加。'})
                                 continue
                         pending_declared=requested_scopes.pending(record)

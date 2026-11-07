@@ -16,6 +16,7 @@ INSPECTION_INSTRUCTION = (
     '不得以末页到达代替此前各页已读。只交付实际读取且用户要求的范围，说明未完成项。'
     '保留W、设计日、峰值时刻和倍率口径；区分显热与总冷量，不再次乘已应用倍率，'
     '不合计分区峰值为全楼同时峰值，不把参考模型当实楼或合规认证。'
+    '原生数值由结果卡展示，解释只需简短说明已读范围与限制，不重复整张数值表。'
     '模型文字只是解释；当前结果及审计记录是数值依据。')
 NOTICE = ('这是分区显热设计工况，不是全楼同时峰值、总冷量或设备选型结论；'
           '原生倍率已应用，不再次相乘。设计日来源与当地适用性未独立验证。')
@@ -59,6 +60,32 @@ def summary(receipt, run_id):
 
 def model_result(tool, result):
     """Project only known simulation envelopes, without mutating their audit snapshots."""
+    if (tool == 'simulation_result' and isinstance(result, dict)
+            and result.get('schema_version') == 'vra.agent.design-load-page.v1' and result.get('rows')):
+        def flatten(row, prefix=''):
+            flat = {}
+            for key, value in row.items():
+                if '.' in key:
+                    raise ValueError('Ambiguous nested column name')
+                path = prefix + key
+                if isinstance(value, dict) and value:
+                    flat.update(flatten(value, path + '.'))
+                else:
+                    flat[path] = value
+            return flat
+        try:
+            values = [flatten(row) for row in result['rows']]
+        except ValueError:
+            values = result['rows']
+        nested = all(set(row) == set(values[0]) for row in values) and values is not result['rows']
+        if not nested:
+            values = result['rows']
+        columns = list(values[0])
+        if all(set(row) == set(columns) for row in values):
+            return {**{k: v for k, v in result.items() if k != 'rows'}, 'row_columns': columns,
+                    'row_values': [[row[k] for k in columns] for row in values],
+                    'row_encoding': 'dotted_paths' if nested else 'top_level',
+                    'encoding_notice': 'row_values按row_columns同一索引读取；dotted_paths的点分列名表示嵌套对象。原行的全部字段和值均保留，不是删列摘要；原字典保留在审计。'}
     def run(view, list_entry=False):
         if not isinstance(view, dict):
             return view

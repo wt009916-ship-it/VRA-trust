@@ -56,6 +56,8 @@ DL-005（高，漏页与错误缺失解释）：第三轮4B/8B各3题，两个�
 
 DL-006（高，运行列表状态矛盾）：同轮4B失效题反复读取并耗尽预算。`simulation_status`返回stale，而`simulation_list`仍使用持久化job的历史succeeded，误导当前有效性。复现：完成参考运行→撤回复核→分别调用上述两工具。预期均以当前来源判断有效性，历史执行完成状态另列。修复列表逐项调用当前domain.view，返回当前status，并把原job状态明确命名execution_status；不显示旧数值。专项用已执行成功但当前stale的反例核验。模型自行恢复和应用状态一致性分别记录，不将整个失败只归为模型表现。
 
+覆盖修复后的第四轮进一步暴露DL-004的后续消息问题：初始请求和第一页已能执行，但保留提前结束的冗长数值解释，再请求续页时仍超8192，例如首题8287tokens；4B四个有效运行题失败、失效题通过。原始结果仍按版本保留，未以安全拒绝当作任务成功。随后只对模型消息采用无损列式编码（原行全部字段和值可重建，混合null采用兼容编码），每页约4303/4264字符；原字典与提前结束原文保留审计，后续上下文明确说明原文已移出而非静默截断。解释不再要求复制服务端结果卡中的大表。不得把这类协议/预算修复当作新增独立AI准确率。
+
 全量完成后，核验源码/证据摘要、历史未被覆盖和发布树一致，再复评、PR合并、更新本机原型。独立稳态设计负荷有新增证据，但完整动态负荷、当地设计工况资料、实楼/专家验收继续扣分。RS-07混合Agent、RS-09 CPU触发顺序、一般注入、净工程量、DWG/转换和图纸修复仍开放；不启动扩大训练，不提前整体视觉改版。
 
 固定版本来源：[SizingManager.cc](https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008)、[SQLiteProcedures.cc](https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SQLiteProcedures.cc#L1689)。本地源码下载摘要与原生证据在`validation/designload-20261107`；来源网页旧字段列表不能代替实际9.0.1表结构。

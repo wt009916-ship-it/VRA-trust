@@ -10,6 +10,20 @@ from backend.agent import Chat, ToolArgs
 from test_api import create_project
 
 
+def decode_page(compact):
+    rows = []
+    for values in compact['row_values']:
+        row = {}
+        for column, value in zip(compact['row_columns'], values):
+            parts = column.split('.') if compact['row_encoding'] == 'dotted_paths' else [column]
+            node = row
+            for part in parts[:-1]:
+                node = node.setdefault(part, {})
+            node[parts[-1]] = value
+        rows.append(row)
+    return rows
+
+
 def run_view(project_id='project_fixture'):
     # Deliberately large source receipt and distinctive rows expose accidental truncation/repetition.
     day = {'name': 'synthetic day', 'month': 7, 'day': 21,
@@ -57,11 +71,21 @@ def test_pages_cover_each_original_row_once_with_bound_source_and_day():
         assert 1 <= len(part['rows']) <= 5 and part['source']['sql_sha256'] == receipt['sql_sha256']
         assert part['entire_receipt_delivered'] is False and part['building_coincident_peak_W'] is None
         assert part['design_days'][0]['name'] == 'synthetic day' and 'raw_fields' not in part['design_days'][0]
-        assert sizing.model_result('simulation_result', part) == part
+        compact = sizing.model_result('simulation_result', part)
+        assert decode_page(compact) == part['rows']
+        assert compact['source'] == part['source'] and compact['next_offset'] == part['next_offset']
         offset = part['next_offset']
     assert found == receipt['rows'] and view == original
     last = sizing.page(view, 10, digest)
     assert last['next_offset'] is None and not last['entire_receipt_delivered']
+
+
+def test_mixed_zero_peak_and_positive_rows_preserve_null_without_fabricated_nested_fields():
+    view = run_view(); view['metrics']['zone_design_loads']['rows'][0]['peak'] = None
+    part = sizing.page(view, 0, core.hash_json(view['metrics']['zone_design_loads']))
+    compact = sizing.model_result('simulation_result', part)
+    assert compact['row_encoding'] == 'top_level'
+    assert decode_page(compact) == part['rows'] and decode_page(compact)[0]['peak'] is None
 
 
 @pytest.mark.parametrize('state', ['stale', 'failed', 'running'])
