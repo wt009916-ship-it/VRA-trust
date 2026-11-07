@@ -8243,7 +8243,8 @@
               "inspect_lifecycle",
               "inspect_engineering",
               "inspect_schedule",
-              "inspect_operations"
+              "inspect_operations",
+              "inspect_material_scenarios"
             ],
             "title": "Objective",
             "default": "open_ended"
@@ -8330,6 +8331,18 @@
               }
             ],
             "title": "Target Operation Id"
+          },
+          "target_scenario_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^scenario_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Scenario Id"
           },
           "previous_agent_id": {
             "anyOf": [
@@ -10795,7 +10808,8 @@
               "cost",
               "engineering",
               "schedule",
-              "operation"
+              "operation",
+              "scenario"
             ],
             "title": "Kind"
           },
@@ -10811,7 +10825,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$"
+                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$"
               },
               {
                 "type": "null"

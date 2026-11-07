@@ -1,0 +1,53 @@
+.F.F................                                                     [100%]
+================================== FAILURES ===================================
+___ test_incomplete_comparison_withholds_numbers_and_rejects_cross_project ____
+
+client = <starlette.testclient.TestClient object at 0x00000223BA05C650>
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/pytest-of-18483/pytest-224/test_incomplete_comparison_wit0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000223BA519850>
+
+    def test_incomplete_comparison_withholds_numbers_and_rejects_cross_project(client,tmp_path,monkeypatch):
+        pid,r=scenario(client,tmp_path,incomplete=True);assert r['status']=='incomplete'
+        assert facts(r,'scenario')==[]
+        task=model_read(client,monkeypatch,pid,r,['cost_difference'])
+        assert task['answer']['checked_statements']==[] and task['answer']['checked_limitations'][0]['state']=='incomplete'
+        other=create_project(client)['project_id']
+>       with pytest.raises(ToolRefusal):client.app.state.agent._tool(other,'material_scenarios_read',ToolArgs(scenario_id=r['scenario_id']),False)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Agent' object has no attribute '_tool'. Did you mean: 'tools'?
+
+tests\test_agent_scenarios.py:80: AttributeError
+__ test_scenario_read_scope_does_not_grant_computation_or_accept_wrong_kind ___
+
+    def test_scenario_read_scope_does_not_grant_computation_or_accept_wrong_kind():
+        ident='scenario_'+'a'*32
+        with pytest.raises(ValueError):Chat(message='x',mode='provider',allow_compute=True,read_requests=[{'request_key':'x','kind':'scenario','purpose':'results','record_id':ident}])
+        with pytest.raises(ValueError):Chat(message='x',mode='provider',read_requests=[{'request_key':'x','kind':'cost','purpose':'results','record_id':ident}])
+>       with pytest.raises(ValueError):CalculationPlan(plan_key='x',kind='scenario',input={})
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_agent_scenarios.py:100: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = typing.Annotated[backend.agent_calculations.ThermalPlan | backend.agent_calculations.LifecyclePlan | backend.agent_cal...lePlan | backend.agent_calculations.OperationPlan, FieldInfo(annotation=NoneType, required=True, discriminator='kind')]
+args = (), kwargs = {'plan_key': 'x', 'kind': 'scenario', 'input': {}}
+
+    def __call__(self, *args, **kwargs):
+        if not self._inst:
+            raise TypeError(f"Type {self._name} cannot be instantiated; "
+                            f"use {self.__origin__.__name__}() instead")
+>       result = self.__origin__(*args, **kwargs)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'types.UnionType' object is not callable
+
+..\..\..\..\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\typing.py:1184: TypeError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_scenarios.py::test_incomplete_comparison_withholds_numbers_and_rejects_cross_project
+FAILED tests/test_agent_scenarios.py::test_scenario_read_scope_does_not_grant_computation_or_accept_wrong_kind
+2 failed, 18 passed, 1 warning in 35.14s

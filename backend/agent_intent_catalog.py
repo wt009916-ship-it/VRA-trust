@@ -1,7 +1,9 @@
 """Domain meanings and exact user-question anchors, never inferred numeric data."""
 import re
+from .agent_scenarios import MEANINGS as SCENARIO_MEANINGS
 
 MEANINGS = {
+ 'scenario': SCENARIO_MEANINGS,
  'thermal': {
   'total_resistance_m2k_w': '总热阻 R；含内外表面热阻和全部材料层；m² K/W；一维稳态，不是层热阻或全年节能率',
   'layer_resistance_m2k_w': '材料层热阻合计；只求和材料层d/λ，不含内外表面热阻；m² K/W',

@@ -1,7 +1,10 @@
 import {escape as esc, request} from './api.js';
 
-export const readKinds={thermal:'热工构造',lifecycle:'阶段碳清单',cost:'材料成本',engineering:'梁分析',schedule:'施工进度',operation:'设备运行'};
-const routes={thermal:'thermal',lifecycle:'lifecycle',cost:'material-costs',engineering:'beam-analyses',schedule:'schedules',operation:'operations'};
+export const readKinds={thermal:'热工构造',lifecycle:'阶段碳清单',cost:'材料成本',engineering:'梁分析',schedule:'施工进度',operation:'设备运行',scenario:'材料两方案对照'};
+const routes={thermal:'thermal',lifecycle:'lifecycle',cost:'material-costs',engineering:'beam-analyses',schedule:'schedules',operation:'operations',scenario:'material-scenarios'};
+export function readRecordLabel(record,kind){
+ return kind==='scenario'?(record.names||[]).join(' / ')+' · 状态将在执行时核验':record.input.name+' · '+record.status;
+}
 export function readRequestMarkup() {
   return `<details class="agent-read-input"><summary>明确读取范围 · 可选</summary><p>逐项选择本轮要检查的记录，模型不能换成其他编号。检查可用性仅说明记录是否存在；读取结果需指定编号，仍要核验当前来源。最多6项，其中结果读取最多3项。</p><div data-read-rows></div><button type="button" data-add-read>＋ 添加读取目标</button><p>选择AI模式与自由提问，并关闭“允许计算”。这份清单不授权计算，也不证明清单外的问题已处理。</p></details>`;
 }
@@ -50,7 +53,7 @@ export function bindReadRequests(host,pid,action) {
         throw error;
       }
       if(!row.isConnected||generation!==stamp||kind.value!==selected)return;
-      existing.innerHTML='<option value="">请选择；不会自动选择最新记录</option>'+records.map(r=>`<option value="${esc(r[selected+'_id'])}">${esc(r.input.name)} · ${esc(r.status)} · ${esc(r[selected+'_id'])}</option>`).join('');
+      existing.innerHTML='<option value="">请选择；不会自动选择最新记录</option>'+records.map(r=>`<option value="${esc(r[selected+'_id'])}">${esc(readRecordLabel(r,selected))} · ${esc(r[selected+'_id'])}</option>`).join('');
       note.textContent=records.length?'选择记录只填写编号，最终仍按任务执行时的当前来源核验。':'当前列表没有记录；可以按原编号核验缺失，不会新建计算。';
     },e.currentTarget);
     row.querySelector('[data-remove-read]').onclick=()=>{generation++;row.remove();add.disabled=false;};
@@ -61,7 +64,7 @@ export function bindReadRequests(host,pid,action) {
 export function readRequestProgressMarkup(task) {
   const rows=task.read_request_progress||task.answer?.read_request_progress||[];
   if(!rows.length)return outputContractMarkup(task);
-  const states={required_facts_missing:'尚缺所问指标',output_plan_missing:'尚未形成输出计划',unfulfilled:'尚未交付',delivery_not_currently_verified:'交付目前未通过核验',availability_verified:'可用性已核验',result_verified:'所选结果已核验',limitation_verified:'当前限制已核验',record_unavailable:'指定记录不可用'};
+  const states={fields_unavailable:'所问字段含不可计算项',required_facts_missing:'尚缺所问指标',output_plan_missing:'尚未形成输出计划',unfulfilled:'尚未交付',delivery_not_currently_verified:'交付目前未通过核验',availability_verified:'可用性已核验',result_verified:'所选结果已核验',limitation_verified:'当前限制已核验',record_unavailable:'指定记录不可用'};
   const available=task.answer?.checked_availability||[];
   const termination=task.termination||task.answer?.termination;
   const stopped=termination?.reason==='response_budget_exhausted'?'<p role="status">已到模型轮次上限。已提交内容仍按当前来源核验，未交付的目标继续标示；流程结束不等于全部任务完成。</p>':'';

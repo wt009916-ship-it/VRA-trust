@@ -9,6 +9,11 @@ from .lifecycle import Lifecycle
 from .engineering import Engineering
 from .construction import Schedules
 from .operations import Operations
+from .agent_scenarios import ScenarioReads, review as scenario_review, name as scenario_name
+
+
+def record_name(record):
+    return scenario_name(record) if "scenario_id" in record else record["input"]["name"]
 
 
 def engineering_review(record):
@@ -100,6 +105,8 @@ class Inspection:
 
 
 INSPECTIONS = {
+    'inspect_material_scenarios': Inspection('scenario', 'scenario_id', 'target_scenario_id', 'scenario_id',
+        'material_scenarios_list', 'material_scenarios_read', 'scenario_selection_basis', '材料两方案对照', ScenarioReads, scenario_review),
     'inspect_material_cost': Inspection('cost', 'cost_id', 'target_cost_id', 'material_cost_id',
         'material_cost_list', 'material_cost_read', 'cost_selection_basis', '材料清单', Costs, material_cost_review),
     'inspect_thermal': Inspection('thermal', 'thermal_id', 'target_thermal_id', 'thermal_id',

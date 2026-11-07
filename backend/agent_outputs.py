@@ -8,8 +8,11 @@ from pydantic.json_schema import SkipJsonSchema
 
 from . import core, agent_intent_catalog as intent_catalog
 from .schema import Contract
+from .agent_scenarios import FACTS as SCENARIO_FACTS
+from . import agent_scenarios
 
 FACTS = {
+    'scenario': SCENARIO_FACTS,
     'thermal': ['total_resistance_m2k_w', 'layer_resistance_m2k_w', 'u_w_m2k'],
     'lifecycle': ['boundary_total_kgco2e', 'kgco2e_m2_over_study_period'] +
                  ['stage.' + s for s in ['production', 'transport', 'construction', 'operation', 'end_of_life']],
@@ -44,14 +47,14 @@ class OutputItem(Contract):
 
 
 def version():
-    return core.hash_json([core.sha(Path(__file__)), core.sha(Path(__file__).with_name('agent_semantics.py')), core.sha(Path(intent_catalog.__file__))])
+    return core.hash_json([core.sha(Path(__file__)), core.sha(Path(__file__).with_name('agent_semantics.py')), core.sha(Path(intent_catalog.__file__)), core.sha(Path(agent_scenarios.__file__))])
 
 
 def catalog(requests):
     return [{'request_key': r['request_key'], 'kind': r['kind'], 'purpose': r['purpose'],
              'available_fact_keys': FACTS[r['kind']] if r['purpose'] == 'results' else [],
              'available_explanation_topics': ['history', 'status'] if r['purpose'] == 'availability' else
-                 ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle'} else [])}
+                 ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle', 'scenario'} else [])}
             for r in requests]
 
 
@@ -136,6 +139,8 @@ def explain(topic, request, facts, state, artifact):
     """Application text from validated current facts; no model prose or source-name instructions."""
     if topic == 'history':
         return '这里只核验当前项目、指定范围的记录。记录缺失不能证明从未计算；记录存在也不是完整历史执行审计。'
+    if state == 'fields_unavailable' and topic == 'status':
+        return '；'.join(f['unavailable_reason'] for f in facts if f.get('unavailable_reason'))
     if topic == 'status':
         if state == 'record_unavailable':
             return '指定记录在当前项目不可用；无法交付其工程数值，不推断其他项目中的记录。'
@@ -152,14 +157,18 @@ def explain(topic, request, facts, state, artifact):
     if topic == 'area':
         if request['kind'] == 'thermal':
             return 'R为面积热阻（m²·K/W），U为单位面积传热系数（W/(m²·K)）；两者由构造决定，无需建筑总面积。area_m2为空表示没有另用面积分母，不是面积缺测。整体热阻R/A及传热导度UA另需构件面积，不能用建筑面积替代。'
+        if request['kind']=='scenario':
+            return '材料方案单位面积碳量使用项目建筑面积，不是所选墙面积；总量与金额不除以面积。分母仅为项目声明，未作实楼测量核证。'
         area_facts = [f for f in facts if f.get('area_m2') is not None]
         if area_facts:
             return '碳总量不以面积作分母；单位面积指标使用声明面积' + str(area_facts[0]['area_m2']) + ' m²作分母。总量字段的area_m2为空不表示建筑面积未知。'
         return '本次交付的是未按面积归一化的碳总量，area_m2为空不表示建筑面积未知；单位面积结果需另行交付相应事实。'
     if topic == 'period':
+        if request['kind']=='scenario':
+            return '材料金额对应声明报价日期；碳量与碳比例覆盖声明的'+str(artifact.get('input',{}).get('study_years','未知'))+'年评估期，不是年量。排除阶段不记零；功能等效及清单完整性未核证。'
         years = {f.get('study_years') for f in facts if f.get('study_years') is not None}
         return ('这些碳量覆盖声明的' + str(next(iter(years))) + '年评估期，不是每年排放。排除阶段不能记为零，不能据此称为完整生命周期核证。') if years else '本次为一维稳态热工量，不是逐年能耗或全年节能率。'
-    return '；'.join(f"{f['label']}为{f['value']} {f['unit']}" for f in facts) + '。数值来自已读取并核验的记录，不由模型补算。'
+    return '；'.join(f"{f['label']}：{f['unavailable_reason']}" if f.get('unavailable_reason') else f"{f['label']}为{f['value']} {f['unit']}" for f in facts) + '。数值来自已读取并核验的记录，不由模型补算。'
 
 
 def attach(answer, record):
@@ -184,7 +193,7 @@ def attach(answer, record):
         state = progress.get(r['request_key'], {}).get('state', 'unfulfilled')
         facts = [f for f in values.get(r['record_id'], []) if f['fact'] in needed['fact_keys']]
         missing = sorted(set(needed['fact_keys']) - {f['fact'] for f in facts})
-        blocked = state in {'record_unavailable', 'limitation_verified'}
+        blocked = state in {'record_unavailable', 'limitation_verified', 'fields_unavailable'}
         ready = state in {'result_verified', 'availability_verified'} and not missing
         artifact = artifacts.get(r['record_id']) or limits.get(r['record_id']) or {}
         source_hash = artifact.get('record_hash')
@@ -198,6 +207,7 @@ def attach(answer, record):
                  for topic in needed['explanation_topics']] if ready or blocked else []
         outputs.append({'request_key': r['request_key'], 'record_id': r['record_id'], 'missing_fact_keys': missing,
                         'state': 'source_limited' if blocked else 'fulfilled' if ready else 'incomplete',
+                        'unknown_fact_keys': sorted(f['fact'] for f in facts if f['value'] is None),
                         'explanations': texts, 'explanation_origin': 'application_from_current_verified_sources',
                         'source_hash': source_hash, 'explanation_version': plan['version']})
     answer['requested_outputs'] = outputs

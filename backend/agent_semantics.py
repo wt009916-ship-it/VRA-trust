@@ -6,14 +6,15 @@ from typing import Literal
 from pydantic import Field, model_validator
 
 from .schema import Contract
-from .agent_inspections import INSPECTIONS
+from .agent_inspections import INSPECTIONS, record_name
+from . import agent_scenarios
 from . import core
 
 
 class Statement(Contract):
     fact: str = Field(min_length=1, max_length=100, description='Copy the exact machine key from explanation_facts.fact, never its human-readable label or a translated name.')
     value: str | None = Field(max_length=80, pattern=r'^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]{1,4})?$',
-                             description='Required. Copy a known explanation_facts numeric value as a string. Unknown source values are not numeric facts; use professional_limit for the current limitation.')
+                             description='Required. Copy a known explanation_facts numeric value as a string. Copy null only for an explicit source_undefined fact with an unavailable_reason. Never invent zero or null. For an incomplete/stale record use professional_limit.')
     unit: str = Field(min_length=1, max_length=40)
     period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window']
     study_years: int | None = Field(ge=1, le=200, description='Required: copy the fact study_years; null for a non-period calculation.')
@@ -21,8 +22,8 @@ class Statement(Contract):
 
 
 class Delivery(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(default_factory=list, max_length=12)
     limitation_status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale'] | None = Field(default=None,
@@ -42,8 +43,8 @@ class Delivery(Contract):
 
 class NumericDelivery(Contract):
     """The model-facing numeric contract matches server validation exactly."""
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(min_length=1, max_length=12)
     finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
@@ -58,8 +59,8 @@ class NumericDelivery(Contract):
 
 
 class Limitation(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale']
     finish: bool = False
@@ -81,21 +82,25 @@ def facts(record, kind):
     body = record['input']
     rows = []
 
-    def add(key, label, value, unit, period, *, years=None, area=None, path=None):
-        if value is None:
-            return  # Keep null in source records; unknown is not a verified numeric delivery.
+    def add(key, label, value, unit, period, *, years=None, area=None, path=None, unavailable_reason=None):
+        if value is None and not unavailable_reason:
+            return  # Only explicitly explained source-null fields may be acknowledged.
         # Match the established 12-significant-digit engineering display, not binary float tails.
-        raw = str(value)
+        raw = None if value is None else str(value)
         display = format(value, '.12g') if isinstance(value, float) else raw
         rows.append({'fact': key, 'label': label, 'value': display, 'source_value': raw,
-                     'value_policy': '12_significant_digits_display' if isinstance(value, float) else 'exact_decimal',
+                     'value_policy': 'source_undefined' if value is None else ('12_significant_digits_display' if isinstance(value, float) else 'exact_decimal'),
                      'unit': unit, 'period': period, 'study_years': years, 'area_m2': area,
                      'area_basis': 'intrinsic_area_normalized_property' if kind == 'thermal' else (
                          'explicit_area_denominator' if area is not None else 'no_area_normalization'),
                      'time_basis': 'whole_study_period_not_annual' if period == 'study_period' else 'not_a_study_duration',
                      'source_path': path or '/result/' + key})
+        if value is None:
+            rows[-1]['unavailable_reason'] = unavailable_reason
 
-    if kind == 'thermal':
+    if kind == 'scenario':
+        agent_scenarios.append_facts(record,add)
+    elif kind == 'thermal':
         for key, label, unit in [('total_resistance_m2k_w', '总热阻 R', 'm2 K/W'),
                                  ('layer_resistance_m2k_w', '材料层热阻合计', 'm2 K/W'),
                                  ('u_w_m2k', '传热系数 U', 'W/(m2 K)')]:
@@ -138,14 +143,14 @@ def facts(record, kind):
 def readable(record, kind):
     return {**record, 'explanation_facts': facts(record, kind),
             'explanation_instruction': '开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。'
-            '只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null，不列入数值事实；用professional_limit说明限制。排除阶段没有事实项。'}
+            '只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。'}
 
 
 def model_projection(record, kind):
     """Explicit fact projection for delivery, with full source retained in the tool audit."""
     spec = inspection(kind)
     artifact = spec.artifact(record)
-    return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record['input']['name'],
+    return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record_name(record),
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
             'limitation_delivery': None if artifact['verified'] else {
@@ -160,6 +165,7 @@ def model_projection(record, kind):
 
 def calculation_context(record, kind):
     result = record.get('result') or {}
+    if kind == 'scenario':return agent_scenarios.context(record)
     if kind == 'thermal':
         return {'method': 'one_dimensional_steady_state_opaque_assembly',
                 'resistance_definition': 'R=sum(d/lambda_effective)+Rsi+Rse; m2 K/W',
@@ -259,7 +265,7 @@ def current_answer(domain, project_id, deliveries, reader=None):
             checked = check(record, request)
             artifacts.append({**spec.artifact(record), 'record_id': request.record_id})
             if checked['statements']:
-                statements.append({'record_id': request.record_id, 'name': record['input']['name'], 'facts': checked['statements']})
+                statements.append({'record_id': request.record_id, 'name': record_name(record), 'facts': checked['statements']})
             if checked.get('limitation'):
                 limitations.append(checked['limitation'])
             valid = True

@@ -40,7 +40,7 @@ class Chat(Contract):
     read_execution: Literal['application', 'model'] = 'application'
     search_plan: Search | None = None
     cost_plan: Actions | None = None
-    objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle', 'inspect_engineering', 'inspect_schedule', 'inspect_operations'] = 'open_ended'
+    objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle', 'inspect_engineering', 'inspect_schedule', 'inspect_operations', 'inspect_material_scenarios'] = 'open_ended'
     target_run_id: str | None = None
     target_cost_id: str | None = Field(default=None, pattern=r'^cost_[a-f0-9]{32}$')
     target_thermal_id: str | None = Field(default=None, pattern=r'^thermal_[a-f0-9]{32}$')
@@ -48,6 +48,7 @@ class Chat(Contract):
     target_engineering_id: str | None = Field(default=None, pattern=r'^engineering_[a-f0-9]{32}$')
     target_schedule_id: str | None = Field(default=None, pattern=r'^schedule_[a-f0-9]{32}$')
     target_operation_id: str | None = Field(default=None, pattern=r'^operation_[a-f0-9]{32}$')
+    target_scenario_id: str | None = Field(default=None, pattern=r"^scenario_[a-f0-9]{32}$")
     previous_agent_id: str | None = None
 
     @model_validator(mode='after')
@@ -76,7 +77,7 @@ class ToolArgs(Contract):
     output_plan: list[agent_outputs.OutputItem] | None = Field(default=None, min_length=1, max_length=6)
     request_keys: list[str] | None = Field(default=None,min_length=1,max_length=6)
     finish: StrictBool = False
-    kinds: list[Literal['thermal','lifecycle','cost','engineering','schedule','operation']] | None = Field(default=None,min_length=1,max_length=6)
+    kinds: list[Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario']] | None = Field(default=None,min_length=1,max_length=6)
     missing: missing_records.Missing | None = None
     plan_keys: list[str] | None = Field(default=None, min_length=1, max_length=2)
     record_ids: list[str] | None = Field(default=None, min_length=1, max_length=3)
@@ -87,6 +88,7 @@ class ToolArgs(Contract):
     delivery: NumericDelivery | None = None
     thermal_id: str | None = Field(default=None, pattern=r'^thermal_[a-f0-9]{32}$')
     lifecycle_id: str | None = Field(default=None, pattern=r'^lifecycle_[a-f0-9]{32}$')
+    scenario_id: str | None = Field(default=None, pattern=r"^scenario_[a-f0-9]{32}$")
     operation_id: str | None = None
     schedule_id: str | None = None
     material_cost_id: str | None = None
@@ -111,7 +113,7 @@ class ToolArgs(Contract):
             raise ValueError('Select distinct professional kinds')
         for values, pattern in [(self.plan_keys, r'[A-Za-z0-9_-]{1,40}'),
                                 (self.request_keys, r'[A-Za-z0-9_-]{1,40}'),
-                                (self.record_ids, r'(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}')]:
+                                (self.record_ids, r'(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}')]:
             if values is not None and (len(set(values))!=len(values) or any(not re.fullmatch(pattern,v) for v in values)):
                 raise ValueError('Batch identifiers must be unique and valid; no arbitrary parameters or paths')
         return self
@@ -129,6 +131,8 @@ TOOLS = {
     'calculation_execute': '选择本轮用户明确提交的plan_key，按已锁定参数调用热工/阶段碳/材料成本/梁/进度/设备规则计算器并保存新记录。不能修改工程输入或CSV；随后按返回的next_tool读取并核验交付；不重复创建。',
     'professional_deliver': '交付数值：先用专业list/read读取记录，再提交delivery的statements，核对数值、单位、期间及面积口径。支持thermal/lifecycle/cost/engineering/schedule/operation；来源hash必填。不提供limitation_status；若只说明不完整或不适用，请另用professional_limit。',
     'professional_limit': '交付限制说明：先实际读取当前记录，再提交limitation含kind、record_id、record_hash、status（复制当前状态，包括stale）及finish。只允许当前结果不完整、不适用或已失效；不填数值或statements。核验说明不改变原记录状态，不恢复旧数值，也不等于完成工程计算。',
+    'material_scenarios_list': '只读列出当前项目最近6份材料两方案对照；不创建计算，不认证等效或碳资产',
+    'material_scenarios_read': '按scenario_id读取两套材料方案的金额、声明边界/阶段碳与比较，保留数量来源和评估期；金额差为替换减基准，碳减少为基准减替换，不签发信用',
     'thermal_list': '只读列出最近6个热工构造的ID和当前状态，不生成材料参数',
     'thermal_read': '按thermal_id读取当前一维稳态热阻/U及单位、表面热阻、材料修正依据；U降低不是全年节能率，不判合规',
     'lifecycle_list': '建筑碳账/碳清单/生命周期阶段排放：只读列出最近6份阶段CO2e清单的ID和当前状态。阶段总量、每平方米量及期间通过lifecycle_read读取；不是运行碳重算或碳信用账户',
@@ -174,6 +178,7 @@ TOOL_FIELDS = {
     'capability_explain': ('capability_explanation',),
     'calculation_execute': ('plan_key',),
     'professional_deliver': ('delivery',),
+    'material_scenarios_list': (), 'material_scenarios_read': ('scenario_id',),
     'thermal_list': (), 'thermal_read': ('thermal_id',),
     'lifecycle_list': (), 'lifecycle_read': ('lifecycle_id',),
     'operations_list': (), 'operations_read': ('operation_id',),
@@ -506,7 +511,7 @@ class Agent:
             return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + int(bool(record.get('missing_deliveries'))) + capabilities.read_count(record.get('capability_delivery')) + int(bool(record.get('availability_deliveries')))
         def missing_targets():
             if body.read_requests:return requested_scopes.result_ids(record['read_requests'])
-            ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}\b',body.message))
+            ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}\b',body.message))
             ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('professional_references',[]))
             ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('missing_references',[]) if r.get('record_id'))
             return ids
@@ -766,7 +771,7 @@ class Agent:
                     if body.read_requests and any(r.record_id not in requested_scopes.result_ids(record['read_requests']) for r in selected):
                         raise ToolRefusal('Missing delivery is outside this task user-declared result scopes')
                     scopes={missing_records.key(x) for x in record.get('missing_deliveries',[])}
-                    explicit=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}\b',body.message))
+                    explicit=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}\b',body.message))
                     for request in selected:
                         if request.record_id is None and any(ident.startswith(request.kind+'_') and (request.kind,ident) not in scopes for ident in explicit):
                             raise core.ValidationError('Check the explicitly requested record ID first; entire-kind absence cannot substitute for its requested scope')
