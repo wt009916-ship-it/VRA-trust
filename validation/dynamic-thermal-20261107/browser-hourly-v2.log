@@ -1,0 +1,50 @@
+### Result
+{"run_id":"run_67c5ec574f004a509b6df2c07b04a856","project_id":"project_5e192e8cdff5480980a4e7c2982e9ddc","status":"succeeded","actual_engine_calls":1,"hourly_status":"calculated_model_scenario","hours":8760,"zones":6,"displayed_peaks_kW":["15.02","14.41"],"building":{"heating_peak":{"value_W":15023.527897381853,"time":{"time_index":8408,"year":2013,"month":12,"day":17,"hour_ending":8,"dst":0,"interval_minutes":60},"first_of_ties":true},"cooling_peak":{"value_W":14414.848719646423,"time":{"time_index":4624,"year":2013,"month":7,"day":12,"hour_ending":16,"dst":0,"interval_minutes":60},"first_of_ties":true},"heating_delivered_sensible_kWh":10743.208546716358,"cooling_delivered_sensible_kWh":16493.602195980777},"report_matches_api":true,"model_sha256":"8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577","sql_sha256":"210929e26d4228e33300365d6540187965a974b1c46dfc43b2296af605770fe8","curve_points":[24,24,24,24],"pdf":{"bytes":86323,"sha256":"4a9c92720a1c6a39030dd75688a83ce51dce5ec8d5d5db3f072f47e74e2bc637"},"html_provenance":true,"desktop":{"width":1403,"panel_width":1078,"charts":[{"width":502,"height":197.203125},{"width":502,"height":197.203125}]},"mobile":{"viewport":390,"document_width":390,"panel_width":339,"profiles_columns":"305px","charts":[{"width":305,"height":119.8125},{"width":305,"height":119.8125}]},"visual_screenshot":"pending: native screenshot timed out; DOM and keyboard checks only"}
+### Ran Playwright code
+```js
+await (async (page) => {
+  const data = await page.evaluate(async () => {
+    const panel = document.querySelector('.hourly-thermal');
+    if (!panel) throw new Error('Missing hourly panel');
+    const href = document.querySelector('.report-actions a[href$="/report.json"]').getAttribute('href');
+    const reportResponse = await fetch(href);
+    const report = await reportResponse.json();
+    const run = report.run;
+    const response = await fetch('/api/runs/' + run.run_id);
+    const current = await response.json();
+    if (JSON.stringify(current.metrics) !== JSON.stringify(run.metrics)) throw new Error('Report/API mismatch');
+    const receipt = run.metrics.hourly_thermal;
+    if (receipt.status !== 'calculated_model_scenario' || receipt.summary.hour_count !== 8760 || receipt.summary.zones.length !== 6) throw new Error('Unexpected coverage');
+    const expected = ['heating', 'cooling'].map(mode => (receipt.summary.building[mode + '_peak'].value_W / 1000).toLocaleString('zh-CN', {maximumFractionDigits: 2}));
+    if (!expected.every(v => panel.textContent.includes(v))) throw new Error('Displayed peaks mismatch');
+    const curves = [...panel.querySelectorAll('polyline')].map(e => e.getAttribute('points').trim().split(/\s+/).length);
+    if (curves.length !== 4 || curves.some(n => n !== 24)) throw new Error('Incomplete charts');
+    const pdfResponse = await fetch(href.replace('/report.json', '/report.pdf'));
+    const pdf = new Uint8Array(await pdfResponse.arrayBuffer());
+    if (!pdfResponse.ok || new TextDecoder().decode(pdf.slice(0, 4)) !== '%PDF') throw new Error('PDF failed');
+    const htmlResponse = await fetch(href.replace('/report.json', '/report.html'));
+    const html = await htmlResponse.text();
+    if (!htmlResponse.ok || !html.includes(receipt.sql_sha256)) throw new Error('HTML provenance absent');
+    const digest = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(v => v.toString(16).padStart(2, '0')).join('');
+    return {run_id:run.run_id,project_id:run.project_id,status:run.status,actual_engine_calls:run.engine_calls_executed,
+      hourly_status:receipt.status,hours:receipt.summary.hour_count,zones:receipt.summary.zones.length,
+      displayed_peaks_kW:expected,building:receipt.summary.building,report_matches_api:true,
+      model_sha256:receipt.model_sha256,sql_sha256:receipt.sql_sha256,curve_points:curves,
+      pdf:{bytes:pdf.length,sha256:await digest(pdf)},html_provenance:true,
+      desktop:{width:innerWidth,panel_width:panel.getBoundingClientRect().width,
+        charts:[...panel.querySelectorAll('svg')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}};
+  });
+  await page.setViewportSize({width:390,height:844});
+  data.mobile = await page.evaluate(() => {
+    const p=document.querySelector('.hourly-thermal');
+    return {viewport:innerWidth,document_width:document.documentElement.scrollWidth,panel_width:p.getBoundingClientRect().width,
+      profiles_columns:getComputedStyle(p.querySelector('.hourly-profiles')).gridTemplateColumns,
+      charts:[...p.querySelectorAll('svg')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))};
+  });
+  if(data.mobile.document_width>390 || data.mobile.charts.some(c=>c.width<=0 || c.height<=0)) throw new Error('Mobile layout overflow/empty chart');
+  await page.setViewportSize({width:1403,height:1157});
+  data.visual_screenshot='pending: native screenshot timed out; DOM and keyboard checks only';
+  return data;
+}
+)(page);
+```

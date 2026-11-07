@@ -1,0 +1,26 @@
+async (page) => {
+  let posts=0;
+  const errors=[];
+  const request = r => {if(r.method()==='POST' && /\/drawings$/.test(new URL(r.url()).pathname)) posts++;};
+  const error = e => errors.push(String(e));
+  const before=await page.locator('#drawing-record option').count();
+  page.on('request',request);page.on('pageerror',error);
+  try {
+    const form=page.locator('#drawing-reprocess');
+    await form.locator('[name=deskew_mode]').selectOption('manual');
+    await form.locator('[name=angle_degrees]').fill('');
+    await form.getByRole('button',{name:'从保留的原件新建处理版本',exact:true}).focus();
+    await page.keyboard.press('Enter');
+    await page.getByText('请输入明确的旋转角度。',{exact:true}).waitFor({timeout:10000});
+    const after=await page.locator('#drawing-record option').count();
+    const source=await page.evaluate(async()=>{
+      const href=[...document.querySelectorAll('#drawing-links a')].find(a=>a.textContent==='下载原图').getAttribute('href');
+      const response=await fetch(href),bytes=await response.arrayBuffer();
+      const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');
+      if(hash!==document.querySelector('#drawing-links code').textContent)throw Error('Original file hash mismatch');
+      return {sha256:hash,bytes:bytes.byteLength};
+    });
+    if(posts || errors.length || before!==after)throw Error('Invalid input escaped boundary or created record');
+    return {error_visible:true,posts,uncaught_errors:errors,records_before:before,records_after:after,original:source};
+  } finally {page.off('request',request);page.off('pageerror',error);}
+}
