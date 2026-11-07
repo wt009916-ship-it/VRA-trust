@@ -134,7 +134,10 @@ def test_real_two_page_ocr_conflict_review_staleness_auth_and_original_preservat
     old=copy.deepcopy(client.app.state.domain.store.get('drawingassociation',record['drawingassociation_id']))
     refreshed=client.get(path).json();assert refreshed['status']=='stale' and refreshed['result'] is None and refreshed['reviews'] is None
     assert client.post(path+'/review',json={**review,'expected_revision':2}).status_code==409
-    assert '950' not in client.get(path+'/report.html').text
+    stale_html=client.get(path+'/report.html').text
+    stale_embedded=json.loads(re.search(r'<script type="application/json" id="record">(.*?)</script>',stale_html,re.S)[1])
+    assert stale_embedded['status']=='stale' and stale_embedded['result'] is None and stale_embedded['reviews'] is None
+    assert '<section>' not in stale_html and '<pre>' not in stale_html
     assert client.app.state.domain.store.get('drawingassociation',record['drawingassociation_id'])==old
     other=create_project(client)['project_id']
     assert client.get(f'/api/projects/{other}/drawing-associations/'+record['drawingassociation_id']).status_code==409
@@ -189,3 +192,14 @@ def test_real_reviewed_consistent_annotations_confirm_without_entity_merge(clien
     assert response.status_code==200,response.text
     assert response.json()['reviews'][r['relation_id']]['element_identity_verified'] is False
     assert response.json()['result']['relations'][0]['may_deduplicate_quantities'] is False
+
+
+def test_stale_report_withholds_result_sections_but_preserves_numeric_metadata():
+    record={'input':{'name':'Analysis 950'},'sources':[],'result':None,'reviews':None,
+        'status':'stale','created_at':'2026-11-07T22:07:29.372950+00:00',
+        'hash':'950'+'a'*61,'notice':'Source changed; results withdrawn.'}
+    rendered=report(record)
+    embedded=json.loads(re.search(r'<script type="application/json" id="record">(.*?)</script>',rendered,re.S)[1])
+    assert embedded==record and embedded['result'] is None and embedded['reviews'] is None
+    assert '<section>' not in rendered and '<pre>' not in rendered
+    assert record['created_at'] in rendered and 'Analysis 950' in rendered
