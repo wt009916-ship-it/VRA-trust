@@ -177,3 +177,99 @@ def declarations(element, units):
         issues.append('multiple_spatial_parents')
     return {'types': types, 'properties': props, 'quantities': quantities, 'declaration_issues': issues,
             'spatial_relations': spatial}
+
+
+
+def material_declarations(element, units):
+    """Preserve IFC material bindings; no name-based classification or volume allocation."""
+    count = 0
+
+    def length(value):
+        result = {'raw': value, 'value_m': None, 'unit_id': None, 'status': 'missing_unit'}
+        if isinstance(value, bool) or not isinstance(value, (float, int)) or not math.isfinite(value) or value < 0:
+            return {**result, 'status': 'invalid_length'}
+        candidates = units.get('LENGTHUNIT', [])
+        if len(candidates) != 1:
+            return {**result, 'status': 'conflicting_project_units' if candidates else 'missing_unit'}
+        unit = candidates[0]
+        result['unit_id'] = unit.id()
+        try:
+            converted = value * unit_scale(unit, 'LENGTHUNIT')
+            if not math.isfinite(converted):
+                raise ValueError('length_overflow')
+        except (ValueError, TypeError, OverflowError, KeyError) as exc:
+            return {**result, 'status': str(exc)}
+        return {**result, 'value_m': converted, 'status': 'declared_normalized'}
+
+    def describe(node, stack=()):
+        nonlocal count
+        count += 1
+        if count > 2000 or len(stack) >= 12:
+            raise ValueError('IFC material traversal budget exceeded')
+        if node is None:
+            return {'status': 'missing_material', 'id': None, 'type': None}
+        if node.id() in stack:
+            raise ValueError('Cyclic IFC material definition')
+        row = {'id': node.id(), 'type': node.is_a(), 'name': getattr(node, 'Name', None),
+               'source_kind': 'model_declaration', 'status': 'declared'}
+        path = (*stack, node.id())
+        if node.is_a('IfcMaterial'):
+            row.update(category=getattr(node, 'Category', None), description=getattr(node, 'Description', None))
+        elif node.is_a('IfcMaterialLayerSetUsage'):
+            row.update(layer_set=describe(node.ForLayerSet, path), direction=node.LayerSetDirection,
+                       sense=node.DirectionSense, offset_raw=node.OffsetFromReferenceLine,
+                       reference_extent_raw=getattr(node, 'ReferenceExtent', None))
+        elif node.is_a('IfcMaterialLayerSet'):
+            row.update(name=node.LayerSetName, layers=[describe(x, path) for x in node.MaterialLayers])
+        elif node.is_a('IfcMaterialLayer'):
+            row.update(material=describe(node.Material, path), thickness=length(node.LayerThickness),
+                       is_ventilated=node.IsVentilated)
+            if node.is_a('IfcMaterialLayerWithOffsets'):
+                row.update(status='offset_geometry_not_measured', offset_direction=node.OffsetDirection,
+                           offset_values_raw=list(node.OffsetValues or ()))
+        elif node.is_a('IfcMaterialList'):
+            row.update(materials=[describe(x, path) for x in node.Materials],
+                       proportions_status='not_declared')
+        elif node.is_a('IfcMaterialConstituentSet'):
+            row['constituents'] = [describe(x, path) for x in node.MaterialConstituents or ()]
+        elif node.is_a('IfcMaterialConstituent'):
+            fraction = node.Fraction
+            valid = fraction is not None and math.isfinite(fraction) and 0 <= fraction <= 1
+            row.update(material=describe(node.Material, path), fraction_raw=fraction,
+                       fraction_status='declared_unverified' if valid else 'missing_or_invalid_fraction')
+        elif node.is_a('IfcMaterialProfileSetUsage'):
+            row.update(profile_set=describe(node.ForProfileSet, path), cardinal_point=node.CardinalPoint,
+                       reference_extent_raw=node.ReferenceExtent)
+        elif node.is_a('IfcMaterialProfileSet'):
+            row['profiles'] = [describe(x, path) for x in node.MaterialProfiles]
+            row['composite_profile_id'] = node.CompositeProfile.id() if node.CompositeProfile else None
+        elif node.is_a('IfcMaterialProfile'):
+            row.update(material=describe(node.Material, path),
+                       profile={'id': node.Profile.id(), 'type': node.Profile.is_a()} if node.Profile else None,
+                       status='profile_geometry_not_measured')
+        else:
+            row['status'] = 'unsupported_material_definition'
+        return row
+
+    types = {}
+    for rel in (*getattr(element, 'IsDefinedBy', ()), *getattr(element, 'IsTypedBy', ())):
+        if rel.is_a('IfcRelDefinesByType'):
+            types[rel.RelatingType.id()] = rel.RelatingType
+    owners = [(element, 'instance'), *((t, 'type') for t in types.values())]
+    rows, seen = [], set()
+    for owner, scope in owners:
+        for rel in getattr(owner, 'HasAssociations', ()):
+            if not rel.is_a('IfcRelAssociatesMaterial') or (owner.id(), rel.id()) in seen:
+                continue
+            seen.add((owner.id(), rel.id()))
+            rows.append({'relation_id': rel.id(), 'owner_id': owner.id(), 'scope': scope,
+                         'material': describe(rel.RelatingMaterial)})
+    direct = [r for r in rows if r['scope'] == 'instance']
+    active = direct or rows
+    ambiguous = len(active) > 1 or (not direct and len(types) > 1)
+    for row in rows:
+        row['selection'] = ('overridden_by_instance' if direct and row['scope'] == 'type' else
+                            'ambiguous' if ambiguous else 'effective_declaration')
+    return {'material_assignment': {'status': 'ambiguous' if ambiguous else 'declared' if active else 'missing',
+            'associations': rows, 'quantity_status': 'not_measured',
+            'notice': '材料关联与层厚来自模型声明；未验证层几何、洞口扣减、材料性能或计量规则，不能按厚度比例直接分配构件体积。'}}

@@ -1,4 +1,5 @@
 import {createCadMonitor} from './cad-current.js';
+import {mountMaterialScenario,refreshScenarioHistory} from './material-scenarios-ui.js';
 import {mountUnionWorkspace} from './ifc-union-ui.js';
 import {ifcMarkup,ifcObjectMarkup} from './ifc-ui.js';
 import {request,post,escape as esc,number as fmt} from './api.js';
@@ -29,7 +30,24 @@ export const cadStateReason=reason=>cadStateReasons[reason]||'当前状态无法
 export function cadRecordMarkup(r,base){
  return `<article data-cad-record="${esc(r.cad_id)}"><h2>${esc(r.source.name)} · ${r.status==='parsed'?'已读取 · 待工程复核':r.status==='stale'?'已失效':'当前状态待核验'}</h2><p data-cad-check>正在核验当前状态…</p><p>读取时来源 SHA256：<code>${esc(r.source.hash)}</code></p>${r.status==='parsed'&&r.result?`<p>${esc(r.result.parser)} · ${esc(r.result.version)} · 长度换算至米：${r.result.length_scale_to_m??'未知，禁止默认换算'}</p><table><tr><th>原文件顶层类别（IFC为产品类别）</th><th>数量</th></tr>${Object.entries(r.result.counts).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')}</table>${geometryMarkup(r.result.geometry)}${ifcMarkup(r.result,r.cad_id)}<ul>${r.result.limitations.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.result.format==='IFC'?'':`<details><summary>顶层实体、属性、空间归属与缺口</summary><pre>${esc(JSON.stringify({objects:r.result.objects,issues:r.result.issues||[]},null,2))}</pre></details>`}`:'<p role="status">'+esc(cadStateReason(r.stale_reasons?.[0]))+'；数量暂不展示。请核验状态，来源或版本变化时新建读取记录。</p>'}<p><a target="_blank" rel="noopener" href="/api${base}/files/${r.source.file_id}">下载原文件（服务器重新核验）</a> · <a target="_blank" rel="noopener" href="/api${base}/cad-inspections/${r.cad_id}">导出完整JSON</a></p></article>`;
 }
-function bindCadSelection(article,record){
+function bindCadSelection(article,record,scenarioHost,scenarioHistory){
+ article.addEventListener('click',async event=>{
+  const button=event.target.closest('[data-layer-product]');
+  if(!button||!article.contains(button))return;
+  const target=button.nextElementSibling,base='/projects/'+record.project_id;
+  button.disabled=true;target.textContent='正在核验材料层与模型几何…';
+  try{
+   const takeoff=await post(base+'/ifc-layer-takeoffs',{cad_id:record.cad_id,product_id:Number(button.dataset.layerProduct)});
+   if(!target.isConnected||!article.contains(target))return;
+   target.innerHTML=`<p>已保存本次分层计量回执。打开报告时会重新核验来源和计算规则；材料层包络不能直接当作采购材料量。</p><p><a target="_blank" rel="noopener" href="/api${base}/ifc-layer-takeoffs/${takeoff.takeoff_id}/report.html">查看当前计量结果、口径与来源</a></p>`;
+   if(takeoff.status==='measured'){
+    const launch=document.createElement('button');launch.type='button';launch.textContent='用此计量比较两套材料方案';
+    launch.onclick=()=>mountMaterialScenario(scenarioHost,base,takeoff,scenarioHistory).catch(error=>{scenarioHost.textContent=error.message;});
+    target.append(launch);
+   }
+  }catch(error){if(target.isConnected)target.innerHTML='<p role="status">'+esc(error.message)+'</p>';}
+  finally{if(button.isConnected)button.disabled=false;}
+ });
  for(const select of article.querySelectorAll('[data-ifc-record]')){
   select.onchange=()=>{
    if(record.status!=='parsed'||!record.result)return;
@@ -44,7 +62,7 @@ function bindCadSelection(article,record){
 export async function cadWorkspace(state,host,action) {
  const base='/projects/'+state.project.project_id;
  let disposeUnion=()=>{},monitor=null,catalog=[],page=0,historyTicket=0;
- host.innerHTML=`<div class="view-heading"><div><h1>CAD / BIM 文件核验</h1><p>只读解析原文件，保留来源和缺口。实体统计不等于建筑工程量。</p></div></div><form id="cad-upload"><label>选择 DXF / IFC（最大10 MiB）<input name="file" type="file" accept=".dxf,.ifc" required></label><button class="primary">上传并读取</button></form><p>DXF支持限定块展开和几何量；IFC支持类型/实例属性、声明数量与限定网格测量。扫描图片/PDF文字可在“图纸识别”页处理。DWG转换、几何修复和合规认证尚不支持。</p><div id="cad-source"></div><div id="cad-union"></div><div id="cad-pager"><button data-cad-prev>上一页</button><span data-cad-page></span><button data-cad-next>下一页</button><button data-cad-refresh>立即核验状态</button></div><p>每页最多20条，每5秒核验可见记录；核验失败或超时会撤下数量。最近核验时间不代表持续实时保证。</p><div id="cad-results" aria-live="polite"></div>`;
+ host.innerHTML=`<div class="view-heading"><div><h1>CAD / BIM 文件核验</h1><p>只读解析原文件，保留来源和缺口。实体统计不等于建筑工程量。</p></div></div><form id="cad-upload"><label>选择 DXF / IFC（最大10 MiB）<input name="file" type="file" accept=".dxf,.ifc" required></label><button class="primary">上传并读取</button></form><p>DXF支持限定块展开和几何量；IFC支持类型/实例属性、声明数量与限定网格测量。扫描图片/PDF文字可在“图纸识别”页处理。DWG转换、几何修复和合规认证尚不支持。</p><div id="cad-source"></div><div id="cad-union"></div><div id="cad-material-scenarios"></div><section id="cad-material-history" aria-live="polite"></section><div id="cad-pager"><button data-cad-prev>上一页</button><span data-cad-page></span><button data-cad-next>下一页</button><button data-cad-refresh>立即核验状态</button></div><p>每页最多20条，每5秒核验可见记录；核验失败或超时会撤下数量。最近核验时间不代表持续实时保证。</p><div id="cad-results" aria-live="polite"></div>`;
  const list=host.querySelector('#cad-results'),pager=host.querySelector('#cad-pager'),pageSize=20;
  const alive=()=>host.isConnected&&host.contains(list);
  const visible=()=>alive()&&!host.hidden&&!document.hidden;
@@ -59,7 +77,7 @@ export async function cadWorkspace(state,host,action) {
    if(!alive())return;
    const previous=list.querySelector('[data-cad-record="'+record.cad_id+'"]');if(!previous)return;
    previous.outerHTML=cadRecordMarkup(record,base);
-   bindCadSelection(list.querySelector('[data-cad-record="'+record.cad_id+'"]'),record);
+   bindCadSelection(list.querySelector('[data-cad-record="'+record.cad_id+'"]'),record,host.querySelector('#cad-material-scenarios'),host.querySelector('#cad-material-history'));
   }
   monitor=createCadMonitor({
    ids:visible.map(r=>r.cad_id),
@@ -94,4 +112,5 @@ export async function cadWorkspace(state,host,action) {
   else if(visible())void monitor?.refresh();
  },5000);
  await history();
+ await refreshScenarioHistory(host.querySelector('#cad-material-history'),base);
 }
