@@ -11,6 +11,7 @@ from .robustness import Robustness, Search, Actions
 from .spatial import Spatial, Reconstruction
 from .thermal import Thermal, Assembly, ThermalCompare, compare as compare_thermal, render_html as thermal_html
 from .cad import Cad, Inspection
+from .cad_union import IfcUnions, UnionRequest, union_report
 from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, compare as lifecycle_compare, report as lifecycle_report
 from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
 from .engineering import Engineering, BeamInput, report as engineering_report
@@ -239,6 +240,24 @@ def register_extensions(app, domain, auth):
     @app.get('/api/projects/{project_id}/cad-inspections/{cad_id}')
     def cad_record(project_id: str, cad_id: str):
         return cad.view(project_id, cad_id)
+
+    unions = IfcUnions(cad)
+
+    @app.post('/api/projects/{project_id}/ifc-unions', status_code=201)
+    def ifc_union_create(project_id: str, body: UnionRequest):
+        return unions.create(project_id, body)
+
+    @app.get('/api/projects/{project_id}/ifc-unions')
+    def ifc_union_history(project_id: str):
+        return [unions.view(project_id, row['union_id']) for row in domain.store.list('union', project_id)]
+
+    @app.get('/api/projects/{project_id}/ifc-unions/{union_id}')
+    def ifc_union_record(project_id: str, union_id: str):
+        return unions.view(project_id, union_id)
+
+    @app.get('/api/projects/{project_id}/ifc-unions/{union_id}/report.html', response_class=HTMLResponse)
+    def ifc_union_html(project_id: str, union_id: str):
+        return union_report(unions.view(project_id, union_id))
 
     @app.post('/api/projects/{project_id}/thermal', status_code=201)
     def thermal_create(project_id: str, body: Assembly):

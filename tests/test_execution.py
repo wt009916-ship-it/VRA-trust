@@ -30,7 +30,10 @@ def assert_stopped(pid):
     else:
         try:os.kill(pid,0)
         except ProcessLookupError:return
-        assert Path('/proc',str(pid),'stat').read_text().split(') ',1)[1].startswith('Z ')
+        # The child can be reaped after kill(pid, 0) succeeds.
+        try:state=Path('/proc',str(pid),'stat').read_text()
+        except FileNotFoundError:return
+        assert state.split(') ',1)[1].startswith('Z ')
 
 
 def run_probe(tmp_path, code, *, policy=None, timeout=8, cancel=None):

@@ -1,0 +1,43 @@
+### Result
+{"cases":[{"name":"overlapping_aggregate.ifc","pid":"project_81405c50ca824dc791416c30acc007de","cad_id":"cad_447c9d1d5b80457d80712bca4cf3179d","union_id":"union_f8c8aa4f6b8e4aee974fbbb6847c0468","file_id":"file_dbffd98a7e98434a98bf1fd863834389","sha":"0d1abe41f20b76d9cf7085e1615e1836c4b786853cf47bdde485bbebaee741ae","selected":[18,28],"sum":46,"union":24,"deduction":22,"status":"measured"},{"name":"edge_touch.ifc","pid":"project_81405c50ca824dc791416c30acc007de","cad_id":"cad_b7a717ffd2c7497c8b4401f3c1117879","union_id":"union_15e076d7f4394112b60fae3d5b6be549","file_id":"file_a30c271546094942bf11c585f1e4127e","sha":"1126bb391f9396b7c8d4a9f96024603f1bd4ebbbf3e1bb28f8f2942791858989","selected":[34,45],"sum":null,"union":null,"deduction":null,"status":"unavailable"},{"name":"overlap.ifc","pid":"project_81405c50ca824dc791416c30acc007de","cad_id":"cad_d376dd0bcb0f4a49898be376c989347d","union_id":"union_098e9b2319894f8cbb874e69394a7375","file_id":"file_ceb1e4087ce34a2e9561cc73b6ad2894","sha":"ff00c32e0cf8a89d114911c76d3f752627fe9ebf8430bd5fe339bddf7b46d277","selected":[34,45],"sum":48,"union":36,"deduction":12,"status":"measured"}],"width":{"viewport":390,"document":390},"anonymous_report":401,"reports_and_originals_verified":true}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ const records=await page.evaluate(async()=>{
+  const projects=await(await fetch('/api/projects')).json();if(projects.length!==1)throw Error('Unexpected projects');
+  return await(await fetch('/api/projects/'+projects[0].project_id+'/ifc-unions')).json();
+ });
+ if(records.length!==3)throw Error('Expected exactly three existing union records');
+ const expected={'overlap.ifc':[48,36,12],'edge_touch.ifc':[null,null,null],'overlapping_aggregate.ifc':[46,24,22]};
+ const rows=[];
+ for(const r of records){
+  const gold=expected[r.source.name];if(!gold)throw Error('Unexpected file');
+  const card=page.locator('.ifc-union-record').filter({hasText:r.source.name});await card.waitFor({state:'visible'});
+  const text=await card.innerText();
+  for(const [i,key] of ['sum_operand_volume_m3','union_volume_m3','overlap_deduction_m3'].entries()){
+   const actual=r.result[key];
+   if(gold[i]===null?actual!==null:Math.abs(actual-gold[i])>1e-8)throw Error('Independent numeric mismatch');
+  }
+  if(gold[1]===null?!text.includes('数量 —'):!text.includes(gold[1]+' m³'))throw Error('Display mismatch');
+  const url='http://127.0.0.1:18774/api/projects/'+r.project_id+'/ifc-unions/'+r.union_id;
+  const report=await page.request.get(url+'/report.html');
+  if(report.status()!==200||!(await report.text()).includes(r.source.hash))throw Error('Report source mismatch');
+  const download=await page.evaluate(async({pid,fid})=>{
+   const raw=await(await fetch('/api/projects/'+pid+'/files/'+fid)).arrayBuffer();
+   return [...new Uint8Array(await crypto.subtle.digest('SHA-256',raw))].map(x=>x.toString(16).padStart(2,'0')).join('');
+  },{pid:r.project_id,fid:r.source.file_id});
+  if(download!==r.source.hash)throw Error('Original hash mismatch');
+  rows.push({name:r.source.name,pid:r.project_id,cad_id:r.cad_id,union_id:r.union_id,file_id:r.source.file_id,sha:download,
+   selected:r.product_ids,sum:r.result.sum_operand_volume_m3,union:r.result.union_volume_m3,deduction:r.result.overlap_deduction_m3,status:r.status});
+ }
+ await page.setViewportSize({width:390,height:844});
+ const width=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));
+ if(width.document>width.viewport)throw Error('Mobile overflow');
+ await page.locator('.ifc-union-record').filter({hasText:'overlapping_aggregate.ifc'}).screenshot({path:'output/playwright/ifc-union-overlap.png'});
+ const anonymous=await page.context().browser().newContext(),r=records[0];
+ const response=await anonymous.request.get('http://127.0.0.1:18774/api/projects/'+r.project_id+'/ifc-unions/'+r.union_id+'/report.html');
+ await anonymous.close();if(response.status()!==401)throw Error('Anonymous report leaked');
+ return {cases:rows,width,anonymous_report:response.status(),reports_and_originals_verified:true};
+}
+)(page);
+```

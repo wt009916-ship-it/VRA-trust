@@ -109,7 +109,7 @@ def opening_relationships(doc, products):
     return result
 
 
-def inspect_shapes(doc, products, length_scale):
+def inspect_shapes(doc, products, length_scale, mesh_sink=None):
     import ifcopenshell.geom
     from ifcopenshell.util.shape import get_shape_matrix
 
@@ -167,6 +167,8 @@ def inspect_shapes(doc, products, length_scale):
                 row['bbox_world_m'] = {'min': world.min(axis=0).tolist(), 'max': world.max(axis=0).tolist()}
                 row['placement_matrix_si'] = matrix.tolist()
             row['status'] = 'measured_mesh' if row['volume_m3'] is not None else 'partial_mesh'
+            if mesh_sink is not None and row['volume_m3'] is not None:
+                mesh_sink.append({'id': element.id(), 'vertices': verts, 'faces': faces, 'matrix': matrix})
         rows.append(row)
     return {'objects': rows, 'settings': values, 'vertices_processed': used_vertices, 'triangles_processed': used_triangles,
             'limitations': ['三角网格表面积及定向闭合边界积分体积为近似几何量，不是模型声明工程量或专业认证。',

@@ -1,0 +1,15 @@
+### Result
+{"status":"stale","api_result":null,"old_quantities_removed":true,"submit_disabled":true,"polling":true}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ const card=page.locator('.ifc-union-record').filter({hasText:'overlap.ifc'});
+ await card.getByText('来源或计算版本已变化，旧数量已撤下；数量 —。',{exact:true}).waitFor({state:'visible',timeout:15000});
+ const text=await card.innerText();if(text.includes('36 m³')||text.includes('48 m³'))throw Error('Stale quantity remains');
+ if(await page.getByRole('button',{name:'核算几何并集',exact:true}).isEnabled())throw Error('Stale source still calculable');
+ const check=await page.evaluate(async()=>{const r=await fetch('/api/projects/project_81405c50ca824dc791416c30acc007de/ifc-unions/union_098e9b2319894f8cbb874e69394a7375');return await r.json();});
+ if(check.status!=='stale'||check.result!==null)throw Error('API stale contract');
+ await card.screenshot({path:'output/playwright/ifc-union-stale.png'});
+ return {status:check.status,api_result:check.result,old_quantities_removed:true,submit_disabled:true,polling:true};
+})(page);
+```
