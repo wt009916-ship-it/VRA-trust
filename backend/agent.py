@@ -129,7 +129,7 @@ TOOLS = {
     'capability_lookup': '查询当前应用能做什么及明确边界，每批1到4个capability_ids；超过4项请分批查询，批次上限不是不支持剩余能力。分别核对用户要求的有限计算、资料检索与认证/确诊，不漏支持项，也不加无关项；不检查项目资料充分性。',
     'capability_explain': '先分批capability_lookup，再按同一catalog_hash汇总全部所需claims（最多16项）：每项capability_id、assessment、reason_code必须与当前应用范围一致。不能只交付第一批，不以少量已查项代表整个需求完成。用于正式能力说明，不代表执行计算或取得认证。最后所需说明可finish=true。',
     'calculation_execute': '选择本轮用户明确提交的plan_key，按已锁定参数调用热工/阶段碳/材料成本/梁/进度/设备规则计算器并保存新记录。不能修改工程输入或CSV；随后按返回的next_tool读取并核验交付；不重复创建。',
-    'professional_deliver': '交付数值：先用专业list/read读取记录，再提交delivery的statements，核对数值、单位、期间及面积口径。支持thermal/lifecycle/cost/engineering/schedule/operation；来源hash必填。不提供limitation_status；若只说明不完整或不适用，请另用professional_limit。',
+    'professional_deliver': '先读取delivery.kind对应记录，再提交statements及当前hash，核对值、单位、期间和面积。明确无定义字段保留null及来源原因；整条记录不完整、不适用或stale时改用professional_limit。',
     'professional_limit': '交付限制说明：先实际读取当前记录，再提交limitation含kind、record_id、record_hash、status（复制当前状态，包括stale）及finish。只允许当前结果不完整、不适用或已失效；不填数值或statements。核验说明不改变原记录状态，不恢复旧数值，也不等于完成工程计算。',
     'material_scenarios_list': '只读列出当前项目最近6份材料两方案对照；不创建计算，不认证等效或碳资产',
     'material_scenarios_read': '按scenario_id读取两套材料方案的金额、声明边界/阶段碳与比较，保留数量来源和评估期；金额差为替换减基准，碳减少为基准减替换，不签发信用',

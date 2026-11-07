@@ -12,9 +12,9 @@ from . import core
 
 
 class Statement(Contract):
-    fact: str = Field(min_length=1, max_length=100, description='Copy the exact machine key from explanation_facts.fact, never its human-readable label or a translated name.')
+    fact: str = Field(min_length=1, max_length=100, description='Copy explanation_facts.fact exactly; do not translate or use its label.')
     value: str | None = Field(max_length=80, pattern=r'^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]{1,4})?$',
-                             description='Required. Copy a known explanation_facts numeric value as a string. Copy null only for an explicit source_undefined fact with an unavailable_reason. Never invent zero or null. For an incomplete/stale record use professional_limit.')
+                             description='Copy source numeric string. Null requires source_undefined with unavailable_reason. Never invent values. Incomplete/stale record: professional_limit.')
     unit: str = Field(min_length=1, max_length=40)
     period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window']
     study_years: int | None = Field(ge=1, le=200, description='Required: copy the fact study_years; null for a non-period calculation.')
