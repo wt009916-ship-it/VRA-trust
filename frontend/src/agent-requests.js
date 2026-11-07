@@ -63,5 +63,7 @@ export function readRequestProgressMarkup(task) {
   if(!rows.length)return '';
   const states={unfulfilled:'尚未交付',delivery_not_currently_verified:'交付目前未通过核验',availability_verified:'可用性已核验',result_verified:'所选结果已核验',limitation_verified:'当前限制已核验',record_unavailable:'指定记录不可用'};
   const available=task.answer?.checked_availability||[];
-  return `<section aria-label="声明读取目标进度"><h3>本次明确读取范围</h3><p>逐项检查声明范围，清单外问题的完整覆盖未获核验。记录存在不等于结果有效，缺失不记为零。</p>${rows.map(r=>`<article><h4>${esc(readKinds[r.kind]||r.kind)} · ${r.purpose==='availability'?'可用性':'指定结果'}</h4><p><strong>${esc(states[r.state]||r.state)}</strong> · ${esc(r.request_key)}</p><small class="mono">${esc(r.record_id||'该专业完整项目目录')}</small>${available.filter(a=>a.request_key===r.request_key).map(a=>`<p>${a.state==='records_present'?'声明范围内存在记录；未据此认定工程数值有效。':'声明范围内没有可用记录；不推断其他项目或计算历史。'}</p>`).join('')}</article>`).join('')}</section>`;
+  const termination=task.termination||task.answer?.termination;
+  const stopped=termination?.reason==='response_budget_exhausted'?'<p role="status">已到模型轮次上限。已提交内容仍按当前来源核验，未交付的目标继续标示；流程结束不等于全部任务完成。</p>':'';
+  return `<section aria-label="声明读取目标进度"><h3>本次明确读取范围</h3>${stopped}<p>逐项检查声明范围，清单外问题的完整覆盖未获核验。记录存在不等于结果有效，缺失不记为零。</p>${rows.map(r=>`<article><h4>${esc(readKinds[r.kind]||r.kind)} · ${r.purpose==='availability'?'可用性':'指定结果'}</h4><p><strong>${esc(states[r.state]||r.state)}</strong> · ${esc(r.request_key)}</p><small class="mono">${esc(r.record_id||'该专业完整项目目录')}</small>${available.filter(a=>a.request_key===r.request_key).map(a=>`<p>${a.state==='records_present'?'声明范围内存在记录；未据此认定工程数值有效。':'声明范围内没有可用记录；不推断其他项目或计算历史。'}</p>`).join('')}</article>`).join('')}</section>`;
 }

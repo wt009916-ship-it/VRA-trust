@@ -1,4 +1,5 @@
 """User-declared read scope, distinct from model inference or compute permission."""
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -98,6 +99,8 @@ def attach(answer,domain,pid,record,reader=None):
             if row['passed']:checked.append(row['availability'])
             answer['verification'].append({'check':'current_requested_availability','request_key':row['request_key'],
                 'passed':row['passed'],'meaning':'只核验声明范围的记录可用性，不证明结果有效或完成工程计算'})
+    if record.get('termination'):
+        answer['termination'] = record['termination']
     answer['checked_availability']=checked
     rows=progress(record,answer)
     answer['read_request_progress']=rows
@@ -112,3 +115,60 @@ def attach(answer,domain,pid,record,reader=None):
                                   'action':'按本次声明范围查询并交付，不替换编号或新增计算。'})
     answer['task_notice']='只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。'
     return answer
+
+def next_actions(record):
+    """Suggestions from declared scopes and observed reads; never execute or infer scope."""
+    waiting = set(pending(record))
+    reads = {}
+    unavailable = set()
+    for event in record.get('events', []):
+        unavailable.update(event.get('recovery', {}).get('unavailable_record_ids', []))
+        if event['status'] != 'succeeded':
+            continue
+        for request in record.get('read_requests', []):
+            spec = inspection(request['kind'])
+            if event['tool'] == spec.read_tool:
+                current = event['result']
+                reads[current[spec.record_key]] = current
+    actions = []
+    availability_keys = []
+    for request in record.get('read_requests', []):
+        if request['request_key'] not in waiting:
+            continue
+        if request['purpose'] == 'availability':
+            availability_keys.append(request['request_key'])
+            continue
+        ident = request['record_id']; kind = request['kind']; spec = inspection(kind)
+        current = reads.get(ident)
+        action = {'request_key': request['request_key'], 'record_id': ident}
+        if current is not None:
+            if not spec.artifact(current)['verified']:
+                action.update(tool='professional_limit', arguments={'limitation': {
+                    'kind': kind, 'record_id': ident, 'record_hash': current['hash'],
+                    'status': current['status'], 'finish': False}})
+            else:
+                action.update(tool='professional_deliver', arguments={'delivery': {
+                    'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
+                    required_fields=['delivery.statements'],
+                    available_facts=current.get('explanation_facts', []))
+        elif ident in unavailable:
+            action.update(tool='professional_missing', arguments={'missing': {
+                'kinds': [kind], 'record_id': ident, 'finish': False}})
+        else:
+            action.update(tool=spec.read_tool, arguments={spec.argument: ident})
+        actions.append(action)
+    if availability_keys:
+        actions.append({'tool': 'requested_availability',
+                        'arguments': {'request_keys': availability_keys, 'finish': False}})
+    return actions
+
+
+def commentary_review(record, text):
+    """Exact identifier membership only, not validation of numerical or semantic prose."""
+    allowed = {r['record_id'] for r in record.get('read_requests', []) if r.get('record_id')}
+    mentioned = set(re.findall(
+        r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[A-Za-z0-9_-]+\b', text or ''))
+    unknown = sorted(mentioned - allowed)
+    return {'status': 'reference_mismatch' if unknown else 'references_match',
+            'unknown_record_ids': unknown, 'allowed_record_ids': sorted(allowed),
+            'scope': 'declared_record_identifiers_only', 'semantics_verified': False}

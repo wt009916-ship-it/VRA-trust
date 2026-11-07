@@ -28,10 +28,7 @@ def test_mixed_scope_missing_schema_cannot_offer_availability_kind(client, monke
         req('operation', key='equipment'),
     ]), background=False)
     assert task['status'] == 'succeeded', task.get('error')
-    missing = seen[0]['professional_missing']['parameters']['$defs']['Missing']
-    assert missing['properties']['kinds']['items']['enum'] == ['thermal']
-    assert missing['properties']['record_id'] == {'type': 'string', 'enum': [result['thermal_id']]}
-    assert 'record_id' in missing['required']
+    assert 'professional_missing' not in seen[0]  # No absence observed yet.
     assert 'professional_missing' not in seen[1]
     assert 'professional_missing' not in seen[2]
     assert task['answer']['read_request_coverage'] == 'all_declared_scopes_checked'
@@ -49,6 +46,7 @@ def test_unread_second_result_still_has_missing_route(client, monkeypatch):
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
     responses = iter([
         tool('thermal_read', {'thermal_id': result['thermal_id']}),
+        tool('material_cost_read', {'material_cost_id': absent}),
         claim(result),
         tool('professional_missing', {'missing': {'kinds': ['cost'], 'record_id': absent, 'finish': True}}),
     ])
@@ -63,8 +61,10 @@ def test_unread_second_result_still_has_missing_route(client, monkeypatch):
         req('cost', purpose='results', record_id=absent, key='cost'),
     ]), background=False)
     assert task['status'] == 'succeeded', task.get('error')
-    missing = seen[1]['professional_missing']['parameters']['$defs']['Missing']
+    assert 'professional_missing' not in seen[1]
+    missing = seen[2]['professional_missing']['parameters']['$defs']['Missing']
     assert missing['properties']['kinds']['items']['enum'] == ['cost']
-    assert missing['properties']['record_id']['enum'] == [absent]
+    assert missing['properties']['record_id'] == {'type': 'string', 'enum': [absent]}
+    assert 'record_id' in missing['required']
     assert task['answer']['read_request_coverage'] == 'all_declared_scopes_checked'
     assert [r['state'] for r in task['read_request_progress']] == ['result_verified', 'record_unavailable']

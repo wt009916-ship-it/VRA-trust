@@ -522,20 +522,31 @@ class Agent:
                         if e['tool'] == ds.read_tool:
                             ids.add(e['result'][ds.record_key]);read_any = True
                             read_records.append((ds, e['result']))
-                    if body.read_requests:ids={r.record_id for r in body.read_requests if r.purpose=='results' and r.kind==ds.kind}
+                    if body.read_requests:
+                        absent = {r['request'].get('record_id') for r in record.get('missing_deliveries', [])}
+                        ids = {r.record_id for r in body.read_requests
+                               if r.purpose == 'results' and r.kind == ds.kind and r.record_id not in absent}
                     if not ids:available.discard(ds.read_tool)
                     else:choices[ds.read_tool] = (ds.argument, sorted(ids))
                 if not read_any or not any(r.get('explanation_facts') for _,r in read_records):available.discard('professional_deliver')
                 if not any(not ds.artifact(r)['verified'] for ds,r in read_records):available.discard('professional_limit')
             if not choices:available.discard('professional_read_many')
             declared_missing = []
+            pending_availability = []
             if body.read_requests:
+                pending_keys = set(requested_scopes.pending(record))
+                pending_availability = [r.request_key for r in body.read_requests
+                                        if r.purpose == 'availability' and r.request_key in pending_keys]
+                if not pending_availability:available.discard('requested_availability')
                 # Existence checks have their own receipt. Never suggest an absence
                 # delivery for an availability-only scope or an already read record.
                 present = {r[ds.record_key] for ds, r in read_records}
                 absent = {r['request'].get('record_id') for r in record.get('missing_deliveries', [])}
+                unavailable = {ident for e in record['events']
+                               for ident in e.get('recovery', {}).get('unavailable_record_ids', [])}
                 declared_missing = [r for r in body.read_requests
-                                    if r.purpose == 'results' and r.record_id not in present | absent]
+                                    if r.purpose == 'results' and r.record_id in unavailable
+                                    and r.record_id not in present | absent]
                 if not declared_missing:available.discard('professional_missing')
             result = self.tools(available)
             for tool in result:
@@ -561,7 +572,7 @@ class Agent:
                 if name == 'professional_inventory':parameters['required']=['kinds']
                 if name == 'requested_availability':
                     parameters['properties']['request_keys']={'type':'array','minItems':1,'maxItems':6,'uniqueItems':True,
-                        'items':{'type':'string','enum':[r.request_key for r in body.read_requests if r.purpose=='availability']}}
+                        'items':{'type':'string','enum':pending_availability}}
                     parameters['required']=['request_keys','finish']
                 if name == 'calculation_prepare':
                     parameters['properties']['plan_keys'] = {'type':'array','minItems':1,'maxItems':2,'uniqueItems':True,
@@ -858,7 +869,9 @@ class Agent:
                                    'queried_available_without_delivery':missing_records.pending_available(record),
                                    'selected_read_targets_without_delivery':read_recovery.unresolved(record),
                                    'notice':'这里只记录工具进度，不证明自由问题已完整覆盖，也不延续或增加计算授权。'}
-                        if body.read_requests:pending['declared_read_requests_without_delivery']=requested_scopes.pending(record)
+                        if body.read_requests:
+                            pending['declared_read_requests_without_delivery'] = requested_scopes.pending(record)
+                            pending['declared_next_actions'] = requested_scopes.next_actions(record)
                         if body.objective == 'inspect_results':pending['sizing_read_progress'] = agent_simulation.progress(record, agent_simulation.observed_view(record))
                         messages[0]['content'] = system_instruction + '\n当前控制流程状态：' + json.dumps(pending, ensure_ascii=False) + (
                             '\n总预算仍为5轮/15事件。多份明确计划优先用calculation_prepare选择plan_keys，真实执行并读取后逐份交付；已有多记录可用professional_read_many。批量子操作也计入15事件。'
@@ -891,6 +904,15 @@ class Agent:
                     calls = answer.get('tool_calls') or []
                     if not calls:
                         record['llm_commentary'] = answer.get('content')
+                        if body.read_requests:
+                            review = requested_scopes.commentary_review(record, answer.get('content'))
+                            record['llm_commentary_review'] = review
+                            provider_event.update(commentary_review=review, model_commentary=answer.get('content'))
+                            if review['status'] == 'reference_mismatch' and turn < 4:
+                                messages[-1] = {'role': 'assistant', 'content': '上一段文字含不匹配的记录编号，原文已保留审计；不能当作正确引用。'}
+                                messages.append({'role': 'user', 'content': '请按本轮声明逐字核对引用编号：' + json.dumps(review, ensure_ascii=False)
+                                    + '。不得自行纠正为另一个未声明记录。还未正式交付的目标请按declared_next_actions执行；不增加范围或预算。'})
+                                continue
                         if body.objective == 'inspect_results':
                             coverage = agent_simulation.progress(record, agent_simulation.observed_view(record))
                             if coverage['state'] == 'partial' and turn < 4:
@@ -901,7 +923,7 @@ class Agent:
                         pending_declared=requested_scopes.pending(record)
                         if pending_declared and turn<4:
                             provider_event['declared_read_reminder']=pending_declared
-                            messages.append({'role':'user','content':'用户明确声明的读取目标尚未交付：'+json.dumps(pending_declared)+'。按声明目的逐项核验；不得替换编号、扩展范围或计算。'})
+                            messages.append({'role':'user','content':'用户明确声明的读取目标尚未交付：'+json.dumps(pending_declared)+'。按当前控制流程状态的declared_next_actions选择对应工具；失效记录须professional_limit正式交付，不能只写解释。建议未执行不算完成；不得替换编号、扩展范围或计算。'})
                             continue
                         unresolved=read_recovery.unresolved(record)
                         if unresolved and turn<4:
@@ -1003,7 +1025,18 @@ class Agent:
                         record['model_finished_delivery'] = True
                         break
                 else:
-                    raise core.ValidationError('Provider iteration budget exhausted')
+                    if not body.read_requests:
+                        raise core.ValidationError('Provider iteration budget exhausted')
+                    # A stopped model is not a completed task. Recheck submitted
+                    # receipts within the reserved budget; missing goals stay visible.
+                    record['termination'] = {
+                        'reason': 'response_budget_exhausted', 'model_declared_finished': False,
+                        'pending_request_keys': requested_scopes.pending(record)}
+                if body.read_requests:
+                    record.setdefault('termination', {
+                        'reason': 'model_finish' if record.get('model_finished_delivery') else 'model_commentary',
+                        'model_declared_finished': bool(record.get('model_finished_delivery')),
+                        'pending_request_keys': requested_scopes.pending(record)})
             # Authoritative decision fields are computed from current tools, never model prose.
             if body.objective == 'open_ended':
                 if record['professional_deliveries']:

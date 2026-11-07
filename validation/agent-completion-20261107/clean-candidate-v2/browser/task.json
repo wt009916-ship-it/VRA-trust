@@ -1,0 +1,1115 @@
+{
+  "agent_id": "agent_92769765790b4e53b9eec66ec0f1bc31",
+  "project_id": "project_f8d01afb2dde44be9a53cf0cf9a514f8",
+  "question": "请核对墙体 thermal_5639d1ccf6504f1281be533d7cfc2761 的总热阻、造价 cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 的结果，并检查项目有无设备运行记录。缺失按原编号说明，不替换编号，不做新计算。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:32.299076+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Agent completion acceptance",
+        "building": {
+          "use": "office",
+          "location": "Synthetic UI test",
+          "region": "US-CO",
+          "area_m2": 1024,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_f8d01afb2dde44be9a53cf0cf9a514f8",
+        "revision": 1,
+        "created_at": "2026-11-07T16:03:22.803541+00:00",
+        "updated_at": "2026-11-07T16:03:22.803541+00:00"
+      },
+      "result_hash": "762e4bc411543bdbecb294a3bdc1b106a236a44fe34bae7ad37ca6c4a54aebf1",
+      "duration_ms": 0,
+      "finished_at": "2026-11-07T16:07:32.317587+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:32.322588+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 1828,
+      "finished_at": "2026-11-07T16:07:34.156351+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "record_ids": [
+          "thermal_5639d1ccf6504f1281be533d7cfc2761",
+          "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        ]
+      },
+      "status": "failed",
+      "started_at": "2026-11-07T16:07:34.160822+00:00",
+      "origin": "model",
+      "error": "Selected professional records unavailable in this project; no result reads executed",
+      "recovery": {
+        "error_code": "professional_record_unavailable",
+        "scope": "current_project",
+        "unavailable_record_ids": [
+          "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        ],
+        "present_record_ids": [
+          "thermal_5639d1ccf6504f1281be533d7cfc2761"
+        ],
+        "result_reads_executed": 0,
+        "selected_record_ids": [
+          "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "thermal_5639d1ccf6504f1281be533d7cfc2761"
+        ],
+        "lookup_tool": "professional_missing",
+        "suggested_calls": [
+          {
+            "tool": "professional_missing",
+            "arguments": {
+              "missing": {
+                "kinds": [
+                  "cost"
+                ],
+                "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "finish": false
+              }
+            }
+          },
+          {
+            "tool": "professional_read_many",
+            "arguments": {
+              "record_ids": [
+                "thermal_5639d1ccf6504f1281be533d7cfc2761"
+              ]
+            }
+          }
+        ],
+        "same_call_retry_recommended": false,
+        "guidance": "整批预检未执行结果读取。present仅表示记录存在，须另读当前结果；unavailable须按指定编号核验缺失。逐项处理，不原样重复失败批次；不补零、不新建计算。建议调用尚未执行，不代表任务已完成。"
+      },
+      "duration_ms": 0,
+      "finished_at": "2026-11-07T16:07:34.178822+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:34.183110+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 1328,
+      "finished_at": "2026-11-07T16:07:35.525669+00:00"
+    },
+    {
+      "tool": "professional_missing",
+      "arguments": {
+        "missing": {
+          "kinds": [
+            "cost"
+          ],
+          "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:35.535666+00:00",
+      "origin": "model",
+      "result": {
+        "status": "verified",
+        "references": [
+          {
+            "request": {
+              "kind": "cost",
+              "kinds": null,
+              "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "finish": false
+            },
+            "catalog_hash": "23a06b772eec3165fe06729b4c2098a583c7172e543f07648973ad9d9b877429"
+          }
+        ],
+        "missing": [
+          {
+            "kind": "cost",
+            "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "state": "no_record_available",
+            "scope": "requested_record_in_project",
+            "reason_code": "record_not_available_in_project",
+            "project_record_count": 0,
+            "checked_at": "2026-11-07T16:07:35.562670+00:00",
+            "notice": "只核验当前项目的记录可用性，不代表已计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。"
+          }
+        ],
+        "finish": false,
+        "snapshot_count": 1
+      },
+      "result_hash": "8b6cfc39a92baa919c4ae6e2588f2a1e3a8fb80535f47f3cadb66f3a496088f9",
+      "duration_ms": 16,
+      "finished_at": "2026-11-07T16:07:35.562670+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:35.565669+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 1360,
+      "finished_at": "2026-11-07T16:07:36.936146+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "record_ids": [
+          "thermal_5639d1ccf6504f1281be533d7cfc2761"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:36.940147+00:00",
+      "origin": "model",
+      "result": {
+        "status": "records_read",
+        "records": [
+          {
+            "kind": "thermal",
+            "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+            "current": {
+              "thermal_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+              "hash": "437a93c69c4e0f3a7f3d366a6e87423a1aac989b3e8039644a42e7d3e5c50ad9",
+              "name": "UI independent wall",
+              "status": "calculated",
+              "source_status": "USER_DECLARED",
+              "scope": "一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。",
+              "explanation_facts": [
+                {
+                  "fact": "total_resistance_m2k_w",
+                  "label": "总热阻 R",
+                  "value": "3.51",
+                  "source_value": "3.51",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "m2 K/W",
+                  "period": "steady_state",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/total_resistance_m2k_w"
+                },
+                {
+                  "fact": "layer_resistance_m2k_w",
+                  "label": "材料层热阻合计",
+                  "value": "3.34",
+                  "source_value": "3.34",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "m2 K/W",
+                  "period": "steady_state",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/layer_resistance_m2k_w"
+                },
+                {
+                  "fact": "u_w_m2k",
+                  "label": "传热系数 U",
+                  "value": "0.2849002849",
+                  "source_value": "0.2849002849002849",
+                  "value_policy": "12_significant_digits_display",
+                  "unit": "W/(m2 K)",
+                  "period": "steady_state",
+                  "study_years": null,
+                  "area_m2": null,
+                  "source_path": "/result/u_w_m2k"
+                }
+              ],
+              "limitation_delivery": null,
+              "calculation_context": null,
+              "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null，不列入数值事实；用professional_limit说明限制。排除阶段没有事实项。",
+              "projection_notice": "这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。"
+            }
+          }
+        ],
+        "notice": "模型选择批次，控制流程逐项执行/读取并审计；尚未正式交付，不证明完整性或工程认证。未选计划未执行。"
+      },
+      "result_hash": "3d61923f8331e70998f62ec6def800eab368fcb9c8cd20bff20e53f0423e4e27",
+      "duration_ms": 32,
+      "finished_at": "2026-11-07T16:07:36.982149+00:00"
+    },
+    {
+      "tool": "thermal_read",
+      "arguments": {
+        "thermal_id": "thermal_5639d1ccf6504f1281be533d7cfc2761"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:36.961146+00:00",
+      "origin": "controller",
+      "parent_event": 6,
+      "result": {
+        "thermal_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+        "project_id": "project_f8d01afb2dde44be9a53cf0cf9a514f8",
+        "project_revision": 1,
+        "input": {
+          "name": "UI independent wall",
+          "layers": [
+            {
+              "name": "Synthetic insulation",
+              "thickness": 167,
+              "thickness_unit": "mm",
+              "conductivity": 0.05,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Synthetic test assumption",
+              "source": "Synthetic authored reference input",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.13,
+          "rse_m2k_w": 0.04,
+          "surface_basis": "Synthetic declared films",
+          "application": "Uniform opaque reference wall"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "Synthetic insulation",
+              "thickness": 167,
+              "thickness_unit": "mm",
+              "conductivity": 0.05,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Synthetic test assumption",
+              "source": "Synthetic authored reference input",
+              "evidence_id": null,
+              "thickness_m": 0.167,
+              "conductivity_w_mk": 0.05,
+              "effective_conductivity_w_mk": 0.05,
+              "resistance_m2k_w": 3.34,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 3.34,
+          "total_resistance_m2k_w": 3.51,
+          "u_w_m2k": 0.2849002849002849,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "calculator_version": "f114f3d884db7cece43d1c46d688766b1edf2d219c50f1bfa69b82b3e2bc2973",
+        "evidence_snapshot": [],
+        "created_at": "2026-11-07T16:03:22.836620+00:00",
+        "hash": "437a93c69c4e0f3a7f3d366a6e87423a1aac989b3e8039644a42e7d3e5c50ad9",
+        "revision": 1,
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "explanation_facts": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "3.51",
+            "source_value": "3.51",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/total_resistance_m2k_w"
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "3.34",
+            "source_value": "3.34",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/layer_resistance_m2k_w"
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.2849002849",
+            "source_value": "0.2849002849002849",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/u_w_m2k"
+          }
+        ],
+        "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null，不列入数值事实；用professional_limit说明限制。排除阶段没有事实项。"
+      },
+      "result_hash": "e15ad89f3956520090261390282d8c33bbf8332dc131c0c1de694c452b6abcda",
+      "duration_ms": 0,
+      "finished_at": "2026-11-07T16:07:36.978149+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:36.993145+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 5391,
+      "finished_at": "2026-11-07T16:07:42.390025+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "thermal",
+          "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+          "record_hash": "437a93c69c4e0f3a7f3d366a6e87423a1aac989b3e8039644a42e7d3e5c50ad9",
+          "statements": [
+            {
+              "fact": "total_resistance_m2k_w",
+              "value": "3.51",
+              "unit": "m2 K/W",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            },
+            {
+              "fact": "layer_resistance_m2k_w",
+              "value": "3.34",
+              "unit": "m2 K/W",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            },
+            {
+              "fact": "u_w_m2k",
+              "value": "0.2849002849",
+              "unit": "W/(m2 K)",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "finish": true
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:42.396590+00:00",
+      "origin": "model",
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "thermal",
+          "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+          "record_hash": "437a93c69c4e0f3a7f3d366a6e87423a1aac989b3e8039644a42e7d3e5c50ad9",
+          "statements": [
+            {
+              "fact": "total_resistance_m2k_w",
+              "value": "3.51",
+              "unit": "m2 K/W",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            },
+            {
+              "fact": "layer_resistance_m2k_w",
+              "value": "3.34",
+              "unit": "m2 K/W",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            },
+            {
+              "fact": "u_w_m2k",
+              "value": "0.2849002849",
+              "unit": "W/(m2 K)",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": true
+        },
+        "statements": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "3.51",
+            "source_value": "3.51",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/total_resistance_m2k_w"
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "3.34",
+            "source_value": "3.34",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/layer_resistance_m2k_w"
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.2849002849",
+            "source_value": "0.2849002849002849",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/u_w_m2k"
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "a75a5915916c687453cbb3feb658453893349d146f7196bd360d398346bf5d73",
+      "duration_ms": 16,
+      "finished_at": "2026-11-07T16:07:42.424919+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:42.441263+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 1766,
+      "finished_at": "2026-11-07T16:07:44.219393+00:00"
+    },
+    {
+      "tool": "requested_availability",
+      "arguments": {
+        "request_keys": [
+          "read_3"
+        ],
+        "finish": false
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:44.228396+00:00",
+      "origin": "model",
+      "result": {
+        "status": "verified",
+        "references": [
+          {
+            "request": {
+              "request_key": "read_3",
+              "kind": "operation",
+              "purpose": "availability",
+              "record_id": null
+            },
+            "catalog_hash": "05bfd14873aa1db3e68b14fbafd566080b211d0431b5c6e329eb4ad9aba9faee",
+            "availability": {
+              "request_key": "read_3",
+              "kind": "operation",
+              "record_id": null,
+              "scope": "entire_project_kind",
+              "state": "no_record_available",
+              "project_record_count": 0,
+              "checked_at": "2026-11-07T16:07:44.247395+00:00",
+              "notice": "仅检查当前项目记录是否存在；存在不证明结果当前有效，缺失不证明未执行过计算。不查询其他项目、不输出工程数值。"
+            }
+          }
+        ],
+        "snapshot_count": 1,
+        "finish": false
+      },
+      "result_hash": "18523ceac72a205b2cb144877a0c9e50299778f52dee496f50374c2b233c2264",
+      "duration_ms": 15,
+      "finished_at": "2026-11-07T16:07:44.247395+00:00"
+    },
+    {
+      "tool": "thermal_read",
+      "arguments": {
+        "thermal_id": "thermal_5639d1ccf6504f1281be533d7cfc2761"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:44.251392+00:00",
+      "origin": "controller",
+      "result": {
+        "thermal_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+        "project_id": "project_f8d01afb2dde44be9a53cf0cf9a514f8",
+        "project_revision": 1,
+        "input": {
+          "name": "UI independent wall",
+          "layers": [
+            {
+              "name": "Synthetic insulation",
+              "thickness": 167,
+              "thickness_unit": "mm",
+              "conductivity": 0.05,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Synthetic test assumption",
+              "source": "Synthetic authored reference input",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.13,
+          "rse_m2k_w": 0.04,
+          "surface_basis": "Synthetic declared films",
+          "application": "Uniform opaque reference wall"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "Synthetic insulation",
+              "thickness": 167,
+              "thickness_unit": "mm",
+              "conductivity": 0.05,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Synthetic test assumption",
+              "source": "Synthetic authored reference input",
+              "evidence_id": null,
+              "thickness_m": 0.167,
+              "conductivity_w_mk": 0.05,
+              "effective_conductivity_w_mk": 0.05,
+              "resistance_m2k_w": 3.34,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 3.34,
+          "total_resistance_m2k_w": 3.51,
+          "u_w_m2k": 0.2849002849002849,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "calculator_version": "f114f3d884db7cece43d1c46d688766b1edf2d219c50f1bfa69b82b3e2bc2973",
+        "evidence_snapshot": [],
+        "created_at": "2026-11-07T16:03:22.836620+00:00",
+        "hash": "437a93c69c4e0f3a7f3d366a6e87423a1aac989b3e8039644a42e7d3e5c50ad9",
+        "revision": 1,
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "explanation_facts": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "3.51",
+            "source_value": "3.51",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/total_resistance_m2k_w"
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "3.34",
+            "source_value": "3.34",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/layer_resistance_m2k_w"
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.2849002849",
+            "source_value": "0.2849002849002849",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/u_w_m2k"
+          }
+        ],
+        "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null，不列入数值事实；用professional_limit说明限制。排除阶段没有事实项。"
+      },
+      "result_hash": "e15ad89f3956520090261390282d8c33bbf8332dc131c0c1de694c452b6abcda",
+      "duration_ms": 16,
+      "finished_at": "2026-11-07T16:07:44.273394+00:00"
+    },
+    {
+      "tool": "professional_missing_recheck",
+      "origin": "controller",
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:44.277394+00:00",
+      "arguments": {
+        "scopes": [
+          {
+            "kind": "cost",
+            "kinds": null,
+            "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "finish": false
+          }
+        ]
+      },
+      "result": {
+        "checks": [
+          {
+            "request": {
+              "kind": "cost",
+              "kinds": null,
+              "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "finish": false
+            },
+            "passed": true,
+            "missing": {
+              "kind": "cost",
+              "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "state": "no_record_available",
+              "scope": "requested_record_in_project",
+              "reason_code": "record_not_available_in_project",
+              "project_record_count": 0,
+              "checked_at": "2026-11-07T16:07:44.296541+00:00",
+              "notice": "只核验当前项目的记录可用性，不代表已计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。"
+            }
+          }
+        ],
+        "snapshot_count": 1,
+        "notice": "同一完整目录快照重新核对先前所选缺失范围；不调用计算器、不改变记录。"
+      },
+      "result_hash": "057e85512f90330dec06d3729c0f40e562c41b587d3e6eeae4975da16bf7fae3",
+      "duration_ms": 16,
+      "finished_at": "2026-11-07T16:07:44.296541+00:00"
+    },
+    {
+      "tool": "requested_availability_recheck",
+      "origin": "controller",
+      "status": "succeeded",
+      "started_at": "2026-11-07T16:07:44.301547+00:00",
+      "arguments": {
+        "request_keys": [
+          "read_3"
+        ]
+      },
+      "result": {
+        "checks": [
+          {
+            "request_key": "read_3",
+            "passed": true,
+            "availability": {
+              "request_key": "read_3",
+              "kind": "operation",
+              "record_id": null,
+              "scope": "entire_project_kind",
+              "state": "no_record_available",
+              "project_record_count": 0,
+              "checked_at": "2026-11-07T16:07:44.317055+00:00",
+              "notice": "仅检查当前项目记录是否存在；存在不证明结果当前有效，缺失不证明未执行过计算。不查询其他项目、不输出工程数值。"
+            }
+          }
+        ],
+        "snapshot_count": 1
+      },
+      "result_hash": "8529ff4c0e2690c4a44cc1ea2dc20279a2de2beb6319ea3d3fba47d96a65dbab",
+      "duration_ms": 0,
+      "finished_at": "2026-11-07T16:07:44.317055+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "partial",
+    "execution_scope": "checked_record_availability_and_professional_deliveries",
+    "artifacts": [
+      {
+        "kind": "thermal_review",
+        "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+        "project_id": "project_f8d01afb2dde44be9a53cf0cf9a514f8",
+        "record_hash": "437a93c69c4e0f3a7f3d366a6e87423a1aac989b3e8039644a42e7d3e5c50ad9",
+        "name": "UI independent wall",
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "checked_at": "2026-11-07T16:09:24.935311+00:00",
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "input": {
+          "name": "UI independent wall",
+          "layers": [
+            {
+              "name": "Synthetic insulation",
+              "thickness": 167,
+              "thickness_unit": "mm",
+              "conductivity": 0.05,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Synthetic test assumption",
+              "source": "Synthetic authored reference input",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.13,
+          "rse_m2k_w": 0.04,
+          "surface_basis": "Synthetic declared films",
+          "application": "Uniform opaque reference wall"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "Synthetic insulation",
+              "thickness": 167,
+              "thickness_unit": "mm",
+              "conductivity": 0.05,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Synthetic test assumption",
+              "source": "Synthetic authored reference input",
+              "evidence_id": null,
+              "thickness_m": 0.167,
+              "conductivity_w_mk": 0.05,
+              "effective_conductivity_w_mk": 0.05,
+              "resistance_m2k_w": 3.34,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 3.34,
+          "total_resistance_m2k_w": 3.51,
+          "u_w_m2k": 0.2849002849002849,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "verified": true,
+        "scope": "一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。",
+        "report_path": "/api/projects/project_f8d01afb2dde44be9a53cf0cf9a514f8/thermal/thermal_5639d1ccf6504f1281be533d7cfc2761/report.html"
+      }
+    ],
+    "checked_statements": [
+      {
+        "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+        "name": "UI independent wall",
+        "facts": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "3.51",
+            "source_value": "3.51",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/total_resistance_m2k_w"
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "3.34",
+            "source_value": "3.34",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/layer_resistance_m2k_w"
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.2849002849",
+            "source_value": "0.2849002849002849",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "source_path": "/result/u_w_m2k"
+          }
+        ]
+      }
+    ],
+    "checked_limitations": [],
+    "verification": [
+      {
+        "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+        "passed": true,
+        "meaning": "结构化数值、单位与期间对照当前记录"
+      },
+      {
+        "check": "current_project_record_absence",
+        "kind": "cost",
+        "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "passed": true,
+        "meaning": "只核验当前项目范围内无所选记录，不代表工程任务完成"
+      },
+      {
+        "check": "current_requested_availability",
+        "request_key": "read_3",
+        "passed": true,
+        "meaning": "只核验声明范围的记录可用性，不证明结果有效或完成工程计算"
+      }
+    ],
+    "summary": "已按项核验部分或全部声明范围；未完成项见读取进度，数值有效性和自由问题完整覆盖仍分别判断。",
+    "task_notice": "只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。",
+    "gaps": [
+      {
+        "kind": "cost",
+        "message": "所需记录在当前项目中不可用",
+        "action": "核对项目和记录编号；需要计算时另行提交完整参数与授权，不自动重试失败写操作"
+      }
+    ],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-07T16:09:24.935311+00:00",
+    "checked_missing": [
+      {
+        "kind": "cost",
+        "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": "no_record_available",
+        "scope": "requested_record_in_project",
+        "reason_code": "record_not_available_in_project",
+        "project_record_count": 0,
+        "checked_at": "2026-11-07T16:09:24.935311+00:00",
+        "notice": "只核验当前项目的记录可用性，不代表已计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。"
+      }
+    ],
+    "termination": {
+      "reason": "response_budget_exhausted",
+      "model_declared_finished": false,
+      "pending_request_keys": []
+    },
+    "checked_availability": [
+      {
+        "request_key": "read_3",
+        "kind": "operation",
+        "record_id": null,
+        "scope": "entire_project_kind",
+        "state": "no_record_available",
+        "project_record_count": 0,
+        "checked_at": "2026-11-07T16:09:24.936311+00:00",
+        "notice": "仅检查当前项目记录是否存在；存在不证明结果当前有效，缺失不证明未执行过计算。不查询其他项目、不输出工程数值。"
+      }
+    ],
+    "read_request_progress": [
+      {
+        "request_key": "read_1",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+        "state": "result_verified"
+      },
+      {
+        "request_key": "read_2",
+        "kind": "cost",
+        "purpose": "results",
+        "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": "record_unavailable"
+      },
+      {
+        "request_key": "read_3",
+        "kind": "operation",
+        "purpose": "availability",
+        "record_id": null,
+        "state": "availability_verified"
+      }
+    ],
+    "read_request_coverage": "all_declared_scopes_checked",
+    "basis": [
+      "project_get",
+      "professional_missing",
+      "professional_read_many",
+      "thermal_read",
+      "professional_deliver",
+      "requested_availability",
+      "thermal_read"
+    ]
+  },
+  "created_at": "2026-11-07T16:07:32.291077+00:00",
+  "llm_commentary": null,
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 1,
+  "professional_deliveries": [
+    {
+      "kind": "thermal",
+      "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+      "record_hash": "437a93c69c4e0f3a7f3d366a6e87423a1aac989b3e8039644a42e7d3e5c50ad9",
+      "statements": [
+        {
+          "fact": "total_resistance_m2k_w",
+          "value": "3.51",
+          "unit": "m2 K/W",
+          "period": "steady_state",
+          "study_years": null,
+          "area_m2": null
+        },
+        {
+          "fact": "layer_resistance_m2k_w",
+          "value": "3.34",
+          "unit": "m2 K/W",
+          "period": "steady_state",
+          "study_years": null,
+          "area_m2": null
+        },
+        {
+          "fact": "u_w_m2k",
+          "value": "0.2849002849",
+          "unit": "W/(m2 K)",
+          "period": "steady_state",
+          "study_years": null,
+          "area_m2": null
+        }
+      ],
+      "limitation_status": null,
+      "finish": true
+    }
+  ],
+  "missing_deliveries": [
+    {
+      "request": {
+        "kind": "cost",
+        "kinds": null,
+        "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "finish": false
+      },
+      "catalog_hash": "23a06b772eec3165fe06729b4c2098a583c7172e543f07648973ad9d9b877429"
+    }
+  ],
+  "llm_commentary_policy": "audit_only",
+  "read_requests": [
+    {
+      "request_key": "read_1",
+      "kind": "thermal",
+      "purpose": "results",
+      "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761"
+    },
+    {
+      "request_key": "read_2",
+      "kind": "cost",
+      "purpose": "results",
+      "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "request_key": "read_3",
+      "kind": "operation",
+      "purpose": "availability",
+      "record_id": null
+    }
+  ],
+  "availability_deliveries": [
+    {
+      "request": {
+        "request_key": "read_3",
+        "kind": "operation",
+        "purpose": "availability",
+        "record_id": null
+      },
+      "catalog_hash": "05bfd14873aa1db3e68b14fbafd566080b211d0431b5c6e329eb4ad9aba9faee",
+      "availability": {
+        "request_key": "read_3",
+        "kind": "operation",
+        "record_id": null,
+        "scope": "entire_project_kind",
+        "state": "no_record_available",
+        "project_record_count": 0,
+        "checked_at": "2026-11-07T16:07:44.247395+00:00",
+        "notice": "仅检查当前项目记录是否存在；存在不证明结果当前有效，缺失不证明未执行过计算。不查询其他项目、不输出工程数值。"
+      }
+    }
+  ],
+  "revision": 33,
+  "early_finish_with_declared_reads": [
+    "read_3"
+  ],
+  "termination": {
+    "reason": "response_budget_exhausted",
+    "model_declared_finished": false,
+    "pending_request_keys": []
+  },
+  "read_request_progress": [
+    {
+      "request_key": "read_1",
+      "kind": "thermal",
+      "purpose": "results",
+      "record_id": "thermal_5639d1ccf6504f1281be533d7cfc2761",
+      "state": "result_verified"
+    },
+    {
+      "request_key": "read_2",
+      "kind": "cost",
+      "purpose": "results",
+      "record_id": "cost_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "state": "record_unavailable"
+    },
+    {
+      "request_key": "read_3",
+      "kind": "operation",
+      "purpose": "availability",
+      "record_id": null,
+      "state": "availability_verified"
+    }
+  ],
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-07T16:07:44.321054+00:00",
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-07T16:09:24.936311+00:00",
+  "historical_task_completion": "partial",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}

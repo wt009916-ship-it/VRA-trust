@@ -25,8 +25,9 @@ export function costArtifactMarkup(artifact) {
 }
 
 export function modelCommentaryMarkup(task) {
-  if(task.llm_commentary_policy==='audit_only')return '<p class="subtle">工程数值、状态及方法以上方核验结果为准；模型原始文字仅保留在任务审计记录中，不作为工程说明。</p>';
-  return task.llm_commentary?'<details><summary>AI 解释 · 非核验工程结论</summary><p class="model-prose">'+esc(task.llm_commentary)+'</p></details>':'';
+  const warning=task.llm_commentary_review?.status==='reference_mismatch'?'<p role="alert">AI 解释中的记录编号未通过核验，请勿据此定位记录。原文保留供审计，正式结果以上方逐项核验为准。</p>':'';
+  if(task.llm_commentary_policy==='audit_only')return warning+'<p class="subtle">工程数值、状态及方法以上方核验结果为准；模型原始文字仅保留在任务审计记录中，不作为工程说明。</p>';
+  return warning+(task.llm_commentary?'<details><summary>AI 解释 · 非核验工程结论</summary><p class="model-prose">'+esc(task.llm_commentary)+'</p></details>':'');
 }
 
 // Display rounding only; the source record and monetary decimal strings remain unchanged.

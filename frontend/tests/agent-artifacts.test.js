@@ -28,3 +28,16 @@ test('raw model errors remain outside the verified task result presentation',()=
   assert.ok(html.includes('仅保留在任务审计记录'));
   assert.ok(modelCommentaryMarkup({llm_commentary:'<img>'}).includes('&lt;img&gt;'));
 });
+
+test('incorrect prose identifiers have a visible warning and escaped original audit text',()=>{
+  const html=modelCommentaryMarkup({llm_commentary:'thermal_bad <script>fake</script>',llm_commentary_review:{status:'reference_mismatch'}});
+  assert.ok(html.includes('role="alert"') && html.includes('记录编号未通过核验'));
+  assert.ok(html.includes('thermal_bad') && html.includes('&lt;script&gt;') && !html.includes('<script>'));
+});
+
+test('audit-only production tasks still expose failed identifier review',()=>{
+  const html=modelCommentaryMarkup({llm_commentary_policy:'audit_only',llm_commentary:'wrong-id',
+    llm_commentary_review:{status:'reference_mismatch'}});
+  assert.ok(html.includes('记录编号未通过核验') && html.includes('仅保留在任务审计记录'));
+  assert.ok(!html.includes('wrong-id'));
+});

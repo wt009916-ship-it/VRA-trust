@@ -1,0 +1,44 @@
+...F....................................                                 [100%]
+================================== FAILURES ===================================
+_____ test_stale_scope_has_exact_limitation_action_without_auto_execution _____
+
+client = <starlette.testclient.TestClient object at 0x000001491210FD70>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000014912214410>
+
+    def test_stale_scope_has_exact_limitation_action_without_auto_execution(client, monkeypatch):
+        pid = create_project(client)['project_id']; agent = client.app.state.agent
+        wall = create_record(client, pid, 'thermal'); ident = wall['thermal_id']
+        project = agent.store.get('project', pid); project['building']['area_m2'] += 1
+        agent.store.put('project', project, project['revision'])
+        seen = []
+        monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
+        def complete(messages, tools):
+            seen.append(messages)
+            if len(seen) == 1: return tool('thermal_read', {'thermal_id': ident})
+            # Controller provides a next action from an actual read. The model still
+            # chooses and calls it; omission must not be silently completed.
+            state = json.loads(messages[0]['content'].split('当前控制流程状态：', 1)[1].split('\n总预算', 1)[0])
+            action = state['declared_next_actions'][0]
+            assert action['tool'] == 'professional_limit'
+            assert action['arguments']['limitation'] == {
+                'kind': 'thermal', 'record_id': ident, 'record_hash': wall['hash'], 'status': 'stale', 'finish': False}
+            return tool(action['tool'], action['arguments']) if len(seen) == 2 else {'role': 'assistant', 'content': 'Done'}
+        monkeypatch.setattr(agent.gateway, 'complete', complete)
+        task = agent.start(pid, chat([req(purpose='results', record_id=ident)]), background=False)
+>       assert task['status'] == 'succeeded', task.get('error')
+E       AssertionError: list index out of range
+E       assert 'failed' == 'succeeded'
+E         
+E         - succeeded
+E         + failed
+
+tests\test_agent_completion.py:76: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_completion.py::test_stale_scope_has_exact_limitation_action_without_auto_execution
+1 failed, 39 passed, 1 warning in 54.07s
