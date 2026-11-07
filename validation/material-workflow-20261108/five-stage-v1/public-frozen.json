@@ -1,0 +1,487 @@
+{
+  "source_sha256": "b347a2c8aa8fff6db896a4417a9c50c22ac0ccd7c5cfc22b99b8d29336c606ed",
+  "input": {
+    "takeoff_id": "takeoff_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "functional_scope": "The same selected wall layers over one declared service period",
+    "region": "US-CO",
+    "currency": "USD",
+    "tax_basis": "excluded",
+    "as_of": "2026-11-08",
+    "exclusions": [
+      "Labour, machinery and taxes are not in material cost"
+    ],
+    "study_years": 30,
+    "method": "QA arithmetic",
+    "boundaries": [
+      {
+        "stage": "production",
+        "included": true,
+        "reason": "Declared reference boundary for production"
+      },
+      {
+        "stage": "transport",
+        "included": true,
+        "reason": "Declared reference boundary for transport"
+      },
+      {
+        "stage": "construction",
+        "included": true,
+        "reason": "Declared reference boundary for construction"
+      },
+      {
+        "stage": "operation",
+        "included": true,
+        "reason": "Declared reference boundary for operation"
+      },
+      {
+        "stage": "end_of_life",
+        "included": true,
+        "reason": "Declared reference boundary for end_of_life"
+      }
+    ],
+    "alternatives": [
+      {
+        "name": "Baseline",
+        "layers": [
+          {
+            "layer_id": 4199,
+            "material_id": "Baseline4199",
+            "name": "Baseline material 4199",
+            "solid_fraction": 1.0,
+            "fraction_source": "Declared sensitivity assumption, not verified solid fraction of the public IFC",
+            "waste_ratio": 0.1,
+            "waste_basis": "Synthetic reference: ten percent procurement waste",
+            "density_kg_m3": 1000.0,
+            "density_source": "Synthetic reference density, not a manufacturer declaration",
+            "quote": {
+              "quote_id": "Baseline4199",
+              "unit_price": 100.0,
+              "per_unit": "t",
+              "currency": "USD",
+              "tax_basis": "excluded",
+              "region": "US-CO",
+              "valid_from": "2026-01-01",
+              "valid_until": "2026-12-31",
+              "source": "Synthetic reference quote, not market data",
+              "version": "reference-v1"
+            },
+            "factor": {
+              "factor_id": "Baseline4199",
+              "value": 2.0,
+              "denominator": "kg",
+              "stage": "production",
+              "source": "Synthetic reference factor, not an EPD",
+              "publisher": "QA reference",
+              "version": "reference-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          },
+          {
+            "layer_id": 4200,
+            "material_id": "Baseline4200",
+            "name": "Baseline material 4200",
+            "solid_fraction": 0.15,
+            "fraction_source": "Declared sensitivity assumption, not verified solid fraction of the public IFC",
+            "waste_ratio": 0.1,
+            "waste_basis": "Synthetic reference: ten percent procurement waste",
+            "density_kg_m3": 1000.0,
+            "density_source": "Synthetic reference density, not a manufacturer declaration",
+            "quote": {
+              "quote_id": "Baseline4200",
+              "unit_price": 100.0,
+              "per_unit": "t",
+              "currency": "USD",
+              "tax_basis": "excluded",
+              "region": "US-CO",
+              "valid_from": "2026-01-01",
+              "valid_until": "2026-12-31",
+              "source": "Synthetic reference quote, not market data",
+              "version": "reference-v1"
+            },
+            "factor": {
+              "factor_id": "Baseline4200",
+              "value": 2.0,
+              "denominator": "kg",
+              "stage": "production",
+              "source": "Synthetic reference factor, not an EPD",
+              "publisher": "QA reference",
+              "version": "reference-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          },
+          {
+            "layer_id": 4201,
+            "material_id": "Baseline4201",
+            "name": "Baseline material 4201",
+            "solid_fraction": 1.0,
+            "fraction_source": "Declared sensitivity assumption, not verified solid fraction of the public IFC",
+            "waste_ratio": 0.1,
+            "waste_basis": "Synthetic reference: ten percent procurement waste",
+            "density_kg_m3": 1000.0,
+            "density_source": "Synthetic reference density, not a manufacturer declaration",
+            "quote": {
+              "quote_id": "Baseline4201",
+              "unit_price": 100.0,
+              "per_unit": "t",
+              "currency": "USD",
+              "tax_basis": "excluded",
+              "region": "US-CO",
+              "valid_from": "2026-01-01",
+              "valid_until": "2026-12-31",
+              "source": "Synthetic reference quote, not market data",
+              "version": "reference-v1"
+            },
+            "factor": {
+              "factor_id": "Baseline4201",
+              "value": 2.0,
+              "denominator": "kg",
+              "stage": "production",
+              "source": "Synthetic reference factor, not an EPD",
+              "publisher": "QA reference",
+              "version": "reference-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          }
+        ],
+        "transport_legs": [
+          {
+            "leg_id": "delivery",
+            "name": "Declared road delivery",
+            "layer_ids": [
+              4199,
+              4200,
+              4201
+            ],
+            "purchase_fraction": 1.0,
+            "fraction_source": "All declared purchase mass on one reference route",
+            "distance_km": 75.0,
+            "distance_source": "Synthetic declared route; not actual logistics",
+            "additional_mass_kg": 40.0,
+            "additional_mass_source": "Synthetic packaging mass; explicitly independent of purchase material",
+            "factor": {
+              "factor_id": "holdout-transport-0",
+              "stage": "transport",
+              "value": 0.12,
+              "denominator": "tkm",
+              "source": "Synthetic declared reference; not a measured factor or EPD",
+              "publisher": "QA reference",
+              "version": "holdout-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          }
+        ],
+        "other_activities": [
+          {
+            "activity_id": "construction",
+            "name": "Declared construction",
+            "stage": "construction",
+            "quantity": 8.0,
+            "unit": "kWh",
+            "period": "whole_period",
+            "source": "Synthetic sensitivity activity; not derived saving or building observation",
+            "factor": {
+              "factor_id": "holdout-construction-0",
+              "stage": "construction",
+              "value": 0.45,
+              "denominator": "kWh",
+              "source": "Synthetic declared reference; not a measured factor or EPD",
+              "publisher": "QA reference",
+              "version": "holdout-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          },
+          {
+            "activity_id": "operation",
+            "name": "Declared operation",
+            "stage": "operation",
+            "quantity": 120.0,
+            "unit": "kWh",
+            "period": "annual",
+            "source": "Synthetic sensitivity activity; not derived saving or building observation",
+            "factor": {
+              "factor_id": "holdout-operation-0",
+              "stage": "operation",
+              "value": 0.32,
+              "denominator": "kWh",
+              "source": "Synthetic declared reference; not a measured factor or EPD",
+              "publisher": "QA reference",
+              "version": "holdout-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          },
+          {
+            "activity_id": "end_of_life",
+            "name": "Declared end_of_life",
+            "stage": "end_of_life",
+            "quantity": 20.0,
+            "unit": "kg",
+            "period": "whole_period",
+            "source": "Synthetic sensitivity activity; not derived saving or building observation",
+            "factor": {
+              "factor_id": "holdout-end_of_life-0",
+              "stage": "end_of_life",
+              "value": 0.15,
+              "denominator": "kg",
+              "source": "Synthetic declared reference; not a measured factor or EPD",
+              "publisher": "QA reference",
+              "version": "holdout-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Replacement",
+        "layers": [
+          {
+            "layer_id": 4199,
+            "material_id": "Replacement4199",
+            "name": "Replacement material 4199",
+            "solid_fraction": 1.0,
+            "fraction_source": "Declared sensitivity assumption, not verified solid fraction of the public IFC",
+            "waste_ratio": 0.1,
+            "waste_basis": "Synthetic reference: ten percent procurement waste",
+            "density_kg_m3": 1000.0,
+            "density_source": "Synthetic reference density, not a manufacturer declaration",
+            "quote": {
+              "quote_id": "Replacement4199",
+              "unit_price": 80.0,
+              "per_unit": "t",
+              "currency": "USD",
+              "tax_basis": "excluded",
+              "region": "US-CO",
+              "valid_from": "2026-01-01",
+              "valid_until": "2026-12-31",
+              "source": "Synthetic reference quote, not market data",
+              "version": "reference-v1"
+            },
+            "factor": {
+              "factor_id": "Replacement4199",
+              "value": 1.5,
+              "denominator": "kg",
+              "stage": "production",
+              "source": "Synthetic reference factor, not an EPD",
+              "publisher": "QA reference",
+              "version": "reference-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          },
+          {
+            "layer_id": 4200,
+            "material_id": "Replacement4200",
+            "name": "Replacement material 4200",
+            "solid_fraction": 0.15,
+            "fraction_source": "Declared sensitivity assumption, not verified solid fraction of the public IFC",
+            "waste_ratio": 0.1,
+            "waste_basis": "Synthetic reference: ten percent procurement waste",
+            "density_kg_m3": 1000.0,
+            "density_source": "Synthetic reference density, not a manufacturer declaration",
+            "quote": {
+              "quote_id": "Replacement4200",
+              "unit_price": 80.0,
+              "per_unit": "t",
+              "currency": "USD",
+              "tax_basis": "excluded",
+              "region": "US-CO",
+              "valid_from": "2026-01-01",
+              "valid_until": "2026-12-31",
+              "source": "Synthetic reference quote, not market data",
+              "version": "reference-v1"
+            },
+            "factor": {
+              "factor_id": "Replacement4200",
+              "value": 1.5,
+              "denominator": "kg",
+              "stage": "production",
+              "source": "Synthetic reference factor, not an EPD",
+              "publisher": "QA reference",
+              "version": "reference-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          },
+          {
+            "layer_id": 4201,
+            "material_id": "Replacement4201",
+            "name": "Replacement material 4201",
+            "solid_fraction": 1.0,
+            "fraction_source": "Declared sensitivity assumption, not verified solid fraction of the public IFC",
+            "waste_ratio": 0.1,
+            "waste_basis": "Synthetic reference: ten percent procurement waste",
+            "density_kg_m3": 1000.0,
+            "density_source": "Synthetic reference density, not a manufacturer declaration",
+            "quote": {
+              "quote_id": "Replacement4201",
+              "unit_price": 80.0,
+              "per_unit": "t",
+              "currency": "USD",
+              "tax_basis": "excluded",
+              "region": "US-CO",
+              "valid_from": "2026-01-01",
+              "valid_until": "2026-12-31",
+              "source": "Synthetic reference quote, not market data",
+              "version": "reference-v1"
+            },
+            "factor": {
+              "factor_id": "Replacement4201",
+              "value": 1.5,
+              "denominator": "kg",
+              "stage": "production",
+              "source": "Synthetic reference factor, not an EPD",
+              "publisher": "QA reference",
+              "version": "reference-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          }
+        ],
+        "transport_legs": [
+          {
+            "leg_id": "delivery",
+            "name": "Declared road delivery",
+            "layer_ids": [
+              4199,
+              4200,
+              4201
+            ],
+            "purchase_fraction": 1.0,
+            "fraction_source": "All declared purchase mass on one reference route",
+            "distance_km": 120.0,
+            "distance_source": "Synthetic declared route; not actual logistics",
+            "additional_mass_kg": 30.0,
+            "additional_mass_source": "Synthetic packaging mass; explicitly independent of purchase material",
+            "factor": {
+              "factor_id": "holdout-transport-1",
+              "stage": "transport",
+              "value": 0.08,
+              "denominator": "tkm",
+              "source": "Synthetic declared reference; not a measured factor or EPD",
+              "publisher": "QA reference",
+              "version": "holdout-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          }
+        ],
+        "other_activities": [
+          {
+            "activity_id": "construction",
+            "name": "Declared construction",
+            "stage": "construction",
+            "quantity": 6.0,
+            "unit": "kWh",
+            "period": "whole_period",
+            "source": "Synthetic sensitivity activity; not derived saving or building observation",
+            "factor": {
+              "factor_id": "holdout-construction-1",
+              "stage": "construction",
+              "value": 0.45,
+              "denominator": "kWh",
+              "source": "Synthetic declared reference; not a measured factor or EPD",
+              "publisher": "QA reference",
+              "version": "holdout-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          },
+          {
+            "activity_id": "operation",
+            "name": "Declared operation",
+            "stage": "operation",
+            "quantity": 95.0,
+            "unit": "kWh",
+            "period": "annual",
+            "source": "Synthetic sensitivity activity; not derived saving or building observation",
+            "factor": {
+              "factor_id": "holdout-operation-1",
+              "stage": "operation",
+              "value": 0.32,
+              "denominator": "kWh",
+              "source": "Synthetic declared reference; not a measured factor or EPD",
+              "publisher": "QA reference",
+              "version": "holdout-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          },
+          {
+            "activity_id": "end_of_life",
+            "name": "Declared end_of_life",
+            "stage": "end_of_life",
+            "quantity": 18.0,
+            "unit": "kg",
+            "period": "whole_period",
+            "source": "Synthetic sensitivity activity; not derived saving or building observation",
+            "factor": {
+              "factor_id": "holdout-end_of_life-1",
+              "stage": "end_of_life",
+              "value": 0.15,
+              "denominator": "kg",
+              "source": "Synthetic declared reference; not a measured factor or EPD",
+              "publisher": "QA reference",
+              "version": "holdout-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "expected": [
+    {
+      "name": "Baseline",
+      "material_cost": "26.82",
+      "purchase_mass_kg": "268.1165159200020509029640000",
+      "transport_tkm": "23.1087386940001538177223000",
+      "stages": {
+        "production": "536.2330318400041018059280000",
+        "transport": "2.773048643280018458126676000",
+        "construction": "3.60",
+        "operation": "1152.00",
+        "end_of_life": "3.00"
+      },
+      "total_kgco2e": "1697.606080483284120264054676"
+    },
+    {
+      "name": "Replacement",
+      "material_cost": "21.44",
+      "purchase_mass_kg": "268.1165159200020509029640000",
+      "transport_tkm": "35.7739819104002461083556800",
+      "stages": {
+        "production": "402.1747738800030763544460000",
+        "transport": "2.861918552832019688668454400",
+        "construction": "2.70",
+        "operation": "912.00",
+        "end_of_life": "2.70"
+      },
+      "total_kgco2e": "1322.436692432835096043114454"
+    }
+  ],
+  "absolute_carbon_tolerance": "1e-8",
+  "price_tolerance": "exact cents",
+  "formula": "Per layer: V_STEP * solid_fraction * (1+waste) * density; transport=(sum(mass)+packaging)/1000*km*factor; annual operation=quantity*30*factor; other activities=quantity*factor.",
+  "source_scope": "Public IFC geometry with explicit synthetic material/activity/price/factor assumptions. No real-building, LCA-compliance, retrofit-performance or carbon-asset claim."
+}
