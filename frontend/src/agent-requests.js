@@ -60,10 +60,25 @@ export function bindReadRequests(host,pid,action) {
 
 export function readRequestProgressMarkup(task) {
   const rows=task.read_request_progress||task.answer?.read_request_progress||[];
-  if(!rows.length)return '';
-  const states={unfulfilled:'尚未交付',delivery_not_currently_verified:'交付目前未通过核验',availability_verified:'可用性已核验',result_verified:'所选结果已核验',limitation_verified:'当前限制已核验',record_unavailable:'指定记录不可用'};
+  if(!rows.length)return outputContractMarkup(task);
+  const states={required_facts_missing:'尚缺所问指标',output_plan_missing:'尚未形成输出计划',unfulfilled:'尚未交付',delivery_not_currently_verified:'交付目前未通过核验',availability_verified:'可用性已核验',result_verified:'所选结果已核验',limitation_verified:'当前限制已核验',record_unavailable:'指定记录不可用'};
   const available=task.answer?.checked_availability||[];
   const termination=task.termination||task.answer?.termination;
   const stopped=termination?.reason==='response_budget_exhausted'?'<p role="status">已到模型轮次上限。已提交内容仍按当前来源核验，未交付的目标继续标示；流程结束不等于全部任务完成。</p>':'';
-  return `<section aria-label="声明读取目标进度"><h3>本次明确读取范围</h3>${stopped}<p>逐项检查声明范围，清单外问题的完整覆盖未获核验。记录存在不等于结果有效，缺失不记为零。</p>${rows.map(r=>`<article><h4>${esc(readKinds[r.kind]||r.kind)} · ${r.purpose==='availability'?'可用性':'指定结果'}</h4><p><strong>${esc(states[r.state]||r.state)}</strong> · ${esc(r.request_key)}</p><small class="mono">${esc(r.record_id||'该专业完整项目目录')}</small>${available.filter(a=>a.request_key===r.request_key).map(a=>`<p>${a.state==='records_present'?'声明范围内存在记录；未据此认定工程数值有效。':'声明范围内没有可用记录；不推断其他项目或计算历史。'}</p>`).join('')}</article>`).join('')}</section>`;
+  return outputContractMarkup(task)+`<section aria-label="声明读取目标进度"><h3>本次明确读取范围</h3>${stopped}<p>逐项检查声明范围，清单外问题的完整覆盖未获核验。记录存在不等于结果有效，缺失不记为零。</p>${rows.map(r=>`<article><h4>${esc(readKinds[r.kind]||r.kind)} · ${r.purpose==='availability'?'可用性':'指定结果'}</h4><p><strong>${esc(states[r.state]||r.state)}</strong> · ${esc(r.request_key)}</p><small class="mono">${esc(r.record_id||'该专业完整项目目录')}</small>${available.filter(a=>a.request_key===r.request_key).map(a=>`<p>${a.state==='records_present'?'声明范围内存在记录；未据此认定工程数值有效。':'声明范围内没有可用记录；不推断其他项目或计算历史。'}</p>`).join('')}</article>`).join('')}</section>`;
+}
+
+const factLabels={total_resistance_m2k_w:'总热阻 R',layer_resistance_m2k_w:'材料层热阻',u_w_m2k:'传热系数 U',
+  boundary_total_kgco2e:'声明边界碳总量',kgco2e_m2_over_study_period:'评估期单位面积碳排',material_total:'材料成本合计'};
+export function outputContractMarkup(task) {
+  const answer=task.answer||{},plan=answer.output_plan||task.output_plan;
+  if(!task.infer_outputs&&!plan)return '';
+  if(!plan)return '<section aria-label="任务产物核验"><h3>任务产物</h3><p>尚未形成指标与解释计划，不能认定已完整回答问题。</p></section>';
+  const states={fulfilled:'计划内产物已交付',source_limited:'已说明来源限制，数值未完成',incomplete:'仍有产物未交付'};
+  const invalid=answer.output_contract_coverage==='contract_changed';
+  const outputs=invalid?[]:(answer.requested_outputs||[]);
+  return `<section aria-label="任务产物核验"><h3>指标与解释</h3><p>以下要求由模型从原问题解析，请核对是否准确。计划完成不等于已证明完整理解问题；解释由应用依据当前核验来源生成。</p>${invalid?'<p role="status">解释契约已变化，历史解释已撤下，请重新核验。</p>':''}${plan.items.map(item=>{
+    const out=outputs.find(o=>o.request_key===item.request_key);
+    return `<article><h4>${esc(item.request_key)} · ${esc(states[out?.state]||'待交付')}</h4><blockquote>${esc(item.question_excerpt)}</blockquote><p>所选指标：${esc(item.fact_keys.map(k=>factLabels[k]||k).join('、')||'记录可用性')}</p>${out?.missing_fact_keys?.length?`<p role="status">尚缺指标：${esc(out.missing_fact_keys.map(k=>factLabels[k]||k).join('、'))}</p>`:''}${(out?.explanations||[]).map(e=>`<p>${esc(e.text)}</p>`).join('')}</article>`;
+  }).join('')}</section>`;
 }

@@ -1,4 +1,4 @@
-"""User-bound scope and real service receipts; scripted choices are not model intelligence."""
+"""Legacy scope protocol (infer_outputs=False); default output planning has separate tests."""
 import json
 
 import pytest
@@ -17,7 +17,7 @@ def req(kind='thermal',purpose='availability',record_id=None,key='scope'):
 
 
 def chat(requests,**kw):
-    return Chat(message='Inspect only my declared read scopes; do not calculate.',mode='provider',read_requests=requests,**kw)
+    return Chat(message='Inspect only my declared read scopes; do not calculate.',mode='provider',read_requests=requests,infer_outputs=False,**kw)
 
 
 def test_availability_present_and_missing_are_independent_without_numeric_delivery(client,monkeypatch):

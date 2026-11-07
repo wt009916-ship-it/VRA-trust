@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from . import core, agent_missing
+from . import core, agent_missing, agent_outputs
 from .schema import Contract
 from .agent_semantics import inspection
 
@@ -62,11 +62,16 @@ def recheck(domain,pid,requests,references):
 
 
 def pending(record):
+    if record.get('infer_outputs') and not record.get('output_plan'):
+        return [r['request_key'] for r in record.get('read_requests', [])]
     available={r['request']['request_key'] for r in record.get('availability_deliveries',[])}
     results={r['record_id'] for r in record.get('professional_deliveries',[])}
     absent={r['request'].get('record_id') for r in record.get('missing_deliveries',[])}
     return [r['request_key'] for r in record.get('read_requests',[]) if
-            (r['request_key'] not in available if r['purpose']=='availability' else r['record_id'] not in results|absent)]
+            (r['request_key'] not in available if r['purpose']=='availability' else
+             r['record_id'] not in results|absent or
+             (r['record_id'] in results and not any(d.get('limitation_status') for d in record.get('professional_deliveries', []) if d['record_id'] == r['record_id'])
+              and agent_outputs.missing_facts(record, r, record.get('professional_deliveries', []))))]
 
 
 def progress(record,answer):
@@ -82,6 +87,10 @@ def progress(record,answer):
         elif r['purpose']=='results':
             state=('result_verified' if r['record_id'] in values else 'limitation_verified' if r['record_id'] in limited
                    else 'record_unavailable' if r['record_id'] in absent else state)
+        if state == 'result_verified':
+            actual = [{'record_id': d['record_id'], 'statements': d['facts']} for d in answer.get('checked_statements', [])]
+            if agent_outputs.missing_facts(record, r, actual):state='required_facts_missing'
+        if record.get('infer_outputs') and not record.get('output_plan'):state='output_plan_missing'
         if state=='unfulfilled' and r['request_key'] in submitted:state='delivery_not_currently_verified'
         rows.append({**r,'state':state})
     return rows
@@ -104,17 +113,17 @@ def attach(answer,domain,pid,record,reader=None):
     answer['checked_availability']=checked
     rows=progress(record,answer)
     answer['read_request_progress']=rows
-    answer['read_request_coverage']='all_declared_scopes_checked' if all(r['state'] not in {'unfulfilled','delivery_not_currently_verified'} for r in rows) else 'incomplete'
+    answer['read_request_coverage']='all_declared_scopes_checked' if all(r['state'] not in {'unfulfilled','delivery_not_currently_verified','required_facts_missing','output_plan_missing'} for r in rows) else 'incomplete'
     if checked:
         answer['task_completion']='partial'
         answer['summary']='已按项核验部分或全部声明范围；未完成项见读取进度，数值有效性和自由问题完整覆盖仍分别判断。'
         answer['gaps']=[g for g in answer['gaps'] if g.get('message')!='本轮没有通过核验的专业交付']
     for row in rows:
-        if row['state'] in {'unfulfilled','delivery_not_currently_verified'}:
+        if row['state'] in {'unfulfilled','delivery_not_currently_verified','required_facts_missing','output_plan_missing'}:
             answer['gaps'].append({'request_key':row['request_key'],'message':'声明读取目标尚未形成当前有效交付：'+row['request_key'],
                                   'action':'按本次声明范围查询并交付，不替换编号或新增计算。'})
     answer['task_notice']='只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。'
-    return answer
+    return agent_outputs.attach(answer, record)
 
 def next_actions(record):
     """Suggestions from declared scopes and observed reads; never execute or infer scope."""
@@ -150,7 +159,8 @@ def next_actions(record):
                 action.update(tool='professional_deliver', arguments={'delivery': {
                     'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
                     required_fields=['delivery.statements'],
-                    available_facts=current.get('explanation_facts', []))
+                    available_facts=current.get('explanation_facts', []),
+                    output_requirement=agent_outputs.requirement(record, request['request_key']))
         elif ident in unavailable:
             action.update(tool='professional_missing', arguments={'missing': {
                 'kinds': [kind], 'record_id': ident, 'finish': False}})

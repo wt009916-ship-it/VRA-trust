@@ -1,0 +1,4 @@
+### Ran Playwright code
+```js
+await (async (page) => { const pending=page.waitForResponse(r=>r.url().endsWith("/agent/chat") && r.request().method()==="POST"); await page.getByRole("button",{name:"执行项目操作",exact:true}).click(); const r=await pending; console.log(JSON.stringify({status:r.status(),task:await r.json()})); })(page);
+```
