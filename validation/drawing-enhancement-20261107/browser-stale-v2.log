@@ -1,0 +1,27 @@
+### Result
+{"disabled":true,"scaleNumber":0,"scale":{"scale_id":"scale_df50d0e2e4fe425ebbfd8381208f4da7","project_id":"project_33f64d36586747248978c1dd749a99f7","drawing_id":"drawing_e02566dfce64450eb0c4f41eb0186f08","basis_hash":"7198d43cfa47b521422b6a334820079352283677980b5bb34005ed26e4bbf7e5","input":{"basis_hash":"7198d43cfa47b521422b6a334820079352283677980b5bb34005ed26e4bbf7e5","references":[{"label":"用户参考 A","start":{"x":20,"y":20},"end":{"x":120,"y":20},"length":6000,"unit":"mm","length_uncertainty":0,"point_uncertainty_px":0},{"label":"用户参考 B","start":{"x":20,"y":20},"end":{"x":70,"y":20},"length":3,"unit":"m","length_uncertainty":0,"point_uncertainty_px":0}],"relative_tolerance":0,"basis":"独立合成验收：人为声明6000毫米每100像素和3米每50像素，仅验证换算，不代表真实图纸尺度。","plane_assumption":"user_declares_uniform_scale_on_this_page"},"result":null,"author_id":"user_df018c3397c749408c42c4bc2450152c","created_at":"2026-11-07T02:58:42.841347+00:00","calculator_hash":"d702e464d756bf746e32c95272247bd0a52f24948517ed72de6e745b62c85536","hash":"96fe2bb65f3e515e06cae0e2f08eb6988092f41a23a4041073f1c5e103db4968","revision":1,"status":"stale"},"geometry":0,"snapshot":"- complementary:\n  - link \"稀土智暖 VRA-Trust\":\n    - /url: /\n  - button \"新建项目 ⌘ N\"\n  - button \"搜索项目 ⌘ K\"\n  - button \"工作台\"\n  - text: 项目 1\n  - button \"图纸几何公开与合成验收\"\n  - button \"探索参考项目\"\n  - button \"开发者设置\"\n  - text: 图 图纸几何隔离验收 本地工作区\n  - button \"切换明暗主题\"\n  - button \"退出登录\"\n- banner:\n  - button \"展开或收起侧栏\"\n  - text: 项目 /\n  - strong: 图纸几何公开与合成验收\n  - text: 引擎就绪\n  - button \"查看项目详情\"\n- navigation \"项目工作视图\":\n  - button \"工作台\"\n  - button \"资料 0\"\n  - button \"仿真\"\n  - button \"热工计算\"\n  - button \"碳清单\"\n  - button \"规范资料\"\n  - button \"梁分析\"\n  - button \"材料成本\"\n  - button \"施工进度\"\n  - button \"设备运维\"\n  - button \"CAD / BIM\"\n  - button \"图纸识别\"\n  - button \"报告与依据\"\n  - button \"反例与补证\"\n  - button \"图纸与三维\"\n- heading \"图纸整理与尺度核验\" [level=1]\n- paragraph: 保留原图，比较处理版本；核对文字、尺寸来源和尺度冲突。\n- text: 图纸文件（PNG / JPEG / PDF，最大10 MiB）\n- button \"图纸文件（PNG / JPEG / PDF，最大10 MiB）\"\n- text: PDF页码（图片填1）\n- spinbutton \"PDF页码（图片填1）\": \"1\"\n- group \"处理版本（原件保留）\":\n  - text: 处理版本（原件保留） 纠偏方式\n  - combobox \"纠偏方式\":\n    - option \"保持原方向\" [selected]\n    - option \"尝试自动纠偏，方向不明确则保持原图\"\n    - option \"明确输入旋转角度\"\n  - text: 顺时针旋转角度 °（手动时使用，−15～15）\n  - spinbutton \"顺时针旋转角度 °（手动时使用，−15～15）\": \"0\"\n  - checkbox \"生成 3×3 中值过滤版本及差异图（可能删除细线、文字）\"\n  - text: 生成 3×3 中值过滤版本及差异图（可能删除细线、文字）\n- button \"保留原件并生成处理与文字候选\"\n- paragraph: PDF逐页按150 dpi光栅化；最大1200万像素、边长6000。复杂扫描图纸可能漏检，暂不提供墙线补全或结构推断。\n- text: 历史识别记录\n- combobox \"历史识别记录\":\n  - option \"turn_3_25.png · 2026-11-07T03:13:26.074010+00:00 · v1\"\n  - option \"turn_3_25.png · 2026-11-07T02:57:43.610258+00:00 · v1\" [selected]\n- paragraph: 原件、预览或解析器已变化；旧识别和复核结果已失效，请新建记录。\n- paragraph:\n  - text: 原件SHA256：\n  - code: 24b96e41329f56cb6a1de5e6d5ffbbb3cef8ea8a828fd7a379276b4b9f7508eb\n- paragraph:\n  - link \"下载原图\":\n    - /url: /api/projects/project_33f64d36586747248978c1dd749a99f7/files/file_54b49ecb36a547949330e0d059f4a648\n  - text: ·\n  - link \"导出识别及复核JSON\":\n    - /url: /api/projects/project_33f64d36586747248978c1dd749a99f7/drawings/drawing_e02566dfce64450eb0c4f41eb0186f08\n- button \"查看复核历史\""}
+### Ran Playwright code
+```js
+await (async (page) => {
+  const select=page.getByRole('combobox',{name:'已保存尺度记录',exact:true});
+  await select.selectOption('scale_321c1b46ef1b43e3aa6bd22ee373c9c6');
+  await page.getByText('图页或算法依据已变化，旧尺度失效，不能继续估算。',{exact:true}).waitFor();
+  await select.selectOption('scale_df50d0e2e4fe425ebbfd8381208f4da7');
+  await page.getByText('图页或算法依据已变化，旧尺度失效，不能继续估算。',{exact:true}).waitFor();
+  const disabled=await page.getByRole('button',{name:'按当前有效尺度估算长度',exact:true}).isDisabled();
+  const scaleNumber=await page.getByText('条件尺度 0.06 m/px；声明区间 0.06 ～ 0.06 m/px。',{exact:true}).count();
+  if(!disabled||scaleNumber)throw Error('stale scale visible');
+  const exportUrl=await page.getByRole('link',{name:'导出当前尺度核验 JSON',exact:true}).getAttribute('href');
+  const scale=await (await page.request.get(new URL(exportUrl,page.url()).href)).json();if(scale.status!=='stale'||scale.result!==null)throw Error('stale API not null');
+  const history=page.getByRole('combobox',{name:'历史识别记录',exact:true});
+  await history.selectOption('drawing_aca07ba62d14444aad977bed7cf97f3b');
+  await page.getByRole('link',{name:'查看过滤差异图',exact:true}).waitFor();
+  await history.selectOption('drawing_e02566dfce64450eb0c4f41eb0186f08');
+  await page.getByText('原件、预览或解析器已变化；旧识别和复核结果已失效，请新建记录。',{exact:true}).waitFor();
+  const geometry=await page.getByText('对照原图并标定尺寸',{exact:true}).count();
+  if(geometry)throw Error('stale drawing geometry rendered');
+  return {disabled,scaleNumber,scale,geometry,snapshot:await page.locator('body').ariaSnapshot()};
+}
+
+)(page);
+```

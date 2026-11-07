@@ -18,6 +18,7 @@ from .material_cost import Costs, Estimate, Comparison as CostComparison, compar
 from .construction import Schedules, ScheduleInput, report as schedule_report
 from .operations import Operations, AnalysisInput, report as operations_report
 from .drawings import Drawings, DrawingInput, DrawingReview
+from .drawing_scale import DrawingScales, ScaleInput, LengthInput
 
 def register_extensions(app, domain, auth):
     trust, gateway = (Trust(domain), Gateway(domain.store))
@@ -35,6 +36,7 @@ def register_extensions(app, domain, auth):
     schedules = Schedules(domain)
     operations = Operations(domain)
     drawings = Drawings(domain)
+    drawing_scales = DrawingScales(drawings)
 
     @app.post('/api/projects/{project_id}/drawings', status_code=201)
     def drawing_create(project_id: str, body: DrawingInput):
@@ -59,6 +61,27 @@ def register_extensions(app, domain, auth):
     @app.get('/api/projects/{project_id}/drawings/{drawing_id}/history')
     def drawing_history(project_id: str, drawing_id: str):
         return drawings.history(project_id,drawing_id)
+
+    @app.get('/api/projects/{project_id}/drawings/{drawing_id}/derivatives/{name}')
+    def drawing_derivative(project_id: str,drawing_id: str,name: str):
+        return FileResponse(drawings.derivative(project_id,drawing_id,name),media_type='image/png',headers={'X-Content-Type-Options':'nosniff'})
+
+    @app.post('/api/projects/{project_id}/drawings/{drawing_id}/scales',status_code=201)
+    def drawing_scale_create(project_id: str,drawing_id: str,body: ScaleInput,request: Request):
+        return drawing_scales.save(project_id,drawing_id,body,request.state.user['id'])
+
+    @app.get('/api/projects/{project_id}/drawings/{drawing_id}/scales')
+    def drawing_scale_list(project_id: str,drawing_id: str):
+        drawings.view(project_id,drawing_id)
+        return [drawing_scales.view(project_id,drawing_id,r['scale_id']) for r in domain.store.list('scale',project_id) if r['drawing_id']==drawing_id]
+
+    @app.get('/api/projects/{project_id}/drawings/{drawing_id}/scales/{scale_id}')
+    def drawing_scale_get(project_id: str,drawing_id: str,scale_id: str):
+        return drawing_scales.view(project_id,drawing_id,scale_id)
+
+    @app.post('/api/projects/{project_id}/drawings/{drawing_id}/scales/{scale_id}/measure')
+    def drawing_measure(project_id: str,drawing_id: str,scale_id: str,body: LengthInput):
+        return drawing_scales.measure(project_id,drawing_id,scale_id,body)
 
     @app.get('/api/projects/{project_id}/operation-inputs')
     def operations_inputs(project_id: str):

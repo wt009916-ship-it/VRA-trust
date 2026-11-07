@@ -68,13 +68,16 @@ def load_page(path, page_number):
     return image, info
 
 
-def parse(path, page_number, preview_path):
+def parse(path, page_number, preview_path, options=None):
     if __package__:
         from .drawing_models import model_paths, MODELS
+        from .drawing_processing import process, point
     else:
         from drawing_models import model_paths, MODELS
+        from drawing_processing import process, point
     paths = model_paths()
     image, info = load_page(path,page_number)
+    image, processing = process(image,options,preview_path.parent)
     import onnxruntime
     from rapidocr import RapidOCR
     onnxruntime.disable_telemetry_events()
@@ -102,17 +105,22 @@ def parse(path, page_number, preview_path):
                 raise ValueError('Invalid OCR candidate')
             if not all(math.isfinite(x) and math.isfinite(y) and 0<=x<=image.width and 0<=y<=image.height for x,y in polygon):
                 raise ValueError('OCR polygon outside normalized image')
+            source_polygon=[point(processing['transform']['preview_to_source'],p) for p in polygon]
+            source_width,source_height=processing['transform']['source_size']
+            inside=all(0<=p[0]<=source_width and 0<=p[1]<=source_height for p in source_polygon)
             candidates.append({'candidate_id':f'text_{i+1}','text':text,'polygon_px':polygon,
+                               'polygon_source_px':source_polygon,'source_polygon_inside_raster':inside,
                                'recognition_score':score,'review_required':True,'source_kind':'AI_INFERRED'})
     image.save(preview_path,format='PNG')
-    return {'page':info,'width':image.width,'height':image.height,'candidates':candidates,
+    return {'page':info,'width':image.width,'height':image.height,'candidates':candidates,'processing':processing,
             'state':'candidates_require_review' if candidates else 'no_text_detected_not_proof_of_absence',
             'preview_sha256':hashlib.sha256(preview_path.read_bytes()).hexdigest(),
             'models':{kind:{'name':name,'sha256':digest} for kind,(name,digest) in MODELS.items()},
             'settings':{k:v for k,v in params.items() if not k.endswith('.model_path')},
             'limitations':['识别分数不是正确概率或工程可信度，漏检和高分误识别仍可能发生；所有候选均需人工核对。',
                            '文字与位置是AI候选，不推断缺失尺寸、构件、比例尺或结构安全，不自动写入工程参数。',
-                           '仅做方向规范化、白底合成或PDF光栅化；没有修补墙线或生成缺失工程信息，原件保持不变。',
+                           '处理版本可按明确请求纠偏或中值过滤，插值/过滤可能改变细线和文字；差异图不等于语义损伤检测，原件保持不变。',
+                           '没有修补墙线或生成缺失工程信息；自动方向一致性不是正确概率，建议仍需人工对照。',
                            '检测最长边缩至1600像素；小字、噪声、重叠和复杂图纸可能遗漏，未识别不表示不存在。',
                            '框坐标基于当前规范化预览；不直接对应PDF矢量坐标或工程长度单位。']}
 
