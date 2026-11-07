@@ -1474,6 +1474,514 @@
         ]
       }
     },
+    "/api/projects/{project_id}/design-sources": {
+      "post": {
+        "summary": "Source Create",
+        "operationId": "source_create_api_projects__project_id__design_sources_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Source List",
+        "operationId": "source_list_api_projects__project_id__design_sources_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/design-sources/{source_id}": {
+      "get": {
+        "summary": "Source Get",
+        "operationId": "source_get_api_projects__project_id__design_sources__source_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/design-sources/{source_id}/review": {
+      "post": {
+        "summary": "Source Review",
+        "operationId": "source_review_api_projects__project_id__design_sources__source_id__review_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/backend__design_conditions__Review"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/design-models/{evidence_id}": {
+      "get": {
+        "summary": "Model Get",
+        "operationId": "model_get_api_projects__project_id__design_models__evidence_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "evidence_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Evidence Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/design-checks": {
+      "post": {
+        "summary": "Check Create",
+        "operationId": "check_create_api_projects__project_id__design_checks_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Check List",
+        "operationId": "check_list_api_projects__project_id__design_checks_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/design-checks/{check_id}": {
+      "get": {
+        "summary": "Check Get",
+        "operationId": "check_get_api_projects__project_id__design_checks__check_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "check_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Check Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/design-checks/{check_id}/report.html": {
+      "get": {
+        "summary": "Check Report",
+        "operationId": "check_report_api_projects__project_id__design_checks__check_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "check_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Check Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/drawings": {
       "post": {
         "summary": "Drawing Create",
@@ -3623,7 +4131,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Review"
+                "$ref": "#/components/schemas/backend__standards__Review"
               }
             }
           }
@@ -6700,6 +7208,49 @@
         ],
         "title": "Chat"
       },
+      "CheckInput": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "pattern": "^designsource_[a-f0-9]{32}$",
+            "title": "Source Id"
+          },
+          "source_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Source Revision"
+          },
+          "model_evidence_id": {
+            "type": "string",
+            "pattern": "^evidence_[a-f0-9]{32}$",
+            "title": "Model Evidence Id"
+          },
+          "model_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Model Revision"
+          },
+          "pairs": {
+            "items": {
+              "$ref": "#/components/schemas/Pair"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "minItems": 1,
+            "title": "Pairs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_id",
+          "source_revision",
+          "model_evidence_id",
+          "model_revision",
+          "pairs"
+        ],
+        "title": "CheckInput"
+      },
       "Clause": {
         "properties": {
           "clause_id": {
@@ -8363,6 +8914,29 @@
         ],
         "title": "OperationPlan"
       },
+      "Pair": {
+        "properties": {
+          "model_day": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model Day"
+          },
+          "source_day": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Source Day"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model_day",
+          "source_day"
+        ],
+        "title": "Pair"
+      },
       "PixelPoint": {
         "properties": {
           "x": {
@@ -9033,37 +9607,6 @@
         ],
         "title": "Resource"
       },
-      "Review": {
-        "properties": {
-          "expected_revision": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Expected Revision"
-          },
-          "state": {
-            "type": "string",
-            "enum": [
-              "confirmed",
-              "rejected"
-            ],
-            "title": "State"
-          },
-          "basis": {
-            "type": "string",
-            "maxLength": 2000,
-            "minLength": 10,
-            "title": "Basis"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "expected_revision",
-          "state",
-          "basis"
-        ],
-        "title": "Review"
-      },
       "Rule": {
         "properties": {
           "rule_id": {
@@ -9656,6 +10199,85 @@
         ],
         "title": "Search"
       },
+      "SourceInput": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "pattern": "^file_[a-f0-9]{32}$",
+            "title": "File Id"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "utf-8-sig",
+              "cp1252"
+            ],
+            "title": "Encoding",
+            "default": "utf-8-sig"
+          },
+          "declared_format": {
+            "type": "string",
+            "const": "IDF 9.0",
+            "title": "Declared Format",
+            "default": "IDF 9.0"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Title"
+          },
+          "publisher": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Publisher"
+          },
+          "edition": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Edition"
+          },
+          "source_url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Source Url"
+          },
+          "acquired_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Acquired On"
+          },
+          "permission": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Permission"
+          },
+          "scope": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Scope"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_id",
+          "title",
+          "publisher",
+          "edition",
+          "source_url",
+          "acquired_on",
+          "permission",
+          "scope"
+        ],
+        "title": "SourceInput"
+      },
       "StandardInput": {
         "properties": {
           "file_id": {
@@ -10091,6 +10713,38 @@
         ],
         "title": "Wall"
       },
+      "backend__design_conditions__Review": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "pending",
+              "rejected"
+            ],
+            "title": "State"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "state",
+          "basis"
+        ],
+        "title": "Review"
+      },
       "backend__lifecycle__Comparison": {
         "properties": {
           "lifecycle_ids": {
@@ -10128,6 +10782,37 @@
           "cost_ids"
         ],
         "title": "Comparison"
+      },
+      "backend__standards__Review": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "rejected"
+            ],
+            "title": "State"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "state",
+          "basis"
+        ],
+        "title": "Review"
       }
     },
     "securitySchemes": {

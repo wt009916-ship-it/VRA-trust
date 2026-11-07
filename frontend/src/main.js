@@ -1,6 +1,8 @@
 import {bindSimulationGate} from './simulation-gate.js';
 import {weatherQualityMarkup} from './weather-quality.js';
 import {designLoadsMarkup} from './design-loads.js';
+import {designConditionsWorkspace} from './design-conditions-ui.js';
+import './design-conditions.css';
 import {hourlyThermalMarkup, bindHourlyThermal} from './hourly-thermal.js';
 import './hourly-thermal.css';
 import './design-loads.css';
@@ -126,6 +128,8 @@ function renderProject() {
   document.querySelector('#workspace').innerHTML = projectView(state);
   agentModePreference.bind(document.querySelector('#agent-mode'),state.user?.id,p.project_id);
   bindReadRequests(document.querySelector('.agent-read-input'),p.project_id,action);
+  const designDetails=document.querySelector('#design-source-details');
+  designDetails.ontoggle=()=>{if(!designDetails.open||designDetails.dataset.loaded)return;designDetails.dataset.loaded='loading';action(async()=>{try{await designConditionsWorkspace(state,designDetails.querySelector('[data-design-workspace]'),action);designDetails.dataset.loaded='true';}catch(error){delete designDetails.dataset.loaded;throw error;}});};
   document.querySelectorAll('[data-view]').forEach(b => { b.onclick = () => switchView(b.dataset.view); });
   const inspector = document.querySelector('.inspector');
   document.querySelector('#toggle-inspector').onclick = () => { inspector.hidden = !inspector.hidden; };
