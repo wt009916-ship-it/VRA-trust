@@ -37,6 +37,8 @@ def register_extensions(app, domain, auth):
     operations = Operations(domain)
     drawings = Drawings(domain)
     drawing_scales = DrawingScales(drawings)
+    from .design_conditions import register as register_design_conditions
+    register_design_conditions(app, domain)
 
     @app.post('/api/projects/{project_id}/drawings', status_code=201)
     def drawing_create(project_id: str, body: DrawingInput):
