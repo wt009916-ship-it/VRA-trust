@@ -93,6 +93,12 @@ def key(reference):
     return request['kind'], request.get('record_id')
 
 
+def availability_knowledge():
+    # A catalog snapshot cannot establish historical execution or engineering readiness.
+    return {'historical_calculation': 'not_assessed', 'current_numeric_validity': 'not_assessed',
+            'application_capability': 'not_assessed', 'building_data_sufficiency': 'not_assessed'}
+
+
 def assess(domain, pid, request, captured=None):
     if not request: raise core.ValidationError('Provide missing kind and optional explicit record_id')
     if request.kinds:
@@ -108,8 +114,8 @@ def assess(domain, pid, request, captured=None):
     receipt = {'kind':request.kind, 'record_id':request.record_id, 'state':'no_record_available',
                'scope':'requested_record_in_project' if request.record_id else 'entire_project_kind',
                'reason_code':'record_not_available_in_project' if request.record_id else 'no_records_in_project',
-               'project_record_count':len(records), 'checked_at':core.now(),
-               'notice':'只核验当前项目的记录可用性，不代表已计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。'}
+               'project_record_count':len(records), 'checked_at':core.now(), 'knowledge_limits':availability_knowledge(),
+               'notice':'只核验当前项目的记录可用性，不证明曾经计算或从未计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。'}
     return {'status':'verified', 'reference':{'request':request.model_dump(mode='json'),'catalog_hash':digest},
             'missing':receipt}
 

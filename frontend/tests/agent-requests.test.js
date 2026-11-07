@@ -34,3 +34,10 @@ test('read-scope editor uses labeled controls without requiring JSON',()=>{
  assert.ok(html.includes('添加读取目标')&&html.includes('关闭“允许计算”'));
  assert.ok(!html.includes('textarea')&&!html.includes('JSON'));
 });
+
+test('budget termination retains separate incomplete request state',()=>{
+  const html=readRequestProgressMarkup({termination:{reason:'response_budget_exhausted'},
+    read_request_progress:[{kind:'thermal',purpose:'results',request_key:'wall',record_id:'thermal_x',state:'unfulfilled'}]});
+  assert.ok(html.includes('已到模型轮次上限') && html.includes('尚未交付'));
+  assert.ok(!html.includes('全部任务已完成'));
+});

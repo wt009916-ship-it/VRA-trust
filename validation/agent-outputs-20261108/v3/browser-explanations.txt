@@ -1,0 +1,6 @@
+### Result
+{"text":"指标与解释\n\n以下要求由模型从原问题解析，请核对是否准确。计划完成不等于已证明完整理解问题；解释由应用依据当前核验来源生成。\n\nread_1 · 计划内产物已交付\n给出墙体 thermal_5ca7f282562342eeaa84ac6116426825 的总热阻R和传热系数U，解释单位以及是否需要建筑总面积。\n\n所选指标：总热阻 R、传热系数 U\n\n总热阻 R为3.51 m2 K/W；传热系数 U为0.2849002849 W/(m2 K)。数值来自已读取并核验的记录，不由模型补算。\n\n一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。\n\n所列字段已按当前记录核验，不表示工程合规、安全认证或整个自由问题已完成。\n\n这里只核验当前项目、指定范围的记录。记录缺失不能证明从未计算；记录存在也不是完整历史执行审计。\n\nR为面积热阻（m²·K/W），U为单位面积传热系数（W/(m²·K)）；两者由构造决定，无需建筑总面积。area_m2为空表示没有另用面积分母，不是面积缺测。整体热阻R/A及传热导度UA另需构件面积，不能用建筑面积替代。\n\n本次为一维稳态热工量，不是逐年能耗或全年节能率。\n\nread_2 · 计划内产物已交付\n另查本项目是否有材料成本记录，并说明查不到记录是否证明从来没有计算过。\n\n所选指标：记录可用性\n\n这里只核验当前项目、指定范围的记录。记录缺失不能证明从未计算；记录存在也不是完整历史执行审计。\n\n已核验声明范围的记录可用性；该检查不验证工程数值是否有效。","bounds":{"x":432,"y":-33.75,"width":708,"height":536.9375}}
+### Ran Playwright code
+```js
+await (async (page) => { const area=page.getByRole("region",{name:"任务产物核验",exact:true}); await area.scrollIntoViewIfNeeded(); await area.screenshot({path:"output/playwright/agent-outputs-explanations.png"}); return {text:await area.innerText(),bounds:await area.boundingBox()}; })(page);
+```

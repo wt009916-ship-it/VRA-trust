@@ -1,10 +1,11 @@
 """User-declared read scope, distinct from model inference or compute permission."""
+import re
 from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, model_validator
 
-from . import core, agent_missing
+from . import core, agent_missing, agent_outputs
 from .schema import Contract
 from .agent_semantics import inspection
 
@@ -43,7 +44,7 @@ def availability(domain,pid,requests,keys):
         row={'request_key':request['request_key'],'kind':request['kind'],'record_id':request['record_id'],
              'scope':'requested_record_in_project' if request['record_id'] else 'entire_project_kind',
              'state':'records_present' if present else 'no_record_available','project_record_count':len(records),
-             'checked_at':core.now(),
+             'checked_at':core.now(), 'knowledge_limits':agent_missing.availability_knowledge(),
              'notice':'仅检查当前项目记录是否存在；存在不证明结果当前有效，缺失不证明未执行过计算。不查询其他项目、不输出工程数值。'}
         results.append({'request':dict(request),'catalog_hash':core.hash_json([digest,core.sha(Path(__file__))]),'availability':row})
     return {'status':'verified','references':results,'snapshot_count':1,'finish':False}
@@ -61,11 +62,16 @@ def recheck(domain,pid,requests,references):
 
 
 def pending(record):
+    if record.get('infer_outputs') and not record.get('output_plan'):
+        return [r['request_key'] for r in record.get('read_requests', [])]
     available={r['request']['request_key'] for r in record.get('availability_deliveries',[])}
     results={r['record_id'] for r in record.get('professional_deliveries',[])}
     absent={r['request'].get('record_id') for r in record.get('missing_deliveries',[])}
     return [r['request_key'] for r in record.get('read_requests',[]) if
-            (r['request_key'] not in available if r['purpose']=='availability' else r['record_id'] not in results|absent)]
+            (r['request_key'] not in available if r['purpose']=='availability' else
+             r['record_id'] not in results|absent or
+             (r['record_id'] in results and not any(d.get('limitation_status') for d in record.get('professional_deliveries', []) if d['record_id'] == r['record_id'])
+              and agent_outputs.missing_facts(record, r, record.get('professional_deliveries', []))))]
 
 
 def progress(record,answer):
@@ -81,6 +87,10 @@ def progress(record,answer):
         elif r['purpose']=='results':
             state=('result_verified' if r['record_id'] in values else 'limitation_verified' if r['record_id'] in limited
                    else 'record_unavailable' if r['record_id'] in absent else state)
+        if state == 'result_verified':
+            actual = [{'record_id': d['record_id'], 'statements': d['facts']} for d in answer.get('checked_statements', [])]
+            if agent_outputs.missing_facts(record, r, actual):state='required_facts_missing'
+        if record.get('infer_outputs') and not record.get('output_plan'):state='output_plan_missing'
         if state=='unfulfilled' and r['request_key'] in submitted:state='delivery_not_currently_verified'
         rows.append({**r,'state':state})
     return rows
@@ -98,17 +108,77 @@ def attach(answer,domain,pid,record,reader=None):
             if row['passed']:checked.append(row['availability'])
             answer['verification'].append({'check':'current_requested_availability','request_key':row['request_key'],
                 'passed':row['passed'],'meaning':'只核验声明范围的记录可用性，不证明结果有效或完成工程计算'})
+    if record.get('termination'):
+        answer['termination'] = record['termination']
     answer['checked_availability']=checked
     rows=progress(record,answer)
     answer['read_request_progress']=rows
-    answer['read_request_coverage']='all_declared_scopes_checked' if all(r['state'] not in {'unfulfilled','delivery_not_currently_verified'} for r in rows) else 'incomplete'
+    answer['read_request_coverage']='all_declared_scopes_checked' if all(r['state'] not in {'unfulfilled','delivery_not_currently_verified','required_facts_missing','output_plan_missing'} for r in rows) else 'incomplete'
     if checked:
         answer['task_completion']='partial'
         answer['summary']='已按项核验部分或全部声明范围；未完成项见读取进度，数值有效性和自由问题完整覆盖仍分别判断。'
         answer['gaps']=[g for g in answer['gaps'] if g.get('message')!='本轮没有通过核验的专业交付']
     for row in rows:
-        if row['state'] in {'unfulfilled','delivery_not_currently_verified'}:
+        if row['state'] in {'unfulfilled','delivery_not_currently_verified','required_facts_missing','output_plan_missing'}:
             answer['gaps'].append({'request_key':row['request_key'],'message':'声明读取目标尚未形成当前有效交付：'+row['request_key'],
                                   'action':'按本次声明范围查询并交付，不替换编号或新增计算。'})
     answer['task_notice']='只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。'
-    return answer
+    return agent_outputs.attach(answer, record)
+
+def next_actions(record):
+    """Suggestions from declared scopes and observed reads; never execute or infer scope."""
+    waiting = set(pending(record))
+    reads = {}
+    unavailable = set()
+    for event in record.get('events', []):
+        unavailable.update(event.get('recovery', {}).get('unavailable_record_ids', []))
+        if event['status'] != 'succeeded':
+            continue
+        for request in record.get('read_requests', []):
+            spec = inspection(request['kind'])
+            if event['tool'] == spec.read_tool:
+                current = event['result']
+                reads[current[spec.record_key]] = current
+    actions = []
+    availability_keys = []
+    for request in record.get('read_requests', []):
+        if request['request_key'] not in waiting:
+            continue
+        if request['purpose'] == 'availability':
+            availability_keys.append(request['request_key'])
+            continue
+        ident = request['record_id']; kind = request['kind']; spec = inspection(kind)
+        current = reads.get(ident)
+        action = {'request_key': request['request_key'], 'record_id': ident}
+        if current is not None:
+            if not spec.artifact(current)['verified']:
+                action.update(tool='professional_limit', arguments={'limitation': {
+                    'kind': kind, 'record_id': ident, 'record_hash': current['hash'],
+                    'status': current['status'], 'finish': False}})
+            else:
+                action.update(tool='professional_deliver', arguments={'delivery': {
+                    'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
+                    required_fields=['delivery.statements'],
+                    available_facts=current.get('explanation_facts', []),
+                    output_requirement=agent_outputs.requirement(record, request['request_key']))
+        elif ident in unavailable:
+            action.update(tool='professional_missing', arguments={'missing': {
+                'kinds': [kind], 'record_id': ident, 'finish': False}})
+        else:
+            action.update(tool=spec.read_tool, arguments={spec.argument: ident})
+        actions.append(action)
+    if availability_keys:
+        actions.append({'tool': 'requested_availability',
+                        'arguments': {'request_keys': availability_keys, 'finish': False}})
+    return actions
+
+
+def commentary_review(record, text):
+    """Exact identifier membership only, not validation of numerical or semantic prose."""
+    allowed = {r['record_id'] for r in record.get('read_requests', []) if r.get('record_id')}
+    mentioned = set(re.findall(
+        r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[A-Za-z0-9_-]+\b', text or ''))
+    unknown = sorted(mentioned - allowed)
+    return {'status': 'reference_mismatch' if unknown else 'references_match',
+            'unknown_record_ids': unknown, 'allowed_record_ids': sorted(allowed),
+            'scope': 'declared_record_identifiers_only', 'semantics_verified': False}
