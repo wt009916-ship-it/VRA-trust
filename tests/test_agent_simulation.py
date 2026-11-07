@@ -234,6 +234,27 @@ def test_partial_page_prose_cannot_finish_as_verified_and_reminder_has_exact_mis
     assert len(task['answer']['simulation_artifact']['metrics']['zone_design_loads']['rows']) == 11
 
 
+def test_explicit_finish_is_refused_for_missing_pages_and_accepted_only_after_actual_complete_read(client, monkeypatch):
+    agent = client.app.state.agent; pid = create_project(client)['project_id']; view = run_view(pid)
+    monkeypatch.setattr(agent.store, 'jobs', lambda _: [{'run_id': view['run_id']}])
+    monkeypatch.setattr(agent.store, 'job', lambda _: {'project_id': pid})
+    monkeypatch.setattr(agent.domain, 'view', lambda _: deepcopy(view))
+    monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
+    offsets = iter((0, 10, 5)); requests = []
+    def complete(messages, tools):
+        requests.append(deepcopy(messages)); offset = next(offsets)
+        return {'role': 'assistant', 'tool_calls': [{'id': str(offset), 'type': 'function', 'function': {
+            'name': 'simulation_result', 'arguments': json.dumps({'run_id': view['run_id'], 'zone_offset': offset,
+                'zone_hash': core.hash_json(view['metrics']['zone_design_loads']), 'finish': True})}}]}
+    monkeypatch.setattr(agent.gateway, 'complete', complete)
+    task = agent.start(pid, Chat(message='Read existing load record', mode='provider', objective='inspect_results'), background=False)
+    assert task['status'] == 'succeeded' and task['answer']['task_completion'] == 'verified'
+    assert len(requests) == 3 and task['sizing_finish_refused']['read_rows'] == 6
+    assert task['sizing_finish_accepted']['receipt_hash'] == core.hash_json(view['metrics']['zone_design_loads'])
+    assert task['answer']['sizing_read_progress']['read_rows'] == 11
+    assert task['llm_commentary'] is None  # no unnecessary extra prose request after explicit completion
+
+
 def test_initial_projection_preserves_limits_and_has_explicit_full_read_entry():
     view = run_view(); original = deepcopy(view)
     compact = sizing.initial_result('simulation_result', view)

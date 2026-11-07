@@ -13,6 +13,7 @@ INSPECTION_INSTRUCTION = (
     '初始上下文是明确标记的摘要，完整工具结果保留在审计；未发给你的字段不能声称已核查。'
     '工程数值只从当前工具读取；failed/stale或缺少明细时不从历史补造。'
     '负荷摘要含detail_request，按run_id、zone_offset、zone_hash读取每页5条；按next_offset继续，'
+    '最后需要的页可finish=true，只有本目标全部行已读才会结束并由服务端交付当前结果卡。'
     '不得以末页到达代替此前各页已读。只交付实际读取且用户要求的范围，说明未完成项。'
     '保留W、设计日、峰值时刻和倍率口径；区分显热与总冷量，不再次乘已应用倍率，'
     '不合计分区峰值为全楼同时峰值，不把参考模型当实楼或合规认证。'
@@ -164,9 +165,10 @@ def progress(record, current):
     covered.intersection_update(range(total))
     state = 'complete' if len(covered) == total else 'partial' if selected else 'not_requested'
     offset = next((i for i in range(total) if i not in covered), None)
+    finishes = offset is not None and len(covered | set(range(offset, min(total, offset + PAGE_SIZE)))) == total
     return {'state': state, 'read_rows': len(covered), 'total_rows': total, 'receipt_hash': digest,
             'next_read': {'tool': 'simulation_result', 'arguments': {'run_id': current['run_id'],
-                         'zone_offset': offset, 'zone_hash': digest}} if selected and offset is not None else None,
+                         'zone_offset': offset, 'zone_hash': digest, 'finish': finishes}} if selected and offset is not None else None,
             'notice': '只统计模型实际读取且属于当前回执的行；控制流程读取完整结果不计为模型已读。'}
 
 

@@ -142,7 +142,7 @@ TOOLS = {
     'simulation_create': '排队真实 EnergyPlus；仅用户允许计算后可用',
     'simulation_list': '只读列出本项目最近6次仿真的run_id和状态；项目ID不是运行ID，空列表表示没有运行，不编造ID',
     'simulation_status': '读取运行状态；需 run_id',
-    'simulation_result': '读取当前结果摘要；分区显热明细用run_id、zone_offset和摘要receipt_hash作为zone_hash，每页5行。按next_offset续读；未读页不算交付，不合计为全楼峰值。',
+    'simulation_result': '读取当前结果摘要；分区显热明细用run_id、zone_offset和摘要receipt_hash作为zone_hash，每页5行。按next_offset续读；最后所需页可finish=true，全部行已读才结束。未读页不算交付，不合计为全楼峰值。',
     'carbon_calculate': '仅重算碳排，不调用 EnergyPlus；需 run_id 和允许计算',
     'claim_trace': '读取节点依赖与失效状态；需 run_id',
     'evidence_gap_rank': '列出当前确定存在的证据缺口，尚无补证成本时不虚构性价比',
@@ -177,7 +177,7 @@ TOOL_FIELDS = {
     'evidence_validate': ('scheme_id',), 'evidence_gap_rank': ('scheme_id',),
     'simulation_create': ('scheme_id', 'factor_profile_id'),
     'simulation_list': (),
-    'simulation_status': ('run_id',), 'simulation_result': ('run_id', 'zone_offset', 'zone_hash'),
+    'simulation_status': ('run_id',), 'simulation_result': ('run_id', 'zone_offset', 'zone_hash', 'finish'),
     'carbon_calculate': ('run_id',), 'claim_trace': ('run_id',),
     'certificate_generate': ('run_id',), 'report_generate': ('run_id',),
     'scheme_compare': ('run_ids',), 'counterexample_search': ('search',),
@@ -406,10 +406,12 @@ class Agent:
         if name == 'simulation_create':
             return d.submit(RunCreate(project_id=project_id, scheme_id=args.scheme_id, factor_profile_id=args.factor_profile_id))
         if name in {'simulation_status', 'simulation_result'}:
+            if args.finish and args.zone_offset is None:
+                raise core.ValidationError('Sizing finish requires an explicit current page read')
             if not args.run_id:
                 return [d.view(j['run_id']) for j in self.store.jobs(project_id)[:6]]
             if name == 'simulation_result' and args.zone_offset is not None:
-                return agent_simulation.page(d.view(args.run_id), args.zone_offset, args.zone_hash)
+                return {**agent_simulation.page(d.view(args.run_id), args.zone_offset, args.zone_hash), 'finish_requested': args.finish}
             return d.view(args.run_id)
         if name == 'scheme_compare':
             if not args.run_ids:
@@ -929,6 +931,14 @@ class Agent:
                             finish_requested |= any(r['request']['finish'] for r in missing_records.references(result))
                         if call['function']['name']=='requested_availability' and result.get('status')=='verified':
                             finish_requested |= result['finish']
+                        if (body.objective == 'inspect_results' and call['function']['name'] == 'simulation_result'
+                                and isinstance(result, dict) and result.get('finish_requested')):
+                            coverage = agent_simulation.progress(record, agent_simulation.observed_view(record))
+                            if coverage['state'] == 'complete':
+                                finish_requested = True
+                                record['sizing_finish_accepted'] = {'run_id': record['target_run_id'], 'receipt_hash': coverage['receipt_hash']}
+                            else:
+                                record['sizing_finish_refused'] = coverage
                         if body.objective == 'open_ended':
                             ds = next((s for s in INSPECTIONS.values() if s.read_tool == call['function']['name']), None)
                             if ds and isinstance(result, dict) and ds.record_key in result:
