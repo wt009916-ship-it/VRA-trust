@@ -28,9 +28,9 @@ from .worker_limits import POLICIES
 from . import parser_runtime_cache
 
 ROOT=Path(__file__).resolve().parent
-PACKAGES={'cad':('ezdxf','ifcopenshell'),'standards':('pypdf',),
+PACKAGES={'cad':('ezdxf','ifcopenshell','manifold3d'),'standards':('pypdf',),
           'drawing':('rapidocr','onnxruntime','Pillow','pypdfium2')}
-MODULES={'cad':('cad_worker.py','dxf_geometry.py','ifc_details.py','ifc_geometry.py','mesh_topology.py'),
+MODULES={'cad':('cad_worker.py','dxf_geometry.py','ifc_details.py','ifc_geometry.py','mesh_topology.py','ifc_union.py'),
          'standards':('standards_worker.py',),'drawing':('drawing_worker.py','drawing_models.py','drawing_processing.py')}
 MAX_BYTES=1024**3
 MAX_FILES=20000
@@ -142,7 +142,7 @@ def _workspace():
 def run(kind,source,page=1,options=None):
     if kind not in PACKAGES:raise core.ValidationError('Unknown parser')
     encoded=json.dumps(options,allow_nan=False,separators=(',',':')) if options is not None else None
-    if encoded is not None and (kind!='drawing' or len(encoded)>1024):raise core.ValidationError('Invalid parser options')
+    if encoded is not None and (kind not in {'drawing','cad'} or len(encoded)>1024):raise core.ValidationError('Invalid parser options')
     if not _capacity.acquire(False):raise core.ValidationError('Native parsers busy; retry later')
     started=time.monotonic()
     try:

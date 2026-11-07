@@ -1,0 +1,5 @@
+async(page)=>{
+ await page.getByRole('combobox',{name:'来源 IFC 读取记录',exact:true}).selectOption('cad_d376dd0bcb0f4a49898be376c989347d');
+ await page.getByRole('listbox',{name:'参与并集的构件（可多选）',exact:true}).selectOption(['34','45']);
+ return {selected:'overlap.ifc',button_enabled:await page.getByRole('button',{name:'核算几何并集',exact:true}).isEnabled()};
+}

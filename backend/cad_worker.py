@@ -83,7 +83,8 @@ def parse_ifc(path):
         if not e.ObjectPlacement:
             issues.append({'id': e.id(), 'issue': 'missing_placement'})
         rows.append({'id': e.id(), 'global_id': e.GlobalId, 'type': e.is_a(), 'name': e.Name,
-            'container_id': container.id() if container else None, **declarations(e, units)})
+            'container_id': container.id() if container else None,
+            'eligible_for_union':e.is_a('IfcElement') and not e.is_a('IfcFeatureElement'), **declarations(e, units)})
     return {'format': 'IFC', 'version': doc.schema, 'parser': 'ifcopenshell '+ifcopenshell.version,
         'length_scale_to_m': scale, 'counts': dict(Counter(r['type'] for r in rows)),
         'objects': rows, 'issues': issues, 'ifc_geometry': inspect_shapes(doc, products, scale), 'limitations': [

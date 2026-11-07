@@ -1,0 +1,37 @@
+
+def test_missing_body_cannot_fall_back_to_sum(tmp_path):
+    doc,products=model([(0,0,0,2,3,4),(1,0,0,3,3,4)])
+    products[1].Representation=None;p=tmp_path/'missing.ifc';doc.write(str(p))
+    result=measure_union(p,[e.id() for e in products])
+    assert result['reason']=='operand_geometry_unavailable'
+    assert all(result[k] is None for k in ['sum_operand_volume_m3','union_volume_m3','overlap_deduction_m3'])
+
+def test_cyclic_placement_rejected_before_native_geometry(tmp_path):
+    doc,products=model([(0,0,0,2,3,4),(1,0,0,3,3,4)])
+    products[0].ObjectPlacement.PlacementRelTo=products[0].ObjectPlacement
+    p=tmp_path/'cycle.ifc';doc.write(str(p))
+    with pytest.raises(ValueError,match='cyclic'):measure_union(p,[e.id() for e in products])
+
+def test_input_budget_has_no_numeric_fallback(tmp_path,monkeypatch):
+    import backend.ifc_union as union
+    doc,products=model([(0,0,0,2,3,4),(1,0,0,3,3,4)]);p=tmp_path/'budget.ifc';doc.write(str(p))
+    monkeypatch.setattr(union,'MAX_INPUT_TRIANGLES',1)
+    result=union.measure_union(p,[e.id() for e in products])
+    assert result['reason']=='input_triangle_budget_exceeded'
+    assert result['union_volume_m3'] is None
+
+def test_source_changed_during_real_union_is_not_saved(client,monkeypatch):
+    from contextlib import contextmanager
+    from backend import parser_runtime
+    doc,products=model([(0,0,0,2,3,4),(1,0,0,3,3,4)])
+    pid,base,fid,inspection,_=prepare(client,doc)
+    _,source=client.app.state.domain.file_record(pid,fid);real_run=parser_runtime.run
+    @contextmanager
+    def changed(*args,**kwargs):
+        with real_run(*args,**kwargs) as scope:
+            yield scope
+        source.write_bytes(b'source changed during isolated calculation')
+    monkeypatch.setattr(parser_runtime,'run',changed)
+    response=client.post(base+'/ifc-unions',json={'cad_id':inspection['cad_id'],'product_ids':[e.id() for e in products]})
+    assert response.status_code==409,response.text
+    assert client.app.state.domain.store.list('union',pid)==[]

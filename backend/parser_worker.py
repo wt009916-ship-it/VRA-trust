@@ -17,7 +17,16 @@ def main():
     try:
         if kind=='cad':
             from cad_worker import parse
-            result=parse(source);maximum=8*1024**2
+            if len(options)>1:raise ValueError('Unexpected CAD options')
+            if options:
+                from ifc_union import measure_union
+                values=json.loads(options[0])
+                if not isinstance(values,dict) or set(values)!={'operation','product_ids'} or values['operation']!='ifc_union':
+                    raise ValueError('Invalid CAD operation')
+                result=measure_union(source,values['product_ids'])
+            else:
+                result=parse(source)
+            maximum=8*1024**2
         elif kind=='standards':
             from standards_worker import extract
             result=extract(source);maximum=4*1024**2
