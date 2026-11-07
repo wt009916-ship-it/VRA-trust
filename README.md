@@ -108,3 +108,5 @@ Provider 协议依据：[DeepSeek 官方 Tool Calls 文档](https://api-docs.dee
 新增停服维护CLI：`python scripts/backup_runtime.py --help`。支持SQLite一致快照、原件/运行/OCR历史校验和仅恢复到新目录；旧会话撤销，未完成任务不自动重跑。备份默认口令认证加密，新建临时/恢复存储限制访问；旧明文需显式兼容选项，模型服务密钥不迁移。完整步骤与边界见[备份恢复指南](docs/BACKUP_RECOVERY_GUIDE.md)，实际验收见[加密恢复交付](docs/ENCRYPTED_BACKUP_DELIVERY.md)。
 
 原件累计容量、并发写入与导入失败处理见[原件配额验收](docs/STORAGE_QUOTAS_DELIVERY.md)及[配置指南](docs/STORAGE_QUOTAS_GUIDE.md)。限定原件目录，不宣称完整生产磁盘隔离。
+
+设计负荷增量：分区显热、设计日工况和当前来源绑定已交付，见[交付与限制](docs/DESIGN_LOADS_DELIVERY.md)、[独立交叉验证](docs/DESIGN_LOADS_CROSSCHECK.md)及[复评76/100](docs/RESCORE_20261107_DESIGN_LOADS.md)。这不是全楼设备选型、当地设计气象认证或实楼验收。

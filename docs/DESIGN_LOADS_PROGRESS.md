@@ -65,3 +65,9 @@ DL-006（高，运行列表状态矛盾）：同轮4B失效题反复读取并耗
 全量完成后，核验源码/证据摘要、历史未被覆盖和发布树一致，再复评、PR合并、更新本机原型。独立稳态设计负荷有新增证据，但完整动态负荷、当地设计工况资料、实楼/专家验收继续扣分。RS-07混合Agent、RS-09 CPU触发顺序、一般注入、净工程量、DWG/转换和图纸修复仍开放；不启动扩大训练，不提前整体视觉改版。
 
 固定版本来源：[SizingManager.cc](https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008)、[SQLiteProcedures.cc](https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SQLiteProcedures.cc#L1689)。本地源码下载摘要与原生证据在`validation/designload-20261107`；来源网页旧字段列表不能代替实际9.0.1表结构。
+
+## 最终本地验证完成
+
+2026-11-07设计负荷更新：真实ZoneSizes/设计日解析、来源绑定、API/PDF/ZIP与Agent原生结果卡已交付。双平台各7个新稳态模型/28数值检查，最大差0.003272W；最终Windows1050通过/25跳过、Linux1059通过/16跳过，各6子测试；前端82通过。37真实模型任务105请求逐轮保留，最终有效四题两模型均读取两页，但4B失效恢复失败、原文仍有数值错配，Agent分不增加。两轮浏览器、当前失效重检及原件保护留证；最终Git前端资源与验收字节相同。复评76（独立热工+1），发布状态以release回执为准。下一批图纸来源保全/倾斜噪声/尺度冲突及独立金标准，继续动态热工与设计资料；RS-07/RS-09、一般注入、净工程量、DWG/转换、实楼/专家和生产验收仍开放。详[交付](DESIGN_LOADS_DELIVERY.md)、[交叉验证](DESIGN_LOADS_CROSSCHECK.md)、[证据](DESIGN_LOADS_EVIDENCE.json)、[复评](RESCORE_20261107_DESIGN_LOADS.md)。95+未达，不扩大训练，整体视觉后置。
+
+上文各阶段“待验证”为当时状态，保留不改写。最终源码03bda16，真实模型4B四有效题通过/失效题失败，8B五题通过限定检查；不认定自由问题全部完成。最终全量引用本批已完成的新三方案，不把逐字节复用称为新运行。完整失败和限定关闭状态见交付报告。

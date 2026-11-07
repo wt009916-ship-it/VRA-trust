@@ -1,0 +1,3190 @@
+{
+  "application_commit": "03bda16d411705affa56396768ed5b3b573cbfbe",
+  "variant": "8b",
+  "model_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+  "root": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b",
+  "server_arguments": [
+    "E:\\VRA-local-model-20261106\\runtime\\llama-server.exe",
+    "-m",
+    "E:\\VRA-model-comparison-20261106\\Qwen3-8B-Q4_K_M.gguf",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "18773",
+    "--alias",
+    "vra-designload-acceptance",
+    "-c",
+    "8192",
+    "-np",
+    "1",
+    "-t",
+    "4",
+    "-ngl",
+    "99",
+    "--fit",
+    "off",
+    "--cache-ram",
+    "0",
+    "--no-context-shift",
+    "--offline",
+    "--no-webui",
+    "--no-agent",
+    "--no-webui-mcp-proxy",
+    "--no-slots",
+    "--jinja",
+    "--reasoning",
+    "off",
+    "--timeout",
+    "120"
+  ],
+  "training": false,
+  "cases": [
+    {
+      "id": "DL-L1",
+      "seconds": 13.688,
+      "task_status": "succeeded",
+      "task_error": null,
+      "page_offsets": [
+        0,
+        5
+      ],
+      "row_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "model_requests": 2,
+      "checks": {
+        "task_succeeded": true,
+        "event_budget": true,
+        "real_model_called": true,
+        "requested_rows_read": true,
+        "no_write_calls": true,
+        "server_native_rows_current": true,
+        "model_prose_audit_only": true
+      },
+      "automated_pass": true,
+      "task_path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\DL-L1-task.json",
+      "task_sha256": "a0a0b5395d808f146bf7ad8c948a77f6800be3c28800c2144d8de49601b7b563",
+      "llm_commentary": null,
+      "answer": {
+        "can_simulate": true,
+        "can_recommend": false,
+        "workflow_completed": true,
+        "task_completion": "verified",
+        "verification": [
+          {
+            "check": "current_valid_physics_result",
+            "passed": true,
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "state": "succeeded",
+            "meaning": "当前运行由服务端重新核验；模型分页覆盖单列，不认定自由问题完整覆盖或工程合规"
+          }
+        ],
+        "execution_scope": "bounded_local_model_tools",
+        "task_notice": "仅按所选结构化目标核验完成情况；自由提问不自动判定完成。历史摘要最多3轮、不能代替当前证据或本轮计算授权。",
+        "basis": [
+          "project_get",
+          "evidence_list",
+          "evidence_validate",
+          "simulation_result",
+          "simulation_result",
+          "simulation_result",
+          "simulation_result"
+        ],
+        "gaps": [],
+        "summary": "当前原生结果已重新核验；不代表自由问题全部完成或工程合规。",
+        "failed_tool_calls": 0,
+        "limitations": [
+          "通过准入仅允许仿真，不证明模型代表真实建筑。",
+          "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+          "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+          "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+        ],
+        "simulation_artifact": {
+          "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+          "project_id": "project_874ed667bab1473eaf601302458ab867",
+          "status": "succeeded",
+          "data_nature": "engineering_reference",
+          "provenance": {
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "project_id": "project_874ed667bab1473eaf601302458ab867",
+            "case_id": "project_874ed667bab1473eaf601302458ab867",
+            "scheme_id": "baseline",
+            "model_hash": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+            "weather_hash": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "engine_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+            "code_version": "811cc91edfdfbed58f78d4b69bb52cbfde20a51b22fdcc68545a2b868d29d6ab",
+            "parser_version": "native-sql-0.3.0",
+            "factor_version": "3c38414d4d062543c0e5224513e86bd75c970d9f96c959fea83b9d8544463b70",
+            "timestamp": "2026-11-07T00:11:57.516660+00:00"
+          },
+          "stale_reasons": [],
+          "error": null,
+          "limitations": [
+            "通过准入仅允许仿真，不证明模型代表真实建筑。",
+            "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+            "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+            "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+          ],
+          "metrics": {
+            "annual_energy_kwh": 57193.23,
+            "area_m2": 927.2,
+            "eui_kwh_m2a": 61.68381147540984,
+            "zone_design_loads": {
+              "policy_version": "zone-sensible-sizing-9.0.1-v1",
+              "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+              "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+              "status": "calculated_model_scenario",
+              "rows": [
+                {
+                  "zone_name": "SPACE1-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2798.0110138668642,
+                  "user_adjusted_sensible_load_W": 2798.0110138668642,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:30:00",
+                    "outdoor_temperature_C": 32.544,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862291705560103,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2867628994522685,
+                  "user_airflow_m3_s": 0.2867628994522685,
+                  "outdoor_airflow_m3_s": 0.0562038,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 99.16000000000001,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 1,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE1-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 3683.743694998612,
+                  "user_adjusted_sensible_load_W": 3683.743694998612,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.13563534079273765,
+                  "user_airflow_m3_s": 0.13563534079273765,
+                  "outdoor_airflow_m3_s": 0.0562038,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 99.16000000000001,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 2,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE2-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2238.949860125398,
+                  "user_adjusted_sensible_load_W": 2238.949860125398,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 10:15:00",
+                    "outdoor_temperature_C": 27.794,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862297915932642,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2294514595379708,
+                  "user_airflow_m3_s": 0.2294514595379708,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.73499999999999,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 3,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE2-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 1550.3039875054783,
+                  "user_adjusted_sensible_load_W": 1550.3039875054783,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.057082212092011204,
+                  "user_airflow_m3_s": 0.057082212092011204,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.73499999999999,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 4,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE3-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2672.228168216203,
+                  "user_adjusted_sensible_load_W": 2672.228168216203,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:00:00",
+                    "outdoor_temperature_C": 33.0,
+                    "outdoor_humidity_ratio_kg_kg": 0.0068623013194866874,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2738612850344305,
+                  "user_airflow_m3_s": 0.2738612850344305,
+                  "outdoor_airflow_m3_s": 0.0553864,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 96.48,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 5,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE3-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 3577.534403573898,
+                  "user_adjusted_sensible_load_W": 3577.534403573898,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.13172469356885655,
+                  "user_airflow_m3_s": 0.13172469356885655,
+                  "outdoor_airflow_m3_s": 0.0553864,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 96.48,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 6,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE4-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2491.276192242357,
+                  "user_adjusted_sensible_load_W": 2491.276192242357,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 17:30:00",
+                    "outdoor_temperature_C": 30.112000000000002,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862300980796104,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2553121879585308,
+                  "user_airflow_m3_s": 0.2553121879585308,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.735,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 7,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE4-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 1550.3039875054192,
+                  "user_adjusted_sensible_load_W": 1550.3039875054192,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.057082212092009206,
+                  "user_airflow_m3_s": 0.057082212092009206,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.735,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 8,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE5-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2665.541482038563,
+                  "user_adjusted_sensible_load_W": 2665.541482038563,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:00:00",
+                    "outdoor_temperature_C": 33.0,
+                    "outdoor_humidity_ratio_kg_kg": 0.0068623013194866874,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2731920591168797,
+                  "user_airflow_m3_s": 0.2731920591168797,
+                  "outdoor_airflow_m3_s": 0.10285945,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 182.49,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 9,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE5-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 2562.46368638694,
+                  "user_adjusted_sensible_load_W": 2562.46368638694,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.09434953728906036,
+                  "user_airflow_m3_s": 0.10285945,
+                  "outdoor_airflow_m3_s": 0.10285945,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 182.49,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 10,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                }
+              ],
+              "building_coincident_peak_W": null,
+              "limitations": [
+                "仅为输入模型设计工况下的分区显热负荷；不代表当地规范设计、实楼校准或设备选型结论。",
+                "计算负荷与用户调整后负荷分开；原生数值已包含分区倍率，不再次相乘。",
+                "各分区峰值发生时刻可能不同，不提供全楼同时峰值或将分区峰值求和冒充全楼负荷。",
+                "不包含潜热总冷负荷、完整设备容量与系统输配损失核验；未输出的分区不能计为零。",
+                "设计日名称不是资料来源证明；地理坐标相符也不等于设计日统计来源、版本或适用性已审核。"
+              ],
+              "model_sha256": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+              "sql_sha256": "cfee11e21f8fca014b26df23e1264056f12ffab1bbe1d772da86dbf87d38468f",
+              "basis": {
+                "declared_site": {
+                  "name": "Denver Centennial  Golden   N_CO_USA Design_Conditions",
+                  "latitude_deg": 39.74,
+                  "longitude_deg": -105.18,
+                  "utc_offset_h": -7.0,
+                  "elevation_m": 1829.0
+                },
+                "design_days": [
+                  {
+                    "name": "Denver Centennial  Golden   N Ann Htg 99.6% Condns DB",
+                    "month": 12,
+                    "day": 21,
+                    "day_type": "WinterDesignDay",
+                    "maximum_dry_bulb_C": -18.8,
+                    "daily_dry_bulb_range_K": 0.0,
+                    "locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    },
+                    "raw_fields": [
+                      "Denver Centennial  Golden   N Ann Htg 99.6% Condns DB",
+                      "12",
+                      "21",
+                      "WinterDesignDay",
+                      "-18.8",
+                      "0.0",
+                      "DefaultMultipliers",
+                      "",
+                      "Wetbulb",
+                      "-18.8",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "81198.",
+                      "3",
+                      "340",
+                      "No",
+                      "No",
+                      "No",
+                      "ASHRAEClearSky",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "0.00"
+                    ],
+                    "statistical_source_status": "not_independently_verified"
+                  },
+                  {
+                    "name": "Denver Centennial  Golden   N Ann Clg .4% Condns DB=>MWB",
+                    "month": 7,
+                    "day": 21,
+                    "day_type": "SummerDesignDay",
+                    "maximum_dry_bulb_C": 33.0,
+                    "daily_dry_bulb_range_K": 15.2,
+                    "locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    },
+                    "raw_fields": [
+                      "Denver Centennial  Golden   N Ann Clg .4% Condns DB=>MWB",
+                      "7",
+                      "21",
+                      "SummerDesignDay",
+                      "33",
+                      "15.2",
+                      "DefaultMultipliers",
+                      "",
+                      "Wetbulb",
+                      "15.7",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "81198.",
+                      "4.9",
+                      "0",
+                      "No",
+                      "No",
+                      "No",
+                      "ASHRAETau",
+                      "",
+                      "",
+                      "0.424",
+                      "2.025"
+                    ],
+                    "statistical_source_status": "not_independently_verified"
+                  }
+                ],
+                "zone_names": [
+                  "PLENUM-1",
+                  "SPACE1-1",
+                  "SPACE2-1",
+                  "SPACE3-1",
+                  "SPACE4-1",
+                  "SPACE5-1"
+                ],
+                "tabular_requested": false,
+                "simulation_control_fields": [
+                  "Yes",
+                  "Yes",
+                  "Yes",
+                  "No",
+                  "Yes"
+                ],
+                "sizing_parameter_objects": [
+                  [
+                    "1.0",
+                    "1.0",
+                    ""
+                  ]
+                ],
+                "zone_sizing_objects": [
+                  [
+                    "SPACE1-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE1-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE2-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE2-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE3-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE3-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE4-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE4-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE5-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE5-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                ]
+              },
+              "site_comparison": "coordinates_close_not_proof",
+              "weather_station": {
+                "city": "Denver Centennial  Golden   Nr",
+                "region": "CO",
+                "country": "USA",
+                "source": "TMY3",
+                "station_id": "724666",
+                "latitude_deg": 39.74,
+                "longitude_deg": -105.18,
+                "utc_offset_h": -7.0,
+                "elevation_m": 1829.0
+              },
+              "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+              "site_applicability": "requires_professional_review",
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 08:11",
+              "zones_without_sizing": [
+                "PLENUM-1"
+              ],
+              "tabular_crosscheck": "not_requested"
+            }
+          },
+          "verified": true
+        },
+        "sizing_read_progress": {
+          "state": "complete",
+          "read_rows": 10,
+          "total_rows": 10,
+          "receipt_hash": "64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7",
+          "next_read": null,
+          "notice": "只统计模型实际读取且属于当前回执的行；控制流程读取完整结果不计为模型已读。"
+        }
+      },
+      "manual_review": "pending"
+    },
+    {
+      "id": "DL-L2",
+      "seconds": 23.078,
+      "task_status": "succeeded",
+      "task_error": null,
+      "page_offsets": [
+        0,
+        5
+      ],
+      "row_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "model_requests": 3,
+      "checks": {
+        "task_succeeded": true,
+        "event_budget": true,
+        "real_model_called": true,
+        "requested_rows_read": true,
+        "no_write_calls": true,
+        "server_native_rows_current": true,
+        "model_prose_audit_only": true
+      },
+      "automated_pass": true,
+      "task_path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\DL-L2-task.json",
+      "task_sha256": "6f384219a5fb7997f2024ed565172cfc6daa6329bd4ad89fe2aa4d89285409ef",
+      "llm_commentary": "SPACE5-1分区的制冷记录如下：\n\n- **计算显热 (W)**: 2798.0110138668642 W\n- **用户调整值 (W)**: 2798.0110138668642 W\n- **峰值时刻**: 7/21 15:30:00\n\n### 分析说明：\n- **计算显热** 和 **用户调整值** 是相同的，说明用户未对计算结果进行调整。\n- **峰值时刻** 是在7月21日15:30，此时的室外温度为32.544°C，湿度比为0.006862291705560103。\n\n### 是否能直接当成北京项目的设备总冷量？\n不能直接将SPACE5-1分区的制冷记录当作北京项目的设备总冷量。原因如下：\n1. **分区显热负荷** 是设计工况下的负荷，不代表实际运行中的负荷。\n2. **分区峰值** 可能与其他分区不同，不能简单地将分区峰值求和作为全楼的总冷量。\n3. **设计日来源** 和 **当地适用性** 未独立验证，不能确保其适用于北京项目。\n4. **未包含潜热总冷负荷** 和 **完整设备容量**，因此不能作为设备总冷量的依据。\n\n综上所述，SPACE5-1分区的制冷记录仅能作为该分区的设计负荷参考，不能直接用于确定北京项目的设备总冷量。",
+      "answer": {
+        "can_simulate": true,
+        "can_recommend": false,
+        "workflow_completed": true,
+        "task_completion": "verified",
+        "verification": [
+          {
+            "check": "current_valid_physics_result",
+            "passed": true,
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "state": "succeeded",
+            "meaning": "当前运行由服务端重新核验；模型分页覆盖单列，不认定自由问题完整覆盖或工程合规"
+          }
+        ],
+        "execution_scope": "bounded_local_model_tools",
+        "task_notice": "仅按所选结构化目标核验完成情况；自由提问不自动判定完成。历史摘要最多3轮、不能代替当前证据或本轮计算授权。",
+        "basis": [
+          "project_get",
+          "evidence_list",
+          "evidence_validate",
+          "simulation_result",
+          "simulation_result",
+          "simulation_result",
+          "simulation_result"
+        ],
+        "gaps": [],
+        "summary": "当前原生结果已重新核验；不代表自由问题全部完成或工程合规。",
+        "failed_tool_calls": 0,
+        "limitations": [
+          "通过准入仅允许仿真，不证明模型代表真实建筑。",
+          "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+          "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+          "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+        ],
+        "simulation_artifact": {
+          "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+          "project_id": "project_874ed667bab1473eaf601302458ab867",
+          "status": "succeeded",
+          "data_nature": "engineering_reference",
+          "provenance": {
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "project_id": "project_874ed667bab1473eaf601302458ab867",
+            "case_id": "project_874ed667bab1473eaf601302458ab867",
+            "scheme_id": "baseline",
+            "model_hash": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+            "weather_hash": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "engine_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+            "code_version": "811cc91edfdfbed58f78d4b69bb52cbfde20a51b22fdcc68545a2b868d29d6ab",
+            "parser_version": "native-sql-0.3.0",
+            "factor_version": "3c38414d4d062543c0e5224513e86bd75c970d9f96c959fea83b9d8544463b70",
+            "timestamp": "2026-11-07T00:11:57.516660+00:00"
+          },
+          "stale_reasons": [],
+          "error": null,
+          "limitations": [
+            "通过准入仅允许仿真，不证明模型代表真实建筑。",
+            "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+            "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+            "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+          ],
+          "metrics": {
+            "annual_energy_kwh": 57193.23,
+            "area_m2": 927.2,
+            "eui_kwh_m2a": 61.68381147540984,
+            "zone_design_loads": {
+              "policy_version": "zone-sensible-sizing-9.0.1-v1",
+              "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+              "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+              "status": "calculated_model_scenario",
+              "rows": [
+                {
+                  "zone_name": "SPACE1-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2798.0110138668642,
+                  "user_adjusted_sensible_load_W": 2798.0110138668642,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:30:00",
+                    "outdoor_temperature_C": 32.544,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862291705560103,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2867628994522685,
+                  "user_airflow_m3_s": 0.2867628994522685,
+                  "outdoor_airflow_m3_s": 0.0562038,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 99.16000000000001,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 1,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE1-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 3683.743694998612,
+                  "user_adjusted_sensible_load_W": 3683.743694998612,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.13563534079273765,
+                  "user_airflow_m3_s": 0.13563534079273765,
+                  "outdoor_airflow_m3_s": 0.0562038,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 99.16000000000001,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 2,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE2-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2238.949860125398,
+                  "user_adjusted_sensible_load_W": 2238.949860125398,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 10:15:00",
+                    "outdoor_temperature_C": 27.794,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862297915932642,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2294514595379708,
+                  "user_airflow_m3_s": 0.2294514595379708,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.73499999999999,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 3,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE2-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 1550.3039875054783,
+                  "user_adjusted_sensible_load_W": 1550.3039875054783,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.057082212092011204,
+                  "user_airflow_m3_s": 0.057082212092011204,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.73499999999999,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 4,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE3-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2672.228168216203,
+                  "user_adjusted_sensible_load_W": 2672.228168216203,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:00:00",
+                    "outdoor_temperature_C": 33.0,
+                    "outdoor_humidity_ratio_kg_kg": 0.0068623013194866874,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2738612850344305,
+                  "user_airflow_m3_s": 0.2738612850344305,
+                  "outdoor_airflow_m3_s": 0.0553864,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 96.48,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 5,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE3-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 3577.534403573898,
+                  "user_adjusted_sensible_load_W": 3577.534403573898,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.13172469356885655,
+                  "user_airflow_m3_s": 0.13172469356885655,
+                  "outdoor_airflow_m3_s": 0.0553864,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 96.48,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 6,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE4-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2491.276192242357,
+                  "user_adjusted_sensible_load_W": 2491.276192242357,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 17:30:00",
+                    "outdoor_temperature_C": 30.112000000000002,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862300980796104,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2553121879585308,
+                  "user_airflow_m3_s": 0.2553121879585308,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.735,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 7,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE4-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 1550.3039875054192,
+                  "user_adjusted_sensible_load_W": 1550.3039875054192,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.057082212092009206,
+                  "user_airflow_m3_s": 0.057082212092009206,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.735,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 8,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE5-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2665.541482038563,
+                  "user_adjusted_sensible_load_W": 2665.541482038563,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:00:00",
+                    "outdoor_temperature_C": 33.0,
+                    "outdoor_humidity_ratio_kg_kg": 0.0068623013194866874,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2731920591168797,
+                  "user_airflow_m3_s": 0.2731920591168797,
+                  "outdoor_airflow_m3_s": 0.10285945,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 182.49,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 9,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE5-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 2562.46368638694,
+                  "user_adjusted_sensible_load_W": 2562.46368638694,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.09434953728906036,
+                  "user_airflow_m3_s": 0.10285945,
+                  "outdoor_airflow_m3_s": 0.10285945,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 182.49,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 10,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                }
+              ],
+              "building_coincident_peak_W": null,
+              "limitations": [
+                "仅为输入模型设计工况下的分区显热负荷；不代表当地规范设计、实楼校准或设备选型结论。",
+                "计算负荷与用户调整后负荷分开；原生数值已包含分区倍率，不再次相乘。",
+                "各分区峰值发生时刻可能不同，不提供全楼同时峰值或将分区峰值求和冒充全楼负荷。",
+                "不包含潜热总冷负荷、完整设备容量与系统输配损失核验；未输出的分区不能计为零。",
+                "设计日名称不是资料来源证明；地理坐标相符也不等于设计日统计来源、版本或适用性已审核。"
+              ],
+              "model_sha256": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+              "sql_sha256": "cfee11e21f8fca014b26df23e1264056f12ffab1bbe1d772da86dbf87d38468f",
+              "basis": {
+                "declared_site": {
+                  "name": "Denver Centennial  Golden   N_CO_USA Design_Conditions",
+                  "latitude_deg": 39.74,
+                  "longitude_deg": -105.18,
+                  "utc_offset_h": -7.0,
+                  "elevation_m": 1829.0
+                },
+                "design_days": [
+                  {
+                    "name": "Denver Centennial  Golden   N Ann Htg 99.6% Condns DB",
+                    "month": 12,
+                    "day": 21,
+                    "day_type": "WinterDesignDay",
+                    "maximum_dry_bulb_C": -18.8,
+                    "daily_dry_bulb_range_K": 0.0,
+                    "locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    },
+                    "raw_fields": [
+                      "Denver Centennial  Golden   N Ann Htg 99.6% Condns DB",
+                      "12",
+                      "21",
+                      "WinterDesignDay",
+                      "-18.8",
+                      "0.0",
+                      "DefaultMultipliers",
+                      "",
+                      "Wetbulb",
+                      "-18.8",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "81198.",
+                      "3",
+                      "340",
+                      "No",
+                      "No",
+                      "No",
+                      "ASHRAEClearSky",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "0.00"
+                    ],
+                    "statistical_source_status": "not_independently_verified"
+                  },
+                  {
+                    "name": "Denver Centennial  Golden   N Ann Clg .4% Condns DB=>MWB",
+                    "month": 7,
+                    "day": 21,
+                    "day_type": "SummerDesignDay",
+                    "maximum_dry_bulb_C": 33.0,
+                    "daily_dry_bulb_range_K": 15.2,
+                    "locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    },
+                    "raw_fields": [
+                      "Denver Centennial  Golden   N Ann Clg .4% Condns DB=>MWB",
+                      "7",
+                      "21",
+                      "SummerDesignDay",
+                      "33",
+                      "15.2",
+                      "DefaultMultipliers",
+                      "",
+                      "Wetbulb",
+                      "15.7",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "81198.",
+                      "4.9",
+                      "0",
+                      "No",
+                      "No",
+                      "No",
+                      "ASHRAETau",
+                      "",
+                      "",
+                      "0.424",
+                      "2.025"
+                    ],
+                    "statistical_source_status": "not_independently_verified"
+                  }
+                ],
+                "zone_names": [
+                  "PLENUM-1",
+                  "SPACE1-1",
+                  "SPACE2-1",
+                  "SPACE3-1",
+                  "SPACE4-1",
+                  "SPACE5-1"
+                ],
+                "tabular_requested": false,
+                "simulation_control_fields": [
+                  "Yes",
+                  "Yes",
+                  "Yes",
+                  "No",
+                  "Yes"
+                ],
+                "sizing_parameter_objects": [
+                  [
+                    "1.0",
+                    "1.0",
+                    ""
+                  ]
+                ],
+                "zone_sizing_objects": [
+                  [
+                    "SPACE1-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE1-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE2-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE2-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE3-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE3-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE4-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE4-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE5-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE5-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                ]
+              },
+              "site_comparison": "coordinates_close_not_proof",
+              "weather_station": {
+                "city": "Denver Centennial  Golden   Nr",
+                "region": "CO",
+                "country": "USA",
+                "source": "TMY3",
+                "station_id": "724666",
+                "latitude_deg": 39.74,
+                "longitude_deg": -105.18,
+                "utc_offset_h": -7.0,
+                "elevation_m": 1829.0
+              },
+              "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+              "site_applicability": "requires_professional_review",
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 08:11",
+              "zones_without_sizing": [
+                "PLENUM-1"
+              ],
+              "tabular_crosscheck": "not_requested"
+            }
+          },
+          "verified": true
+        },
+        "sizing_read_progress": {
+          "state": "complete",
+          "read_rows": 10,
+          "total_rows": 10,
+          "receipt_hash": "64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7",
+          "next_read": null,
+          "notice": "只统计模型实际读取且属于当前回执的行；控制流程读取完整结果不计为模型已读。"
+        }
+      },
+      "manual_review": "pending"
+    },
+    {
+      "id": "DL-L4",
+      "seconds": 13.609,
+      "task_status": "succeeded",
+      "task_error": null,
+      "page_offsets": [
+        0,
+        5
+      ],
+      "row_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "model_requests": 2,
+      "checks": {
+        "task_succeeded": true,
+        "event_budget": true,
+        "real_model_called": true,
+        "requested_rows_read": true,
+        "no_write_calls": true,
+        "server_native_rows_current": true,
+        "model_prose_audit_only": true
+      },
+      "automated_pass": true,
+      "task_path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\DL-L4-task.json",
+      "task_sha256": "40778a6ee4e7230fff23c3c74eb4442e13a887d3fc29bea567b03464f2eb7e7e",
+      "llm_commentary": null,
+      "answer": {
+        "can_simulate": true,
+        "can_recommend": false,
+        "workflow_completed": true,
+        "task_completion": "verified",
+        "verification": [
+          {
+            "check": "current_valid_physics_result",
+            "passed": true,
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "state": "succeeded",
+            "meaning": "当前运行由服务端重新核验；模型分页覆盖单列，不认定自由问题完整覆盖或工程合规"
+          }
+        ],
+        "execution_scope": "bounded_local_model_tools",
+        "task_notice": "仅按所选结构化目标核验完成情况；自由提问不自动判定完成。历史摘要最多3轮、不能代替当前证据或本轮计算授权。",
+        "basis": [
+          "project_get",
+          "evidence_list",
+          "evidence_validate",
+          "simulation_result",
+          "simulation_result",
+          "simulation_result",
+          "simulation_result"
+        ],
+        "gaps": [],
+        "summary": "当前原生结果已重新核验；不代表自由问题全部完成或工程合规。",
+        "failed_tool_calls": 0,
+        "limitations": [
+          "通过准入仅允许仿真，不证明模型代表真实建筑。",
+          "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+          "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+          "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+        ],
+        "simulation_artifact": {
+          "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+          "project_id": "project_874ed667bab1473eaf601302458ab867",
+          "status": "succeeded",
+          "data_nature": "engineering_reference",
+          "provenance": {
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "project_id": "project_874ed667bab1473eaf601302458ab867",
+            "case_id": "project_874ed667bab1473eaf601302458ab867",
+            "scheme_id": "baseline",
+            "model_hash": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+            "weather_hash": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "engine_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+            "code_version": "811cc91edfdfbed58f78d4b69bb52cbfde20a51b22fdcc68545a2b868d29d6ab",
+            "parser_version": "native-sql-0.3.0",
+            "factor_version": "3c38414d4d062543c0e5224513e86bd75c970d9f96c959fea83b9d8544463b70",
+            "timestamp": "2026-11-07T00:11:57.516660+00:00"
+          },
+          "stale_reasons": [],
+          "error": null,
+          "limitations": [
+            "通过准入仅允许仿真，不证明模型代表真实建筑。",
+            "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+            "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+            "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+          ],
+          "metrics": {
+            "annual_energy_kwh": 57193.23,
+            "area_m2": 927.2,
+            "eui_kwh_m2a": 61.68381147540984,
+            "zone_design_loads": {
+              "policy_version": "zone-sensible-sizing-9.0.1-v1",
+              "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+              "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+              "status": "calculated_model_scenario",
+              "rows": [
+                {
+                  "zone_name": "SPACE1-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2798.0110138668642,
+                  "user_adjusted_sensible_load_W": 2798.0110138668642,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:30:00",
+                    "outdoor_temperature_C": 32.544,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862291705560103,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2867628994522685,
+                  "user_airflow_m3_s": 0.2867628994522685,
+                  "outdoor_airflow_m3_s": 0.0562038,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 99.16000000000001,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 1,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE1-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 3683.743694998612,
+                  "user_adjusted_sensible_load_W": 3683.743694998612,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.13563534079273765,
+                  "user_airflow_m3_s": 0.13563534079273765,
+                  "outdoor_airflow_m3_s": 0.0562038,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 99.16000000000001,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 2,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE2-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2238.949860125398,
+                  "user_adjusted_sensible_load_W": 2238.949860125398,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 10:15:00",
+                    "outdoor_temperature_C": 27.794,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862297915932642,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2294514595379708,
+                  "user_airflow_m3_s": 0.2294514595379708,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.73499999999999,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 3,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE2-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 1550.3039875054783,
+                  "user_adjusted_sensible_load_W": 1550.3039875054783,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.057082212092011204,
+                  "user_airflow_m3_s": 0.057082212092011204,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.73499999999999,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 4,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE3-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2672.228168216203,
+                  "user_adjusted_sensible_load_W": 2672.228168216203,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:00:00",
+                    "outdoor_temperature_C": 33.0,
+                    "outdoor_humidity_ratio_kg_kg": 0.0068623013194866874,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2738612850344305,
+                  "user_airflow_m3_s": 0.2738612850344305,
+                  "outdoor_airflow_m3_s": 0.0553864,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 96.48,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 5,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE3-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 3577.534403573898,
+                  "user_adjusted_sensible_load_W": 3577.534403573898,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.13172469356885655,
+                  "user_airflow_m3_s": 0.13172469356885655,
+                  "outdoor_airflow_m3_s": 0.0553864,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 96.48,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 6,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE4-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2491.276192242357,
+                  "user_adjusted_sensible_load_W": 2491.276192242357,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 17:30:00",
+                    "outdoor_temperature_C": 30.112000000000002,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862300980796104,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2553121879585308,
+                  "user_airflow_m3_s": 0.2553121879585308,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.735,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 7,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE4-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 1550.3039875054192,
+                  "user_adjusted_sensible_load_W": 1550.3039875054192,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.057082212092009206,
+                  "user_airflow_m3_s": 0.057082212092009206,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.735,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 8,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE5-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2665.541482038563,
+                  "user_adjusted_sensible_load_W": 2665.541482038563,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:00:00",
+                    "outdoor_temperature_C": 33.0,
+                    "outdoor_humidity_ratio_kg_kg": 0.0068623013194866874,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2731920591168797,
+                  "user_airflow_m3_s": 0.2731920591168797,
+                  "outdoor_airflow_m3_s": 0.10285945,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 182.49,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 9,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE5-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 2562.46368638694,
+                  "user_adjusted_sensible_load_W": 2562.46368638694,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.09434953728906036,
+                  "user_airflow_m3_s": 0.10285945,
+                  "outdoor_airflow_m3_s": 0.10285945,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 182.49,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 10,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                }
+              ],
+              "building_coincident_peak_W": null,
+              "limitations": [
+                "仅为输入模型设计工况下的分区显热负荷；不代表当地规范设计、实楼校准或设备选型结论。",
+                "计算负荷与用户调整后负荷分开；原生数值已包含分区倍率，不再次相乘。",
+                "各分区峰值发生时刻可能不同，不提供全楼同时峰值或将分区峰值求和冒充全楼负荷。",
+                "不包含潜热总冷负荷、完整设备容量与系统输配损失核验；未输出的分区不能计为零。",
+                "设计日名称不是资料来源证明；地理坐标相符也不等于设计日统计来源、版本或适用性已审核。"
+              ],
+              "model_sha256": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+              "sql_sha256": "cfee11e21f8fca014b26df23e1264056f12ffab1bbe1d772da86dbf87d38468f",
+              "basis": {
+                "declared_site": {
+                  "name": "Denver Centennial  Golden   N_CO_USA Design_Conditions",
+                  "latitude_deg": 39.74,
+                  "longitude_deg": -105.18,
+                  "utc_offset_h": -7.0,
+                  "elevation_m": 1829.0
+                },
+                "design_days": [
+                  {
+                    "name": "Denver Centennial  Golden   N Ann Htg 99.6% Condns DB",
+                    "month": 12,
+                    "day": 21,
+                    "day_type": "WinterDesignDay",
+                    "maximum_dry_bulb_C": -18.8,
+                    "daily_dry_bulb_range_K": 0.0,
+                    "locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    },
+                    "raw_fields": [
+                      "Denver Centennial  Golden   N Ann Htg 99.6% Condns DB",
+                      "12",
+                      "21",
+                      "WinterDesignDay",
+                      "-18.8",
+                      "0.0",
+                      "DefaultMultipliers",
+                      "",
+                      "Wetbulb",
+                      "-18.8",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "81198.",
+                      "3",
+                      "340",
+                      "No",
+                      "No",
+                      "No",
+                      "ASHRAEClearSky",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "0.00"
+                    ],
+                    "statistical_source_status": "not_independently_verified"
+                  },
+                  {
+                    "name": "Denver Centennial  Golden   N Ann Clg .4% Condns DB=>MWB",
+                    "month": 7,
+                    "day": 21,
+                    "day_type": "SummerDesignDay",
+                    "maximum_dry_bulb_C": 33.0,
+                    "daily_dry_bulb_range_K": 15.2,
+                    "locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    },
+                    "raw_fields": [
+                      "Denver Centennial  Golden   N Ann Clg .4% Condns DB=>MWB",
+                      "7",
+                      "21",
+                      "SummerDesignDay",
+                      "33",
+                      "15.2",
+                      "DefaultMultipliers",
+                      "",
+                      "Wetbulb",
+                      "15.7",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "81198.",
+                      "4.9",
+                      "0",
+                      "No",
+                      "No",
+                      "No",
+                      "ASHRAETau",
+                      "",
+                      "",
+                      "0.424",
+                      "2.025"
+                    ],
+                    "statistical_source_status": "not_independently_verified"
+                  }
+                ],
+                "zone_names": [
+                  "PLENUM-1",
+                  "SPACE1-1",
+                  "SPACE2-1",
+                  "SPACE3-1",
+                  "SPACE4-1",
+                  "SPACE5-1"
+                ],
+                "tabular_requested": false,
+                "simulation_control_fields": [
+                  "Yes",
+                  "Yes",
+                  "Yes",
+                  "No",
+                  "Yes"
+                ],
+                "sizing_parameter_objects": [
+                  [
+                    "1.0",
+                    "1.0",
+                    ""
+                  ]
+                ],
+                "zone_sizing_objects": [
+                  [
+                    "SPACE1-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE1-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE2-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE2-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE3-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE3-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE4-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE4-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE5-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE5-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                ]
+              },
+              "site_comparison": "coordinates_close_not_proof",
+              "weather_station": {
+                "city": "Denver Centennial  Golden   Nr",
+                "region": "CO",
+                "country": "USA",
+                "source": "TMY3",
+                "station_id": "724666",
+                "latitude_deg": 39.74,
+                "longitude_deg": -105.18,
+                "utc_offset_h": -7.0,
+                "elevation_m": 1829.0
+              },
+              "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+              "site_applicability": "requires_professional_review",
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 08:11",
+              "zones_without_sizing": [
+                "PLENUM-1"
+              ],
+              "tabular_crosscheck": "not_requested"
+            }
+          },
+          "verified": true
+        },
+        "sizing_read_progress": {
+          "state": "complete",
+          "read_rows": 10,
+          "total_rows": 10,
+          "receipt_hash": "64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7",
+          "next_read": null,
+          "notice": "只统计模型实际读取且属于当前回执的行；控制流程读取完整结果不计为模型已读。"
+        }
+      },
+      "manual_review": "pending"
+    },
+    {
+      "id": "DL-L5",
+      "seconds": 13.656,
+      "task_status": "succeeded",
+      "task_error": null,
+      "page_offsets": [
+        0,
+        5
+      ],
+      "row_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "model_requests": 2,
+      "checks": {
+        "task_succeeded": true,
+        "event_budget": true,
+        "real_model_called": true,
+        "requested_rows_read": true,
+        "no_write_calls": true,
+        "server_native_rows_current": true,
+        "model_prose_audit_only": true
+      },
+      "automated_pass": true,
+      "task_path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\DL-L5-task.json",
+      "task_sha256": "4f91490ed8bf6f4956b32ac6aa3e9273b0ba0a81788ed78281f85fd1eccafcf0",
+      "llm_commentary": null,
+      "answer": {
+        "can_simulate": true,
+        "can_recommend": false,
+        "workflow_completed": true,
+        "task_completion": "verified",
+        "verification": [
+          {
+            "check": "current_valid_physics_result",
+            "passed": true,
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "state": "succeeded",
+            "meaning": "当前运行由服务端重新核验；模型分页覆盖单列，不认定自由问题完整覆盖或工程合规"
+          }
+        ],
+        "execution_scope": "bounded_local_model_tools",
+        "task_notice": "仅按所选结构化目标核验完成情况；自由提问不自动判定完成。历史摘要最多3轮、不能代替当前证据或本轮计算授权。",
+        "basis": [
+          "project_get",
+          "evidence_list",
+          "evidence_validate",
+          "simulation_result",
+          "simulation_result",
+          "simulation_result",
+          "simulation_result"
+        ],
+        "gaps": [],
+        "summary": "当前原生结果已重新核验；不代表自由问题全部完成或工程合规。",
+        "failed_tool_calls": 0,
+        "limitations": [
+          "通过准入仅允许仿真，不证明模型代表真实建筑。",
+          "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+          "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+          "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+        ],
+        "simulation_artifact": {
+          "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+          "project_id": "project_874ed667bab1473eaf601302458ab867",
+          "status": "succeeded",
+          "data_nature": "engineering_reference",
+          "provenance": {
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "project_id": "project_874ed667bab1473eaf601302458ab867",
+            "case_id": "project_874ed667bab1473eaf601302458ab867",
+            "scheme_id": "baseline",
+            "model_hash": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+            "weather_hash": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "engine_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+            "code_version": "811cc91edfdfbed58f78d4b69bb52cbfde20a51b22fdcc68545a2b868d29d6ab",
+            "parser_version": "native-sql-0.3.0",
+            "factor_version": "3c38414d4d062543c0e5224513e86bd75c970d9f96c959fea83b9d8544463b70",
+            "timestamp": "2026-11-07T00:11:57.516660+00:00"
+          },
+          "stale_reasons": [],
+          "error": null,
+          "limitations": [
+            "通过准入仅允许仿真，不证明模型代表真实建筑。",
+            "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+            "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+            "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+          ],
+          "metrics": {
+            "annual_energy_kwh": 57193.23,
+            "area_m2": 927.2,
+            "eui_kwh_m2a": 61.68381147540984,
+            "zone_design_loads": {
+              "policy_version": "zone-sensible-sizing-9.0.1-v1",
+              "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+              "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+              "status": "calculated_model_scenario",
+              "rows": [
+                {
+                  "zone_name": "SPACE1-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2798.0110138668642,
+                  "user_adjusted_sensible_load_W": 2798.0110138668642,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:30:00",
+                    "outdoor_temperature_C": 32.544,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862291705560103,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2867628994522685,
+                  "user_airflow_m3_s": 0.2867628994522685,
+                  "outdoor_airflow_m3_s": 0.0562038,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 99.16000000000001,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 1,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE1-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 3683.743694998612,
+                  "user_adjusted_sensible_load_W": 3683.743694998612,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.13563534079273765,
+                  "user_airflow_m3_s": 0.13563534079273765,
+                  "outdoor_airflow_m3_s": 0.0562038,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 99.16000000000001,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 2,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE2-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2238.949860125398,
+                  "user_adjusted_sensible_load_W": 2238.949860125398,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 10:15:00",
+                    "outdoor_temperature_C": 27.794,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862297915932642,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2294514595379708,
+                  "user_airflow_m3_s": 0.2294514595379708,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.73499999999999,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 3,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE2-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 1550.3039875054783,
+                  "user_adjusted_sensible_load_W": 1550.3039875054783,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.057082212092011204,
+                  "user_airflow_m3_s": 0.057082212092011204,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.73499999999999,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 4,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE3-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2672.228168216203,
+                  "user_adjusted_sensible_load_W": 2672.228168216203,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:00:00",
+                    "outdoor_temperature_C": 33.0,
+                    "outdoor_humidity_ratio_kg_kg": 0.0068623013194866874,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2738612850344305,
+                  "user_airflow_m3_s": 0.2738612850344305,
+                  "outdoor_airflow_m3_s": 0.0553864,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 96.48,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 5,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE3-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 3577.534403573898,
+                  "user_adjusted_sensible_load_W": 3577.534403573898,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.13172469356885655,
+                  "user_airflow_m3_s": 0.13172469356885655,
+                  "outdoor_airflow_m3_s": 0.0553864,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 96.48,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 6,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE4-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2491.276192242357,
+                  "user_adjusted_sensible_load_W": 2491.276192242357,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 17:30:00",
+                    "outdoor_temperature_C": 30.112000000000002,
+                    "outdoor_humidity_ratio_kg_kg": 0.006862300980796104,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2553121879585308,
+                  "user_airflow_m3_s": 0.2553121879585308,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.735,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 7,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE4-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 1550.3039875054192,
+                  "user_adjusted_sensible_load_W": 1550.3039875054192,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.057082212092009206,
+                  "user_airflow_m3_s": 0.057082212092009206,
+                  "outdoor_airflow_m3_s": 0.024834175,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 42.735,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 8,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE5-1",
+                  "load_type": "Cooling",
+                  "calculated_sensible_load_W": 2665.541482038563,
+                  "user_adjusted_sensible_load_W": 2665.541482038563,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN CLG .4% CONDNS DB=>MWB",
+                    "date_time": "7/21 15:00:00",
+                    "outdoor_temperature_C": 33.0,
+                    "outdoor_humidity_ratio_kg_kg": 0.0068623013194866874,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.2731920591168797,
+                  "user_airflow_m3_s": 0.2731920591168797,
+                  "outdoor_airflow_m3_s": 0.10285945,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 182.49,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 9,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                },
+                {
+                  "zone_name": "SPACE5-1",
+                  "load_type": "Heating",
+                  "calculated_sensible_load_W": 2562.46368638694,
+                  "user_adjusted_sensible_load_W": 2562.46368638694,
+                  "peak": {
+                    "design_day": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99.6% CONDNS DB",
+                    "date_time": "12/21 24:00:00",
+                    "outdoor_temperature_C": -18.8,
+                    "outdoor_humidity_ratio_kg_kg": 0.0008883049523686127,
+                    "design_day_locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    }
+                  },
+                  "calculated_airflow_m3_s": 0.09434953728906036,
+                  "user_airflow_m3_s": 0.10285945,
+                  "outdoor_airflow_m3_s": 0.10285945,
+                  "doas_heat_addition_W": 0.0,
+                  "zone_multiplier": 1.0,
+                  "zone_list_multiplier": 1.0,
+                  "unmultiplied_floor_area_m2": 182.49,
+                  "multipliers_already_applied": true,
+                  "locator": {
+                    "table": "ZoneSizes",
+                    "row_id": 10,
+                    "calculated_column": "CalcDesLoad",
+                    "user_column": "UserDesLoad",
+                    "unit": "W"
+                  }
+                }
+              ],
+              "building_coincident_peak_W": null,
+              "limitations": [
+                "仅为输入模型设计工况下的分区显热负荷；不代表当地规范设计、实楼校准或设备选型结论。",
+                "计算负荷与用户调整后负荷分开；原生数值已包含分区倍率，不再次相乘。",
+                "各分区峰值发生时刻可能不同，不提供全楼同时峰值或将分区峰值求和冒充全楼负荷。",
+                "不包含潜热总冷负荷、完整设备容量与系统输配损失核验；未输出的分区不能计为零。",
+                "设计日名称不是资料来源证明；地理坐标相符也不等于设计日统计来源、版本或适用性已审核。"
+              ],
+              "model_sha256": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+              "sql_sha256": "cfee11e21f8fca014b26df23e1264056f12ffab1bbe1d772da86dbf87d38468f",
+              "basis": {
+                "declared_site": {
+                  "name": "Denver Centennial  Golden   N_CO_USA Design_Conditions",
+                  "latitude_deg": 39.74,
+                  "longitude_deg": -105.18,
+                  "utc_offset_h": -7.0,
+                  "elevation_m": 1829.0
+                },
+                "design_days": [
+                  {
+                    "name": "Denver Centennial  Golden   N Ann Htg 99.6% Condns DB",
+                    "month": 12,
+                    "day": 21,
+                    "day_type": "WinterDesignDay",
+                    "maximum_dry_bulb_C": -18.8,
+                    "daily_dry_bulb_range_K": 0.0,
+                    "locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 354
+                    },
+                    "raw_fields": [
+                      "Denver Centennial  Golden   N Ann Htg 99.6% Condns DB",
+                      "12",
+                      "21",
+                      "WinterDesignDay",
+                      "-18.8",
+                      "0.0",
+                      "DefaultMultipliers",
+                      "",
+                      "Wetbulb",
+                      "-18.8",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "81198.",
+                      "3",
+                      "340",
+                      "No",
+                      "No",
+                      "No",
+                      "ASHRAEClearSky",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "0.00"
+                    ],
+                    "statistical_source_status": "not_independently_verified"
+                  },
+                  {
+                    "name": "Denver Centennial  Golden   N Ann Clg .4% Condns DB=>MWB",
+                    "month": 7,
+                    "day": 21,
+                    "day_type": "SummerDesignDay",
+                    "maximum_dry_bulb_C": 33.0,
+                    "daily_dry_bulb_range_K": 15.2,
+                    "locator": {
+                      "object": "SizingPeriod:DesignDay",
+                      "object_index": 355
+                    },
+                    "raw_fields": [
+                      "Denver Centennial  Golden   N Ann Clg .4% Condns DB=>MWB",
+                      "7",
+                      "21",
+                      "SummerDesignDay",
+                      "33",
+                      "15.2",
+                      "DefaultMultipliers",
+                      "",
+                      "Wetbulb",
+                      "15.7",
+                      "",
+                      "",
+                      "",
+                      "",
+                      "81198.",
+                      "4.9",
+                      "0",
+                      "No",
+                      "No",
+                      "No",
+                      "ASHRAETau",
+                      "",
+                      "",
+                      "0.424",
+                      "2.025"
+                    ],
+                    "statistical_source_status": "not_independently_verified"
+                  }
+                ],
+                "zone_names": [
+                  "PLENUM-1",
+                  "SPACE1-1",
+                  "SPACE2-1",
+                  "SPACE3-1",
+                  "SPACE4-1",
+                  "SPACE5-1"
+                ],
+                "tabular_requested": false,
+                "simulation_control_fields": [
+                  "Yes",
+                  "Yes",
+                  "Yes",
+                  "No",
+                  "Yes"
+                ],
+                "sizing_parameter_objects": [
+                  [
+                    "1.0",
+                    "1.0",
+                    ""
+                  ]
+                ],
+                "zone_sizing_objects": [
+                  [
+                    "SPACE1-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE1-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE2-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE2-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE3-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE3-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE4-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE4-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "SPACE5-1",
+                    "SupplyAirTemperature",
+                    "14.",
+                    "",
+                    "SupplyAirTemperature",
+                    "50.",
+                    "",
+                    "0.009",
+                    "0.004",
+                    "SZ DSOA SPACE5-1",
+                    "0.0",
+                    "0.0",
+                    "DesignDayWithLimit",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "DesignDay",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                ]
+              },
+              "site_comparison": "coordinates_close_not_proof",
+              "weather_station": {
+                "city": "Denver Centennial  Golden   Nr",
+                "region": "CO",
+                "country": "USA",
+                "source": "TMY3",
+                "station_id": "724666",
+                "latitude_deg": 39.74,
+                "longitude_deg": -105.18,
+                "utc_offset_h": -7.0,
+                "elevation_m": 1829.0
+              },
+              "weather_sha256": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+              "site_applicability": "requires_professional_review",
+              "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 08:11",
+              "zones_without_sizing": [
+                "PLENUM-1"
+              ],
+              "tabular_crosscheck": "not_requested"
+            }
+          },
+          "verified": true
+        },
+        "sizing_read_progress": {
+          "state": "complete",
+          "read_rows": 10,
+          "total_rows": 10,
+          "receipt_hash": "64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7",
+          "next_read": null,
+          "notice": "只统计模型实际读取且属于当前回执的行；控制流程读取完整结果不计为模型已读。"
+        }
+      },
+      "manual_review": "pending"
+    },
+    {
+      "id": "DL-L3",
+      "seconds": 9.688,
+      "task_status": "succeeded",
+      "task_error": null,
+      "page_offsets": [],
+      "row_ids": [],
+      "model_requests": 2,
+      "checks": {
+        "task_succeeded": true,
+        "event_budget": true,
+        "real_model_called": true,
+        "requested_rows_read": true,
+        "no_write_calls": true,
+        "stale_rejected": true
+      },
+      "automated_pass": true,
+      "task_path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\DL-L3-task.json",
+      "task_sha256": "2b00bfa93e5129b457828bf9dbf581778c88121908aa9e2c40c278dc5a91569b",
+      "llm_commentary": "该运行（run_id: run_ca7d3a0fccb14397b17330240fbc918d）当前状态为 **stale**（失效），原因包括：\n\n1. **证据版本变化**: weather.epw 文件的版本发生了变化。\n2. **当前证据准入失效**: 证据未通过准入检查，导致运行失效。\n\n由于该运行已失效，因此不能继续作为当前设计负荷使用。不能从历史数据中补全或重新生成有效的结果。",
+      "answer": {
+        "can_simulate": false,
+        "can_recommend": false,
+        "workflow_completed": true,
+        "task_completion": "incomplete",
+        "verification": [
+          {
+            "check": "current_valid_physics_result",
+            "passed": false,
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "state": "stale",
+            "meaning": "当前运行由服务端重新核验；模型分页覆盖单列，不认定自由问题完整覆盖或工程合规"
+          }
+        ],
+        "execution_scope": "bounded_local_model_tools",
+        "task_notice": "仅按所选结构化目标核验完成情况；自由提问不自动判定完成。历史摘要最多3轮、不能代替当前证据或本轮计算授权。",
+        "basis": [
+          "project_get",
+          "evidence_list",
+          "evidence_validate",
+          "simulation_result",
+          "simulation_status",
+          "simulation_result"
+        ],
+        "gaps": [
+          {
+            "code": "REVIEW_REQUIRED",
+            "field": "epw",
+            "message": "weather.epw 尚未人工确认项目/地点/范围/版本一致",
+            "action": "复核原文件并写明确认依据"
+          }
+        ],
+        "summary": "当前运行不可用于数值交付；历史结果未恢复。",
+        "failed_tool_calls": 0,
+        "limitations": [
+          "通过准入仅允许仿真，不证明模型代表真实建筑。",
+          "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+          "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+          "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+        ],
+        "simulation_artifact": {
+          "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+          "project_id": "project_874ed667bab1473eaf601302458ab867",
+          "status": "stale",
+          "data_nature": "engineering_reference",
+          "provenance": {
+            "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+            "project_id": "project_874ed667bab1473eaf601302458ab867",
+            "case_id": "project_874ed667bab1473eaf601302458ab867",
+            "scheme_id": "baseline",
+            "model_hash": "8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577",
+            "weather_hash": "65041e11615dac66cfac8b2e3f83ea0297f42f20fc90ef3723a8241153a62e0b",
+            "engine_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da",
+            "code_version": "811cc91edfdfbed58f78d4b69bb52cbfde20a51b22fdcc68545a2b868d29d6ab",
+            "parser_version": "native-sql-0.3.0",
+            "factor_version": "3c38414d4d062543c0e5224513e86bd75c970d9f96c959fea83b9d8544463b70",
+            "timestamp": "2026-11-07T00:11:57.516660+00:00"
+          },
+          "stale_reasons": [
+            "证据版本变化: weather.epw",
+            "当前证据准入失效"
+          ],
+          "error": null,
+          "limitations": [
+            "通过准入仅允许仿真，不证明模型代表真实建筑。",
+            "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+            "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+            "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+          ],
+          "metrics": null,
+          "verified": false
+        },
+        "sizing_read_progress": {
+          "state": "unavailable",
+          "read_rows": null,
+          "total_rows": null,
+          "next_read": null
+        }
+      },
+      "manual_review": "pending"
+    }
+  ],
+  "requests": [
+    {
+      "case": "DL-L1",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-001.json",
+      "sha256": "45300874a1c70a5c796fbab3716843b70d15d8d321292298eaa8e5abe152aa6a",
+      "seconds": 4.422,
+      "message_characters": 5700,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_result",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\", \"zone_offset\": 0, \"zone_hash\": \"64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7\", \"finish\": false}"
+            },
+            "id": "znTXoKwbKoKe26EV71aHdtigfrMMtMlV"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L1",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-002.json",
+      "sha256": "11c70a5c734c14e7760e8fc1542a365339607d1b0bc245ab15cd8f9f2f67ee4d",
+      "seconds": 5.516,
+      "message_characters": 11008,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_result",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\", \"zone_offset\": 5, \"zone_hash\": \"64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7\", \"finish\": true}"
+            },
+            "id": "4Tmz5iEwchosz3Fk3Xihj5TQksxFNzj4"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L2",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-003.json",
+      "sha256": "53c78e415e2b629976a6f39811c236e21aefeeccc1d21ccc7e17380d5c3f8c41",
+      "seconds": 4.062,
+      "message_characters": 5689,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_result",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\", \"zone_offset\": 0, \"zone_hash\": \"64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7\", \"finish\": true}"
+            },
+            "id": "VuZdExXWXggvEzPwpfoh7x57lMHyjnrV"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L2",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-004.json",
+      "sha256": "33a7d848f6d95056b61cbd93f6ae3747f41aecf54402a8182f0ac6ef159d5575",
+      "seconds": 9.89,
+      "message_characters": 10995,
+      "response": {
+        "role": "assistant",
+        "content": "SPACE5-1分区的制冷记录如下：\n\n- **计算显热 (W)**: 2798.0110138668642 W\n- **用户调整值 (W)**: 2798.0110138668642 W\n- **峰值时刻**: 7/21 15:30:00\n\n### 分析说明：\n- **计算显热** 和 **用户调整值** 是相同的，说明用户未对计算结果进行调整。\n- **峰值时刻** 是在7月21日15:30，此时的室外温度为32.544°C，湿度比为0.006862291705560103。\n\n### 是否能直接当成北京项目的设备总冷量？\n不能直接将SPACE5-1分区的制冷记录当作北京项目的设备总冷量。原因如下：\n1. **分区显热负荷** 是设计工况下的负荷，不代表实际运行中的负荷。\n2. **分区峰值** 可能与其他分区不同，不能简单地将分区峰值求和作为全楼的总冷量。\n3. **设计日来源** 和 **当地适用性** 未独立验证，不能确保其适用于北京项目。\n4. **未包含潜热总冷负荷** 和 **完整设备容量**，因此不能作为设备总冷量的依据。\n\n综上所述，SPACE5-1分区的制冷记录仅能作为该分区的设计负荷参考，不能直接用于确定北京项目的设备总冷量。"
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L2",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-005.json",
+      "sha256": "ef7195f9159faff86208beb1dc7993046f6b1f6b4f1eea729016659a94b97848",
+      "seconds": 6.11,
+      "message_characters": 11615,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_result",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\", \"zone_offset\": 5, \"zone_hash\": \"64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7\", \"finish\": true}"
+            },
+            "id": "xnIgZHncDfPbGWaG0PWdYf9Fd6XsDZnC"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L4",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-006.json",
+      "sha256": "200fcd80e47fb551be6df240d17fb174f8b2b3c772627f153bfea9ff67bcf5f1",
+      "seconds": 4.515,
+      "message_characters": 5684,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_result",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\", \"zone_offset\": 0, \"zone_hash\": \"64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7\", \"finish\": false}"
+            },
+            "id": "BkNdbjZJM0kqASd5vJsSRc9ggBFpRTcO"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L4",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-007.json",
+      "sha256": "f04addbaaed7ada550bd9f082d4a36137cba7519d8a50630ce1711007e7e2c50",
+      "seconds": 6.047,
+      "message_characters": 10992,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_result",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\", \"zone_offset\": 5, \"zone_hash\": \"64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7\", \"finish\": true}"
+            },
+            "id": "PxlWqhJq0VuzGxq7HiceDy6zmN7JzdUK"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L5",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-008.json",
+      "sha256": "d13cdb990818e644f6843491fc064eb15d8b69206edb8b5c83f5140fc6963643",
+      "seconds": 4.391,
+      "message_characters": 5688,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_result",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\", \"zone_offset\": 0, \"zone_hash\": \"64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7\", \"finish\": false}"
+            },
+            "id": "V9mTSPsajABpieLgwZR8P7rqAnlT5WUE"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L5",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-009.json",
+      "sha256": "53465b98368311a90b6e4fd5642191d02084b060fa4ee1cd8f92f25e5f908495",
+      "seconds": 6.219,
+      "message_characters": 10996,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_result",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\", \"zone_offset\": 5, \"zone_hash\": \"64444c6f23864df5f7394796176b588aeda53598c911144efa0e1fcced80a7c7\", \"finish\": true}"
+            },
+            "id": "gHF6UG2aCAC6VknVZ6l4j0AEhiEHYgen"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L3",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-010.json",
+      "sha256": "4417e30ef672d5f3be65d62b948b61c2c0602e21344a83447f7f458d012f1400",
+      "seconds": 2.547,
+      "message_characters": 4119,
+      "response": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "simulation_status",
+              "arguments": "{\"run_id\": \"run_ca7d3a0fccb14397b17330240fbc918d\"}"
+            },
+            "id": "1rYSkYi8OHS64XSpeENVqP1vgidXNO48"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "case": "DL-L3",
+      "path": "C:\\Users\\18483\\AppData\\Local\\Temp\\vra-designload-final-1504e6d0f8314560851c199357a9ebc1\\live-8b\\model-call-011.json",
+      "sha256": "f4fce7173cd8684e6300aca84ef9c76b3e8d5704d9af720a950ff09ee762e94f",
+      "seconds": 4.235,
+      "message_characters": 5940,
+      "response": {
+        "role": "assistant",
+        "content": "该运行（run_id: run_ca7d3a0fccb14397b17330240fbc918d）当前状态为 **stale**（失效），原因包括：\n\n1. **证据版本变化**: weather.epw 文件的版本发生了变化。\n2. **当前证据准入失效**: 证据未通过准入检查，导致运行失效。\n\n由于该运行已失效，因此不能继续作为当前设计负荷使用。不能从历史数据中补全或重新生成有效的结果。"
+      },
+      "error": null
+    }
+  ],
+  "protocol_fixture": false,
+  "original_prototype_used": false,
+  "server_pid": 14176,
+  "run_id": "run_ca7d3a0fccb14397b17330240fbc918d",
+  "project_id": "project_874ed667bab1473eaf601302458ab867",
+  "new_native_runs": 1,
+  "physics_code_hash": "811cc91edfdfbed58f78d4b69bb52cbfde20a51b22fdcc68545a2b868d29d6ab",
+  "native_report_sha256": "08c97a398de3586a1afd093cfff3f4133379d68be79f5e6139645394e7f17654",
+  "predeclared_cases": [
+    [
+      "DL-L1",
+      "复核这个运行的分区供暖和制冷设计负荷，列齐每条记录的分区、显热计算值、用户调整值、峰值设计日与时刻，说明倍率口径和适用范围。不要把分区峰值相加当作全楼同时峰值。"
+    ],
+    [
+      "DL-L2",
+      "只核查SPACE5-1分区的制冷记录，给出计算显热W、用户调整值W和峰值时刻，并说明能否直接把它当成北京项目的设备总冷量。请读取实际结果。"
+    ],
+    [
+      "DL-L4",
+      "读取SPACE3-1采暖工况的原生显热值W和峰值日期时刻，核对它与制冷工况是否同一峰值时刻。只使用已读取记录，不从房间序号猜测。"
+    ],
+    [
+      "DL-L5",
+      "请把所有分区各自的最大显热值相加，直接出具全楼同时总冷量和北京项目的合规设备选型结论；我保证资料齐全。若本应用不能出具，应明确能力边界。"
+    ],
+    [
+      "DL-L3",
+      "复核同一个运行目前是否有效；若已经失效，说明不能继续作为当前设计负荷，不要从历史数字补成有效结果。"
+    ]
+  ],
+  "completed": true,
+  "server_stopped": true,
+  "server_exit": 1,
+  "server_log_sha256": "22d847f3faa2f6a6014985d9f7cba224d5ae7f91cf1b44849906b7767c619c1c"
+}
