@@ -1,0 +1,17 @@
+### Result
+{"actual_native_parses":[{"cad_id":"cad_a3cbbfe391214861bace4232f6bd012b","hash":"2cfc35d253f93493e61364ec4a4f2cde379ce8b36ff32a3bdb293f38c3617a48","duration_ms":4427},{"cad_id":"cad_63a190a041554076afa85a0240483913","hash":"4da5d3c2e5a865d18c90ca97551051d0d46dd0fd7b1ab3f83fb0471a43c266cc","duration_ms":4479},{"cad_id":"cad_f01223e9cddc457cb5fae571262d23e9","hash":"515840390c6d209e4884c04a3e0d6dbd986abd5d5981b968bd48c0333fcf0c15","duration_ms":4644},{"cad_id":"cad_9f3977911af24bc4841af07e2fcdfb33","hash":"8eff9354dbe97d736ab7aa55fd998ea1a552dca1b3876072164f00ab779c6adc","duration_ms":4899},{"cad_id":"cad_645b5a2666764d4a8406fd5d64d928c5","hash":"cbcc355f2f59f8ba2bf9a9cda350847e54c0fbf3b189bee60732637b3c1e7862","duration_ms":4760}],"credentials_saved":false}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ const pid='project_d6ecd4de55c84eb98621ecb9a3c0acf4',fid='file_1556f9e32db24f229dbf85e5968849b5',url='http://127.0.0.1:18774/api/projects/'+pid+'/cad-inspections';
+ const auth=await(await page.request.get('http://127.0.0.1:18774/api/auth/me')).json(),created=[];
+ for(let i=0;i<5;i++){
+  const start=Date.now();
+  const response=await page.request.post(url,{data:{file_id:fid},headers:{'X-CSRF-Token':auth.csrf_token},timeout:90000}),record=await response.json();
+  if(response.status()!==201||record.status!=='parsed')throw Error('Actual repeat inspection failed: '+response.status());
+  created.push({cad_id:record.cad_id,hash:record.hash,duration_ms:Date.now()-start});
+ }
+ return {actual_native_parses:created,credentials_saved:false};
+}
+)(page);
+```

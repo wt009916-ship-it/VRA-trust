@@ -1,0 +1,13 @@
+async(page)=>{
+ const cid='cad_5ab407c2cfbe47798195b4e4d1c64d63';
+ await page.setViewportSize({width:1280,height:900});
+ await page.getByRole('combobox',{name:'来源 IFC 读取记录',exact:true}).selectOption(cid);
+ await page.getByRole('listbox',{name:'参与并集的构件（可多选）',exact:true}).selectOption(['34','45']);
+ const completed=page.waitForResponse(r=>r.url().endsWith('/ifc-unions')&&r.request().method()==='POST',{timeout:90000});
+ await page.getByRole('button',{name:'核算几何并集',exact:true}).click();
+ const response=await completed,record=await response.json();
+ if(response.status()!==201||record.status!=='measured'||record.result.union_volume_m3!==36)throw Error('Actual union regression failed');
+ const card=page.locator('.ifc-union-record');await card.waitFor({state:'visible'});
+ if(!(await card.innerText()).includes('36 m³'))throw Error('Actual union not rendered');
+ return {union_id:record.union_id,source_cad:record.cad_id,sum:record.result.sum_operand_volume_m3,union:record.result.union_volume_m3,deduction:record.result.overlap_deduction_m3};
+}

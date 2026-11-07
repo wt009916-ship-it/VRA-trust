@@ -1,0 +1,19 @@
+async(page)=>{
+ const cid='cad_970df543018e4224b1debafcb76a5415';
+ let requests=0;
+ const listener=r=>{if(/\/(cad-current-states|ifc-unions|cad-inspections\/cad_[a-f0-9]{32})$/.test(r.url()))requests++;};
+ await page.getByRole('button',{name:'热工计算',exact:true}).click();
+ page.on('request',listener);
+ try{
+ await page.waitForTimeout(6200); // exceed one real polling interval
+ if(requests!==0)throw Error('Hidden CAD still polls: '+requests);
+ const count=await page.locator('#cad [data-ifc-detail]').count();
+ if(count!==0)throw Error('Hidden CAD retained old detail');
+ const fresh=page.waitForResponse(r=>r.url().endsWith('/cad-inspections/'+cid)&&r.status()===200,{timeout:15000});
+ await page.getByRole('button',{name:'CAD / BIM',exact:true}).click();
+ const record=await(await fresh).json();
+ await page.getByRole('combobox',{name:'查看构件来源、数量与属性',exact:true}).waitFor({state:'visible'});
+ if(record.status!=='parsed')throw Error('Return not freshly parsed');
+ return {hidden_requests:0,hidden_detail_count:count,return_fresh_get:true};
+ }finally{page.off('request',listener);}
+}

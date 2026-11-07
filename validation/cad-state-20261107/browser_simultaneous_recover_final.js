@@ -1,0 +1,11 @@
+async(page)=>{
+ let fresh=0;
+ const listener=r=>{if(/\/cad-inspections\/cad_[a-f0-9]{32}$/.test(r.url()))fresh++;};page.on('request',listener);
+ try{
+ await page.getByRole('button',{name:'立即核验状态',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelectorAll('#cad-results [data-ifc-record]').length===2,{},{timeout:15000});
+ if(fresh<2)throw Error('No fresh detail reads');
+ await page.waitForFunction(()=>document.querySelector('.ifc-union-record')?.textContent.includes('36 m³'),{},{timeout:15000});
+ return {recovered_records:2,fresh_detail_requests:fresh,union_recovered:36};
+ }finally{page.off('request',listener);}
+}
