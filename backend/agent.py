@@ -252,7 +252,7 @@ class Agent:
         schema = ToolArgs.model_json_schema()
         tools = []
         for name, desc in TOOLS.items():
-            if allowed is None and name in {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan'}:continue
+            if allowed is None and name in {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability'}:continue
             if allowed is not None and name not in allowed:
                 continue
             # The same root display title adds no constraint and repeats for every tool.
