@@ -1,0 +1,927 @@
+{
+  "source": "Self-authored synthetic steady box executed by EnergyPlus 9.0.1; projection is parser fixture, not new simulation",
+  "sql_sha256": "09d881fbfc914aada94e47ace2f11c25d45ea29abf000c5dcceea2e23f8dd8a5",
+  "model_sha256": "846d5e0541bd7872c1961ff3527901a7fd4e82381843f45fcf1a179a579be04f",
+  "model_idf": "! Synthetic independent heat balance benchmark, not a real building.\nVersion,9.0;\nTimestep,6;\nBuilding,Synthetic steady box,0,Suburbs,0.0001,0.0001,MinimalShadowing,100,10;\nHeatBalanceAlgorithm,ConductionTransferFunction;\nSimulationControl,Yes,No,No,Yes,No;\nSite:Location,Synthetic sea-level site,0,0,0,0;\nSizingPeriod:DesignDay,Synthetic winter,1,21,WinterDesignDay,-10,0,,,Dewpoint,-10,,,,,101325,0,0,No,No,No,ASHRAEClearSky,,,,,0;\nSizingPeriod:DesignDay,Synthetic summer,7,21,SummerDesignDay,35,0,,,Dewpoint,10,,,,,101325,0,0,No,No,No,ASHRAEClearSky,,,,,0;\nGlobalGeometryRules,UpperLeftCorner,Counterclockwise,World;\nZone,Box,0,0,0,0,1,1,3,75,25;\nMaterial:NoMass,R2,Smooth,2,0.9,0.7,0.7;\nConstruction,Envelope,R2;\nSurfaceProperty:OtherSideCoefficients,Ambient,25,0,0,1,0,0,0;\nBuildingSurface:Detailed,South,Wall,Envelope,Box,OtherSideCoefficients,Ambient,NoSun,NoWind,0,4,0,0,3,0,0,0,5,0,0,5,0,3;\nSurfaceProperty:ConvectionCoefficients,South,Inside,Value,10;\nBuildingSurface:Detailed,East,Wall,Envelope,Box,OtherSideCoefficients,Ambient,NoSun,NoWind,0,4,5,0,3,5,0,0,5,5,0,5,5,3;\nSurfaceProperty:ConvectionCoefficients,East,Inside,Value,10;\nBuildingSurface:Detailed,North,Wall,Envelope,Box,OtherSideCoefficients,Ambient,NoSun,NoWind,0,4,5,5,3,5,5,0,0,5,0,0,5,3;\nSurfaceProperty:ConvectionCoefficients,North,Inside,Value,10;\nBuildingSurface:Detailed,West,Wall,Envelope,Box,OtherSideCoefficients,Ambient,NoSun,NoWind,0,4,0,5,3,0,5,0,0,0,0,0,0,3;\nSurfaceProperty:ConvectionCoefficients,West,Inside,Value,10;\nBuildingSurface:Detailed,Roof,Roof,Envelope,Box,OtherSideCoefficients,Ambient,NoSun,NoWind,0,4,0,5,3,0,0,3,5,0,3,5,5,3;\nSurfaceProperty:ConvectionCoefficients,Roof,Inside,Value,10;\nBuildingSurface:Detailed,Floor,Floor,Envelope,Box,OtherSideCoefficients,Ambient,NoSun,NoWind,0,4,0,0,0,0,5,0,5,5,0,5,0,0;\nSurfaceProperty:ConvectionCoefficients,Floor,Inside,Value,10;\nScheduleTypeLimits,Any;\nSchedule:Constant,Heat,Any,20;\nSchedule:Constant,Cool,Any,25;\nSchedule:Constant,Control,Any,4;\nThermostatSetpoint:DualSetpoint,Setpoints,Heat,Cool;\nZoneControl:Thermostat,Control,Box,Control,ThermostatSetpoint:DualSetpoint,Setpoints;\nSizing:Parameters,1,1,1;\nSizing:Zone,Box,SupplyAirTemperature,12,,SupplyAirTemperature,50,,0.008,0.008,NoOA,1,1,DesignDay,0,0,0,0,DesignDay,0,0,0,0;\nDesignSpecification:OutdoorAir,NoOA,Flow/Zone,0,0,0,0;\nZoneHVAC:EquipmentConnections,Box,Equipment,Supply,,Zone air,Return;\nZoneHVAC:EquipmentList,Equipment,SequentialLoad,ZoneHVAC:IdealLoadsAirSystem,Ideal,1,1;\nZoneHVAC:IdealLoadsAirSystem,Ideal,,Supply,,,50,12,0.009,0.009,NoLimit,,,NoLimit,,,,,None,,None;\nOutput:SQLite,SimpleAndTabular;\nOutput:Table:SummaryReports,HVACSizingSummary;\nOutput:Variable,*,Site Outdoor Air Drybulb Temperature,Hourly;\nOutput:Variable,*,Zone Mean Air Temperature,Hourly;\nOutput:Variable,*,Surface Inside Face Convection Heat Transfer Coefficient,Hourly;\nOutput:Variable,*,Surface Inside Face Net Surface Thermal Radiation Heat Gain Rate,Hourly;\nOutput:Variable,*,Surface Inside Face Temperature,Hourly;\nOutput:Variable,*,Surface Outside Face Temperature,Hourly;\nOutput:Variable,*,Zone Ideal Loads Zone Sensible Heating Rate,Hourly;\nOutput:Variable,*,Zone Ideal Loads Zone Sensible Cooling Rate,Hourly;",
+  "expected_W": {
+    "Heating": 1542.056074766355,
+    "Cooling": 514.018691588785
+  },
+  "tables": {
+    "Simulations": {
+      "columns": [
+        "SimulationIndex",
+        "EnergyPlusVersion",
+        "TimeStamp",
+        "NumTimestepsPerHour",
+        "Completed",
+        "CompletedSuccessfully"
+      ],
+      "rows": [
+        [
+          1,
+          "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:34",
+          " YMD=2026.11.07 06:34",
+          6,
+          1,
+          1
+        ]
+      ]
+    },
+    "ZoneSizes": {
+      "columns": [
+        "ZoneSizesIndex",
+        "ZoneName",
+        "LoadType",
+        "CalcDesLoad",
+        "UserDesLoad",
+        "CalcDesFlow",
+        "UserDesFlow",
+        "DesDayName",
+        "PeakHrMin",
+        "PeakTemp",
+        "PeakHumRat",
+        "CalcOutsideAirFlow",
+        "DOASHeatAddRate"
+      ],
+      "rows": [
+        [
+          1,
+          "BOX",
+          "Cooling",
+          514.0186916425446,
+          514.0186916425446,
+          0.03219736752764921,
+          0.03219736752764921,
+          "SYNTHETIC SUMMER",
+          "7/21 00:10:00",
+          35.0,
+          0.0076304825494612856,
+          0.0,
+          0.0
+        ],
+        [
+          2,
+          "BOX",
+          "Heating",
+          1542.0560747123855,
+          1542.0560747123855,
+          0.04185657778010163,
+          0.04185657778010163,
+          "SYNTHETIC WINTER",
+          "1/21 00:30:00",
+          -10.0,
+          0.0015995074144284182,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    "Zones": {
+      "columns": [
+        "ZoneIndex",
+        "ZoneName",
+        "RelNorth",
+        "OriginX",
+        "OriginY",
+        "OriginZ",
+        "CentroidX",
+        "CentroidY",
+        "CentroidZ",
+        "OfType",
+        "Multiplier",
+        "ListMultiplier",
+        "MinimumX",
+        "MaximumX",
+        "MinimumY",
+        "MaximumY",
+        "MinimumZ",
+        "MaximumZ",
+        "CeilingHeight",
+        "Volume",
+        "InsideConvectionAlgo",
+        "OutsideConvectionAlgo",
+        "FloorArea",
+        "ExtGrossWallArea",
+        "ExtNetWallArea",
+        "ExtWindowArea",
+        "IsPartOfTotalArea"
+      ],
+      "rows": [
+        [
+          1,
+          "BOX",
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.5,
+          2.5,
+          1.5,
+          1,
+          1.0,
+          1.0,
+          0.0,
+          5.0,
+          0.0,
+          5.0,
+          0.0,
+          3.0,
+          3.0,
+          75.0,
+          2,
+          7,
+          25.0,
+          0.0,
+          0.0,
+          0.0,
+          1
+        ]
+      ]
+    },
+    "TabularDataWithStrings": {
+      "columns": [
+        "TabularDataIndex",
+        "Value",
+        "ReportName",
+        "ReportForString",
+        "TableName",
+        "RowName",
+        "ColumnName",
+        "Units"
+      ],
+      "rows": [
+        [
+          1,
+          "      514.02",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Calculated Design Load",
+          "W"
+        ],
+        [
+          2,
+          "      514.02",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "User Design Load",
+          "W"
+        ],
+        [
+          3,
+          "       20.56",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "User Design Load per Area",
+          "W/m2"
+        ],
+        [
+          4,
+          "       0.032",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Calculated Design Air Flow",
+          "m3/s"
+        ],
+        [
+          5,
+          "       0.032",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "User Design Air Flow",
+          "m3/s"
+        ],
+        [
+          6,
+          "SYNTHETIC SUMMER",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Design Day Name",
+          ""
+        ],
+        [
+          7,
+          "7/21 00:10:00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Date/Time Of Peak {TIMESTAMP}",
+          ""
+        ],
+        [
+          8,
+          "       25.00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Thermostat Setpoint Temperature at Peak Load",
+          "C"
+        ],
+        [
+          9,
+          "       25.00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Indoor Temperature at Peak Load",
+          "C"
+        ],
+        [
+          10,
+          "     0.00800",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Indoor Humidity Ratio at Peak Load",
+          "kgWater/kgAir"
+        ],
+        [
+          11,
+          "       35.00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Outdoor Temperature at Peak Load",
+          "C"
+        ],
+        [
+          12,
+          "     0.00763",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Outdoor Humidity Ratio at Peak Load",
+          "kgWater/kgAir"
+        ],
+        [
+          13,
+          "       0.000",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Minimum Outdoor Air Flow Rate",
+          "m3/s"
+        ],
+        [
+          14,
+          "        0.00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Cooling",
+          "BOX",
+          "Heat Gain Rate from DOAS",
+          "W"
+        ],
+        [
+          15,
+          "     1542.06",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Calculated Design Load",
+          "W"
+        ],
+        [
+          16,
+          "     1542.06",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "User Design Load",
+          "W"
+        ],
+        [
+          17,
+          "       61.68",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "User Design Load per Area",
+          "W/m2"
+        ],
+        [
+          18,
+          "       0.042",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Calculated Design Air Flow",
+          "m3/s"
+        ],
+        [
+          19,
+          "       0.042",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "User Design Air Flow",
+          "m3/s"
+        ],
+        [
+          20,
+          "SYNTHETIC WINTER",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Design Day Name",
+          ""
+        ],
+        [
+          21,
+          "1/21 00:30:00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Date/Time Of Peak {TIMESTAMP}",
+          ""
+        ],
+        [
+          22,
+          "       20.00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Thermostat Setpoint Temperature at Peak Load",
+          "C"
+        ],
+        [
+          23,
+          "       20.00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Indoor Temperature at Peak Load",
+          "C"
+        ],
+        [
+          24,
+          "     0.00800",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Indoor Humidity Ratio at Peak Load",
+          "kgWater/kgAir"
+        ],
+        [
+          25,
+          "      -10.00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Outdoor Temperature at Peak Load",
+          "C"
+        ],
+        [
+          26,
+          "     0.00160",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Outdoor Humidity Ratio at Peak Load",
+          "kgWater/kgAir"
+        ],
+        [
+          27,
+          "       0.000",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Minimum Outdoor Air Flow Rate",
+          "m3/s"
+        ],
+        [
+          28,
+          "        0.00",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Zone Sensible Heating",
+          "BOX",
+          "Heat Gain Rate from DOAS",
+          "W"
+        ],
+        [
+          29,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "Calculated cooling",
+          "m3/s"
+        ],
+        [
+          30,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "User cooling",
+          "m3/s"
+        ],
+        [
+          31,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "Calculated heating",
+          "m3/s"
+        ],
+        [
+          32,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "User heating",
+          "m3/s"
+        ],
+        [
+          33,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "Adjusted cooling",
+          "m3/s"
+        ],
+        [
+          34,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "Adjusted heating",
+          "m3/s"
+        ],
+        [
+          35,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "Adjusted main",
+          "m3/s"
+        ],
+        [
+          36,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "Calculated Heating Air Flow Ratio",
+          ""
+        ],
+        [
+          37,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "System Design Air Flow Rates",
+          "None",
+          "User Heating Air Flow Ratio",
+          ""
+        ],
+        [
+          38,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Plant Loop Coincident Design Fluid Flow Rate Adjustments",
+          "None",
+          "Previous Design Volume Flow Rate",
+          "m3/s"
+        ],
+        [
+          39,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Plant Loop Coincident Design Fluid Flow Rate Adjustments",
+          "None",
+          "Algorithm Volume Flow Rate",
+          "m3/s"
+        ],
+        [
+          40,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Plant Loop Coincident Design Fluid Flow Rate Adjustments",
+          "None",
+          "Coincident Design Volume Flow Rate",
+          "m3/s"
+        ],
+        [
+          41,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Plant Loop Coincident Design Fluid Flow Rate Adjustments",
+          "None",
+          "Coincident Size Adjusted",
+          ""
+        ],
+        [
+          42,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Plant Loop Coincident Design Fluid Flow Rate Adjustments",
+          "None",
+          "Peak Sizing Period Name",
+          ""
+        ],
+        [
+          43,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Plant Loop Coincident Design Fluid Flow Rate Adjustments",
+          "None",
+          "Peak Day into Period {TIMESTAMP",
+          "day"
+        ],
+        [
+          44,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Plant Loop Coincident Design Fluid Flow Rate Adjustments",
+          "None",
+          "Peak Hour Of Day {TIMESTAMP",
+          "hr"
+        ],
+        [
+          45,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Plant Loop Coincident Design Fluid Flow Rate Adjustments",
+          "None",
+          "Peak Step Start Minute {TIMESTAMP",
+          "min"
+        ],
+        [
+          46,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Type",
+          ""
+        ],
+        [
+          47,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "HVAC Type",
+          ""
+        ],
+        [
+          48,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "HVAC Name",
+          ""
+        ],
+        [
+          49,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Final Gross Total Capacity",
+          "W"
+        ],
+        [
+          50,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Final Gross Sensible Capacity",
+          "W"
+        ],
+        [
+          51,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Final Reference Air Volume Flow Rate",
+          "m3/s"
+        ],
+        [
+          52,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Final Reference Plant Fluid Volume Flow Rate",
+          "m3/s"
+        ],
+        [
+          53,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil U-value Times Area Value",
+          "W/K"
+        ],
+        [
+          54,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Design Day Name at Sensible Ideal Loads Peak",
+          ""
+        ],
+        [
+          55,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Date/Time at Sensible Ideal Loads Peak",
+          ""
+        ],
+        [
+          56,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Design Day Name at Air Flow Ideal Loads Peak",
+          ""
+        ],
+        [
+          57,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Date/Time at Air Flow Ideal Loads Peak",
+          ""
+        ],
+        [
+          58,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Total Capacity at Ideal Loads Peak",
+          "W"
+        ],
+        [
+          59,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Sensible Capacity at Ideal Loads Peak",
+          "W"
+        ],
+        [
+          60,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Air Volume Flow Rate at Ideal Loads Peak",
+          "m3/s"
+        ],
+        [
+          61,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Entering Air Drybulb at Ideal Loads Peak",
+          "C"
+        ],
+        [
+          62,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Entering Air Wetbulb at Ideal Loads Peak",
+          "C"
+        ],
+        [
+          63,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Entering Air Humidity Ratio at Ideal Loads Peak",
+          "KGWATER/KGDRYAIR"
+        ],
+        [
+          64,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Leaving Air Drybulb at Ideal Loads Peak",
+          "C"
+        ],
+        [
+          65,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Leaving Air Wetbulb at Ideal Loads Peak",
+          "C"
+        ],
+        [
+          66,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Leaving Air Humidity Ratio at Ideal Loads Peak",
+          "C"
+        ],
+        [
+          67,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Outdoor Air Drybulb at Ideal Loads Peak",
+          "C"
+        ],
+        [
+          68,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Outdoor Air Humidity Ratio at Ideal Loads Peak",
+          "KGWATER/KGDRYAIR"
+        ],
+        [
+          69,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Outdoor Air Wetbulb at Ideal Loads Peak",
+          "C"
+        ],
+        [
+          70,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Outdoor Air Flow Percentage at Ideal Loads Peak",
+          "%"
+        ],
+        [
+          71,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Zone Air Drybulb at Ideal Loads Peak",
+          "C"
+        ],
+        [
+          72,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Zone Air Humidity Ratio at Ideal Loads Peak",
+          "KGWATER/KGDRYAIR"
+        ],
+        [
+          73,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Zone Air Relative Humidity at Ideal Loads Peak",
+          "%"
+        ],
+        [
+          74,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Zone Sensible Heat Gain at Ideal Loads Peak",
+          "W"
+        ],
+        [
+          75,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Zone Latent Heat Gain at Ideal Loads Peak",
+          "W"
+        ],
+        [
+          76,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Total Capacity at Rating Conditions",
+          "W"
+        ],
+        [
+          77,
+          "",
+          "HVACSizingSummary",
+          "Entire Facility",
+          "Coil Sizing Summary",
+          "None",
+          "Coil Sensible Capacity at Rating Conditions",
+          "W"
+        ]
+      ]
+    }
+  }
+}

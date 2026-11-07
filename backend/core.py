@@ -42,6 +42,7 @@ def code_hash():
     return hash_json({'physics_core':sha(Path(__file__)), 'parser':PARSER_VERSION,
                       'input_validation':sha(ROOT/'backend/input_validation.py'),
                       'weather_quality':sha(ROOT/'backend/weather_quality.py'),
+                      'design_loads':sha(ROOT/'backend/design_loads.py'),
                       'execution':{name:sha(ROOT/'backend'/name) for name in
                                    ('execution.py','execution_lifetime.py','native_ownership.py','private_storage.py','runtime_lock.py','engine_limits.py','engine_worker.py','worker_limits.py',
                                     'native_environment.py','native_windows.py','native_linux.py','native_staging.py')}})
@@ -252,6 +253,10 @@ def _run_simulation(case_id,scheme_id,profile_id,run_dir,timeout=300,*,case_over
         manifest['warning_review']='pending_engineer_review' if manifest['warnings'] else 'none'
         if severe or fatal or 'EnergyPlus Completed Successfully' not in text:raise ValidationError('ERR unsuccessful or Severe/Fatal present')
         metrics=parse_sql(rd/'output/eplusout.sql')
+        from .design_loads import inspect_design_loads
+        sizing=inspect_design_loads(rd/'output/eplusout.sql',inp/'model.idf',weather_quality)
+        metrics['zone_design_loads']=sizing
+        manifest['zone_design_loads']={'policy_version':sizing['policy_version'],'parser_sha256':sizing['parser_sha256']}
         if source_fingerprints(case,scheme,profile,engine,root)!=manifest['fingerprints']:raise ValidationError('Inputs changed while simulation was running')
         result={**identity,'status':'succeeded','finished_at':now(),'data_nature':case['data_nature'],'scheme_name':scheme['name'],'metrics':metrics,'carbon':calculate_carbon(metrics['energy_by_carrier_kwh'],profile,case['region']),'cost':scheme.get('cost'),'limitations':case['notes'],'warnings_count':manifest['warnings'],'geometry_status':case['geometry_status'],'ccer':{'status':'not_assessed','issued_credits_t':None,'reason':'参考算例无真实业主、合规历史监测及开发核证证据。'}}
         manifest['status']='succeeded'
@@ -283,6 +288,15 @@ def read_validated(rd,check_current=True):
                 or quality['source_sha256']!=manifest['fingerprints']['weather']
                 or quality['source_sha256']!=sha(rd/'input/weather.epw')):
             raise ValidationError('Weather quality receipt binding mismatch')
+    if manifest.get('zone_design_loads') is not None or manifest['fingerprints'].get('code')==code_hash():
+        sizing=(result.get('metrics') or {}).get('zone_design_loads')
+        if (not isinstance(sizing,dict) or manifest.get('zone_design_loads')!=
+                {'policy_version':sizing.get('policy_version'),'parser_sha256':sizing.get('parser_sha256')}
+                or sizing.get('model_sha256')!=manifest['fingerprints']['model']
+                or sizing.get('sql_sha256')!=manifest['artifact_hashes']['output/eplusout.sql']
+                or sizing.get('weather_sha256') not in (None,manifest['fingerprints']['weather'])
+                or (sizing.get('status')!='calculated_model_scenario' and sizing.get('rows') is not None)):
+            raise ValidationError('Zone design-load receipt binding mismatch')
     plan={'changed':[],'invalid':[],'action':'reuse'}
     if check_current:
         case=load_case(manifest['case_id']);scheme=get_scheme(case,manifest['scheme_id']);profile=get_profile(manifest['factor_profile_id']);engine=engine_path()

@@ -28,10 +28,12 @@ $env:ENERGYPLUS_EXE = 'F:/EnergyPlusV9-0-1/energyplus.exe'
 1. 创建项目并填写建筑声明，或显式导入官方参考模型。
 2. 上传 IDF/EPW 和其他资料，登记出处、定位、授权、登记人；PDF/图片可在“图纸识别”页显式运行本地OCR，产生需逐项人工复核的文字候选，不自动写入工程参数。
 3. 人工核对并确认模型/天气；输入不唯一、未确认或文件损坏时 Gate 拒绝计算。
-4. 运行 baseline/R1/R2，查看真实任务状态、能耗、EUI、运行 CO2、Warnings 和 SQL 定位。
+4. 运行 baseline/R1/R2，查看真实任务状态、能耗、EUI、运行 CO2、Warnings 和 SQL 定位；在“查看依据”中读取输入模型的分区设计显热负荷。
 5. 查看依据，下载 JSON/HTML/PDF/原始证据 ZIP。证据变更使受影响结果失效，确定推荐保持拒答。
 
 参考模型不是实际建筑。基准已有保温，追加保温参数是教学假设；碳情景不是正式地区核算或 CCER。
+
+分区负荷来自 EnergyPlus 9.0.1 的真实定容结果，分别显示计算显热负荷、用户调整后负荷、峰值设计日和时刻。缺少定容输出、工况无法追溯或单位冲突时显示不可用；不从年能耗推算峰值。原生数值已包含分区倍率，各区峰值也不能直接相加作为全楼同时峰值。设计日来源及项目适用性须另行复核，不等于设备选型或规范合规结论。验收进度见 [设计负荷记录](docs/DESIGN_LOADS_PROGRESS.md)。
 
 ## 验证
 
@@ -106,3 +108,5 @@ Provider 协议依据：[DeepSeek 官方 Tool Calls 文档](https://api-docs.dee
 新增停服维护CLI：`python scripts/backup_runtime.py --help`。支持SQLite一致快照、原件/运行/OCR历史校验和仅恢复到新目录；旧会话撤销，未完成任务不自动重跑。备份默认口令认证加密，新建临时/恢复存储限制访问；旧明文需显式兼容选项，模型服务密钥不迁移。完整步骤与边界见[备份恢复指南](docs/BACKUP_RECOVERY_GUIDE.md)，实际验收见[加密恢复交付](docs/ENCRYPTED_BACKUP_DELIVERY.md)。
 
 原件累计容量、并发写入与导入失败处理见[原件配额验收](docs/STORAGE_QUOTAS_DELIVERY.md)及[配置指南](docs/STORAGE_QUOTAS_GUIDE.md)。限定原件目录，不宣称完整生产磁盘隔离。
+
+设计负荷增量：分区显热、设计日工况和当前来源绑定已交付，见[交付与限制](docs/DESIGN_LOADS_DELIVERY.md)、[独立交叉验证](docs/DESIGN_LOADS_CROSSCHECK.md)及[复评76/100](docs/RESCORE_20261107_DESIGN_LOADS.md)。这不是全楼设备选型、当地设计气象认证或实楼验收。

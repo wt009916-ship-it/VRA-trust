@@ -1,0 +1,2234 @@
+{
+  "records": [
+    {
+      "spec": {
+        "id": "baseline",
+        "R": 2,
+        "winter": -10,
+        "summer": 35,
+        "multiplier": 1,
+        "list_multiplier": 1,
+        "heating_factor": 1,
+        "cooling_factor": 1,
+        "expected_W": {
+          "Heating": 1542.056074766355,
+          "Cooling": 514.018691588785
+        },
+        "tolerance": "max(1 W, expected*0.005), declared before execution"
+      },
+      "model_sha256": "7563ebedd9bbb57a902b6b56bccaa682a5d4c9173d84ac1f76f88d4479676821",
+      "status": "passed",
+      "execution": {
+        "nonce": "286beeab68f549b9b9445907a2b595c3",
+        "supervisor_pid": 39180,
+        "lifetime": {
+          "mechanism": "windows_private_pipe",
+          "writer": "caller_only",
+          "child_inherits_lifeline": false
+        },
+        "workspace_leases": {
+          "verified": true,
+          "count": 0
+        },
+        "mechanism": "windows_job_object",
+        "memory_semantics": "private_committed_bytes_per_process_and_job",
+        "memory_bytes": 4294967296,
+        "cpu_semantics": "job_user_seconds",
+        "cpu_seconds": 300,
+        "active_process_limit": 2,
+        "kill_on_job_close": true,
+        "mapped_memory_bounded": false,
+        "file_size_os_enforced": false,
+        "engine_pid": 15516,
+        "state": "finished",
+        "exit_code": 0,
+        "launch_state": "finished",
+        "calls_executed": 1,
+        "elapsed_seconds": 0.5,
+        "log_bytes_observed": {
+          "stderr": 36,
+          "stdout": 2366
+        },
+        "output_observed": {
+          "bytes": 288393,
+          "files": 12,
+          "monitored_roots": 1
+        },
+        "aggregate_output_enforcement": "periodic_50ms_not_os_disk_quota",
+        "live_inventory_policy": "ignore_vanished_entries_only_strict_after_exit",
+        "filesystem_network_sandbox": false
+      },
+      "warning_count": 3,
+      "receipt": {
+        "policy_version": "zone-sensible-sizing-9.0.1-v1",
+        "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+        "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+        "status": "calculated_model_scenario",
+        "rows": [
+          {
+            "zone_name": "BOX",
+            "load_type": "Cooling",
+            "calculated_sensible_load_W": 514.0186916425446,
+            "user_adjusted_sensible_load_W": 514.0186916425446,
+            "peak": {
+              "design_day": "SYNTHETIC SUMMER",
+              "date_time": "7/21 00:10:00",
+              "outdoor_temperature_C": 35.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0076304825494612856,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              }
+            },
+            "calculated_airflow_m3_s": 0.03219736752764921,
+            "user_airflow_m3_s": 0.03219736752764921,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 1,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          },
+          {
+            "zone_name": "BOX",
+            "load_type": "Heating",
+            "calculated_sensible_load_W": 1542.0560747123855,
+            "user_adjusted_sensible_load_W": 1542.0560747123855,
+            "peak": {
+              "design_day": "SYNTHETIC WINTER",
+              "date_time": "1/21 00:30:00",
+              "outdoor_temperature_C": -10.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0015995074144284182,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              }
+            },
+            "calculated_airflow_m3_s": 0.04185657778010163,
+            "user_airflow_m3_s": 0.04185657778010163,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 2,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          }
+        ],
+        "building_coincident_peak_W": null,
+        "limitations": [
+          "\u4ec5\u4e3a\u8f93\u5165\u6a21\u578b\u8bbe\u8ba1\u5de5\u51b5\u4e0b\u7684\u5206\u533a\u663e\u70ed\u8d1f\u8377\uff1b\u4e0d\u4ee3\u8868\u5f53\u5730\u89c4\u8303\u8bbe\u8ba1\u3001\u5b9e\u697c\u6821\u51c6\u6216\u8bbe\u5907\u9009\u578b\u7ed3\u8bba\u3002",
+          "\u8ba1\u7b97\u8d1f\u8377\u4e0e\u7528\u6237\u8c03\u6574\u540e\u8d1f\u8377\u5206\u5f00\uff1b\u539f\u751f\u6570\u503c\u5df2\u5305\u542b\u5206\u533a\u500d\u7387\uff0c\u4e0d\u518d\u6b21\u76f8\u4e58\u3002",
+          "\u5404\u5206\u533a\u5cf0\u503c\u53d1\u751f\u65f6\u523b\u53ef\u80fd\u4e0d\u540c\uff0c\u4e0d\u63d0\u4f9b\u5168\u697c\u540c\u65f6\u5cf0\u503c\u6216\u5c06\u5206\u533a\u5cf0\u503c\u6c42\u548c\u5192\u5145\u5168\u697c\u8d1f\u8377\u3002",
+          "\u4e0d\u5305\u542b\u6f5c\u70ed\u603b\u51b7\u8d1f\u8377\u3001\u5b8c\u6574\u8bbe\u5907\u5bb9\u91cf\u4e0e\u7cfb\u7edf\u8f93\u914d\u635f\u5931\u6838\u9a8c\uff1b\u672a\u8f93\u51fa\u7684\u5206\u533a\u4e0d\u80fd\u8ba1\u4e3a\u96f6\u3002",
+          "\u8bbe\u8ba1\u65e5\u540d\u79f0\u4e0d\u662f\u8d44\u6599\u6765\u6e90\u8bc1\u660e\uff1b\u5730\u7406\u5750\u6807\u76f8\u7b26\u4e5f\u4e0d\u7b49\u4e8e\u8bbe\u8ba1\u65e5\u7edf\u8ba1\u6765\u6e90\u3001\u7248\u672c\u6216\u9002\u7528\u6027\u5df2\u5ba1\u6838\u3002"
+        ],
+        "model_sha256": "7563ebedd9bbb57a902b6b56bccaa682a5d4c9173d84ac1f76f88d4479676821",
+        "sql_sha256": "9c6442457bba2ef66c60457b83565fd5803f842d68f04af5d35ebaebe7477126",
+        "basis": {
+          "declared_site": {
+            "name": "Synthetic sea-level site",
+            "latitude_deg": 0.0,
+            "longitude_deg": 0.0,
+            "utc_offset_h": 0.0,
+            "elevation_m": 0.0
+          },
+          "design_days": [
+            {
+              "name": "Synthetic winter",
+              "month": 1,
+              "day": 21,
+              "day_type": "WinterDesignDay",
+              "maximum_dry_bulb_C": -10.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              },
+              "raw_fields": [
+                "Synthetic winter",
+                "1",
+                "21",
+                "WinterDesignDay",
+                "-10",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "-10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            },
+            {
+              "name": "Synthetic summer",
+              "month": 7,
+              "day": 21,
+              "day_type": "SummerDesignDay",
+              "maximum_dry_bulb_C": 35.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              },
+              "raw_fields": [
+                "Synthetic summer",
+                "7",
+                "21",
+                "SummerDesignDay",
+                "35",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            }
+          ],
+          "zone_names": [
+            "BOX"
+          ],
+          "tabular_requested": true,
+          "simulation_control_fields": [
+            "Yes",
+            "No",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "sizing_parameter_objects": [
+            [
+              "1",
+              "1",
+              "1"
+            ]
+          ],
+          "zone_sizing_objects": [
+            [
+              "Box",
+              "SupplyAirTemperature",
+              "12",
+              "",
+              "SupplyAirTemperature",
+              "50",
+              "",
+              "0.008",
+              "0.008",
+              "NoOA",
+              "1",
+              "1",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0"
+            ]
+          ]
+        },
+        "site_comparison": "not_assessed",
+        "weather_station": null,
+        "weather_sha256": null,
+        "site_applicability": "requires_professional_review",
+        "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:58",
+        "zones_without_sizing": [],
+        "tabular_crosscheck": "matched_W_cells"
+      },
+      "checks": [
+        {
+          "mode": "Cooling",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 514.018691588785,
+          "actual_W": 514.0186916425446,
+          "absolute_error_W": 5.375954970077146e-08,
+          "pass": true
+        },
+        {
+          "mode": "Cooling",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 514.018691588785,
+          "actual_W": 514.0186916425446,
+          "absolute_error_W": 5.375954970077146e-08,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 1542.056074766355,
+          "actual_W": 1542.0560747123855,
+          "absolute_error_W": 5.3969642976881005e-08,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 1542.056074766355,
+          "actual_W": 1542.0560747123855,
+          "absolute_error_W": 5.3969642976881005e-08,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "spec": {
+        "id": "insulated",
+        "R": 4,
+        "winter": -10,
+        "summer": 35,
+        "multiplier": 1,
+        "list_multiplier": 1,
+        "heating_factor": 1,
+        "cooling_factor": 1,
+        "expected_W": {
+          "Heating": 797.1014492753624,
+          "Cooling": 265.7004830917875
+        },
+        "tolerance": "max(1 W, expected*0.005), declared before execution"
+      },
+      "model_sha256": "b559975cec90f20ee43bb73ecc402997aed36835f57e439798f79d1b6268f3f6",
+      "status": "passed",
+      "execution": {
+        "nonce": "9e89d04bfc09417884cc88d3bc26e5bb",
+        "supervisor_pid": 50784,
+        "lifetime": {
+          "mechanism": "windows_private_pipe",
+          "writer": "caller_only",
+          "child_inherits_lifeline": false
+        },
+        "workspace_leases": {
+          "verified": true,
+          "count": 0
+        },
+        "mechanism": "windows_job_object",
+        "memory_semantics": "private_committed_bytes_per_process_and_job",
+        "memory_bytes": 4294967296,
+        "cpu_semantics": "job_user_seconds",
+        "cpu_seconds": 300,
+        "active_process_limit": 2,
+        "kill_on_job_close": true,
+        "mapped_memory_bounded": false,
+        "file_size_os_enforced": false,
+        "engine_pid": 69560,
+        "state": "finished",
+        "exit_code": 0,
+        "launch_state": "finished",
+        "calls_executed": 1,
+        "elapsed_seconds": 0.43700000015087426,
+        "log_bytes_observed": {
+          "stderr": 36,
+          "stdout": 2366
+        },
+        "output_observed": {
+          "bytes": 288182,
+          "files": 12,
+          "monitored_roots": 1
+        },
+        "aggregate_output_enforcement": "periodic_50ms_not_os_disk_quota",
+        "live_inventory_policy": "ignore_vanished_entries_only_strict_after_exit",
+        "filesystem_network_sandbox": false
+      },
+      "warning_count": 3,
+      "receipt": {
+        "policy_version": "zone-sensible-sizing-9.0.1-v1",
+        "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+        "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+        "status": "calculated_model_scenario",
+        "rows": [
+          {
+            "zone_name": "BOX",
+            "load_type": "Cooling",
+            "calculated_sensible_load_W": 265.7004831195809,
+            "user_adjusted_sensible_load_W": 265.7004831195809,
+            "peak": {
+              "design_day": "SYNTHETIC SUMMER",
+              "date_time": "7/21 01:10:00",
+              "outdoor_temperature_C": 35.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0076304825494612856,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              }
+            },
+            "calculated_airflow_m3_s": 0.016643083697867274,
+            "user_airflow_m3_s": 0.016643083697867274,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 1,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          },
+          {
+            "zone_name": "BOX",
+            "load_type": "Heating",
+            "calculated_sensible_load_W": 797.101449247577,
+            "user_adjusted_sensible_load_W": 797.101449247577,
+            "peak": {
+              "design_day": "SYNTHETIC WINTER",
+              "date_time": "1/21 00:10:00",
+              "outdoor_temperature_C": -10.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0015995074144284182,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              }
+            },
+            "calculated_airflow_m3_s": 0.021636008804210044,
+            "user_airflow_m3_s": 0.021636008804210044,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 2,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          }
+        ],
+        "building_coincident_peak_W": null,
+        "limitations": [
+          "\u4ec5\u4e3a\u8f93\u5165\u6a21\u578b\u8bbe\u8ba1\u5de5\u51b5\u4e0b\u7684\u5206\u533a\u663e\u70ed\u8d1f\u8377\uff1b\u4e0d\u4ee3\u8868\u5f53\u5730\u89c4\u8303\u8bbe\u8ba1\u3001\u5b9e\u697c\u6821\u51c6\u6216\u8bbe\u5907\u9009\u578b\u7ed3\u8bba\u3002",
+          "\u8ba1\u7b97\u8d1f\u8377\u4e0e\u7528\u6237\u8c03\u6574\u540e\u8d1f\u8377\u5206\u5f00\uff1b\u539f\u751f\u6570\u503c\u5df2\u5305\u542b\u5206\u533a\u500d\u7387\uff0c\u4e0d\u518d\u6b21\u76f8\u4e58\u3002",
+          "\u5404\u5206\u533a\u5cf0\u503c\u53d1\u751f\u65f6\u523b\u53ef\u80fd\u4e0d\u540c\uff0c\u4e0d\u63d0\u4f9b\u5168\u697c\u540c\u65f6\u5cf0\u503c\u6216\u5c06\u5206\u533a\u5cf0\u503c\u6c42\u548c\u5192\u5145\u5168\u697c\u8d1f\u8377\u3002",
+          "\u4e0d\u5305\u542b\u6f5c\u70ed\u603b\u51b7\u8d1f\u8377\u3001\u5b8c\u6574\u8bbe\u5907\u5bb9\u91cf\u4e0e\u7cfb\u7edf\u8f93\u914d\u635f\u5931\u6838\u9a8c\uff1b\u672a\u8f93\u51fa\u7684\u5206\u533a\u4e0d\u80fd\u8ba1\u4e3a\u96f6\u3002",
+          "\u8bbe\u8ba1\u65e5\u540d\u79f0\u4e0d\u662f\u8d44\u6599\u6765\u6e90\u8bc1\u660e\uff1b\u5730\u7406\u5750\u6807\u76f8\u7b26\u4e5f\u4e0d\u7b49\u4e8e\u8bbe\u8ba1\u65e5\u7edf\u8ba1\u6765\u6e90\u3001\u7248\u672c\u6216\u9002\u7528\u6027\u5df2\u5ba1\u6838\u3002"
+        ],
+        "model_sha256": "b559975cec90f20ee43bb73ecc402997aed36835f57e439798f79d1b6268f3f6",
+        "sql_sha256": "9c1d2cf99c34052235df6afca28ac7481015de1bd9fc771cd4fba1d20fbc54cf",
+        "basis": {
+          "declared_site": {
+            "name": "Synthetic sea-level site",
+            "latitude_deg": 0.0,
+            "longitude_deg": 0.0,
+            "utc_offset_h": 0.0,
+            "elevation_m": 0.0
+          },
+          "design_days": [
+            {
+              "name": "Synthetic winter",
+              "month": 1,
+              "day": 21,
+              "day_type": "WinterDesignDay",
+              "maximum_dry_bulb_C": -10.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              },
+              "raw_fields": [
+                "Synthetic winter",
+                "1",
+                "21",
+                "WinterDesignDay",
+                "-10",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "-10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            },
+            {
+              "name": "Synthetic summer",
+              "month": 7,
+              "day": 21,
+              "day_type": "SummerDesignDay",
+              "maximum_dry_bulb_C": 35.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              },
+              "raw_fields": [
+                "Synthetic summer",
+                "7",
+                "21",
+                "SummerDesignDay",
+                "35",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            }
+          ],
+          "zone_names": [
+            "BOX"
+          ],
+          "tabular_requested": true,
+          "simulation_control_fields": [
+            "Yes",
+            "No",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "sizing_parameter_objects": [
+            [
+              "1",
+              "1",
+              "1"
+            ]
+          ],
+          "zone_sizing_objects": [
+            [
+              "Box",
+              "SupplyAirTemperature",
+              "12",
+              "",
+              "SupplyAirTemperature",
+              "50",
+              "",
+              "0.008",
+              "0.008",
+              "NoOA",
+              "1",
+              "1",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0"
+            ]
+          ]
+        },
+        "site_comparison": "not_assessed",
+        "weather_station": null,
+        "weather_sha256": null,
+        "site_applicability": "requires_professional_review",
+        "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:58",
+        "zones_without_sizing": [],
+        "tabular_crosscheck": "matched_W_cells"
+      },
+      "checks": [
+        {
+          "mode": "Cooling",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 265.7004830917875,
+          "actual_W": 265.7004831195809,
+          "absolute_error_W": 2.7793419121735496e-08,
+          "pass": true
+        },
+        {
+          "mode": "Cooling",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 265.7004830917875,
+          "actual_W": 265.7004831195809,
+          "absolute_error_W": 2.7793419121735496e-08,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 797.1014492753624,
+          "actual_W": 797.101449247577,
+          "absolute_error_W": 2.7785404199676123e-08,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 797.1014492753624,
+          "actual_W": 797.101449247577,
+          "absolute_error_W": 2.7785404199676123e-08,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "spec": {
+        "id": "temperature",
+        "winter": -20,
+        "summer": 40,
+        "R": 2,
+        "multiplier": 1,
+        "list_multiplier": 1,
+        "heating_factor": 1,
+        "cooling_factor": 1,
+        "expected_W": {
+          "Heating": 2056.07476635514,
+          "Cooling": 771.0280373831775
+        },
+        "tolerance": "max(1 W, expected*0.005), declared before execution"
+      },
+      "model_sha256": "7660c9f94fa08090e5bfa9feade0cf1ea861bf25769ed83ba38986c05c7df70c",
+      "status": "passed",
+      "execution": {
+        "nonce": "310668c873c140948b4530d7e58cbcf2",
+        "supervisor_pid": 39448,
+        "lifetime": {
+          "mechanism": "windows_private_pipe",
+          "writer": "caller_only",
+          "child_inherits_lifeline": false
+        },
+        "workspace_leases": {
+          "verified": true,
+          "count": 0
+        },
+        "mechanism": "windows_job_object",
+        "memory_semantics": "private_committed_bytes_per_process_and_job",
+        "memory_bytes": 4294967296,
+        "cpu_semantics": "job_user_seconds",
+        "cpu_seconds": 300,
+        "active_process_limit": 2,
+        "kill_on_job_close": true,
+        "mapped_memory_bounded": false,
+        "file_size_os_enforced": false,
+        "engine_pid": 8700,
+        "state": "finished",
+        "exit_code": 0,
+        "launch_state": "finished",
+        "calls_executed": 1,
+        "elapsed_seconds": 0.4380000000819564,
+        "log_bytes_observed": {
+          "stderr": 36,
+          "stdout": 2366
+        },
+        "output_observed": {
+          "bytes": 288266,
+          "files": 12,
+          "monitored_roots": 1
+        },
+        "aggregate_output_enforcement": "periodic_50ms_not_os_disk_quota",
+        "live_inventory_policy": "ignore_vanished_entries_only_strict_after_exit",
+        "filesystem_network_sandbox": false
+      },
+      "warning_count": 3,
+      "receipt": {
+        "policy_version": "zone-sensible-sizing-9.0.1-v1",
+        "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+        "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+        "status": "calculated_model_scenario",
+        "rows": [
+          {
+            "zone_name": "BOX",
+            "load_type": "Cooling",
+            "calculated_sensible_load_W": 771.0280374369468,
+            "user_adjusted_sensible_load_W": 771.0280374369468,
+            "peak": {
+              "design_day": "SYNTHETIC SUMMER",
+              "date_time": "7/21 00:30:00",
+              "outdoor_temperature_C": 40.0,
+              "outdoor_humidity_ratio_kg_kg": 0.00763048269447996,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              }
+            },
+            "calculated_airflow_m3_s": 0.04829605128979067,
+            "user_airflow_m3_s": 0.04829605128979067,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 1,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          },
+          {
+            "zone_name": "BOX",
+            "load_type": "Heating",
+            "calculated_sensible_load_W": 2056.0747663013863,
+            "user_adjusted_sensible_load_W": 2056.0747663013863,
+            "peak": {
+              "design_day": "SYNTHETIC WINTER",
+              "date_time": "1/21 00:20:00",
+              "outdoor_temperature_C": -20.0,
+              "outdoor_humidity_ratio_kg_kg": 0.000634506811499327,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              }
+            },
+            "calculated_airflow_m3_s": 0.055808770373962695,
+            "user_airflow_m3_s": 0.055808770373962695,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 2,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          }
+        ],
+        "building_coincident_peak_W": null,
+        "limitations": [
+          "\u4ec5\u4e3a\u8f93\u5165\u6a21\u578b\u8bbe\u8ba1\u5de5\u51b5\u4e0b\u7684\u5206\u533a\u663e\u70ed\u8d1f\u8377\uff1b\u4e0d\u4ee3\u8868\u5f53\u5730\u89c4\u8303\u8bbe\u8ba1\u3001\u5b9e\u697c\u6821\u51c6\u6216\u8bbe\u5907\u9009\u578b\u7ed3\u8bba\u3002",
+          "\u8ba1\u7b97\u8d1f\u8377\u4e0e\u7528\u6237\u8c03\u6574\u540e\u8d1f\u8377\u5206\u5f00\uff1b\u539f\u751f\u6570\u503c\u5df2\u5305\u542b\u5206\u533a\u500d\u7387\uff0c\u4e0d\u518d\u6b21\u76f8\u4e58\u3002",
+          "\u5404\u5206\u533a\u5cf0\u503c\u53d1\u751f\u65f6\u523b\u53ef\u80fd\u4e0d\u540c\uff0c\u4e0d\u63d0\u4f9b\u5168\u697c\u540c\u65f6\u5cf0\u503c\u6216\u5c06\u5206\u533a\u5cf0\u503c\u6c42\u548c\u5192\u5145\u5168\u697c\u8d1f\u8377\u3002",
+          "\u4e0d\u5305\u542b\u6f5c\u70ed\u603b\u51b7\u8d1f\u8377\u3001\u5b8c\u6574\u8bbe\u5907\u5bb9\u91cf\u4e0e\u7cfb\u7edf\u8f93\u914d\u635f\u5931\u6838\u9a8c\uff1b\u672a\u8f93\u51fa\u7684\u5206\u533a\u4e0d\u80fd\u8ba1\u4e3a\u96f6\u3002",
+          "\u8bbe\u8ba1\u65e5\u540d\u79f0\u4e0d\u662f\u8d44\u6599\u6765\u6e90\u8bc1\u660e\uff1b\u5730\u7406\u5750\u6807\u76f8\u7b26\u4e5f\u4e0d\u7b49\u4e8e\u8bbe\u8ba1\u65e5\u7edf\u8ba1\u6765\u6e90\u3001\u7248\u672c\u6216\u9002\u7528\u6027\u5df2\u5ba1\u6838\u3002"
+        ],
+        "model_sha256": "7660c9f94fa08090e5bfa9feade0cf1ea861bf25769ed83ba38986c05c7df70c",
+        "sql_sha256": "a7c39a9bb08671b2974952b0abe34fcb89467612ee4141965543a596355dc23e",
+        "basis": {
+          "declared_site": {
+            "name": "Synthetic sea-level site",
+            "latitude_deg": 0.0,
+            "longitude_deg": 0.0,
+            "utc_offset_h": 0.0,
+            "elevation_m": 0.0
+          },
+          "design_days": [
+            {
+              "name": "Synthetic winter",
+              "month": 1,
+              "day": 21,
+              "day_type": "WinterDesignDay",
+              "maximum_dry_bulb_C": -20.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              },
+              "raw_fields": [
+                "Synthetic winter",
+                "1",
+                "21",
+                "WinterDesignDay",
+                "-20",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "-20",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            },
+            {
+              "name": "Synthetic summer",
+              "month": 7,
+              "day": 21,
+              "day_type": "SummerDesignDay",
+              "maximum_dry_bulb_C": 40.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              },
+              "raw_fields": [
+                "Synthetic summer",
+                "7",
+                "21",
+                "SummerDesignDay",
+                "40",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            }
+          ],
+          "zone_names": [
+            "BOX"
+          ],
+          "tabular_requested": true,
+          "simulation_control_fields": [
+            "Yes",
+            "No",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "sizing_parameter_objects": [
+            [
+              "1",
+              "1",
+              "1"
+            ]
+          ],
+          "zone_sizing_objects": [
+            [
+              "Box",
+              "SupplyAirTemperature",
+              "12",
+              "",
+              "SupplyAirTemperature",
+              "50",
+              "",
+              "0.008",
+              "0.008",
+              "NoOA",
+              "1",
+              "1",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0"
+            ]
+          ]
+        },
+        "site_comparison": "not_assessed",
+        "weather_station": null,
+        "weather_sha256": null,
+        "site_applicability": "requires_professional_review",
+        "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:58",
+        "zones_without_sizing": [],
+        "tabular_crosscheck": "matched_W_cells"
+      },
+      "checks": [
+        {
+          "mode": "Cooling",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 771.0280373831775,
+          "actual_W": 771.0280374369468,
+          "absolute_error_W": 5.3769213081977796e-08,
+          "pass": true
+        },
+        {
+          "mode": "Cooling",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 771.0280373831775,
+          "actual_W": 771.0280374369468,
+          "absolute_error_W": 5.3769213081977796e-08,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 2056.07476635514,
+          "actual_W": 2056.0747663013863,
+          "absolute_error_W": 5.375386535888538e-08,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 2056.07476635514,
+          "actual_W": 2056.0747663013863,
+          "absolute_error_W": 5.375386535888538e-08,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "spec": {
+        "id": "thermal_mass",
+        "mass": true,
+        "R": 2,
+        "winter": -10,
+        "summer": 35,
+        "multiplier": 1,
+        "list_multiplier": 1,
+        "heating_factor": 1,
+        "cooling_factor": 1,
+        "expected_W": {
+          "Heating": 1542.056074766355,
+          "Cooling": 514.018691588785
+        },
+        "tolerance": "max(1 W, expected*0.005), declared before execution"
+      },
+      "model_sha256": "29755de0cbbcaa60846df7277fc0c85563c9e1f5bfcad0b4fdc5b117a98f7756",
+      "status": "passed",
+      "execution": {
+        "nonce": "b11fcd16d65b4dd39f0ff0dea54c9f76",
+        "supervisor_pid": 77124,
+        "lifetime": {
+          "mechanism": "windows_private_pipe",
+          "writer": "caller_only",
+          "child_inherits_lifeline": false
+        },
+        "workspace_leases": {
+          "verified": true,
+          "count": 0
+        },
+        "mechanism": "windows_job_object",
+        "memory_semantics": "private_committed_bytes_per_process_and_job",
+        "memory_bytes": 4294967296,
+        "cpu_semantics": "job_user_seconds",
+        "cpu_seconds": 300,
+        "active_process_limit": 2,
+        "kill_on_job_close": true,
+        "mapped_memory_bounded": false,
+        "file_size_os_enforced": false,
+        "engine_pid": 77536,
+        "state": "finished",
+        "exit_code": 0,
+        "launch_state": "finished",
+        "calls_executed": 1,
+        "elapsed_seconds": 0.43799999984912574,
+        "log_bytes_observed": {
+          "stderr": 36,
+          "stdout": 2417
+        },
+        "output_observed": {
+          "bytes": 288564,
+          "files": 12,
+          "monitored_roots": 1
+        },
+        "aggregate_output_enforcement": "periodic_50ms_not_os_disk_quota",
+        "live_inventory_policy": "ignore_vanished_entries_only_strict_after_exit",
+        "filesystem_network_sandbox": false
+      },
+      "warning_count": 2,
+      "receipt": {
+        "policy_version": "zone-sensible-sizing-9.0.1-v1",
+        "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+        "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+        "status": "calculated_model_scenario",
+        "rows": [
+          {
+            "zone_name": "BOX",
+            "load_type": "Cooling",
+            "calculated_sensible_load_W": 514.0187308001987,
+            "user_adjusted_sensible_load_W": 514.0187308001987,
+            "peak": {
+              "design_day": "SYNTHETIC SUMMER",
+              "date_time": "7/21 24:00:00",
+              "outdoor_temperature_C": 35.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0076304825494612856,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              }
+            },
+            "calculated_airflow_m3_s": 0.03219736998042653,
+            "user_airflow_m3_s": 0.03219736998042653,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 1,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          },
+          {
+            "zone_name": "BOX",
+            "load_type": "Heating",
+            "calculated_sensible_load_W": 1542.059346758484,
+            "user_adjusted_sensible_load_W": 1542.059346758484,
+            "peak": {
+              "design_day": "SYNTHETIC WINTER",
+              "date_time": "1/21 18:30:00",
+              "outdoor_temperature_C": -10.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0015995074144284182,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              }
+            },
+            "calculated_airflow_m3_s": 0.041856666594415365,
+            "user_airflow_m3_s": 0.041856666594415365,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 2,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          }
+        ],
+        "building_coincident_peak_W": null,
+        "limitations": [
+          "\u4ec5\u4e3a\u8f93\u5165\u6a21\u578b\u8bbe\u8ba1\u5de5\u51b5\u4e0b\u7684\u5206\u533a\u663e\u70ed\u8d1f\u8377\uff1b\u4e0d\u4ee3\u8868\u5f53\u5730\u89c4\u8303\u8bbe\u8ba1\u3001\u5b9e\u697c\u6821\u51c6\u6216\u8bbe\u5907\u9009\u578b\u7ed3\u8bba\u3002",
+          "\u8ba1\u7b97\u8d1f\u8377\u4e0e\u7528\u6237\u8c03\u6574\u540e\u8d1f\u8377\u5206\u5f00\uff1b\u539f\u751f\u6570\u503c\u5df2\u5305\u542b\u5206\u533a\u500d\u7387\uff0c\u4e0d\u518d\u6b21\u76f8\u4e58\u3002",
+          "\u5404\u5206\u533a\u5cf0\u503c\u53d1\u751f\u65f6\u523b\u53ef\u80fd\u4e0d\u540c\uff0c\u4e0d\u63d0\u4f9b\u5168\u697c\u540c\u65f6\u5cf0\u503c\u6216\u5c06\u5206\u533a\u5cf0\u503c\u6c42\u548c\u5192\u5145\u5168\u697c\u8d1f\u8377\u3002",
+          "\u4e0d\u5305\u542b\u6f5c\u70ed\u603b\u51b7\u8d1f\u8377\u3001\u5b8c\u6574\u8bbe\u5907\u5bb9\u91cf\u4e0e\u7cfb\u7edf\u8f93\u914d\u635f\u5931\u6838\u9a8c\uff1b\u672a\u8f93\u51fa\u7684\u5206\u533a\u4e0d\u80fd\u8ba1\u4e3a\u96f6\u3002",
+          "\u8bbe\u8ba1\u65e5\u540d\u79f0\u4e0d\u662f\u8d44\u6599\u6765\u6e90\u8bc1\u660e\uff1b\u5730\u7406\u5750\u6807\u76f8\u7b26\u4e5f\u4e0d\u7b49\u4e8e\u8bbe\u8ba1\u65e5\u7edf\u8ba1\u6765\u6e90\u3001\u7248\u672c\u6216\u9002\u7528\u6027\u5df2\u5ba1\u6838\u3002"
+        ],
+        "model_sha256": "29755de0cbbcaa60846df7277fc0c85563c9e1f5bfcad0b4fdc5b117a98f7756",
+        "sql_sha256": "0656c0fb21871e5d0f8567ad8069d20aa9e2fab25653d7a64d2b4c5c35e1de4b",
+        "basis": {
+          "declared_site": {
+            "name": "Synthetic sea-level site",
+            "latitude_deg": 0.0,
+            "longitude_deg": 0.0,
+            "utc_offset_h": 0.0,
+            "elevation_m": 0.0
+          },
+          "design_days": [
+            {
+              "name": "Synthetic winter",
+              "month": 1,
+              "day": 21,
+              "day_type": "WinterDesignDay",
+              "maximum_dry_bulb_C": -10.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              },
+              "raw_fields": [
+                "Synthetic winter",
+                "1",
+                "21",
+                "WinterDesignDay",
+                "-10",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "-10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            },
+            {
+              "name": "Synthetic summer",
+              "month": 7,
+              "day": 21,
+              "day_type": "SummerDesignDay",
+              "maximum_dry_bulb_C": 35.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              },
+              "raw_fields": [
+                "Synthetic summer",
+                "7",
+                "21",
+                "SummerDesignDay",
+                "35",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            }
+          ],
+          "zone_names": [
+            "BOX"
+          ],
+          "tabular_requested": true,
+          "simulation_control_fields": [
+            "Yes",
+            "No",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "sizing_parameter_objects": [
+            [
+              "1",
+              "1",
+              "1"
+            ]
+          ],
+          "zone_sizing_objects": [
+            [
+              "Box",
+              "SupplyAirTemperature",
+              "12",
+              "",
+              "SupplyAirTemperature",
+              "50",
+              "",
+              "0.008",
+              "0.008",
+              "NoOA",
+              "1",
+              "1",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0"
+            ]
+          ]
+        },
+        "site_comparison": "not_assessed",
+        "weather_station": null,
+        "weather_sha256": null,
+        "site_applicability": "requires_professional_review",
+        "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:58",
+        "zones_without_sizing": [],
+        "tabular_crosscheck": "matched_W_cells"
+      },
+      "checks": [
+        {
+          "mode": "Cooling",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 514.018691588785,
+          "actual_W": 514.0187308001987,
+          "absolute_error_W": 3.921141365026415e-05,
+          "pass": true
+        },
+        {
+          "mode": "Cooling",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 514.018691588785,
+          "actual_W": 514.0187308001987,
+          "absolute_error_W": 3.921141365026415e-05,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 1542.056074766355,
+          "actual_W": 1542.059346758484,
+          "absolute_error_W": 0.0032719921289299236,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 1542.056074766355,
+          "actual_W": 1542.059346758484,
+          "absolute_error_W": 0.0032719921289299236,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "spec": {
+        "id": "zone_multiplier",
+        "multiplier": 3,
+        "R": 2,
+        "winter": -10,
+        "summer": 35,
+        "list_multiplier": 1,
+        "heating_factor": 1,
+        "cooling_factor": 1,
+        "expected_W": {
+          "Heating": 4626.1682242990655,
+          "Cooling": 1542.056074766355
+        },
+        "tolerance": "max(1 W, expected*0.005), declared before execution"
+      },
+      "model_sha256": "68a3a15d760c3bb1f1711de87acfa77cd97d1dfb24add14bed46e4d79fbd52d7",
+      "status": "passed",
+      "execution": {
+        "nonce": "0933e97f52a94e8db58b05aa53e53162",
+        "supervisor_pid": 4976,
+        "lifetime": {
+          "mechanism": "windows_private_pipe",
+          "writer": "caller_only",
+          "child_inherits_lifeline": false
+        },
+        "workspace_leases": {
+          "verified": true,
+          "count": 0
+        },
+        "mechanism": "windows_job_object",
+        "memory_semantics": "private_committed_bytes_per_process_and_job",
+        "memory_bytes": 4294967296,
+        "cpu_semantics": "job_user_seconds",
+        "cpu_seconds": 300,
+        "active_process_limit": 2,
+        "kill_on_job_close": true,
+        "mapped_memory_bounded": false,
+        "file_size_os_enforced": false,
+        "engine_pid": 37944,
+        "state": "finished",
+        "exit_code": 0,
+        "launch_state": "finished",
+        "calls_executed": 1,
+        "elapsed_seconds": 0.3910000000614673,
+        "log_bytes_observed": {
+          "stdout": 2366,
+          "stderr": 36
+        },
+        "output_observed": {
+          "bytes": 289192,
+          "files": 12,
+          "monitored_roots": 1
+        },
+        "aggregate_output_enforcement": "periodic_50ms_not_os_disk_quota",
+        "live_inventory_policy": "ignore_vanished_entries_only_strict_after_exit",
+        "filesystem_network_sandbox": false
+      },
+      "warning_count": 3,
+      "receipt": {
+        "policy_version": "zone-sensible-sizing-9.0.1-v1",
+        "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+        "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+        "status": "calculated_model_scenario",
+        "rows": [
+          {
+            "zone_name": "BOX",
+            "load_type": "Cooling",
+            "calculated_sensible_load_W": 1542.0560749276337,
+            "user_adjusted_sensible_load_W": 1542.0560749276337,
+            "peak": {
+              "design_day": "SYNTHETIC SUMMER",
+              "date_time": "7/21 00:10:00",
+              "outdoor_temperature_C": 35.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0076304825494612856,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              }
+            },
+            "calculated_airflow_m3_s": 0.09659210258294763,
+            "user_airflow_m3_s": 0.09659210258294763,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 3.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 1,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          },
+          {
+            "zone_name": "BOX",
+            "load_type": "Heating",
+            "calculated_sensible_load_W": 4626.168224137789,
+            "user_adjusted_sensible_load_W": 4626.168224137789,
+            "peak": {
+              "design_day": "SYNTHETIC WINTER",
+              "date_time": "1/21 00:20:00",
+              "outdoor_temperature_C": -10.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0015995074144284182,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              }
+            },
+            "calculated_airflow_m3_s": 0.12556973334032137,
+            "user_airflow_m3_s": 0.12556973334032137,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 3.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 2,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          }
+        ],
+        "building_coincident_peak_W": null,
+        "limitations": [
+          "\u4ec5\u4e3a\u8f93\u5165\u6a21\u578b\u8bbe\u8ba1\u5de5\u51b5\u4e0b\u7684\u5206\u533a\u663e\u70ed\u8d1f\u8377\uff1b\u4e0d\u4ee3\u8868\u5f53\u5730\u89c4\u8303\u8bbe\u8ba1\u3001\u5b9e\u697c\u6821\u51c6\u6216\u8bbe\u5907\u9009\u578b\u7ed3\u8bba\u3002",
+          "\u8ba1\u7b97\u8d1f\u8377\u4e0e\u7528\u6237\u8c03\u6574\u540e\u8d1f\u8377\u5206\u5f00\uff1b\u539f\u751f\u6570\u503c\u5df2\u5305\u542b\u5206\u533a\u500d\u7387\uff0c\u4e0d\u518d\u6b21\u76f8\u4e58\u3002",
+          "\u5404\u5206\u533a\u5cf0\u503c\u53d1\u751f\u65f6\u523b\u53ef\u80fd\u4e0d\u540c\uff0c\u4e0d\u63d0\u4f9b\u5168\u697c\u540c\u65f6\u5cf0\u503c\u6216\u5c06\u5206\u533a\u5cf0\u503c\u6c42\u548c\u5192\u5145\u5168\u697c\u8d1f\u8377\u3002",
+          "\u4e0d\u5305\u542b\u6f5c\u70ed\u603b\u51b7\u8d1f\u8377\u3001\u5b8c\u6574\u8bbe\u5907\u5bb9\u91cf\u4e0e\u7cfb\u7edf\u8f93\u914d\u635f\u5931\u6838\u9a8c\uff1b\u672a\u8f93\u51fa\u7684\u5206\u533a\u4e0d\u80fd\u8ba1\u4e3a\u96f6\u3002",
+          "\u8bbe\u8ba1\u65e5\u540d\u79f0\u4e0d\u662f\u8d44\u6599\u6765\u6e90\u8bc1\u660e\uff1b\u5730\u7406\u5750\u6807\u76f8\u7b26\u4e5f\u4e0d\u7b49\u4e8e\u8bbe\u8ba1\u65e5\u7edf\u8ba1\u6765\u6e90\u3001\u7248\u672c\u6216\u9002\u7528\u6027\u5df2\u5ba1\u6838\u3002"
+        ],
+        "model_sha256": "68a3a15d760c3bb1f1711de87acfa77cd97d1dfb24add14bed46e4d79fbd52d7",
+        "sql_sha256": "5cbd38ea630bf79bf5b9d9acb6eb43ee0f8af5c59e7c28c25e89128d79d0258d",
+        "basis": {
+          "declared_site": {
+            "name": "Synthetic sea-level site",
+            "latitude_deg": 0.0,
+            "longitude_deg": 0.0,
+            "utc_offset_h": 0.0,
+            "elevation_m": 0.0
+          },
+          "design_days": [
+            {
+              "name": "Synthetic winter",
+              "month": 1,
+              "day": 21,
+              "day_type": "WinterDesignDay",
+              "maximum_dry_bulb_C": -10.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              },
+              "raw_fields": [
+                "Synthetic winter",
+                "1",
+                "21",
+                "WinterDesignDay",
+                "-10",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "-10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            },
+            {
+              "name": "Synthetic summer",
+              "month": 7,
+              "day": 21,
+              "day_type": "SummerDesignDay",
+              "maximum_dry_bulb_C": 35.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              },
+              "raw_fields": [
+                "Synthetic summer",
+                "7",
+                "21",
+                "SummerDesignDay",
+                "35",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            }
+          ],
+          "zone_names": [
+            "BOX"
+          ],
+          "tabular_requested": true,
+          "simulation_control_fields": [
+            "Yes",
+            "No",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "sizing_parameter_objects": [
+            [
+              "1",
+              "1",
+              "1"
+            ]
+          ],
+          "zone_sizing_objects": [
+            [
+              "Box",
+              "SupplyAirTemperature",
+              "12",
+              "",
+              "SupplyAirTemperature",
+              "50",
+              "",
+              "0.008",
+              "0.008",
+              "NoOA",
+              "1",
+              "1",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0"
+            ]
+          ]
+        },
+        "site_comparison": "not_assessed",
+        "weather_station": null,
+        "weather_sha256": null,
+        "site_applicability": "requires_professional_review",
+        "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:58",
+        "zones_without_sizing": [],
+        "tabular_crosscheck": "matched_W_cells"
+      },
+      "checks": [
+        {
+          "mode": "Cooling",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 1542.056074766355,
+          "actual_W": 1542.0560749276337,
+          "absolute_error_W": 1.6127864910231438e-07,
+          "pass": true
+        },
+        {
+          "mode": "Cooling",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 1542.056074766355,
+          "actual_W": 1542.0560749276337,
+          "absolute_error_W": 1.6127864910231438e-07,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 4626.1682242990655,
+          "actual_W": 4626.168224137789,
+          "absolute_error_W": 1.612761479918845e-07,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 4626.1682242990655,
+          "actual_W": 4626.168224137789,
+          "absolute_error_W": 1.612761479918845e-07,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "spec": {
+        "id": "user_sizing",
+        "heating_factor": 1.25,
+        "cooling_factor": 1.15,
+        "R": 2,
+        "winter": -10,
+        "summer": 35,
+        "multiplier": 1,
+        "list_multiplier": 1,
+        "expected_W": {
+          "Heating": 1542.056074766355,
+          "Cooling": 514.018691588785
+        },
+        "tolerance": "max(1 W, expected*0.005), declared before execution"
+      },
+      "model_sha256": "ebe68914db72cc22304f88c27edb09f6537d7b4359f0e9b6b2fc5c2168b88ec6",
+      "status": "passed",
+      "execution": {
+        "nonce": "ab5dd48040884c628ebf106085c4967e",
+        "supervisor_pid": 66728,
+        "lifetime": {
+          "mechanism": "windows_private_pipe",
+          "writer": "caller_only",
+          "child_inherits_lifeline": false
+        },
+        "workspace_leases": {
+          "verified": true,
+          "count": 0
+        },
+        "mechanism": "windows_job_object",
+        "memory_semantics": "private_committed_bytes_per_process_and_job",
+        "memory_bytes": 4294967296,
+        "cpu_semantics": "job_user_seconds",
+        "cpu_seconds": 300,
+        "active_process_limit": 2,
+        "kill_on_job_close": true,
+        "mapped_memory_bounded": false,
+        "file_size_os_enforced": false,
+        "engine_pid": 40240,
+        "state": "finished",
+        "exit_code": 0,
+        "launch_state": "finished",
+        "calls_executed": 1,
+        "elapsed_seconds": 0.375,
+        "log_bytes_observed": {
+          "stderr": 36,
+          "stdout": 2366
+        },
+        "output_observed": {
+          "bytes": 288516,
+          "files": 12,
+          "monitored_roots": 1
+        },
+        "aggregate_output_enforcement": "periodic_50ms_not_os_disk_quota",
+        "live_inventory_policy": "ignore_vanished_entries_only_strict_after_exit",
+        "filesystem_network_sandbox": false
+      },
+      "warning_count": 3,
+      "receipt": {
+        "policy_version": "zone-sensible-sizing-9.0.1-v1",
+        "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+        "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+        "status": "calculated_model_scenario",
+        "rows": [
+          {
+            "zone_name": "BOX",
+            "load_type": "Cooling",
+            "calculated_sensible_load_W": 514.0186916425446,
+            "user_adjusted_sensible_load_W": 591.1214953889262,
+            "peak": {
+              "design_day": "SYNTHETIC SUMMER",
+              "date_time": "7/21 00:10:00",
+              "outdoor_temperature_C": 35.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0076304825494612856,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              }
+            },
+            "calculated_airflow_m3_s": 0.03219736752764921,
+            "user_airflow_m3_s": 0.03702697265679659,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 1,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          },
+          {
+            "zone_name": "BOX",
+            "load_type": "Heating",
+            "calculated_sensible_load_W": 1542.0560747123855,
+            "user_adjusted_sensible_load_W": 1927.5700933904818,
+            "peak": {
+              "design_day": "SYNTHETIC WINTER",
+              "date_time": "1/21 00:30:00",
+              "outdoor_temperature_C": -10.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0015995074144284182,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              }
+            },
+            "calculated_airflow_m3_s": 0.04185657778010163,
+            "user_airflow_m3_s": 0.052320722225127035,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 1.0,
+            "zone_list_multiplier": 1.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 2,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          }
+        ],
+        "building_coincident_peak_W": null,
+        "limitations": [
+          "\u4ec5\u4e3a\u8f93\u5165\u6a21\u578b\u8bbe\u8ba1\u5de5\u51b5\u4e0b\u7684\u5206\u533a\u663e\u70ed\u8d1f\u8377\uff1b\u4e0d\u4ee3\u8868\u5f53\u5730\u89c4\u8303\u8bbe\u8ba1\u3001\u5b9e\u697c\u6821\u51c6\u6216\u8bbe\u5907\u9009\u578b\u7ed3\u8bba\u3002",
+          "\u8ba1\u7b97\u8d1f\u8377\u4e0e\u7528\u6237\u8c03\u6574\u540e\u8d1f\u8377\u5206\u5f00\uff1b\u539f\u751f\u6570\u503c\u5df2\u5305\u542b\u5206\u533a\u500d\u7387\uff0c\u4e0d\u518d\u6b21\u76f8\u4e58\u3002",
+          "\u5404\u5206\u533a\u5cf0\u503c\u53d1\u751f\u65f6\u523b\u53ef\u80fd\u4e0d\u540c\uff0c\u4e0d\u63d0\u4f9b\u5168\u697c\u540c\u65f6\u5cf0\u503c\u6216\u5c06\u5206\u533a\u5cf0\u503c\u6c42\u548c\u5192\u5145\u5168\u697c\u8d1f\u8377\u3002",
+          "\u4e0d\u5305\u542b\u6f5c\u70ed\u603b\u51b7\u8d1f\u8377\u3001\u5b8c\u6574\u8bbe\u5907\u5bb9\u91cf\u4e0e\u7cfb\u7edf\u8f93\u914d\u635f\u5931\u6838\u9a8c\uff1b\u672a\u8f93\u51fa\u7684\u5206\u533a\u4e0d\u80fd\u8ba1\u4e3a\u96f6\u3002",
+          "\u8bbe\u8ba1\u65e5\u540d\u79f0\u4e0d\u662f\u8d44\u6599\u6765\u6e90\u8bc1\u660e\uff1b\u5730\u7406\u5750\u6807\u76f8\u7b26\u4e5f\u4e0d\u7b49\u4e8e\u8bbe\u8ba1\u65e5\u7edf\u8ba1\u6765\u6e90\u3001\u7248\u672c\u6216\u9002\u7528\u6027\u5df2\u5ba1\u6838\u3002"
+        ],
+        "model_sha256": "ebe68914db72cc22304f88c27edb09f6537d7b4359f0e9b6b2fc5c2168b88ec6",
+        "sql_sha256": "cb9a555dc82303b0ca135b7cb55aa7c861b5dd5963874d3480590ee80d16bb64",
+        "basis": {
+          "declared_site": {
+            "name": "Synthetic sea-level site",
+            "latitude_deg": 0.0,
+            "longitude_deg": 0.0,
+            "utc_offset_h": 0.0,
+            "elevation_m": 0.0
+          },
+          "design_days": [
+            {
+              "name": "Synthetic winter",
+              "month": 1,
+              "day": 21,
+              "day_type": "WinterDesignDay",
+              "maximum_dry_bulb_C": -10.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              },
+              "raw_fields": [
+                "Synthetic winter",
+                "1",
+                "21",
+                "WinterDesignDay",
+                "-10",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "-10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            },
+            {
+              "name": "Synthetic summer",
+              "month": 7,
+              "day": 21,
+              "day_type": "SummerDesignDay",
+              "maximum_dry_bulb_C": 35.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              },
+              "raw_fields": [
+                "Synthetic summer",
+                "7",
+                "21",
+                "SummerDesignDay",
+                "35",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            }
+          ],
+          "zone_names": [
+            "BOX"
+          ],
+          "tabular_requested": true,
+          "simulation_control_fields": [
+            "Yes",
+            "No",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "sizing_parameter_objects": [
+            [
+              "1",
+              "1",
+              "1"
+            ]
+          ],
+          "zone_sizing_objects": [
+            [
+              "Box",
+              "SupplyAirTemperature",
+              "12",
+              "",
+              "SupplyAirTemperature",
+              "50",
+              "",
+              "0.008",
+              "0.008",
+              "NoOA",
+              "1.25",
+              "1.15",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0"
+            ]
+          ]
+        },
+        "site_comparison": "not_assessed",
+        "weather_station": null,
+        "weather_sha256": null,
+        "site_applicability": "requires_professional_review",
+        "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:58",
+        "zones_without_sizing": [],
+        "tabular_crosscheck": "matched_W_cells"
+      },
+      "checks": [
+        {
+          "mode": "Cooling",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 514.018691588785,
+          "actual_W": 514.0186916425446,
+          "absolute_error_W": 5.375954970077146e-08,
+          "pass": true
+        },
+        {
+          "mode": "Cooling",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 591.1214953271027,
+          "actual_W": 591.1214953889262,
+          "absolute_error_W": 6.18234707872034e-08,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 1542.056074766355,
+          "actual_W": 1542.0560747123855,
+          "absolute_error_W": 5.3969642976881005e-08,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 1927.5700934579438,
+          "actual_W": 1927.5700933904818,
+          "absolute_error_W": 6.74619968776824e-08,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "spec": {
+        "id": "zone_group",
+        "multiplier": 3,
+        "list_multiplier": 2,
+        "R": 2,
+        "winter": -10,
+        "summer": 35,
+        "heating_factor": 1,
+        "cooling_factor": 1,
+        "expected_W": {
+          "Heating": 9252.336448598131,
+          "Cooling": 3084.11214953271
+        },
+        "tolerance": "max(1 W, expected*0.005), declared before execution"
+      },
+      "model_sha256": "34aeb39db88687c868d77d44685c363281432b55ddbe3d0668def8ed680865fb",
+      "status": "passed",
+      "execution": {
+        "nonce": "0164984eb5834bcba244f42ede2ac0e5",
+        "supervisor_pid": 77720,
+        "lifetime": {
+          "mechanism": "windows_private_pipe",
+          "writer": "caller_only",
+          "child_inherits_lifeline": false
+        },
+        "workspace_leases": {
+          "verified": true,
+          "count": 0
+        },
+        "mechanism": "windows_job_object",
+        "memory_semantics": "private_committed_bytes_per_process_and_job",
+        "memory_bytes": 4294967296,
+        "cpu_semantics": "job_user_seconds",
+        "cpu_seconds": 300,
+        "active_process_limit": 2,
+        "kill_on_job_close": true,
+        "mapped_memory_bounded": false,
+        "file_size_os_enforced": false,
+        "engine_pid": 6216,
+        "state": "finished",
+        "exit_code": 0,
+        "launch_state": "finished",
+        "calls_executed": 1,
+        "elapsed_seconds": 0.4380000000819564,
+        "log_bytes_observed": {
+          "stderr": 36,
+          "stdout": 2366
+        },
+        "output_observed": {
+          "bytes": 289164,
+          "files": 12,
+          "monitored_roots": 1
+        },
+        "aggregate_output_enforcement": "periodic_50ms_not_os_disk_quota",
+        "live_inventory_policy": "ignore_vanished_entries_only_strict_after_exit",
+        "filesystem_network_sandbox": false
+      },
+      "warning_count": 3,
+      "receipt": {
+        "policy_version": "zone-sensible-sizing-9.0.1-v1",
+        "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+        "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+        "status": "calculated_model_scenario",
+        "rows": [
+          {
+            "zone_name": "BOX",
+            "load_type": "Cooling",
+            "calculated_sensible_load_W": 3084.1121498552675,
+            "user_adjusted_sensible_load_W": 3084.1121498552675,
+            "peak": {
+              "design_day": "SYNTHETIC SUMMER",
+              "date_time": "7/21 00:10:00",
+              "outdoor_temperature_C": 35.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0076304825494612856,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              }
+            },
+            "calculated_airflow_m3_s": 0.19318420516589527,
+            "user_airflow_m3_s": 0.19318420516589527,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 3.0,
+            "zone_list_multiplier": 2.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 1,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          },
+          {
+            "zone_name": "BOX",
+            "load_type": "Heating",
+            "calculated_sensible_load_W": 9252.336448275579,
+            "user_adjusted_sensible_load_W": 9252.336448275579,
+            "peak": {
+              "design_day": "SYNTHETIC WINTER",
+              "date_time": "1/21 00:20:00",
+              "outdoor_temperature_C": -10.0,
+              "outdoor_humidity_ratio_kg_kg": 0.0015995074144284182,
+              "design_day_locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              }
+            },
+            "calculated_airflow_m3_s": 0.25113946668064274,
+            "user_airflow_m3_s": 0.25113946668064274,
+            "outdoor_airflow_m3_s": 0.0,
+            "doas_heat_addition_W": 0.0,
+            "zone_multiplier": 3.0,
+            "zone_list_multiplier": 2.0,
+            "unmultiplied_floor_area_m2": 25.0,
+            "multipliers_already_applied": true,
+            "locator": {
+              "table": "ZoneSizes",
+              "row_id": 2,
+              "calculated_column": "CalcDesLoad",
+              "user_column": "UserDesLoad",
+              "unit": "W"
+            }
+          }
+        ],
+        "building_coincident_peak_W": null,
+        "limitations": [
+          "\u4ec5\u4e3a\u8f93\u5165\u6a21\u578b\u8bbe\u8ba1\u5de5\u51b5\u4e0b\u7684\u5206\u533a\u663e\u70ed\u8d1f\u8377\uff1b\u4e0d\u4ee3\u8868\u5f53\u5730\u89c4\u8303\u8bbe\u8ba1\u3001\u5b9e\u697c\u6821\u51c6\u6216\u8bbe\u5907\u9009\u578b\u7ed3\u8bba\u3002",
+          "\u8ba1\u7b97\u8d1f\u8377\u4e0e\u7528\u6237\u8c03\u6574\u540e\u8d1f\u8377\u5206\u5f00\uff1b\u539f\u751f\u6570\u503c\u5df2\u5305\u542b\u5206\u533a\u500d\u7387\uff0c\u4e0d\u518d\u6b21\u76f8\u4e58\u3002",
+          "\u5404\u5206\u533a\u5cf0\u503c\u53d1\u751f\u65f6\u523b\u53ef\u80fd\u4e0d\u540c\uff0c\u4e0d\u63d0\u4f9b\u5168\u697c\u540c\u65f6\u5cf0\u503c\u6216\u5c06\u5206\u533a\u5cf0\u503c\u6c42\u548c\u5192\u5145\u5168\u697c\u8d1f\u8377\u3002",
+          "\u4e0d\u5305\u542b\u6f5c\u70ed\u603b\u51b7\u8d1f\u8377\u3001\u5b8c\u6574\u8bbe\u5907\u5bb9\u91cf\u4e0e\u7cfb\u7edf\u8f93\u914d\u635f\u5931\u6838\u9a8c\uff1b\u672a\u8f93\u51fa\u7684\u5206\u533a\u4e0d\u80fd\u8ba1\u4e3a\u96f6\u3002",
+          "\u8bbe\u8ba1\u65e5\u540d\u79f0\u4e0d\u662f\u8d44\u6599\u6765\u6e90\u8bc1\u660e\uff1b\u5730\u7406\u5750\u6807\u76f8\u7b26\u4e5f\u4e0d\u7b49\u4e8e\u8bbe\u8ba1\u65e5\u7edf\u8ba1\u6765\u6e90\u3001\u7248\u672c\u6216\u9002\u7528\u6027\u5df2\u5ba1\u6838\u3002"
+        ],
+        "model_sha256": "34aeb39db88687c868d77d44685c363281432b55ddbe3d0668def8ed680865fb",
+        "sql_sha256": "c704006979fbbf0454c60f855a8a764d942de9be90893ab52cc0e896395e2bfc",
+        "basis": {
+          "declared_site": {
+            "name": "Synthetic sea-level site",
+            "latitude_deg": 0.0,
+            "longitude_deg": 0.0,
+            "utc_offset_h": 0.0,
+            "elevation_m": 0.0
+          },
+          "design_days": [
+            {
+              "name": "Synthetic winter",
+              "month": 1,
+              "day": 21,
+              "day_type": "WinterDesignDay",
+              "maximum_dry_bulb_C": -10.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 7
+              },
+              "raw_fields": [
+                "Synthetic winter",
+                "1",
+                "21",
+                "WinterDesignDay",
+                "-10",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "-10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            },
+            {
+              "name": "Synthetic summer",
+              "month": 7,
+              "day": 21,
+              "day_type": "SummerDesignDay",
+              "maximum_dry_bulb_C": 35.0,
+              "daily_dry_bulb_range_K": 0.0,
+              "locator": {
+                "object": "SizingPeriod:DesignDay",
+                "object_index": 8
+              },
+              "raw_fields": [
+                "Synthetic summer",
+                "7",
+                "21",
+                "SummerDesignDay",
+                "35",
+                "0",
+                "",
+                "",
+                "Dewpoint",
+                "10",
+                "",
+                "",
+                "",
+                "",
+                "101325",
+                "0",
+                "0",
+                "No",
+                "No",
+                "No",
+                "ASHRAEClearSky",
+                "",
+                "",
+                "",
+                "",
+                "0"
+              ],
+              "statistical_source_status": "not_independently_verified"
+            }
+          ],
+          "zone_names": [
+            "BOX"
+          ],
+          "tabular_requested": true,
+          "simulation_control_fields": [
+            "Yes",
+            "No",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "sizing_parameter_objects": [
+            [
+              "1",
+              "1",
+              "1"
+            ]
+          ],
+          "zone_sizing_objects": [
+            [
+              "Box",
+              "SupplyAirTemperature",
+              "12",
+              "",
+              "SupplyAirTemperature",
+              "50",
+              "",
+              "0.008",
+              "0.008",
+              "NoOA",
+              "1",
+              "1",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0",
+              "DesignDay",
+              "0",
+              "0",
+              "0",
+              "0"
+            ]
+          ]
+        },
+        "site_comparison": "not_assessed",
+        "weather_station": null,
+        "weather_sha256": null,
+        "site_applicability": "requires_professional_review",
+        "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.07 06:58",
+        "zones_without_sizing": [],
+        "tabular_crosscheck": "matched_W_cells"
+      },
+      "checks": [
+        {
+          "mode": "Cooling",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 3084.11214953271,
+          "actual_W": 3084.1121498552675,
+          "absolute_error_W": 3.2255729820462875e-07,
+          "pass": true
+        },
+        {
+          "mode": "Cooling",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 3084.11214953271,
+          "actual_W": 3084.1121498552675,
+          "absolute_error_W": 3.2255729820462875e-07,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "calculated_sensible_load_W",
+          "expected_W": 9252.336448598131,
+          "actual_W": 9252.336448275579,
+          "absolute_error_W": 3.22552295983769e-07,
+          "pass": true
+        },
+        {
+          "mode": "Heating",
+          "column": "user_adjusted_sensible_load_W",
+          "expected_W": 9252.336448598131,
+          "actual_W": 9252.336448275579,
+          "absolute_error_W": 3.22552295983769e-07,
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "new_energyplus_simulations": 7,
+  "scope": "Steady synthetic sensible heat balance; no dynamic climate, solar, humidity or real-building calibration",
+  "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d"
+}
