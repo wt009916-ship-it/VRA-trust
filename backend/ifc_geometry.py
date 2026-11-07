@@ -78,19 +78,53 @@ def mesh_measurements(vertices, faces, topology_budget=None):
             'vertices': len(verts), 'triangles': len(tris)}
 
 
+def opening_relationships(doc, products):
+    """Bounded declaration audit, not geometric intersection or quantity certification."""
+    links = defaultdict(list)
+    by_opening = defaultdict(list)
+    relations = doc.by_type('IfcRelVoidsElement')
+    if len(relations) > 20000:
+        raise ValueError('IFC opening relationship budget exceeded')
+    for relation in relations:
+        host, opening = relation.RelatingBuildingElement, relation.RelatedOpeningElement
+        if host is None or opening is None:
+            raise ValueError('IFC opening relationship has a missing endpoint')
+        row = {'relation_id':relation.id(), 'host_id':host.id(), 'opening_id':opening.id()}
+        links[host.id()].append(row)
+        links[opening.id()].append(row)
+        by_opening[opening.id()].append(row)
+    issues = defaultdict(set)
+    for opening_id, rows in by_opening.items():
+        if len(rows) != 1:
+            kind = 'multiple_hosts_for_opening' if len({r['host_id'] for r in rows}) > 1 else 'duplicate_void_relationship'
+            issues[opening_id].add(kind)
+            for row in rows:
+                issues[row['host_id']].add(kind)
+    result = {}
+    for element in products:
+        if element.is_a('IfcFeatureElementSubtraction') and element.id() not in by_opening:
+            issues[element.id()].add('missing_void_relationship')
+        result[element.id()] = {'relations':links[element.id()], 'issues':sorted(issues[element.id()]),
+            'status':'ambiguous' if issues[element.id()] else 'unambiguous_declaration'}
+    return result
+
+
 def inspect_shapes(doc, products, length_scale):
     import ifcopenshell.geom
     from ifcopenshell.util.shape import get_shape_matrix
 
+    # 2D boolean shortcut can ignore an opening that wholly covers its host.
+    # Force 3D subtraction; empty native meshes remain unknown, never gross volume.
     settings = ifcopenshell.geom.settings()
     values = {'use-world-coords': False, 'convert-back-units': False, 'weld-vertices': True,
               'mesher-linear-deflection': .001, 'mesher-angular-deflection': .5,
-              'disable-opening-subtractions': False}
+              'disable-opening-subtractions': False, 'boolean-attempt-2d': False}
     for key, value in values.items():
         settings.set(key, value)
     rows = []
     used_vertices = used_triangles = 0
     topology_budget = mesh_topology.Budget()
+    relationship_checks = opening_relationships(doc, products)
     for element in products:
         row = {'id': element.id(), 'global_id': element.GlobalId, 'type': element.is_a(), 'name': element.Name,
                'surface_area_m2': None, 'volume_m3': None, 'bbox_world_m': None,
@@ -100,7 +134,10 @@ def inspect_shapes(doc, products, length_scale):
         bodies = [r for r in reps if r.RepresentationIdentifier == 'Body']
         row['representation_ids'] = [r.id() for r in bodies]
         row['item_ids'] = [i.id() for r in bodies for i in r.Items]
-        if not bodies:
+        row['opening_relationships'] = relationship_checks[element.id()]
+        if row['opening_relationships']['issues']:
+            row['status'] = 'ambiguous_opening_relationships'
+        elif not bodies:
             row['status'] = 'no_body_representation'
         elif len(bodies) != 1:
             row['status'] = 'ambiguous_body_representations'
