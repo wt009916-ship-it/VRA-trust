@@ -32,3 +32,9 @@
 |DA-T01/验收工具/低|首次调用错误测试文件路径、CLI中使用require和相对request URL、等待错误文案|验收脚本使用真实接口/文案|分别为0测试、脚本错误和等待超时；最后一次真实OCR提交已成功，未重复提交|修正工具调用后只读确认实际结果；related-tests.txt与association-source-change.txt保留；不是产品通过证据|
 
 原始日志、合成PDF和浏览器结果见validation/drawing-associations-20261108；文件摘要见DRAWING_ASSOCIATIONS_EVIDENCE.json。无API Key、会话、运行数据库或私有图纸入库。评分保持75不是软件退化，而是本批覆盖不足以关闭原完整验收项。
+
+## 完整CI首次失败与测试环境修正
+
+4dfbdcb的前端CI为135通过、1失败：旧drawing-events测试仅模拟原页面节点，没有新挂载模块需要的document/window/MutationObserver。浏览器产品路径未发生该错误；专项10项未覆盖此旧组合测试，属验收遗漏。补齐测试内页面对象、列表API和定时器清理，并断言新面板实际挂载读取；保留原“手动空角度可见报错、零POST”断言，没有跳过用例或添加产品环境判断。最终本机前端全量136通过。产品源码没有变化，78项后端及浏览器证据仍对应相同产品逻辑；原失败日志摘录和完整新前端输出入库。新提交CI另验。
+
+DA-T02（测试集成/中）：复现npm test；预期旧图纸事件测试与新面板共存，实际缺document导致1失败，证据frontend-ci-first-excerpt.txt；修复测试环境并全量136通过，今后修改页面挂载时包含页面组合测试。历史证据索引仍指向4dfbdcb，不改写其哈希；修正索引见DRAWING_ASSOCIATIONS_FOLLOWUP.json。
