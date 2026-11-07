@@ -1870,6 +1870,352 @@
         ]
       }
     },
+    "/api/projects/{project_id}/drawing-associations": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__drawing_associations_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssociationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Listing",
+        "operationId": "listing_api_projects__project_id__drawing_associations_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawing-associations/{association_id}": {
+      "get": {
+        "summary": "Get",
+        "operationId": "get_api_projects__project_id__drawing_associations__association_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "association_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Association Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawing-associations/{association_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__drawing_associations__association_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "association_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Association Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawing-associations/{association_id}/review": {
+      "post": {
+        "summary": "Review",
+        "operationId": "review_api_projects__project_id__drawing_associations__association_id__review_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "association_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Association Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssociationReview"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawing-associations/{association_id}/history": {
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__drawing_associations__association_id__history_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "association_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Association Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/design-sources": {
       "post": {
         "summary": "Source Create",
@@ -7260,6 +7606,70 @@
         ],
         "title": "Assembly"
       },
+      "AssociationInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "sheets": {
+            "items": {
+              "$ref": "#/components/schemas/Sheet"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 2,
+            "title": "Sheets"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "sheets"
+        ],
+        "title": "AssociationInput"
+      },
+      "AssociationReview": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "relation_id": {
+            "type": "string",
+            "pattern": "^link_[a-f0-9]{24}$",
+            "title": "Relation Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "association_confirmed",
+              "rejected",
+              "unresolved"
+            ],
+            "title": "Decision"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "relation_id",
+          "decision",
+          "basis"
+        ],
+        "title": "AssociationReview"
+      },
       "Axis": {
         "properties": {
           "material": {
@@ -10168,6 +10578,45 @@
         ],
         "title": "ProviderSettings"
       },
+      "QuantityLink": {
+        "properties": {
+          "mark_candidate_id": {
+            "type": "string",
+            "pattern": "^text_[1-9][0-9]{0,2}$",
+            "title": "Mark Candidate Id"
+          },
+          "value_candidate_id": {
+            "type": "string",
+            "pattern": "^text_[1-9][0-9]{0,2}$",
+            "title": "Value Candidate Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "width",
+              "height",
+              "length",
+              "thickness"
+            ],
+            "title": "Role"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mark_candidate_id",
+          "value_candidate_id",
+          "role",
+          "basis"
+        ],
+        "title": "QuantityLink"
+      },
       "Query": {
         "properties": {
           "text": {
@@ -11301,6 +11750,63 @@
           "budget"
         ],
         "title": "Search"
+      },
+      "Sheet": {
+        "properties": {
+          "drawing_id": {
+            "type": "string",
+            "pattern": "^drawing_[a-f0-9]{32}$",
+            "title": "Drawing Id"
+          },
+          "drawing_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Drawing Hash"
+          },
+          "scope_label": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Scope Label",
+            "default": ""
+          },
+          "scope_basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Scope Basis",
+            "default": ""
+          },
+          "candidate_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 500,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Ids"
+          },
+          "quantity_links": {
+            "items": {
+              "$ref": "#/components/schemas/QuantityLink"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Quantity Links"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "drawing_id",
+          "drawing_hash"
+        ],
+        "title": "Sheet"
       },
       "SourceInput": {
         "properties": {

@@ -1,3 +1,4 @@
+import {attachAssociations} from './drawing-associations.js';
 import {request,post,escape as esc,number as fmt} from './api.js';
 import {geometryMarkup,attachGeometry,processingControls,processingInput} from './drawing-geometry-ui.js';
 
@@ -14,7 +15,7 @@ export function candidateMarkup(candidate,review){
 export async function drawingWorkspace(state,host,action){
   const base='/projects/'+state.project.project_id;
   host.innerHTML=`<div class="view-heading"><div><h1>图纸整理与尺度核验</h1><p>保留原图，比较处理版本；核对文字、尺寸来源和尺度冲突。</p></div></div><form id="drawing-upload"><label>图纸文件（PNG / JPEG / PDF，最大10 MiB）<input type="file" name="file" accept=".png,.jpg,.jpeg,.pdf" required></label><label>PDF页码（图片填1）<input name="page" type="number" min="1" max="200" value="1" required></label>${processingControls()}<button class="primary">保留原件并生成处理与文字候选</button></form><p>PDF逐页按150 dpi光栅化；最大1200万像素、边长6000。复杂扫描图纸可能漏检，暂不提供墙线补全或结构推断。</p><div id="drawing-upload-source"></div><label>历史识别记录<select id="drawing-record"></select></label><div id="drawing-result" aria-live="polite"></div><div id="drawing-links"></div><button id="drawing-history" hidden>查看复核历史</button><div id="drawing-history-result"></div>`;
-  let current=null,requestSequence=0;
+  let current=null,requestSequence=0,associations=null;
   async function show(id,selectedCandidate){
     const sequence=++requestSequence;current=null;
     host.querySelector('#drawing-result').innerHTML='<p>正在读取所选记录…</p>';
@@ -43,7 +44,7 @@ export async function drawingWorkspace(state,host,action){
     candidate.onchange=select;select();
     decision.onchange=()=>{correction.disabled=decision.value!=='corrected';correction.required=!correction.disabled;if(correction.disabled)correction.value='';};
     for(const polygon of host.querySelectorAll('[data-text-id]'))polygon.onclick=()=>{candidate.value=polygon.dataset.textId;select();};
-    form.onsubmit=e=>{e.preventDefault();const f=new FormData(form);const input={expected_revision:record.revision,candidate_id:f.get('candidate_id'),decision:f.get('decision'),basis:f.get('basis'),corrected_text:f.get('decision')==='corrected'?f.get('corrected_text'):null};action(async()=>{await post(base+'/drawings/'+id+'/review',input);await show(id,input.candidate_id);},e.submitter);};
+    form.onsubmit=e=>{e.preventDefault();const f=new FormData(form);const input={expected_revision:record.revision,candidate_id:f.get('candidate_id'),decision:f.get('decision'),basis:f.get('basis'),corrected_text:f.get('decision')==='corrected'?f.get('corrected_text'):null};action(async()=>{await post(base+'/drawings/'+id+'/review',input);await show(id,input.candidate_id);await associations?.refreshCurrent();},e.submitter);};
   }
   async function history(selected){
     const records=await request(base+'/drawings');if(!host.isConnected)return;
@@ -59,4 +60,5 @@ export async function drawingWorkspace(state,host,action){
   },e.submitter);};
   host.querySelector('#drawing-history').onclick=()=>action(async()=>{if(!current)return;const selected=current,sequence=requestSequence;const rows=await request(base+'/drawings/'+selected.drawing_id+'/history');if(!host.isConnected||sequence!==requestSequence)return;host.querySelector('#drawing-history-result').innerHTML=`<pre>${esc(JSON.stringify(rows,null,2))}</pre>`;});
   await history();
+  associations=await attachAssociations(host,base,action);
 }
