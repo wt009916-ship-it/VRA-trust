@@ -1,4 +1,5 @@
 """Check structured explanations against current records; never certify model prose."""
+import copy
 from decimal import Decimal
 from typing import Literal
 
@@ -227,6 +228,24 @@ def check(record, delivery):
         raise SemanticMismatch(corrections)
     return {'status': 'verified', 'reference': delivery.model_dump(mode='json'), 'statements': accepted,
             'notice': '仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。'}
+
+
+def accumulate(previous, reference):
+    """Retain verified partial facts only within the exact same source identity.
+
+    Called after the incoming delivery passed current-source semantic checks.
+    A new source hash or limitation replaces prior numeric facts. Historical
+    events remain separate; final/current reads still revalidate every fact.
+    """
+    merged = copy.deepcopy(reference)
+    for saved in previous:
+        if (all(saved.get(key) == merged.get(key) for key in ('kind', 'record_id', 'record_hash'))
+                and not saved.get('limitation_status') and not merged.get('limitation_status')):
+            statements = {item['fact']: item for item in saved['statements']}
+            statements.update({item['fact']: item for item in merged['statements']})
+            merged['statements'] = copy.deepcopy(list(statements.values()))
+    Delivery.model_validate(merged)  # Preserve the existing maximum and field contract.
+    return [item for item in previous if item['record_id'] != merged['record_id']] + [merged]
 
 
 def current_answer(domain, project_id, deliveries, reader=None):

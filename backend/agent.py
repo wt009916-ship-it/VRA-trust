@@ -18,7 +18,7 @@ from .robustness import Search, Actions
 from .standards import Standards, Query as StandardQuery
 from .local_model import LocalModelGateway
 from .agent_inspections import INSPECTIONS
-from .agent_semantics import NumericDelivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection
+from .agent_semantics import NumericDelivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection, accumulate
 from . import agent_calculations as calculations
 from . import agent_capabilities as capabilities
 from . import agent_missing as missing_records
@@ -781,7 +781,7 @@ class Agent:
                 context = {'calculation_context': (body.calculation_plans, record.get('calculation_plan_snapshot'))} if name == 'calculation_execute' else {}
                 result = self.call(record['project_id'], name, args, body.allow_compute, **context)
                 if name in {'professional_deliver','professional_limit'}:
-                    record['professional_deliveries'] = [x for x in record['professional_deliveries'] if x['record_id'] != delivery.record_id] + [result['reference']]
+                    record['professional_deliveries'] = accumulate(record['professional_deliveries'], result['reference'])
                 if name == 'capability_explain':
                     record['capability_delivery'] = result['reference']
                 if name == 'professional_missing' and origin == 'model':
