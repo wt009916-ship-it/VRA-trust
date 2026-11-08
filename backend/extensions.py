@@ -29,6 +29,8 @@ def register_extensions(app, domain, auth):
     app.state.robustness = robustness
     domain.robustness = robustness
     thermal = Thermal(domain)
+    from .retrofit_models import register as register_retrofit_models
+    register_retrofit_models(app,domain)
     cad = Cad(domain)
     from .material_takeoff import register as register_material_takeoff
     register_material_takeoff(app, cad)

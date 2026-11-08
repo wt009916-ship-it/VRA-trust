@@ -1,3 +1,4 @@
+import {retrofitWorkspace} from './retrofit-ui.js';
 import {request, post, escape as esc, number as num} from './api.js';
 
 export async function thermalWorkspace(state, host, action) {
@@ -19,4 +20,5 @@ export async function thermalWorkspace(state, host, action) {
   host.querySelector('#thermal-form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.currentTarget);const numeric=v=>v===''?null:Number(v);const values=[...layers.children].map(el=>{const value=n=>el.querySelector(`[name=${n}]`).value;return {name:value('name'),thickness:numeric(value('thickness')),thickness_unit:value('thickness_unit'),conductivity:numeric(value('conductivity')),conductivity_unit:value('conductivity_unit'),correction_factor:Number(value('correction_factor')),correction_basis:value('correction_basis'),source:value('source'),evidence_id:value('evidence_id')||null};});action(async()=>{const record=await post(base+'/thermal',{name:f.get('assembly_name'),layers:values,rsi_m2k_w:numeric(f.get('rsi')),rse_m2k_w:numeric(f.get('rse')),surface_basis:f.get('surface_basis'),application:f.get('application')});if(!host.isConnected)return;render(record);await history();},e.submitter);};
   host.querySelector('#compare-thermal').onclick=e=>action(async()=>{const thermal_ids=[...host.querySelectorAll('#thermal-history input:checked')].map(x=>x.value);const r=await post(base+'/thermal-comparisons',{thermal_ids});host.querySelector('#thermal-comparison').innerHTML='<p>'+esc(r.note)+'</p><table><tr><th>构造</th><th>U W/(m²K)</th><th>相对基准U下降</th></tr>'+r.results.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+num(x.u_w_m2k,6)+'</td><td>'+num(x.u_reduction_pct,3)+'%</td></tr>').join('')+'</table>';},e.currentTarget);
   await history();
+  const bridge=document.createElement('section');host.append(bridge);await retrofitWorkspace(state,bridge);
 }
