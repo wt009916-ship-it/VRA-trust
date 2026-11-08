@@ -1,3 +1,4 @@
+import {mountMaterialCollections} from './material-collection-ui.js';
 import {createCadMonitor} from './cad-current.js';
 import {mountMaterialScenario,refreshScenarioHistory} from './material-scenarios-ui.js';
 import {mountUnionWorkspace} from './ifc-union-ui.js';
@@ -61,8 +62,8 @@ function bindCadSelection(article,record,scenarioHost,scenarioHistory){
 
 export async function cadWorkspace(state,host,action) {
  const base='/projects/'+state.project.project_id;
- let disposeUnion=()=>{},monitor=null,catalog=[],page=0,historyTicket=0;
- host.innerHTML=`<div class="view-heading"><div><h1>CAD / BIM 文件核验</h1><p>只读解析原文件，保留来源和缺口。实体统计不等于建筑工程量。</p></div></div><form id="cad-upload"><label>选择 DXF / IFC（最大10 MiB）<input name="file" type="file" accept=".dxf,.ifc" required></label><button class="primary">上传并读取</button></form><p>DXF支持限定块展开和几何量；IFC支持类型/实例属性、声明数量与限定网格测量。扫描图片/PDF文字可在“图纸识别”页处理。DWG转换、几何修复和合规认证尚不支持。</p><div id="cad-source"></div><div id="cad-union"></div><div id="cad-material-scenarios"></div><section id="cad-material-history" aria-live="polite"></section><div id="cad-pager"><button data-cad-prev>上一页</button><span data-cad-page></span><button data-cad-next>下一页</button><button data-cad-refresh>立即核验状态</button></div><p>每页最多20条，每5秒核验可见记录；核验失败或超时会撤下数量。最近核验时间不代表持续实时保证。</p><div id="cad-results" aria-live="polite"></div>`;
+ let disposeUnion=()=>{},disposeMaterials=()=>{},monitor=null,catalog=[],page=0,historyTicket=0;
+ host.innerHTML=`<div class="view-heading"><div><h1>CAD / BIM 文件核验</h1><p>只读解析原文件，保留来源和缺口。实体统计不等于建筑工程量。</p></div></div><form id="cad-upload"><label>选择 DXF / IFC（最大10 MiB）<input name="file" type="file" accept=".dxf,.ifc" required></label><button class="primary">上传并读取</button></form><p>DXF支持限定块展开和几何量；IFC支持类型/实例属性、声明数量与限定网格测量。扫描图片/PDF文字可在“图纸识别”页处理。DWG转换、几何修复和合规认证尚不支持。</p><div id="cad-source"></div><div id="cad-union"></div><div id="cad-material-collections"></div><section id="cad-collection-scenario-history" aria-live="polite"></section><div id="cad-material-scenarios"></div><section id="cad-material-history" aria-live="polite"></section><div id="cad-pager"><button data-cad-prev>上一页</button><span data-cad-page></span><button data-cad-next>下一页</button><button data-cad-refresh>立即核验状态</button></div><p>每页最多20条，每5秒核验可见记录；核验失败或超时会撤下数量。最近核验时间不代表持续实时保证。</p><div id="cad-results" aria-live="polite"></div>`;
  const list=host.querySelector('#cad-results'),pager=host.querySelector('#cad-pager'),pageSize=20;
  const alive=()=>host.isConnected&&host.contains(list);
  const visible=()=>alive()&&!host.hidden&&!document.hidden;
@@ -93,6 +94,7 @@ export async function cadWorkspace(state,host,action) {
   const ticket=++historyTicket,records=await request(base+'/cad-inspections');
   if(!alive()||ticket!==historyTicket)return;
   disposeUnion();disposeUnion=mountUnionWorkspace(records,host.querySelector('#cad-union'),base,action);
+  disposeMaterials();disposeMaterials=mountMaterialCollections(records,host.querySelector('#cad-material-collections'),base,action,host.querySelector('#cad-material-scenarios'),host.querySelector('#cad-collection-scenario-history'));
   catalog=records.map(({cad_id,source,hash})=>({cad_id,source,hash}));page=0;renderPage();
  }
  pager.querySelector('[data-cad-prev]').onclick=()=>{if(page>0){page--;renderPage();}};
@@ -108,9 +110,10 @@ export async function cadWorkspace(state,host,action) {
  const observer=new MutationObserver(visibility);observer.observe(host,{attributes:true,attributeFilter:['hidden']});
  document.addEventListener('visibilitychange',visibility);
  const timer=setInterval(()=>{
-  if(!alive()){monitor?.stop();disposeUnion();clearInterval(timer);document.removeEventListener('visibilitychange',visibility);observer.disconnect();}
+  if(!alive()){monitor?.stop();disposeUnion();disposeMaterials();clearInterval(timer);document.removeEventListener('visibilitychange',visibility);observer.disconnect();}
   else if(visible())void monitor?.refresh();
  },5000);
  await history();
  await refreshScenarioHistory(host.querySelector('#cad-material-history'),base);
+ await refreshScenarioHistory(host.querySelector('#cad-collection-scenario-history'),base,true);
 }

@@ -1,0 +1,286 @@
+FFFF....FFFFFFFF...............................................          [100%]
+================================== FAILURES ===================================
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-None-IfcSlab] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot0')
+kind = 'IfcSlab', prefix = None, sense = 'POSITIVE', tilted = False
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+        assert r['status']=='measured',r['reason']
+        # Profile 2x3, normal thickness4. Hole area .5, z=.5..2.5.
+        expected=[6-.5*.5,18-.5*1.5] if sense=='POSITIVE' else [6,18-.5*2]
+        assert [v['envelope_volume_m3'] for v in r['layers']]==pytest.approx(expected,abs=1e-8)
+        assert r['total_layer_envelope_m3']==pytest.approx(23.,abs=1e-8)
+        assert r['layer_reference']['coordinate_system']=='extruded_solid_position'
+        assert r['layer_reference']['axis']=='AXIS3'
+        assert all('bounds_local_y_m' not in v and 'bounds_reference_m' in v for v in r['layers'])
+>       assert r['layers'][0]['envelope_volume_m3']!=pytest.approx(23/4)
+E       assert 5.75 != 5.75 ± 5.8e-06
+E        +  where 5.75 ± 5.8e-06 = <function approx at 0x000001AF5E37B920>((23 / 4))
+E        +    where <function approx at 0x000001AF5E37B920> = pytest.approx
+
+tests\test_ifc_slab_layers.py:53: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-None-IfcPlate] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot1')
+kind = 'IfcPlate', prefix = None, sense = 'POSITIVE', tilted = False
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+        assert r['status']=='measured',r['reason']
+        # Profile 2x3, normal thickness4. Hole area .5, z=.5..2.5.
+        expected=[6-.5*.5,18-.5*1.5] if sense=='POSITIVE' else [6,18-.5*2]
+        assert [v['envelope_volume_m3'] for v in r['layers']]==pytest.approx(expected,abs=1e-8)
+        assert r['total_layer_envelope_m3']==pytest.approx(23.,abs=1e-8)
+        assert r['layer_reference']['coordinate_system']=='extruded_solid_position'
+        assert r['layer_reference']['axis']=='AXIS3'
+        assert all('bounds_local_y_m' not in v and 'bounds_reference_m' in v for v in r['layers'])
+>       assert r['layers'][0]['envelope_volume_m3']!=pytest.approx(23/4)
+E       assert 5.75 != 5.75 ± 5.8e-06
+E        +  where 5.75 ± 5.8e-06 = <function approx at 0x000001AF5E37B920>((23 / 4))
+E        +    where <function approx at 0x000001AF5E37B920> = pytest.approx
+
+tests\test_ifc_slab_layers.py:53: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-MILLI-IfcSlab] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot2')
+kind = 'IfcSlab', prefix = 'MILLI', sense = 'POSITIVE', tilted = False
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+        assert r['status']=='measured',r['reason']
+        # Profile 2x3, normal thickness4. Hole area .5, z=.5..2.5.
+        expected=[6-.5*.5,18-.5*1.5] if sense=='POSITIVE' else [6,18-.5*2]
+        assert [v['envelope_volume_m3'] for v in r['layers']]==pytest.approx(expected,abs=1e-8)
+        assert r['total_layer_envelope_m3']==pytest.approx(23.,abs=1e-8)
+        assert r['layer_reference']['coordinate_system']=='extruded_solid_position'
+        assert r['layer_reference']['axis']=='AXIS3'
+        assert all('bounds_local_y_m' not in v and 'bounds_reference_m' in v for v in r['layers'])
+>       assert r['layers'][0]['envelope_volume_m3']!=pytest.approx(23/4)
+E       assert 5.75 != 5.75 ± 5.8e-06
+E        +  where 5.75 ± 5.8e-06 = <function approx at 0x000001AF5E37B920>((23 / 4))
+E        +    where <function approx at 0x000001AF5E37B920> = pytest.approx
+
+tests\test_ifc_slab_layers.py:53: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-MILLI-IfcPlate] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot3')
+kind = 'IfcPlate', prefix = 'MILLI', sense = 'POSITIVE', tilted = False
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+        assert r['status']=='measured',r['reason']
+        # Profile 2x3, normal thickness4. Hole area .5, z=.5..2.5.
+        expected=[6-.5*.5,18-.5*1.5] if sense=='POSITIVE' else [6,18-.5*2]
+        assert [v['envelope_volume_m3'] for v in r['layers']]==pytest.approx(expected,abs=1e-8)
+        assert r['total_layer_envelope_m3']==pytest.approx(23.,abs=1e-8)
+        assert r['layer_reference']['coordinate_system']=='extruded_solid_position'
+        assert r['layer_reference']['axis']=='AXIS3'
+        assert all('bounds_local_y_m' not in v and 'bounds_reference_m' in v for v in r['layers'])
+>       assert r['layers'][0]['envelope_volume_m3']!=pytest.approx(23/4)
+E       assert 5.75 != 5.75 ± 5.8e-06
+E        +  where 5.75 ± 5.8e-06 = <function approx at 0x000001AF5E37B920>((23 / 4))
+E        +    where <function approx at 0x000001AF5E37B920> = pytest.approx
+
+tests\test_ifc_slab_layers.py:53: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[True-POSITIVE-None-IfcSlab] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot8')
+kind = 'IfcSlab', prefix = None, sense = 'POSITIVE', tilted = True
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: host_mesh_not_verified
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[True-POSITIVE-None-IfcPlate] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot9')
+kind = 'IfcPlate', prefix = None, sense = 'POSITIVE', tilted = True
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: host_mesh_not_verified
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[True-POSITIVE-MILLI-IfcSlab] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot10')
+kind = 'IfcSlab', prefix = 'MILLI', sense = 'POSITIVE', tilted = True
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: host_mesh_not_verified
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[True-POSITIVE-MILLI-IfcPlate] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot11')
+kind = 'IfcPlate', prefix = 'MILLI', sense = 'POSITIVE', tilted = True
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: host_mesh_not_verified
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[True-NEGATIVE-None-IfcSlab] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot12')
+kind = 'IfcSlab', prefix = None, sense = 'NEGATIVE', tilted = True
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: host_mesh_not_verified
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[True-NEGATIVE-None-IfcPlate] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot13')
+kind = 'IfcPlate', prefix = None, sense = 'NEGATIVE', tilted = True
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: host_mesh_not_verified
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[True-NEGATIVE-MILLI-IfcSlab] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot14')
+kind = 'IfcSlab', prefix = 'MILLI', sense = 'NEGATIVE', tilted = True
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: host_mesh_not_verified
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[True-NEGATIVE-MILLI-IfcPlate] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/green01/test_solid_reference_plane_rot15')
+kind = 'IfcPlate', prefix = 'MILLI', sense = 'NEGATIVE', tilted = True
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: host_mesh_not_verified
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-None-IfcSlab]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-None-IfcPlate]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-MILLI-IfcSlab]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-MILLI-IfcPlate]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[True-POSITIVE-None-IfcSlab]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[True-POSITIVE-None-IfcPlate]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[True-POSITIVE-MILLI-IfcSlab]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[True-POSITIVE-MILLI-IfcPlate]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[True-NEGATIVE-None-IfcSlab]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[True-NEGATIVE-None-IfcPlate]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[True-NEGATIVE-MILLI-IfcSlab]
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[True-NEGATIVE-MILLI-IfcPlate]
+12 failed, 51 passed, 1 warning in 24.58s

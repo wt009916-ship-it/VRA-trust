@@ -1,0 +1,40 @@
+...................................................F.................... [ 67%]
+..................................                                       [100%]
+================================== FAILURES ===================================
+_ test_finished_metric_tools_leave_remaining_goal_and_stop_without_extra_prose _
+
+client = <starlette.testclient.TestClient object at 0x000001AD18259280>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001AD141C4410>
+
+    def test_finished_metric_tools_leave_remaining_goal_and_stop_without_extra_prose(client,monkeypatch):
+        pid=create_project(client)['project_id'];a=client.app.state.agent;r=create_record(client,pid,'thermal')
+        request={'request_key':'ops','kind':'operation','purpose':'availability','record_id':None}
+        message='Give total R and explain area. Check operation history.'
+        numeric=claim(r);args=json.loads(numeric['tool_calls'][0]['function']['arguments']);args['delivery']['finish']=False
+        scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[plan(),plan('ops','Check operation history.',[],['history'])]}),
+            tool('thermal_read',{'thermal_id':r['thermal_id']}),tool('professional_deliver',args),
+            tool('requested_availability',{'request_keys':['ops'],'finish':False})])
+        original=a.gateway.complete;definitions=[]
+        def capture(messages,tools):
+            definitions.append({t['function']['name'] for t in tools})
+            return original(messages,tools)
+        monkeypatch.setattr(a.gateway,'complete',capture)
+        t=a.start(pid,Chat(read_execution='model', message=message,mode='provider',read_requests=[scope(r),request]),background=False)
+        assert t['status']=='succeeded',t.get('error')
+>       assert definitions[-1]=={'project_get','requested_availability'}
+E       AssertionError: assert {'professiona...availability'} == {'project_get...availability'}
+E         
+E         Extra items in the left set:
+E         'professional_review'
+E         Use -v to get more diff
+
+tests\test_agent_outputs.py:163: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_outputs.py::test_finished_metric_tools_leave_remaining_goal_and_stop_without_extra_prose
+1 failed, 105 passed, 1 warning in 121.51s (0:02:01)

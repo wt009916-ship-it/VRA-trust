@@ -41,3 +41,10 @@ test('stale, network failure, timeout and detached result never expose old quote
   await task;assert.ok(paints.every(p=>p.r===null));m.stop();
  }
 });
+
+test('OCR-assisted citations never claim text-layer verification and retain audit reference',()=>{
+ const r=group('TEST A','1.0.1');r.citations[0].transcription='ocr_assisted';r.citations[0].ocr_id='normocr_test';r.citations[0].transcription_basis='Compare <original>';
+ const html=standardResultMarkup(r,'project_a');
+ assert.match(html,/OCR辅助摘录 · 人工修订复核/);assert.ok(!html.includes('文字层位置已核对'));
+ assert.match(html,/standard-ocr\/normocr_test/);assert.match(html,/Compare &lt;original&gt;/);
+});

@@ -1,0 +1,315 @@
+{
+  "case": {
+    "id": "Q06",
+    "question": "本次只给传热系数U，同时必须完全不提供传热系数U。这两条要求冲突，请先问我如何取舍，不先交付数值。",
+    "wants": [
+      {
+        "key": "wall",
+        "kind": "thermal",
+        "facts": [],
+        "topics": [],
+        "clarification_reason": "conflicting_request"
+      }
+    ]
+  },
+  "records": {
+    "wall": {
+      "thermal_id": "thermal_c795441443c44fb0a823679a7322e678",
+      "project_id": "project_adfd46a144e04f30a2d5314a7dc7ed58",
+      "project_revision": 1,
+      "input": {
+        "name": "New independent wall",
+        "layers": [
+          {
+            "name": "core",
+            "thickness": 180.0,
+            "thickness_unit": "mm",
+            "conductivity": 0.9,
+            "conductivity_unit": "W/(m K)",
+            "correction_factor": 1,
+            "correction_basis": "Explicit unity factor",
+            "source": "Independent synthetic data",
+            "evidence_id": null
+          },
+          {
+            "name": "insulation",
+            "thickness": 4.5,
+            "thickness_unit": "cm",
+            "conductivity": 0.045,
+            "conductivity_unit": "W/(m K)",
+            "correction_factor": 1,
+            "correction_basis": "Explicit unity factor",
+            "source": "Independent synthetic data",
+            "evidence_id": null
+          }
+        ],
+        "rsi_m2k_w": 0.11,
+        "rse_m2k_w": 0.05,
+        "surface_basis": "Explicit synthetic films",
+        "application": "Homogeneous test layers only"
+      },
+      "result": {
+        "status": "calculated",
+        "layers": [
+          {
+            "name": "core",
+            "thickness": 180.0,
+            "thickness_unit": "mm",
+            "conductivity": 0.9,
+            "conductivity_unit": "W/(m K)",
+            "correction_factor": 1,
+            "correction_basis": "Explicit unity factor",
+            "source": "Independent synthetic data",
+            "evidence_id": null,
+            "thickness_m": 0.18,
+            "conductivity_w_mk": 0.9,
+            "effective_conductivity_w_mk": 0.9,
+            "resistance_m2k_w": 0.19999999999999998,
+            "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+          },
+          {
+            "name": "insulation",
+            "thickness": 4.5,
+            "thickness_unit": "cm",
+            "conductivity": 0.045,
+            "conductivity_unit": "W/(m K)",
+            "correction_factor": 1,
+            "correction_basis": "Explicit unity factor",
+            "source": "Independent synthetic data",
+            "evidence_id": null,
+            "thickness_m": 0.045,
+            "conductivity_w_mk": 0.045,
+            "effective_conductivity_w_mk": 0.045,
+            "resistance_m2k_w": 1.0,
+            "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+          }
+        ],
+        "missing": [],
+        "layer_resistance_m2k_w": 1.2,
+        "total_resistance_m2k_w": 1.36,
+        "u_w_m2k": 0.7352941176470588,
+        "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+        "compliance_status": "NOT_ASSESSED",
+        "energy_saving_rate": null,
+        "limitations": [
+          "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+          "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+          "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+          "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+        ]
+      },
+      "calculator_version": "f114f3d884db7cece43d1c46d688766b1edf2d219c50f1bfa69b82b3e2bc2973",
+      "evidence_snapshot": [],
+      "created_at": "2026-11-08T04:53:20.380734+00:00",
+      "hash": "6632ef07abf019a8b58cd2773ccd3b262ad9dcaab8a34a12f5ad10dc5a87fe06",
+      "revision": 1,
+      "status": "calculated",
+      "stale_reasons": [],
+      "stale_details": [],
+      "source_status": "USER_DECLARED",
+      "source_notice": "来源人工复核不代表材料性能实测或法定认证。"
+    }
+  },
+  "task": {
+    "agent_id": "agent_a85fea3176f744a4860e158aba787496",
+    "project_id": "project_adfd46a144e04f30a2d5314a7dc7ed58",
+    "question": "本次只给传热系数U，同时必须完全不提供传热系数U。这两条要求冲突，请先问我如何取舍，不先交付数值。",
+    "mode": "local_model",
+    "status": "failed",
+    "events": [
+      {
+        "tool": "project_get",
+        "arguments": {},
+        "status": "succeeded",
+        "started_at": "2026-11-08T04:53:20.399582+00:00",
+        "origin": "controller",
+        "result": {
+          "name": "Nonnumeric Q06",
+          "building": {
+            "use": "office",
+            "location": "Synthetic comparison",
+            "region": "US-CO",
+            "area_m2": 800.0,
+            "floors": null,
+            "floor_height_m": null,
+            "window_wall_ratio": null,
+            "envelope": null,
+            "hvac": null,
+            "schedules": null,
+            "notes": null
+          },
+          "data_nature": "user_project",
+          "project_id": "project_adfd46a144e04f30a2d5314a7dc7ed58",
+          "revision": 1,
+          "created_at": "2026-11-08T04:53:20.360277+00:00",
+          "updated_at": "2026-11-08T04:53:20.360277+00:00"
+        },
+        "result_hash": "9c37610b7fa215d6411e7226777299e7f40aee0292027841eecc119a57e36b3f",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T04:53:20.413013+00:00"
+      },
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-11-08T04:53:20.416272+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "result": {
+          "tool_calls_returned": 1,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 938,
+        "finished_at": "2026-11-08T04:53:21.363654+00:00"
+      },
+      {
+        "tool": "requested_output_plan",
+        "arguments": {
+          "output_plan": [
+            {
+              "request_key": "wall",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [],
+              "explanation_topics": []
+            }
+          ]
+        },
+        "status": "failed",
+        "started_at": "2026-11-08T04:53:21.371280+00:00",
+        "origin": "model",
+        "error": "Select requested facts, a nonnumeric explanation, or an explicit clarification",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T04:53:21.381300+00:00"
+      },
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-11-08T04:53:21.390114+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "result": {
+          "tool_calls_returned": 1,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 1234,
+        "finished_at": "2026-11-08T04:53:22.622547+00:00"
+      },
+      {
+        "tool": "requested_output_plan",
+        "arguments": {
+          "output_plan": [
+            {
+              "request_key": "wall",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [],
+              "explanation_topics": [
+                "meaning",
+                "scope",
+                "status",
+                "history",
+                "area",
+                "period"
+              ],
+              "clarification_reason": "conflicting_request",
+              "clarification_question": "如何处理传热系数U的提供与不提供之间的冲突？"
+            }
+          ]
+        },
+        "status": "failed",
+        "started_at": "2026-11-08T04:53:22.631145+00:00",
+        "origin": "model",
+        "error": "1 validation error for ToolArgs\noutput_plan.0\n  Value error, Unresolved output cannot include numeric facts or explanation topics [type=value_error, input_value={'request_key': 'wall', '...供之间的冲突？'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T04:53:22.641805+00:00"
+      },
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-11-08T04:53:22.649833+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "result": {
+          "tool_calls_returned": 1,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 1235,
+        "finished_at": "2026-11-08T04:53:23.891186+00:00"
+      },
+      {
+        "tool": "requested_output_plan",
+        "arguments": {
+          "output_plan": [
+            {
+              "request_key": "wall",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [],
+              "explanation_topics": [
+                "meaning",
+                "scope",
+                "status",
+                "history",
+                "area",
+                "period"
+              ],
+              "clarification_reason": "conflicting_request",
+              "clarification_question": "如何处理传热系数U的提供与不提供之间的冲突？"
+            }
+          ]
+        },
+        "status": "failed",
+        "started_at": "2026-11-08T04:53:23.894569+00:00",
+        "origin": "model",
+        "error": "1 validation error for ToolArgs\noutput_plan.0\n  Value error, Unresolved output cannot include numeric facts or explanation topics [type=value_error, input_value={'request_key': 'wall', '...供之间的冲突？'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T04:53:23.903080+00:00"
+      }
+    ],
+    "answer": null,
+    "created_at": "2026-11-08T04:53:20.394300+00:00",
+    "llm_commentary": null,
+    "error": "1 validation error for ToolArgs\noutput_plan.0\n  Value error, Unresolved output cannot include numeric facts or explanation topics [type=value_error, input_value={'request_key': 'wall', '...供之间的冲突？'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 2,
+    "professional_deliveries": [],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "wall",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_c795441443c44fb0a823679a7322e678"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "revision": 16,
+    "read_request_progress": [
+      {
+        "request_key": "wall",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_c795441443c44fb0a823679a7322e678",
+        "state": "output_plan_missing"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T04:53:23.910506+00:00"
+  }
+}

@@ -1,0 +1,7 @@
+# 测试器失败保留
+
+首次4B启动在 private_mkdir(OUT) 因 prepare 已建立同名私有输出目录而触发 WinError183。尚未建立4b输出子目录、加载模型或发送任务；不是产品失败。修正为只在根目录不存在时调用私有目录创建，既有目录权限不变。prepare 的五种真实服务记录及独立参考值核验已通过。
+
+实际4B首题I01已完成，随后比较器从checked_statements读取record_hash触发KeyError。真实API的哈希位于artifacts，checked_statements仅有record_id/name/facts。模型及应用未修改，原始model-call-001与失败results.json保留。只读恢复隔离SQLite已完成I01；评分检查改从artifacts读取哈希，续跑时不再发送I01。后续每题先保存原始task/source再评分，避免评分异常丢失原始结果。恢复题耗时未知标null，不伪造端到端耗时。
+
+第一次续跑在恢复I01的source_check失败：数据库存储记录不包含由view动态计算的status；尚未调用任何新模型任务。修正仅针对恢复记录，从同一次任务保存的artifact.status读取状态。保留4b-continuation失败目录，不覆盖。应用和模型仍未修改。

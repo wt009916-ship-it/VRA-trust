@@ -7,7 +7,7 @@ from pydantic import Field, model_validator
 
 from . import core, agent_missing, agent_outputs
 from .schema import Contract
-from .agent_semantics import inspection
+from .agent_semantics import inspection, can_deliver_requested_facts
 
 
 class ReadRequest(Contract):
@@ -66,10 +66,12 @@ def pending(record):
         return [r['request_key'] for r in record.get('read_requests', [])]
     available={r['request']['request_key'] for r in record.get('availability_deliveries',[])}
     results={r['record_id'] for r in record.get('professional_deliveries',[])}
+    reviewed={r['record_id'] for r in record.get('professional_reviews',[])}
+    unresolved={i['request_key'] for i in (record.get('output_plan') or {}).get('items',[]) if i.get('clarification_question')}
     absent={r['request'].get('record_id') for r in record.get('missing_deliveries',[])}
-    return [r['request_key'] for r in record.get('read_requests',[]) if
+    return [r['request_key'] for r in record.get('read_requests',[]) if r['request_key'] not in unresolved and
             (r['request_key'] not in available if r['purpose']=='availability' else
-             r['record_id'] not in results|absent or
+             r['record_id'] not in results|absent|reviewed or
              (r['record_id'] in results and not any(d.get('limitation_status') for d in record.get('professional_deliveries', []) if d['record_id'] == r['record_id'])
               and agent_outputs.missing_facts(record, r, record.get('professional_deliveries', []))))]
 
@@ -77,6 +79,7 @@ def pending(record):
 def progress(record,answer):
     answer=answer or {};available={r['request_key'] for r in answer.get('checked_availability',[])}
     values={r['record_id'] for r in answer.get('checked_statements',[])}
+    reviewed={r['record_id'] for r in answer.get('checked_reviews',[])}
     limited={r['record_id'] for r in answer.get('checked_limitations',[])}
     absent={r.get('record_id') for r in answer.get('checked_missing',[])}
     submitted=set(r['request_key'] for r in record.get('read_requests',[]))-set(pending(record))
@@ -87,6 +90,11 @@ def progress(record,answer):
         elif r['purpose']=='results':
             state=('result_verified' if r['record_id'] in values else 'limitation_verified' if r['record_id'] in limited
                    else 'record_unavailable' if r['record_id'] in absent else state)
+        wanted = agent_outputs.requirement(record, r['request_key']) or {}
+        if wanted.get('clarification_question'):
+            state='needs_clarification'
+        elif r['record_id'] in reviewed and not wanted.get('fact_keys'):
+            state='source_review_verified'
         if state == 'result_verified':
             actual = [{'record_id': d['record_id'], 'statements': d['facts']} for d in answer.get('checked_statements', [])]
             if agent_outputs.missing_facts(record, r, actual):state='required_facts_missing'
@@ -122,13 +130,13 @@ def attach(answer,domain,pid,record,reader=None):
     answer['checked_availability']=checked
     rows=progress(record,answer)
     answer['read_request_progress']=rows
-    answer['read_request_coverage']='all_declared_scopes_checked' if all(r['state'] not in {'unfulfilled','delivery_not_currently_verified','required_facts_missing','output_plan_missing'} for r in rows) else 'incomplete'
+    answer['read_request_coverage']='all_declared_scopes_checked' if all(r['state'] not in {'unfulfilled','delivery_not_currently_verified','required_facts_missing','output_plan_missing','needs_clarification'} for r in rows) else 'incomplete'
     if checked:
         answer['task_completion']='partial'
         answer['summary']='已按项核验部分或全部声明范围；未完成项见读取进度，数值有效性和自由问题完整覆盖仍分别判断。'
         answer['gaps']=[g for g in answer['gaps'] if g.get('message')!='本轮没有通过核验的专业交付']
     for row in rows:
-        if row['state'] in {'unfulfilled','delivery_not_currently_verified','required_facts_missing','output_plan_missing'}:
+        if row['state'] in {'unfulfilled','delivery_not_currently_verified','required_facts_missing','output_plan_missing','needs_clarification'}:
             answer['gaps'].append({'request_key':row['request_key'],'message':'声明读取目标尚未形成当前有效交付：'+row['request_key'],
                                   'action':'按本次声明范围查询并交付，不替换编号或新增计算。'})
     answer['task_notice']='只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。'
@@ -160,7 +168,11 @@ def next_actions(record):
         current = reads.get(ident)
         action = {'request_key': request['request_key'], 'record_id': ident}
         if current is not None:
-            if not spec.artifact(current)['verified']:
+            wanted = agent_outputs.requirement(record, request['request_key']) or {}
+            if wanted and not wanted.get('fact_keys') and wanted.get('explanation_topics'):
+                from .agent_reviews import reference
+                action.update(tool='professional_review', arguments={'review': reference(current, kind)})
+            elif not can_deliver_requested_facts(current, kind, wanted.get('fact_keys', [])):
                 action.update(tool='professional_limit', arguments={'limitation': {
                     'kind': kind, 'record_id': ident, 'record_hash': current['hash'],
                     'status': current['status'], 'finish': False}})

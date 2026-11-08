@@ -1,0 +1,35 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_ test_shared_opening_representation_with_distinct_placements_is_not_overwritten _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/shared-red/test_shared_opening_representa0')
+
+    def test_shared_opening_representation_with_distinct_placements_is_not_overwritten(tmp_path):
+        import ifcopenshell
+        doc,_,slab,_,_,path=slab_model(tmp_path,tilted=True)
+        first=slab.HasOpenings[0].RelatedOpeningElement
+        delta=doc.create_entity('IfcAxis2Placement3D',Location=doc.create_entity('IfcCartesianPoint',Coordinates=(.7,0.,0.)))
+        second=doc.create_entity('IfcOpeningElement',GlobalId=ifcopenshell.guid.new(),
+            ObjectPlacement=doc.create_entity('IfcLocalPlacement',PlacementRelTo=slab.ObjectPlacement,RelativePlacement=delta),Representation=first.Representation)
+        doc.create_entity('IfcRelVoidsElement',GlobalId=ifcopenshell.guid.new(),RelatingBuildingElement=slab,RelatedOpeningElement=second)
+        doc.write(str(path));before=doc.to_string()
+        result=measure_layers(path,slab.id(),_document=doc)
+        assert result['status']=='measured',result['reason']
+        # Two disjoint 0.5x1x2 cavity solids, each z=.5..2.5.
+>       assert result['total_layer_envelope_m3']==pytest.approx(24-2,abs=1e-8)
+E       assert 22.999999999999996 == 22 ± 1.0e-08
+E         
+E         comparison failed
+E         Obtained: 22.999999999999996
+E         Expected: 22 ± 1.0e-08
+
+tests\test_slab_shared_openings.py:18: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_slab_shared_openings.py::test_shared_opening_representation_with_distinct_placements_is_not_overwritten
+1 failed, 1 warning in 0.74s

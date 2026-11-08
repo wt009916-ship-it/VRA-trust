@@ -34,7 +34,21 @@ class Clause(Contract):
     printed_page: str = Field(min_length=1, max_length=40)
     text: str = Field(min_length=8, max_length=8000)
     coverage: Literal['excerpt', 'whole_clause'] = 'excerpt'
-    transcription: Literal['text_layer', 'manual_scan']
+    transcription: Literal['text_layer', 'manual_scan', 'ocr_assisted']
+    ocr_id: str | None = Field(default=None,pattern=r'^normocr_[a-f0-9]{32}$')
+    candidate_ids: list[str] = Field(default_factory=list,max_length=500)
+    transcription_basis: str | None = Field(default=None,min_length=10,max_length=2000)
+
+    @model_validator(mode='after')
+    def provenance(self):
+        if self.transcription=='ocr_assisted':
+            if not self.ocr_id or not self.candidate_ids or not self.transcription_basis:
+                raise ValueError('OCR-assisted transcription needs candidate provenance and review basis')
+            if len(set(self.candidate_ids))!=len(self.candidate_ids) or any(not re.fullmatch(r'text_[1-9][0-9]{0,2}',s) for s in self.candidate_ids):
+                raise ValueError('Invalid or duplicate OCR candidate identifiers')
+        elif self.ocr_id or self.candidate_ids or self.transcription_basis:
+            raise ValueError('OCR provenance requires explicit OCR-assisted transcription')
+        return self
     topic: str = Field(min_length=1, max_length=200)
 
 
@@ -157,9 +171,18 @@ class Standards:
         if len(self.store.list('standard', pid)) >= 50:
             raise core.ValidationError('Project standard index limit is 50 documents')
         extracted = self.preview(pid, Preview(file_id=body.file_id))
+        ocr_sources={}
         for clause in body.clauses:
             if clause.pdf_page > extracted['page_count']:
                 raise core.ValidationError('Clause page is outside source PDF')
+            if clause.transcription=='ocr_assisted':
+                from .standard_ocr import StandardOCR
+                record=StandardOCR(self.domain).view(pid,clause.ocr_id)
+                if record['status']=='stale' or record['input']!={'file_id':body.file_id,'page':clause.pdf_page}:
+                    raise core.ValidationError('OCR source/page mismatch or stale candidate')
+                ids={c['candidate_id'] for c in record['result']['candidates']}
+                if not set(clause.candidate_ids)<=ids: raise core.ValidationError('OCR candidate does not exist')
+                ocr_sources[clause.ocr_id]=record['hash']
             page = extracted['pages'][clause.pdf_page-1]['text']
             if clause.transcription == 'text_layer' and normalized(clause.text) not in normalized(page):
                 raise core.ValidationError('Quoted text not found on stated PDF page')
@@ -176,7 +199,7 @@ class Standards:
         source, _ = self.domain.file_record(pid, body.file_id)
         obj = {'standard_id': identifier('standard'), 'project_id': pid, 'input': body.model_dump(mode='json'),
             'source': source, 'parser_hash': extracted['parser_hash'], 'page_count': extracted['page_count'],
-            'extraction_resource_limits':extracted['resource_limits'],
+            'extraction_resource_limits':extracted['resource_limits'], 'ocr_sources':ocr_sources,
             'review': {'state':'pending', 'basis':None, 'reviewer_id':None}, 'created_at':core.now()}
         obj['hash'] = core.hash_json(obj)
         self.store.put('standard', obj)
@@ -191,6 +214,10 @@ class Standards:
         stale = obj['parser_hash'] != parser_hash()
         try:
             self.domain.file_record(pid, obj['input']['file_id'])
+            for oid,digest in obj.get('ocr_sources',{}).items():
+                from .standard_ocr import StandardOCR
+                record=StandardOCR(self.domain).view(pid,oid)
+                stale=stale or record['status']=='stale' or record['hash']!=digest
         except (ValueError, KeyError, OSError):
             stale = True
         return {**obj, 'source_status': 'stale' if stale else 'intact'}

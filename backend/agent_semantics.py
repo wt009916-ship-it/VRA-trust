@@ -140,19 +140,40 @@ def facts(record, kind):
     return rows
 
 
+
+def can_deliver_requested_facts(record, kind, required):
+    """Count observed data even when it cannot support an overall equipment review.
+
+    This does not change artifact.verified or allow a stale source, a diagnosis,
+    an unsupported engineering result, or inferred missing measurements.
+    """
+    if inspection(kind).artifact(record)['verified']:
+        return True
+    if kind != 'operation' or record['status'] not in {
+            'calculated', 'events_detected', 'insufficient_evidence'}:
+        return False
+    allowed = {'sample_count', 'cell_issue_count', 'gap_count',
+               'rule_event_sum', 'rule_unknown_sample_sum'}
+    available = {f['fact'] for f in facts(record, kind) if f['value'] is not None}
+    return bool(required) and set(required) <= allowed & available
+
+
 def readable(record, kind):
-    return {**record, 'explanation_facts': facts(record, kind),
+    from .agent_reviews import reference
+    return {**record, 'nonnumeric_review_reference': reference(record, kind), 'explanation_facts': facts(record, kind),
             'explanation_instruction': '开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。'
             '只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。'}
 
 
 def model_projection(record, kind):
     """Explicit fact projection for delivery, with full source retained in the tool audit."""
+    from .agent_reviews import reference
     spec = inspection(kind)
     artifact = spec.artifact(record)
     return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record_name(record),
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
+            'nonnumeric_review_reference': reference(record, kind),
             'limitation_delivery': None if artifact['verified'] else {
                 'limitation_status':record['status'], 'statements':[],
                 'stale_details':record.get('stale_details', []) if record['status']=='stale' else [],

@@ -1,0 +1,107 @@
+{
+  "phase": "frozen_before_candidate_implementation",
+  "cases": [
+    {
+      "id": "P01",
+      "kind": "lifecycle",
+      "question": "这次仅摘录材料生产与运输的两个阶段排放值，分两项列，不附解释。",
+      "expected_fact_keys": [
+        "stage.production",
+        "stage.transport"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported"
+    },
+    {
+      "id": "P02",
+      "kind": "lifecycle",
+      "question": "需要运行阶段的碳排放，并解释数值覆盖的核算期间。",
+      "expected_fact_keys": [
+        "stage.operation"
+      ],
+      "expected_explanation_topics": [
+        "period"
+      ],
+      "disposition": "supported"
+    },
+    {
+      "id": "P03",
+      "kind": "thermal",
+      "question": "把包含两侧表面膜的R列给我即可；传热系数和仅材料部分的R均省略，不加说明。",
+      "expected_fact_keys": [
+        "total_resistance_m2k_w"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported"
+    },
+    {
+      "id": "P04",
+      "kind": "thermal",
+      "question": "列材料层R合计与U，再解释它们是否使用建筑面积作分母。",
+      "expected_fact_keys": [
+        "layer_resistance_m2k_w",
+        "u_w_m2k"
+      ],
+      "expected_explanation_topics": [
+        "area"
+      ],
+      "disposition": "supported"
+    },
+    {
+      "id": "P05",
+      "kind": "schedule",
+      "question": "列计划工期与预测完工偏差，并说明这两个指标的含义。",
+      "expected_fact_keys": [
+        "planned_duration_days",
+        "forecast_finish_variance_days"
+      ],
+      "expected_explanation_topics": [
+        "meaning"
+      ],
+      "disposition": "supported"
+    },
+    {
+      "id": "P06",
+      "kind": "engineering",
+      "question": "给左端的竖向支座反力和支座反力矩；分别保留单位，不需要其他数值或解释。",
+      "expected_fact_keys": [
+        "left_reaction_n",
+        "left_reaction_moment_nm"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported"
+    },
+    {
+      "id": "P07",
+      "kind": "operation",
+      "question": "请仅列原始CSV的样本总数、无效单元格数量及超限采样间隔数量，不要添加分析说明。",
+      "expected_fact_keys": [
+        "sample_count",
+        "cell_issue_count",
+        "gap_count"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported"
+    },
+    {
+      "id": "P08",
+      "kind": "operation",
+      "question": "请列各规则事件计数之和、各规则未知样本计数之和，并解释这两项统计的含义。",
+      "expected_fact_keys": [
+        "rule_event_sum",
+        "rule_unknown_sample_sum"
+      ],
+      "expected_explanation_topics": [
+        "meaning"
+      ],
+      "disposition": "supported"
+    }
+  ],
+  "gate": "At least3 strict task improvements and no baseline-passing regression; both operation tasks must deliver correct current counts without whole-record verification or recommendation. Original24 never rerun for score.",
+  "fixed_design": [
+    "Dedicated plan-phase system instruction; no keyword extraction or post-hoc deletion of model choices.",
+    "Reuse existing fact/source validation to deliver only explicitly requested operation observation counts even when overall data quality is insufficient; stale sources remain blocked.",
+    "No unsupported annual-field or explanation-only fix in this batch; original24 failures retained.",
+    "Compare original4B and candidate4B on same fresh8, fixed generation parameters; no tuning after outputs."
+  ]
+}

@@ -1,0 +1,282 @@
+{
+  "phase": "frozen_design_only_not_run",
+  "date": "2026-11-08",
+  "training": false,
+  "independence": "Developer-designed counterfactual tasks, not third-party blind testing. No real model outputs inspected for these tasks.",
+  "stop_rule": "One fixed model/config attempt per task after a concrete implementation; preserve failed cases, no same-case prompt tuning for score.",
+  "record_binding": "Bind each case to a newly created real service record of its declared kind; record existence/currentness tested separately.",
+  "no_false_claims": "Unsupported annual/explanation-only intent may be declared limited or clarified; must not silently select a different scalar. Gold defines intent, not permission to alter source or create calculations.",
+  "cases": [
+    {
+      "id": "I01",
+      "kind": "lifecycle",
+      "question": "请报这份清单中材料运输阶段的排放量，单位kgCO2e。只列数值和单位。",
+      "expected_fact_keys": [
+        "stage.transport"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I02",
+      "kind": "lifecycle",
+      "question": "请报这份清单覆盖范围内的单位建筑面积排放量，单位kgCO2e/m²。只列数值和单位。",
+      "expected_fact_keys": [
+        "kgco2e_m2_over_study_period"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I03",
+      "kind": "lifecycle",
+      "question": "只看施工活动贡献了多少kgCO2e；不要把建材生产量一并相加。",
+      "expected_fact_keys": [
+        "stage.construction"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I04",
+      "kind": "lifecycle",
+      "question": "这份清单核算期内全部已纳入阶段合计多少kgCO2e？不折算每平方米，也不讨论分阶段明细。",
+      "expected_fact_keys": [
+        "boundary_total_kgco2e"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I05",
+      "kind": "lifecycle",
+      "question": "给出建筑运行这一阶段在整个评估期内的排放；不是每平方米的量，不要附加说明。",
+      "expected_fact_keys": [
+        "stage.operation"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I06",
+      "kind": "lifecycle",
+      "question": "请同时列出运行阶段和寿命终结阶段各自的总量，不另算相加值。",
+      "expected_fact_keys": [
+        "stage.operation",
+        "stage.end_of_life"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I07",
+      "kind": "lifecycle",
+      "question": "我需要的是每年的运行碳排放；记录若只有整个评估期累计量，不要拿累计量冒充年值。",
+      "expected_fact_keys": [],
+      "expected_explanation_topics": [],
+      "disposition": "unsupported_annual_field_requires_limitation_or_clarification",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I08",
+      "kind": "lifecycle",
+      "question": "先不要报任何排放数值，只说明这条记录的状态。",
+      "expected_fact_keys": [],
+      "expected_explanation_topics": [
+        "status"
+      ],
+      "disposition": "explanation_only_not_representable_by_current_results_minimum",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I09",
+      "kind": "thermal",
+      "question": "这个构造的内外表面空气膜也算进去后，总R是多少？无需解释。",
+      "expected_fact_keys": [
+        "total_resistance_m2k_w"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I10",
+      "kind": "thermal",
+      "question": "我只要各材料d/λ加起来的R，不把内外表面热阻计入。",
+      "expected_fact_keys": [
+        "layer_resistance_m2k_w"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I11",
+      "kind": "thermal",
+      "question": "给我U，单位W/(m²·K)；别额外列R。",
+      "expected_fact_keys": [
+        "u_w_m2k"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I12",
+      "kind": "thermal",
+      "question": "同时给总R和U，并解释建筑面积为什么不是这两个值的输入。",
+      "expected_fact_keys": [
+        "total_resistance_m2k_w",
+        "u_w_m2k"
+      ],
+      "expected_explanation_topics": [
+        "area"
+      ],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I13",
+      "kind": "thermal",
+      "question": "我不需要面积解释。只列材料层热阻合计以及U。",
+      "expected_fact_keys": [
+        "layer_resistance_m2k_w",
+        "u_w_m2k"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I14",
+      "kind": "thermal",
+      "question": "把总R和只含材料的R分开列出，别增加传热系数。",
+      "expected_fact_keys": [
+        "total_resistance_m2k_w",
+        "layer_resistance_m2k_w"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I15",
+      "kind": "schedule",
+      "question": "只看基准计划的总工期，别用预测完工日替代。",
+      "expected_fact_keys": [
+        "planned_duration_days"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I16",
+      "kind": "schedule",
+      "question": "按已有剩余工期情景，预测在相对起点第几天完成？不用列偏差。",
+      "expected_fact_keys": [
+        "forecast_finish_day"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I17",
+      "kind": "schedule",
+      "question": "预测完工比计划完工相差多少天？我不是在问预计完工落在哪一天。",
+      "expected_fact_keys": [
+        "forecast_finish_variance_days"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I18",
+      "kind": "schedule",
+      "question": "请列记录截至第几天，以及按现有情景第几天完工。",
+      "expected_fact_keys": [
+        "forecast_as_of_day",
+        "forecast_finish_day"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I19",
+      "kind": "engineering",
+      "question": "这根梁的左端竖向支座反力是多少N？不要把左端反力矩当成反力。",
+      "expected_fact_keys": [
+        "left_reaction_n"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I20",
+      "kind": "engineering",
+      "question": "只列左端支座反力矩，单位N·m，不要求跨内最大弯矩。",
+      "expected_fact_keys": [
+        "left_reaction_moment_nm"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I21",
+      "kind": "engineering",
+      "question": "我需要梁的最大绝对弯矩和最大向下挠度，两项分开，不要作结构安全判断。",
+      "expected_fact_keys": [
+        "max_abs_moment_nm",
+        "max_deflection_m"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I22",
+      "kind": "operation",
+      "question": "列CSV总样本行数，而不是无效单元格数。",
+      "expected_fact_keys": [
+        "sample_count"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I23",
+      "kind": "operation",
+      "question": "分别给出无效或缺失单元格数量、超出间隔限制的时间缺口数量。",
+      "expected_fact_keys": [
+        "cell_issue_count",
+        "gap_count"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    },
+    {
+      "id": "I24",
+      "kind": "operation",
+      "question": "要求各规则触发次数之和；不要把这个可能重叠的计数叫作设备故障数。",
+      "expected_fact_keys": [
+        "rule_event_sum"
+      ],
+      "expected_explanation_topics": [],
+      "disposition": "supported",
+      "criterion": "exact requested field set, no substituted unit/stage/normalization and no unrequested explanation"
+    }
+  ]
+}

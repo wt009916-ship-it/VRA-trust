@@ -20,6 +20,10 @@ class UnionRequest(Contract):
 
 
 class IfcUnions:
+    operation = 'ifc_union'
+    record_kind = 'union'
+    assessment = 'SELECTED_GEOMETRY_NOT_CERTIFIED_MATERIAL_QUANTITY'
+
     def __init__(self, cad):
         self.cad, self.domain, self.store = cad, cad.domain, cad.store
 
@@ -35,7 +39,7 @@ class IfcUnions:
         try:
             _, path = self.domain.file_record(pid, source['source']['file_id'])
             before = parser_version()
-            with parser_runtime.run('cad', path, options={'operation': 'ifc_union', 'product_ids': body.product_ids}) as scope:
+            with parser_runtime.run('cad', path, options={'operation': self.operation, 'product_ids': body.product_ids}) as scope:
                 output = scope['work']/'result.json'
                 if not output.exists() or output.stat().st_size > 8*1024**2:
                     raise core.ValidationError('IFC union output unavailable')
@@ -46,17 +50,17 @@ class IfcUnions:
             current = self.cad.view(pid, body.cad_id)
             if current['status'] != 'parsed' or current['hash'] != source['hash'] or parser_version() != before:
                 raise core.ValidationError('IFC source changed during union calculation; retry from current inspection')
-            obj = {'union_id': 'union_'+uuid.uuid4().hex, 'project_id': pid,
+            obj = {self.record_kind+'_id': self.record_kind+'_'+uuid.uuid4().hex, 'project_id': pid,
                 'created_at': core.now(), 'cad_id': body.cad_id, 'inspection_hash': source['hash'],
                 'parser_hash': before, 'source': source['source'], 'product_ids': body.product_ids, 'result': result}
             obj['hash'] = core.hash_json(obj)
-            self.store.put('union', obj)
-            return self.view(pid, obj['union_id'])
+            self.store.put(self.record_kind, obj)
+            return self.view(pid, obj[self.record_kind+'_id'])
         finally:
             self.cad.capacity.release()
 
     def view(self, pid, uid):
-        obj = self.store.get('union', uid)
+        obj = self.store.get(self.record_kind, uid)
         if obj['project_id'] != pid:
             raise core.ValidationError('Cross-project IFC union rejected')
         if core.hash_json({k:v for k,v in obj.items() if k not in {'hash', 'revision'}}) != obj['hash']:
@@ -69,7 +73,7 @@ class IfcUnions:
             stale = True
         return {**obj, 'status': 'stale' if stale else obj['result']['status'],
                 'result': None if stale else obj['result'],
-                'assessment': 'SELECTED_GEOMETRY_NOT_CERTIFIED_MATERIAL_QUANTITY'}
+                'assessment': self.assessment}
 
 
 def union_report(record):

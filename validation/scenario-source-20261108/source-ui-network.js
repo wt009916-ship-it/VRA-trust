@@ -1,0 +1,33 @@
+async (page) => {
+ const current='计量来源当前有效。每5秒复核；提交前会再次核验。';
+ const save='C:/Users/18483/AppData/Local/Temp/vra-scenario-source-20261108/';
+ const submit=page.getByRole('button',{name:'核验来源并生成两方案报告',exact:true});
+ const retry=page.getByRole('button',{name:'重新核验来源',exact:true});
+ const draft=page.getByRole('textbox',{name:'方案一名称',exact:true});
+ const url='**/ifc-material-collections/materialset_e2fefd6dc1ef450ca03ce66ad4c144aa';
+ page.__sourcePosts=[];page.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith('/collection-scenarios'))page.__sourcePosts.push(r.url());});
+ await page.route(url,route=>route.abort('failed'));
+ await retry.click();
+ await page.getByText('暂时无法核验计量来源，不能提交。草稿已保留，连接恢复后重新核验。',{exact:true}).waitFor();
+ if(!await submit.isDisabled()||await draft.inputValue()!=='保留我的方案草稿')throw Error('offline did not preserve and block');
+ await page.getByRole('heading',{name:'从多构件去重材料建立两套方案',exact:true}).scrollIntoViewIfNeeded();
+ await page.screenshot({path:save+'offline.png'});
+ await page.unroute(url);await retry.click();await page.getByText(current,{exact:true}).waitFor();
+ const held=[];
+ await page.route(url,route=>new Promise(resolve=>held.push(async()=>{try{await route.continue();}catch{}resolve();})));
+ await retry.click();
+ await page.getByText('计量来源核验超时，不能提交。草稿已保留，可重新核验。',{exact:true}).waitFor({timeout:12000});
+ if(!await submit.isDisabled()||await draft.inputValue()!=='保留我的方案草稿')throw Error('timeout did not preserve and block');
+ await page.screenshot({path:save+'timeout.png'});
+ await page.unroute(url);for(const release of held)await release();
+ await retry.click();await page.getByText(current,{exact:true}).waitFor();
+ await page.getByRole('navigation',{name:'项目工作视图'}).getByRole('button',{name:'工作台',exact:true}).click();
+ const hidden=page.getByText('页面已切至后台，提交已暂停；返回后重新核验来源。',{exact:true});
+ await hidden.waitFor({state:'attached'});
+ if(!await submit.isDisabled())throw Error('hidden page remained enabled');
+ await page.getByRole('button',{name:'CAD / BIM',exact:true}).click();
+ await page.getByText(current,{exact:true}).waitFor();
+ if(await draft.inputValue()!=='保留我的方案草稿'||page.__sourcePosts.length)throw Error('draft lost or unexpected POST');
+ await page.getByRole('heading',{name:'从多构件去重材料建立两套方案',exact:true}).scrollIntoViewIfNeeded();
+ await page.screenshot({path:save+'recovered.png'});
+}
