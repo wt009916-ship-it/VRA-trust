@@ -1,3 +1,4 @@
+import {bindIfcBeamProfile} from './ifc-beam-ui.js';
 import {request,post,escape as esc,number as num} from './api.js';
 
 const input=(name,label,extra='')=>`<label>${label}<input name="${name}" ${extra}></label>`;
@@ -25,9 +26,16 @@ function loadSketch(result,support){
 
 export async function engineeringWorkspace(state,host,action,resumedInput=null){
   const base='/projects/'+state.project.project_id;
-  host.innerHTML=`<div class="view-heading"><div><h1>梁分析辅助</h1><p>输入明确的支承、截面、材料和荷载，查看支反力与变形过程。结果不包含结构安全或规范合格判断。</p></div></div><form id="beam-form"><h2>几何与材料</h2><div class="form-grid">${input('name','分析名称','required')}${select('support','理想化支承',{simply_supported:'简支梁（左铰右滚支）',cantilever:'悬臂梁（左端固定）'})}${input('span','跨度',numeric)}${select('span_unit','跨度单位',lengths)}${input('width','矩形截面宽度 b',numeric)}${input('depth','矩形截面高度 h（弯曲方向）',numeric)}${select('section_unit','截面尺寸单位',lengths)}${input('elastic_modulus','弹性模量 E',numeric)}${select('modulus_unit','模量单位',{Pa:'Pa',MPa:'MPa',GPa:'GPa'})}</div><p>本次只支持恒定EI、矩形截面和向下荷载。未知数值留空；不要把缺失值填为零。</p><div class="form-grid">${input('geometry_source','几何参数来源','required minlength="5"')}${input('material_source','材料模量来源','required minlength="5"')}${input('support_basis','支承理想化依据','required minlength="5"')}</div><label>模型假设和适用依据<textarea name="analysis_basis" required minlength="10" placeholder="说明等截面、线弹性、小变形假设；实际材料强度、屈曲、荷载组合等需另行验算。"></textarea></label>
+  host.innerHTML=`<div class="view-heading"><div><h1>梁分析辅助</h1><p>输入明确的支承、截面、材料和荷载，查看支反力与变形过程。结果不包含结构安全或规范合格判断。</p></div></div><section id="ifc-beam-handoff"></section><form id="beam-form"><h2>几何与材料</h2><div id="beam-copied-profile"></div><div class="form-grid">${input('name','分析名称','required')}${select('support','理想化支承',{simply_supported:'简支梁（左铰右滚支）',cantilever:'悬臂梁（左端固定）'})}${input('span','跨度',numeric)}${select('span_unit','跨度单位',lengths)}${input('width','矩形截面宽度 b',numeric)}${input('depth','矩形截面高度 h（弯曲方向）',numeric)}${select('section_unit','截面尺寸单位',lengths)}${input('elastic_modulus','弹性模量 E',numeric)}${select('modulus_unit','模量单位',{Pa:'Pa',MPa:'MPa',GPa:'GPa'})}</div><p>手工输入支持矩形；IFC可交付明确对称等截面。计算仍限定恒定EI和向下荷载。未知数值留空；不要把缺失值填为零。</p><div class="form-grid">${input('geometry_source','几何参数来源','required minlength="5"')}${input('material_source','材料模量来源','required minlength="5"')}${input('support_basis','支承理想化依据','required minlength="5"')}</div><label>模型假设和适用依据<textarea name="analysis_basis" required minlength="10" placeholder="说明等截面、线弹性、小变形假设；实际材料强度、屈曲、荷载组合等需另行验算。"></textarea></label>
     <details><summary>绑定项目来源证据（可选）</summary>${state.evidence.map(e=>`<label class="check-option"><input type="checkbox" name="evidence_ids" value="${esc(e.evidence_id)}">${esc(e.name)} · v${e.revision}</label>`).join('')||'<p>尚无登记证据，本次输入只能按用户声明保留。</p>'}</details><h2>荷载清单</h2><div id="beam-loads"></div><div class="actions"><button type="button" id="beam-point">添加集中力</button><button type="button" id="beam-uniform">添加均布荷载</button><button type="submit" class="primary">计算并保存新记录</button></div></form><div id="beam-result" aria-live="polite"></div><h2>历史记录</h2><div id="beam-history"></div>`;
   const form=host.querySelector('#beam-form'),rows=host.querySelector('#beam-loads');
+  let manualProfile=null;
+  const ifc=bindIfcBeamProfile(host.querySelector('#ifc-beam-handoff'),base,action,(record,locked)=>{
+    manualProfile=null;host.querySelector('#beam-copied-profile').innerHTML='';
+    for(const k of ['width','depth','section_unit'])form.elements[k].disabled=locked||Boolean(manualProfile);
+    if(locked){manualProfile=null;form.elements.width.value='';form.elements.depth.value='';if(!record||record.status!=='extracted')host.querySelector('#beam-result').textContent='IFC来源未通过当前核验，当前结果已撤下。';}
+  });
+
   function add(type,load){
     const row=document.createElement('fieldset');row.dataset.type=type;
     row.innerHTML=`<legend>${type==='point'?'集中力':'分段均布荷载'}</legend><div class="form-grid">${input('load_name','荷载名称','required')}${input('magnitude',type==='point'?'集中力大小':'均布强度',numeric)}${select('unit','荷载单位',type==='point'?{N:'N',kN:'kN'}:{'N/m':'N/m','kN/m':'kN/m','N/mm':'N/mm'})}${type==='point'?input('position','作用位置（距左端）',numeric):input('start','起点（距左端）',numeric)+input('end','终点（距左端）',numeric)}${select('position_unit','位置单位',lengths)}</div>${input('source','荷载来源与组合口径','required minlength="5"')}<button type="button">移除此项</button>`;
@@ -38,18 +46,22 @@ export async function engineeringWorkspace(state,host,action,resumedInput=null){
   function draft(){
     const values=Object.fromEntries(new FormData(form));const numericFields=['span','width','depth','elastic_modulus'];
     const keys=['name','support',...numericFields,'span_unit','section_unit','modulus_unit','geometry_source','material_source','support_basis','analysis_basis'];
-    const b=Object.fromEntries(keys.map(k=>[k,numericFields.includes(k)?(values[k]===''?null:Number(values[k])):values[k]]));
+    const b=Object.fromEntries(keys.map(k=>[k,numericFields.includes(k)?((values[k]??'')===''?null:Number(values[k])):values[k]]));
     b.evidence_ids=[...form.querySelectorAll('[name=evidence_ids]:checked')].map(x=>x.value);
-    b.loads=[...rows.children].map(row=>{const type=row.dataset.type,keys=['magnitude','unit','position_unit','source',...(type==='point'?['position']:['start','end'])];return {type,name:row.querySelector('[name=load_name]').value,...Object.fromEntries(keys.map(k=>{const v=row.querySelector('[name="'+k+'"]').value;return [k,['magnitude','position','start','end'].includes(k)?(v===''?null:Number(v)):v];}))};});return b;
+    b.loads=[...rows.children].map(row=>{const type=row.dataset.type,keys=['magnitude','unit','position_unit','source',...(type==='point'?['position']:['start','end'])];return {type,name:row.querySelector('[name=load_name]').value,...Object.fromEntries(keys.map(k=>{const v=row.querySelector('[name="'+k+'"]').value;return [k,['magnitude','position','start','end'].includes(k)?(v===''?null:Number(v)):v];}))};});b.section_unit=b.section_unit||'m';if(manualProfile)b.section_profile=structuredClone(manualProfile);const selection=ifc.capture();if(selection)b._ifc_selection=selection;return b;
   }
   host.captureDraft=draft;
-  function fill(input){
-    for(const [k,v] of Object.entries(input)){if(['loads','evidence_ids'].includes(k))continue;form.elements[k].value=v??'';}
+  async function fill(input,snapshot=null){
+    ifc.clear();manualProfile=input.section_profile||null;
+    for(const [k,v] of Object.entries(input)){if(['loads','evidence_ids'].includes(k)||!form.elements[k])continue;form.elements[k].value=v??'';}
     form.querySelectorAll('[name=evidence_ids]').forEach(el=>el.checked=input.evidence_ids.includes(el.value));
     rows.innerHTML='';input.loads.forEach(l=>add(l.type,l));
+    for(const k of ['width','depth','section_unit'])form.elements[k].disabled=Boolean(manualProfile);
+    if(snapshot||input._ifc_selection)await ifc.restore(snapshot||input._ifc_selection);
+    else if(manualProfile)host.querySelector('#beam-copied-profile').innerHTML='<p>复制的显式截面，按原声明保留；未声称完成IFC来源复核。可切回手工截面重新输入。</p><pre>'+esc(JSON.stringify(manualProfile,null,2))+'</pre>';
   }
   if(resumedInput){
-    fill(resumedInput);
+    await fill(resumedInput);
     const message=document.createElement('p');message.className='form-note';message.setAttribute('role','status');
     message.textContent='已恢复同一账号的临时输入。尚未重新提交计算，请检查后再保存。';form.prepend(message);
   }
@@ -61,8 +73,8 @@ export async function engineeringWorkspace(state,host,action,resumedInput=null){
     const records=await request(base+'/beam-analyses');if(!host.isConnected)return;
     host.querySelector('#beam-history').innerHTML=records.map(r=>`<p>${esc(r.input.name)} · ${statuses[r.status]} <button data-view-beam="${r.engineering_id}">查看</button><button data-copy-beam="${r.engineering_id}">复制输入</button></p>`).join('')||'<p>尚无计算记录。</p>';
     host.querySelectorAll('[data-view-beam]').forEach(btn=>btn.onclick=()=>action(async()=>{render(await request(base+'/beam-analyses/'+btn.dataset.viewBeam));host.querySelector('#beam-result').scrollIntoView({block:'start'});}));
-    host.querySelectorAll('[data-copy-beam]').forEach(btn=>btn.onclick=()=>action(async()=>{const r=await request(base+'/beam-analyses/'+btn.dataset.copyBeam);if(!host.isConnected)return;fill(r.input);form.elements.name.value+=' · 副本';form.scrollIntoView({block:'start'});}));
+    host.querySelectorAll('[data-copy-beam]').forEach(btn=>btn.onclick=()=>action(async()=>{const r=await request(base+'/beam-analyses/'+btn.dataset.copyBeam);if(!host.isConnected)return;await fill(r.input,r.ifc_profile_snapshot);form.elements.name.value+=' · 副本';form.scrollIntoView({block:'start'});}));
   }
-  form.onsubmit=e=>{e.preventDefault();action(async()=>{render(await post(base+'/beam-analyses',draft()));await history();host.querySelector('#beam-result').scrollIntoView({block:'start'});},e.submitter);};
+  form.onsubmit=e=>{e.preventDefault();action(async()=>{const body=draft();delete body._ifc_selection;const source=await ifc.review();let result;if(source){const {profile_id,...review}=source;body.width=null;body.depth=null;delete body.section_profile;result=await post(base+'/ifc-beam-profiles/'+profile_id+'/analyses',{...review,analysis:body});}else{result=await post(base+'/beam-analyses',body);}render(result);await history();host.querySelector('#beam-result').scrollIntoView({block:'start'});},e.submitter);};
   await history();
 }

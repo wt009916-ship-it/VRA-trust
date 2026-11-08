@@ -32,6 +32,8 @@ def register_extensions(app, domain, auth):
     from .retrofit_models import register as register_retrofit_models
     register_retrofit_models(app,domain)
     cad = Cad(domain)
+    from .ifc_beam_handoff import register as register_ifc_beam_handoff
+    register_ifc_beam_handoff(app, cad)
     from .material_takeoff import register as register_material_takeoff
     register_material_takeoff(app, cad)
     lifecycle = Lifecycle(domain)

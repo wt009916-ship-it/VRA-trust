@@ -27,6 +27,9 @@ def main():
                 elif set(values)=={'operation','product_ids'} and values['operation']=='ifc_material_collection':
                     from ifc_material_collection import measure_collection
                     result=measure_collection(source,values['product_ids'])
+                elif set(values)=={'operation','product_id'} and values['operation']=='ifc_beam_profile':
+                    from ifc_beam_profiles import inspect_beam
+                    result=inspect_beam(source,values['product_id'])
                 elif set(values)=={'operation','product_id'} and values['operation']=='ifc_layers':
                     from ifc_layer_quantities import measure_layers
                     result=measure_layers(source,values['product_id'])

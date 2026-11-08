@@ -7,6 +7,7 @@ from typing import Annotated, Literal
 from pydantic import Field, StrictFloat, model_validator
 from .calculation_provenance import validity, persist, version as provenance_version
 from . import core
+from .beam_sections import properties as section_properties
 from .domain import identifier
 from .schema import Contract
 
@@ -38,6 +39,18 @@ class UniformLoad(Contract):
     source: str = Field(min_length=5, max_length=1000)
 
 
+class SectionProfile(Contract):
+    kind: Literal['rectangle', 'circle', 'rectangular_hollow', 'circular_hollow', 'i_section']
+    dimensions: dict[str, StrictFloat] = Field(min_length=1, max_length=5)
+    unit: LengthUnit
+    bending_axis: Literal['x', 'y']
+
+    @model_validator(mode='after')
+    def valid_section(self):
+        section_properties(self.kind, {k: v*LENGTH[self.unit] for k, v in self.dimensions.items()})
+        return self
+
+
 class BeamInput(Contract):
     name: str = Field(min_length=1, max_length=160)
     support: Literal['simply_supported','cantilever']
@@ -46,6 +59,7 @@ class BeamInput(Contract):
     width: StrictFloat | None = Field(default=None, gt=0, le=1e9)
     depth: StrictFloat | None = Field(default=None, gt=0, le=1e9)
     section_unit: LengthUnit
+    section_profile: SectionProfile | None = None
     elastic_modulus: StrictFloat | None = Field(default=None, gt=0, le=1e15)
     modulus_unit: Literal['Pa','MPa','GPa']
     geometry_source: str = Field(min_length=5, max_length=1000)
@@ -57,6 +71,8 @@ class BeamInput(Contract):
 
     @model_validator(mode='after')
     def dimensions(self):
+        if self.section_profile is not None and (self.width is not None or self.depth is not None):
+            raise ValueError("Use either a section profile or legacy rectangular dimensions, not both")
         n = normalize(self)
         for key,low,high in [('span_m',1e-6,1e4),('width_m',1e-6,1e3),('depth_m',1e-6,1e3),('e_pa',1,1e15)]:
             if n[key] is not None and not low <= n[key] <= high:
@@ -74,12 +90,22 @@ class BeamInput(Contract):
 
 def normalize(body):
     convert = lambda value, scale: None if value is None else value*scale
-    return {'span_m':convert(body.span,LENGTH[body.span_unit]), 'width_m':convert(body.width,LENGTH[body.section_unit]),
+    result = {'span_m':convert(body.span,LENGTH[body.span_unit]), 'width_m':convert(body.width,LENGTH[body.section_unit]),
         'depth_m':convert(body.depth,LENGTH[body.section_unit]), 'e_pa':convert(body.elastic_modulus,MODULUS[body.modulus_unit]),
         'loads':[{'name':load.name, 'type':load.type, **(
             {'force_n':convert(load.magnitude,FORCE[load.unit]),'position_m':convert(load.position,LENGTH[load.position_unit])}
             if load.type=='point' else {'q_n_m':convert(load.magnitude,LINE_LOAD[load.unit]),
                 'start_m':convert(load.start,LENGTH[load.position_unit]),'end_m':convert(load.end,LENGTH[load.position_unit])})} for load in body.loads]}
+    if body.section_profile is not None:
+        profile = body.section_profile
+        section = section_properties(profile.kind, {k: v*LENGTH[profile.unit] for k, v in profile.dimensions.items()})
+        axis = profile.bending_axis
+        result.update(width_m=section['width_m'] if axis == 'x' else section['depth_m'],
+                      depth_m=section['depth_m'] if axis == 'x' else section['width_m'],
+                      section={**section, 'bending_axis': axis, 'inertia_m4': section['i'+axis+'_m4'],
+                               'extreme_fiber_m': section['cy_m'] if axis == 'x' else section['cx_m']})
+    return result
+
 
 
 def checked(value):
@@ -96,7 +122,7 @@ def calculate(body):
     base={'normalized':n, 'missing':missing, 'structural_safety':'NOT_ASSESSED', 'code_compliance':'NOT_ASSESSED',
         'source_status':'USER_DECLARED', 'self_weight_included_automatically':False,
         'sign_convention':'Loads and deflections downward positive; reactions upward; support reaction moment counterclockwise; internal moment sagging positive.',
-        'limitations':['等截面矩形、恒定EI、小挠度线弹性Euler–Bernoulli梁；忽略剪切变形、扭转、轴力、屈曲和动力影响。',
+        'limitations':['明确对称等截面、恒定EI、小挠度线弹性Euler–Bernoulli梁；忽略剪切变形、扭转、轴力、屈曲和动力影响。',
             '只支持向下集中力及分段均布荷载；不自动加入自重、组合系数或材料设计强度。',
             '输入来源及支承理想化由用户声明；弯曲应力不是承载能力验算，不能输出结构安全或规范合格结论。',
             '跨高比、转角和挠跨比只用于模型适用性提示，阈值为本工具的筛查值，不是规范限值。'],
@@ -105,7 +131,7 @@ def calculate(body):
     if missing:
         return {**base,'status':'incomplete','metrics':None,'samples':[]}
     span,width,depth,e=(n[k] for k in ('span_m','width_m','depth_m','e_pa'))
-    inertia=checked(width*depth**3/12); rigidity=checked(e*inertia)
+    inertia=checked(n['section']['inertia_m4'] if body.section_profile is not None else width*depth**3/12); rigidity=checked(e*inertia)
     points=[(x['force_n'],x['position_m']) for x in n['loads'] if x['type']=='point']
     uniforms=[(x['q_n_m'],x['start_m'],x['end_m']) for x in n['loads'] if x['type']=='uniform']
     weight=math.fsum([p for p,a in points]+[q*(b-a) for q,a,b in uniforms])
@@ -215,7 +241,7 @@ def calculate(body):
     samples=[{'x_m':x,'shear_left_n':None if x==0 else checked(shear(x,'left')),
         'shear_right_n':None if x==span else checked(shear(x,'right')), 'moment_nm':checked(bending(x)),
         'deflection_down_m':checked(deflection(x)), 'rotation_down_rad':checked(rotation(x))} for x in positions]
-    metrics={'area_m2':width*depth,'inertia_m4':inertia,'ei_nm2':rigidity,'total_downward_load_n':weight,
+    metrics={'area_m2':n['section']['area_m2'] if body.section_profile is not None else width*depth,'inertia_m4':inertia,'ei_nm2':rigidity,'total_downward_load_n':weight,
         'left_reaction_n':ra,'right_reaction_n':rb,'left_reaction_moment_nm':-m0,
         'max_abs_moment_nm':abs(bending(max_m_x)), 'max_moment_at_m':max_m_x,
         'max_abs_shear_n':abs(max_v[2]), 'max_shear_at_m':max_v[0], 'max_shear_side':max_v[1],
@@ -227,15 +253,20 @@ def calculate(body):
     return {**base,'status':'outside_model_screen' if screening else 'calculated','metrics':metrics,'samples':samples,
         'model_screening':screening,'integration_constants':{'y_at_left_m':0,'upward_slope_constant_rad':c1},
         'equilibrium_residual':{'force_n':math.fsum([ra,rb,-weight]),'moment_nm':math.fsum([rb*span,-m0,-moment])},
-        'formulas':['y is upward-positive; output deflection_down=-y and rotation_down=-y_prime','I=b*h^3/12','EI*y_second=M(x)','M(x)=M0+RA*x-sum(P*<x-a>)-sum(q*(<x-a>^2-<x-b>^2)/2)',
+        'formulas':['y is upward-positive; output deflection_down=-y and rotation_down=-y_prime',n['section']['formula'] if body.section_profile is not None else 'I=b*h^3/12','EI*y_second=M(x)','M(x)=M0+RA*x-sum(P*<x-a>)-sum(q*(<x-a>^2-<x-b>^2)/2)',
             'EI*y=M0*x^2/2+RA*x^3/6-sum(P*<x-a>^3/6)-sum(q*(<x-a>^4-<x-b>^4)/24)+EI*C1*x',
             'simply supported: y(0)=y(L)=0; cantilever: y(0)=y_prime(0)=0','sigma_max=abs(M_max)*(h/2)/I']}
+
+
+def calculator_version():
+    return core.hash_json({'calculator': provenance_version(Path(__file__)),
+                           'sections': core.sha(Path(__file__).with_name('beam_sections.py'))})
 
 
 class Engineering:
     def __init__(self,domain): self.domain,self.store=domain,domain.store
 
-    def save(self,pid,body, *, expected_bindings=None):
+    def save(self,pid,body, *, expected_bindings=None, ifc_binding=None):
         project=self.store.get('project',pid); snapshots=[]
         for eid in body.evidence_ids:
             evidence=self.store.get('evidence',eid)
@@ -245,8 +276,18 @@ class Engineering:
             snapshots.append(evidence)
         obj={'engineering_id':identifier('engineering'),'project_id':pid,'project_revision':project['revision'],
             'input':body.model_dump(),'result':calculate(body),'source_snapshot':snapshots,'created_at':core.now(),
-            'calculator_hash':provenance_version(Path(__file__))}
-        obj['hash']=core.hash_json(obj);persist(self.domain, 'engineering', obj, expected_bindings)
+            'calculator_hash':calculator_version()}
+        check = None
+        if ifc_binding is not None:
+            from .ifc_beam_handoff import validate_snapshot
+            obj['ifc_profile_snapshot'] = ifc_binding
+            obj['file_snapshot'] = ifc_binding['file_snapshot']
+            def check():
+                validate_snapshot(self.domain, pid, ifc_binding)
+                if obj['calculator_hash'] != calculator_version():
+                    raise core.ValidationError('Beam calculator changed during reviewed handoff')
+        obj['hash']=core.hash_json(obj)
+        persist(self.domain, 'engineering', obj, expected_bindings, pre_insert_check=check)
         return self.view(pid,obj['engineering_id'])
 
     def view(self,pid,eid):
@@ -254,8 +295,15 @@ class Engineering:
         if obj['project_id']!=pid: raise core.ValidationError('Cross-project engineering record rejected')
         if core.hash_json({k:v for k,v in obj.items() if k not in {'hash','revision'}})!=obj['hash']:
             raise core.ValidationError('Engineering record integrity failed')
-        provenance = validity(self.domain, obj, provenance_version(Path(__file__)))
+        provenance = validity(self.domain, obj, calculator_version())
         stale = provenance['stale_reasons']
+        if obj.get('ifc_profile_snapshot'):
+            from .ifc_beam_handoff import validate_snapshot
+            try:
+                validate_snapshot(self.domain, pid, obj['ifc_profile_snapshot'])
+            except (ValueError, OSError, KeyError):
+                stale.append('ifc_profile_changed')
+                provenance['stale_details'].append({'code':'ifc_profile_changed', 'subject_id':obj['ifc_profile_snapshot']['beamprofile_id']})
         return {**obj, **provenance,'status':'stale' if stale else obj['result']['status'],'result':None if stale else obj['result']}
 
 

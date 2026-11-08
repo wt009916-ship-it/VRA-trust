@@ -1,0 +1,857 @@
+{
+  "engineering_id": "engineering_fbdc653b82f54ec4b31a1594c61afe5d",
+  "project_id": "project_9d754f62df65471bbc2522d533b1a590",
+  "project_revision": 1,
+  "input": {
+    "name": "Public IPE600 with declared 8m span and 10kN centre load",
+    "support": "simply_supported",
+    "span": 8.0,
+    "span_unit": "m",
+    "width": null,
+    "depth": null,
+    "section_unit": "m",
+    "section_profile": {
+      "kind": "i_section",
+      "dimensions": {
+        "b": 0.22,
+        "h": 0.6,
+        "tw": 0.012,
+        "tf": 0.019,
+        "r": 0.024
+      },
+      "unit": "m",
+      "bending_axis": "x"
+    },
+    "elastic_modulus": 210.0,
+    "modulus_unit": "GPa",
+    "geometry_source": "Public IPE600 profile; 8m support span is a separate synthetic declaration",
+    "material_source": "Synthetic 210GPa modulus, not extracted from material name",
+    "support_basis": "Synthetic pin and roller supports, not model connectivity",
+    "analysis_basis": "Synthetic constant EI reference calculation, no design resistance or compliance assessment",
+    "evidence_ids": [
+      "evidence_170a43fb15de450694147ac53543641c"
+    ],
+    "loads": [
+      {
+        "type": "point",
+        "name": "Synthetic centre force",
+        "magnitude": 10.0,
+        "unit": "kN",
+        "position": 4.0,
+        "position_unit": "m",
+        "source": "Synthetic test force, no self weight or load combinations"
+      }
+    ]
+  },
+  "result": {
+    "normalized": {
+      "span_m": 8.0,
+      "width_m": 0.22,
+      "depth_m": 0.6,
+      "e_pa": 210000000000.0,
+      "loads": [
+        {
+          "name": "Synthetic centre force",
+          "type": "point",
+          "force_n": 10000.0,
+          "position_m": 4.0
+        }
+      ],
+      "section": {
+        "kind": "i_section",
+        "dimensions_m": {
+          "b": 0.22,
+          "h": 0.6,
+          "tw": 0.012,
+          "tf": 0.019,
+          "r": 0.024
+        },
+        "area_m2": 0.015598442631532278,
+        "ix_m4": 0.0009208345717756827,
+        "iy_m4": 3.387342477398636e-05,
+        "ixy_m4": 0.0,
+        "width_m": 0.22,
+        "depth_m": 0.6,
+        "centroid_profile_m": [
+          0.0,
+          0.0
+        ],
+        "cx_m": 0.11,
+        "cy_m": 0.3,
+        "formula": "Symmetric I: two flange rectangles + web rectangle + four root fillets (square minus quarter-disc); no flange slope/edge fillet",
+        "method": "analytic_parameterized_symmetric_profile",
+        "structural_safety": "NOT_ASSESSED",
+        "bending_axis": "x",
+        "inertia_m4": 0.0009208345717756827,
+        "extreme_fiber_m": 0.3
+      }
+    },
+    "missing": [],
+    "structural_safety": "NOT_ASSESSED",
+    "code_compliance": "NOT_ASSESSED",
+    "source_status": "USER_DECLARED",
+    "self_weight_included_automatically": false,
+    "sign_convention": "Loads and deflections downward positive; reactions upward; support reaction moment counterclockwise; internal moment sagging positive.",
+    "limitations": [
+      "明确对称等截面、恒定EI、小挠度线弹性Euler–Bernoulli梁；忽略剪切变形、扭转、轴力、屈曲和动力影响。",
+      "只支持向下集中力及分段均布荷载；不自动加入自重、组合系数或材料设计强度。",
+      "输入来源及支承理想化由用户声明；弯曲应力不是承载能力验算，不能输出结构安全或规范合格结论。",
+      "跨高比、转角和挠跨比只用于模型适用性提示，阈值为本工具的筛查值，不是规范限值。"
+    ],
+    "method_sources": [
+      "https://mude.citg.tudelft.nl/workbook-2025/assignments/WS1.3/2-solving-boundary-value-problems.html"
+    ],
+    "method": "Factored Green-function integration of equilibrium and EI*y_second=M; reactions from statics; exact interval extrema and bisection of rotation, not plot-sample maxima.",
+    "status": "calculated",
+    "metrics": {
+      "area_m2": 0.132,
+      "inertia_m4": 0.0009208345717756827,
+      "ei_nm2": 193375260.07289338,
+      "total_downward_load_n": 10000.0,
+      "left_reaction_n": 5000.0,
+      "right_reaction_n": 5000.0,
+      "left_reaction_moment_nm": -0.0,
+      "max_abs_moment_nm": 20000.0,
+      "max_moment_at_m": 4.0,
+      "max_abs_shear_n": 5000.0,
+      "max_shear_at_m": 0.0,
+      "max_shear_side": "right",
+      "max_deflection_m": 0.0005516045156265509,
+      "max_deflection_at_m": 4.0,
+      "max_abs_rotation_rad": 0.0002068516933599566,
+      "max_elastic_bending_stress_pa": 6515828.3408386335,
+      "span_depth_ratio": 13.333333333333334,
+      "deflection_span_ratio": 6.895056445331887e-05
+    },
+    "samples": [
+      {
+        "x_m": 0.0,
+        "shear_left_n": null,
+        "shear_right_n": 5000.0,
+        "moment_nm": 0.0,
+        "deflection_down_m": 0.0,
+        "rotation_down_rad": 0.0002068516933599566
+      },
+      {
+        "x_m": 0.1,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 500.0,
+        "deflection_down_m": 2.0680859925717326e-05,
+        "rotation_down_rad": 0.00020672241105160663
+      },
+      {
+        "x_m": 0.2,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 1000.0,
+        "deflection_down_m": 4.133586338976466e-05,
+        "rotation_down_rad": 0.0002063345641265567
+      },
+      {
+        "x_m": 0.3,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 1500.0,
+        "deflection_down_m": 6.1939153930472e-05,
+        "rotation_down_rad": 0.0002056881525848068
+      },
+      {
+        "x_m": 0.4,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 2000.0,
+        "deflection_down_m": 8.246487508616937e-05,
+        "rotation_down_rad": 0.00020478317642635705
+      },
+      {
+        "x_m": 0.5,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 2500.0,
+        "deflection_down_m": 0.00010288717039518675,
+        "rotation_down_rad": 0.00020361963565120728
+      },
+      {
+        "x_m": 0.6,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 3000.0,
+        "deflection_down_m": 0.00012318018339585416,
+        "rotation_down_rad": 0.00020219753025935757
+      },
+      {
+        "x_m": 0.7,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 3500.0,
+        "deflection_down_m": 0.0001433180576265016,
+        "rotation_down_rad": 0.00020051686025080793
+      },
+      {
+        "x_m": 0.8,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 4000.0,
+        "deflection_down_m": 0.00016327493662545909,
+        "rotation_down_rad": 0.00019857762562555832
+      },
+      {
+        "x_m": 0.9,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 4500.0,
+        "deflection_down_m": 0.00018302496393105659,
+        "rotation_down_rad": 0.00019637982638360878
+      },
+      {
+        "x_m": 1.0,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 5000.0,
+        "deflection_down_m": 0.00020254228308162417,
+        "rotation_down_rad": 0.0001939234625249593
+      },
+      {
+        "x_m": 1.1,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 5500.0,
+        "deflection_down_m": 0.0002218010376154918,
+        "rotation_down_rad": 0.00019120853404960988
+      },
+      {
+        "x_m": 1.2,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 6000.0,
+        "deflection_down_m": 0.00024077537107098949,
+        "rotation_down_rad": 0.0001882350409575605
+      },
+      {
+        "x_m": 1.3,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 6500.0,
+        "deflection_down_m": 0.0002594394269864472,
+        "rotation_down_rad": 0.00018500298324881118
+      },
+      {
+        "x_m": 1.4,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 7000.0,
+        "deflection_down_m": 0.00027776734890019503,
+        "rotation_down_rad": 0.00018151236092336194
+      },
+      {
+        "x_m": 1.5,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 7500.0,
+        "deflection_down_m": 0.0002957332803505629,
+        "rotation_down_rad": 0.0001777631739812127
+      },
+      {
+        "x_m": 1.6,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 8000.0,
+        "deflection_down_m": 0.0003133113648758809,
+        "rotation_down_rad": 0.00017375542242236355
+      },
+      {
+        "x_m": 1.7,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 8500.0,
+        "deflection_down_m": 0.000330475746014479,
+        "rotation_down_rad": 0.00016948910624681445
+      },
+      {
+        "x_m": 1.8,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 9000.0,
+        "deflection_down_m": 0.00034720056730468715,
+        "rotation_down_rad": 0.0001649642254545654
+      },
+      {
+        "x_m": 1.9,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 9500.0,
+        "deflection_down_m": 0.0003634599722848354,
+        "rotation_down_rad": 0.0001601807800456164
+      },
+      {
+        "x_m": 2.0,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 10000.0,
+        "deflection_down_m": 0.00037922810449325374,
+        "rotation_down_rad": 0.00015513877001996744
+      },
+      {
+        "x_m": 2.1,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 10500.0,
+        "deflection_down_m": 0.00039447910746827217,
+        "rotation_down_rad": 0.00014983819537761853
+      },
+      {
+        "x_m": 2.2,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 11000.0,
+        "deflection_down_m": 0.00040918712474822074,
+        "rotation_down_rad": 0.0001442790561185697
+      },
+      {
+        "x_m": 2.3,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 11500.0,
+        "deflection_down_m": 0.0004233262998714295,
+        "rotation_down_rad": 0.00013846135224282094
+      },
+      {
+        "x_m": 2.4,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 12000.0,
+        "deflection_down_m": 0.00043687077637622834,
+        "rotation_down_rad": 0.00013238508375037222
+      },
+      {
+        "x_m": 2.5,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 12500.0,
+        "deflection_down_m": 0.0004497946978009473,
+        "rotation_down_rad": 0.00012605025064122354
+      },
+      {
+        "x_m": 2.6,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 13000.0,
+        "deflection_down_m": 0.0004620722076839163,
+        "rotation_down_rad": 0.00011945685291537494
+      },
+      {
+        "x_m": 2.7,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 13500.0,
+        "deflection_down_m": 0.0004736774495634656,
+        "rotation_down_rad": 0.00011260489057282635
+      },
+      {
+        "x_m": 2.8,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 14000.0,
+        "deflection_down_m": 0.000484584566977925,
+        "rotation_down_rad": 0.00010549436361357788
+      },
+      {
+        "x_m": 2.9,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 14500.0,
+        "deflection_down_m": 0.0004947677034656245,
+        "rotation_down_rad": 9.812527203762943e-05
+      },
+      {
+        "x_m": 3.0,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 15000.0,
+        "deflection_down_m": 0.0005042010025648942,
+        "rotation_down_rad": 9.0497615844981e-05
+      },
+      {
+        "x_m": 3.1,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 15500.0,
+        "deflection_down_m": 0.0005128586078140641,
+        "rotation_down_rad": 8.261139503563265e-05
+      },
+      {
+        "x_m": 3.2,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 16000.0,
+        "deflection_down_m": 0.0005207146627514641,
+        "rotation_down_rad": 7.446660960958434e-05
+      },
+      {
+        "x_m": 3.3,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 16500.0,
+        "deflection_down_m": 0.0005277433109154243,
+        "rotation_down_rad": 6.606325956683616e-05
+      },
+      {
+        "x_m": 3.4,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 17000.0,
+        "deflection_down_m": 0.0005339186958442746,
+        "rotation_down_rad": 5.740134490738796e-05
+      },
+      {
+        "x_m": 3.5,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 17500.0,
+        "deflection_down_m": 0.0005392149610763452,
+        "rotation_down_rad": 4.848086563123983e-05
+      },
+      {
+        "x_m": 3.6,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 18000.0,
+        "deflection_down_m": 0.0005436062501499659,
+        "rotation_down_rad": 3.9301821738391744e-05
+      },
+      {
+        "x_m": 3.7,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 18500.0,
+        "deflection_down_m": 0.0005470667066034668,
+        "rotation_down_rad": 2.98642132288437e-05
+      },
+      {
+        "x_m": 3.8,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 19000.0,
+        "deflection_down_m": 0.000549570473975178,
+        "rotation_down_rad": 2.0168040102595795e-05
+      },
+      {
+        "x_m": 3.9,
+        "shear_left_n": 5000.0,
+        "shear_right_n": 5000.0,
+        "moment_nm": 19500.0,
+        "deflection_down_m": 0.0005510916958034294,
+        "rotation_down_rad": 1.0213302359647875e-05
+      },
+      {
+        "x_m": 4.0,
+        "shear_left_n": 5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 20000.0,
+        "deflection_down_m": 0.0005516045156265509,
+        "rotation_down_rad": 0.0
+      },
+      {
+        "x_m": 4.1,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 19500.0,
+        "deflection_down_m": 0.0005510916958034294,
+        "rotation_down_rad": -1.0213302359647814e-05
+      },
+      {
+        "x_m": 4.2,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 19000.0,
+        "deflection_down_m": 0.000549570473975178,
+        "rotation_down_rad": -2.0168040102595795e-05
+      },
+      {
+        "x_m": 4.3,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 18500.0,
+        "deflection_down_m": 0.0005470667066034668,
+        "rotation_down_rad": -2.98642132288437e-05
+      },
+      {
+        "x_m": 4.4,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 18000.0,
+        "deflection_down_m": 0.000543606250149966,
+        "rotation_down_rad": -3.930182173839177e-05
+      },
+      {
+        "x_m": 4.5,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 17500.0,
+        "deflection_down_m": 0.0005392149610763452,
+        "rotation_down_rad": -4.848086563123983e-05
+      },
+      {
+        "x_m": 4.6,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 17000.0,
+        "deflection_down_m": 0.0005339186958442746,
+        "rotation_down_rad": -5.740134490738793e-05
+      },
+      {
+        "x_m": 4.7,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 16500.0,
+        "deflection_down_m": 0.0005277433109154243,
+        "rotation_down_rad": -6.606325956683616e-05
+      },
+      {
+        "x_m": 4.8,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 16000.0,
+        "deflection_down_m": 0.0005207146627514641,
+        "rotation_down_rad": -7.446660960958434e-05
+      },
+      {
+        "x_m": 4.9,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 15499.999999999998,
+        "deflection_down_m": 0.000512858607814064,
+        "rotation_down_rad": -8.261139503563269e-05
+      },
+      {
+        "x_m": 5.0,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 15000.0,
+        "deflection_down_m": 0.0005042010025648942,
+        "rotation_down_rad": -9.0497615844981e-05
+      },
+      {
+        "x_m": 5.1,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 14500.000000000002,
+        "deflection_down_m": 0.0004947677034656245,
+        "rotation_down_rad": -9.812527203762937e-05
+      },
+      {
+        "x_m": 5.2,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 14000.0,
+        "deflection_down_m": 0.000484584566977925,
+        "rotation_down_rad": -0.00010549436361357788
+      },
+      {
+        "x_m": 5.3,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 13500.0,
+        "deflection_down_m": 0.0004736774495634656,
+        "rotation_down_rad": -0.00011260489057282635
+      },
+      {
+        "x_m": 5.4,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 12999.999999999998,
+        "deflection_down_m": 0.0004620722076839164,
+        "rotation_down_rad": -0.00011945685291537495
+      },
+      {
+        "x_m": 5.5,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 12500.0,
+        "deflection_down_m": 0.0004497946978009473,
+        "rotation_down_rad": -0.00012605025064122354
+      },
+      {
+        "x_m": 5.6,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 12000.000000000002,
+        "deflection_down_m": 0.00043687077637622834,
+        "rotation_down_rad": -0.0001323850837503722
+      },
+      {
+        "x_m": 5.7,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 11500.0,
+        "deflection_down_m": 0.0004233262998714295,
+        "rotation_down_rad": -0.00013846135224282094
+      },
+      {
+        "x_m": 5.8,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 11000.0,
+        "deflection_down_m": 0.00040918712474822074,
+        "rotation_down_rad": -0.0001442790561185697
+      },
+      {
+        "x_m": 5.9,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 10499.999999999998,
+        "deflection_down_m": 0.00039447910746827217,
+        "rotation_down_rad": -0.00014983819537761858
+      },
+      {
+        "x_m": 6.0,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 10000.0,
+        "deflection_down_m": 0.00037922810449325374,
+        "rotation_down_rad": -0.00015513877001996744
+      },
+      {
+        "x_m": 6.1,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 9500.000000000002,
+        "deflection_down_m": 0.00036345997228483544,
+        "rotation_down_rad": -0.00016018078004561637
+      },
+      {
+        "x_m": 6.2,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 9000.0,
+        "deflection_down_m": 0.00034720056730468715,
+        "rotation_down_rad": -0.0001649642254545654
+      },
+      {
+        "x_m": 6.3,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 8500.0,
+        "deflection_down_m": 0.000330475746014479,
+        "rotation_down_rad": -0.00016948910624681445
+      },
+      {
+        "x_m": 6.4,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 7999.999999999998,
+        "deflection_down_m": 0.00031331136487588085,
+        "rotation_down_rad": -0.00017375542242236357
+      },
+      {
+        "x_m": 6.5,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 7500.0,
+        "deflection_down_m": 0.0002957332803505629,
+        "rotation_down_rad": -0.0001777631739812127
+      },
+      {
+        "x_m": 6.6,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 7000.000000000002,
+        "deflection_down_m": 0.0002777673489001951,
+        "rotation_down_rad": -0.0001815123609233619
+      },
+      {
+        "x_m": 6.7,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 6499.999999999999,
+        "deflection_down_m": 0.0002594394269864472,
+        "rotation_down_rad": -0.00018500298324881118
+      },
+      {
+        "x_m": 6.8,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 6000.000000000001,
+        "deflection_down_m": 0.00024077537107098954,
+        "rotation_down_rad": -0.0001882350409575605
+      },
+      {
+        "x_m": 6.9,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 5499.999999999998,
+        "deflection_down_m": 0.0002218010376154917,
+        "rotation_down_rad": -0.0001912085340496099
+      },
+      {
+        "x_m": 7.0,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 5000.0,
+        "deflection_down_m": 0.00020254228308162417,
+        "rotation_down_rad": -0.0001939234625249593
+      },
+      {
+        "x_m": 7.1,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 4500.000000000002,
+        "deflection_down_m": 0.00018302496393105667,
+        "rotation_down_rad": -0.00019637982638360878
+      },
+      {
+        "x_m": 7.2,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 3999.999999999999,
+        "deflection_down_m": 0.00016327493662545903,
+        "rotation_down_rad": -0.00019857762562555832
+      },
+      {
+        "x_m": 7.3,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 3500.000000000001,
+        "deflection_down_m": 0.00014331805762650163,
+        "rotation_down_rad": -0.00020051686025080793
+      },
+      {
+        "x_m": 7.4,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 2999.999999999998,
+        "deflection_down_m": 0.00012318018339585408,
+        "rotation_down_rad": -0.00020219753025935757
+      },
+      {
+        "x_m": 7.5,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 2500.0,
+        "deflection_down_m": 0.00010288717039518675,
+        "rotation_down_rad": -0.00020361963565120728
+      },
+      {
+        "x_m": 7.6,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 2000.0000000000018,
+        "deflection_down_m": 8.246487508616944e-05,
+        "rotation_down_rad": -0.000204783176426357
+      },
+      {
+        "x_m": 7.7,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 1499.999999999999,
+        "deflection_down_m": 6.193915393047197e-05,
+        "rotation_down_rad": -0.0002056881525848068
+      },
+      {
+        "x_m": 7.8,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 1000.0000000000009,
+        "deflection_down_m": 4.1335863389764695e-05,
+        "rotation_down_rad": -0.0002063345641265567
+      },
+      {
+        "x_m": 7.9,
+        "shear_left_n": -5000.0,
+        "shear_right_n": -5000.0,
+        "moment_nm": 499.99999999999824,
+        "deflection_down_m": 2.0680859925717255e-05,
+        "rotation_down_rad": -0.00020672241105160663
+      },
+      {
+        "x_m": 8.0,
+        "shear_left_n": -5000.0,
+        "shear_right_n": null,
+        "moment_nm": 0.0,
+        "deflection_down_m": 0.0,
+        "rotation_down_rad": -0.0002068516933599566
+      }
+    ],
+    "model_screening": [],
+    "integration_constants": {
+      "y_at_left_m": 0,
+      "upward_slope_constant_rad": -0.0002068516933599566
+    },
+    "equilibrium_residual": {
+      "force_n": 0.0,
+      "moment_nm": 0.0
+    },
+    "formulas": [
+      "y is upward-positive; output deflection_down=-y and rotation_down=-y_prime",
+      "Symmetric I: two flange rectangles + web rectangle + four root fillets (square minus quarter-disc); no flange slope/edge fillet",
+      "EI*y_second=M(x)",
+      "M(x)=M0+RA*x-sum(P*<x-a>)-sum(q*(<x-a>^2-<x-b>^2)/2)",
+      "EI*y=M0*x^2/2+RA*x^3/6-sum(P*<x-a>^3/6)-sum(q*(<x-a>^4-<x-b>^4)/24)+EI*C1*x",
+      "simply supported: y(0)=y(L)=0; cantilever: y(0)=y_prime(0)=0",
+      "sigma_max=abs(M_max)*(h/2)/I"
+    ]
+  },
+  "source_snapshot": [
+    {
+      "type": "assumption",
+      "name": "Declared synthetic loading and supports",
+      "source_file": null,
+      "source_locator": "Independent acceptance only",
+      "value": null,
+      "unit": null,
+      "authority": "test author",
+      "permission": "test only",
+      "uncertainty": null,
+      "confidence": null,
+      "acquisition_method": "explicit synthetic declaration",
+      "responsible_person": "Test author",
+      "status": "ASSUMED",
+      "scheme_id": null,
+      "evidence_id": "evidence_170a43fb15de450694147ac53543641c",
+      "project_id": "project_9d754f62df65471bbc2522d533b1a590",
+      "revision": 1,
+      "timestamp": "2026-11-08T13:20:48.762853+00:00",
+      "hash": "72dcbf4def0ee21ec8efb78b807588a77c6a76c7a5e2535efadb5da4ef5ae7c4",
+      "review_state": "pending",
+      "review_note": null
+    }
+  ],
+  "created_at": "2026-11-08T13:20:48.875831+00:00",
+  "calculator_hash": "4a4a10f19914e94f34feba18d45dd287d17342099f6fc09a2f7eb37514026a78",
+  "ifc_profile_snapshot": {
+    "beamprofile_id": "beamprofile_f9014844832a48228422eb877423e07c",
+    "hash": "92c265dd68904ffc41b560e77493cbed812f425fdfc44da81396990064e39f4c",
+    "file_snapshot": {
+      "file_id": "file_bfa1593b22e5429c96120d69d3e79b81",
+      "project_id": "project_9d754f62df65471bbc2522d533b1a590",
+      "name": "beam-extruded-solid.ifc",
+      "path": "files/file_bfa1593b22e5429c96120d69d3e79b81.ifc",
+      "hash": "bb64226a58cde416d91c3471b4f1a62ba41c22d756d1e69297a63b9482c76d1a",
+      "size": 5764,
+      "timestamp": "2026-11-08T13:20:01.432277+00:00",
+      "revision": 1
+    },
+    "cad_id": "cad_202c811ed39243a89d4f6521058b6ebf",
+    "product_id": 70,
+    "bending_axis": "x",
+    "review_basis": "Independent profile dimensions and local axes checked; mechanical assumptions explicitly synthetic.",
+    "actor_user_id": "user_9952aa44248c46aca07ae688b57942ee",
+    "source_kind": "MODEL_GEOMETRY_NOT_MEASURED"
+  },
+  "file_snapshot": {
+    "file_id": "file_bfa1593b22e5429c96120d69d3e79b81",
+    "project_id": "project_9d754f62df65471bbc2522d533b1a590",
+    "name": "beam-extruded-solid.ifc",
+    "path": "files/file_bfa1593b22e5429c96120d69d3e79b81.ifc",
+    "hash": "bb64226a58cde416d91c3471b4f1a62ba41c22d756d1e69297a63b9482c76d1a",
+    "size": 5764,
+    "timestamp": "2026-11-08T13:20:01.432277+00:00",
+    "revision": 1
+  },
+  "hash": "9bc64e604ab3e9f16e84fe58d716253957ba6306eb0ee839fcf262209d0eed65",
+  "revision": 1,
+  "stale_reasons": [],
+  "stale_details": [],
+  "status": "calculated"
+}

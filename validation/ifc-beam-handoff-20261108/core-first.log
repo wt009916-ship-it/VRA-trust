@@ -1,0 +1,37 @@
+.............................F...................................        [100%]
+================================== FAILURES ===================================
+_________________ test_mapped_uniform_scale_and_rotated_axis __________________
+
+    def test_mapped_uniform_scale_and_rotated_axis():
+        doc,_,element,_,solid,body=example()
+        solid.Position.RefDirection=doc.create_entity('IfcDirection',DirectionRatios=(0.,1.,0.))
+        origin=doc.create_entity('IfcAxis2Placement3D',Location=doc.create_entity('IfcCartesianPoint',Coordinates=(0.,0.,0.)))
+        mapping=doc.create_entity('IfcRepresentationMap',MappingOrigin=origin,MappedRepresentation=body)
+        target=doc.create_entity('IfcCartesianTransformationOperator3D',LocalOrigin=doc.create_entity('IfcCartesianPoint',Coordinates=(0.,0.,0.)),Scale=2.)
+        outer=doc.create_entity('IfcShapeRepresentation',ContextOfItems=body.ContextOfItems,RepresentationIdentifier='Body',RepresentationType='MappedRepresentation',Items=[doc.create_entity('IfcMappedItem',MappingSource=mapping,MappingTarget=target)])
+        element.Representation.Representations=[outer]
+        r=extract(doc,element.id())
+        assert r['status']=='extracted'
+        assert r['section_profile']['dimensions']==pytest.approx({'b':.4,'h':.6})
+        assert r['extrusion_length_m']==12
+        assert r['axes_world']['x']==pytest.approx([0,1,0])
+        assert r['axes_world']['y']==pytest.approx([-1,0,0])
+>       assert r['axes_world']['extrusion']==pytest.approx([0,0,1])
+E       assert [0.0, 0.0, 2.0] == approx([0 ± 1... 1 ± 1.0e-06])
+E         
+E         comparison failed. Mismatched elements: 1 / 3:
+E         Max absolute difference: 1.0
+E         Max relative difference: 0.5
+E         Index | Obtained | Expected   
+E         2     | 2.0      | 1 ± 1.0e-06
+
+tests\test_beam_profiles.py:147: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_beam_profiles.py::test_mapped_uniform_scale_and_rotated_axis
+1 failed, 64 passed, 1 warning in 5.06s

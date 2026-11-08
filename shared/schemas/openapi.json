@@ -1982,6 +1982,284 @@
         ]
       }
     },
+    "/api/projects/{project_id}/ifc-beam-profile-inputs": {
+      "get": {
+        "summary": "Inputs",
+        "operationId": "inputs_api_projects__project_id__ifc_beam_profile_inputs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/ifc-beam-profiles": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__ifc_beam_profiles_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Listing",
+        "operationId": "listing_api_projects__project_id__ifc_beam_profiles_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/ifc-beam-profiles/{profile_id}": {
+      "get": {
+        "summary": "Get",
+        "operationId": "get_api_projects__project_id__ifc_beam_profiles__profile_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Profile Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/ifc-beam-profiles/{profile_id}/analyses": {
+      "post": {
+        "summary": "Handoff",
+        "operationId": "handoff_api_projects__project_id__ifc_beam_profiles__profile_id__analyses_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Profile Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewedBeam"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/material-scenarios": {
       "post": {
         "summary": "Create",
@@ -9369,6 +9647,16 @@
             ],
             "title": "Section Unit"
           },
+          "section_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SectionProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "elastic_modulus": {
             "anyOf": [
               {
@@ -12746,6 +13034,28 @@
         ],
         "title": "Preview"
       },
+      "ProfileRequest": {
+        "properties": {
+          "cad_id": {
+            "type": "string",
+            "pattern": "^cad_[a-f0-9]{32}$",
+            "title": "Cad Id"
+          },
+          "product_id": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Product Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cad_id",
+          "product_id"
+        ],
+        "title": "ProfileRequest"
+      },
       "Progress": {
         "properties": {
           "as_of_day": {
@@ -13608,6 +13918,46 @@
         ],
         "title": "Resource"
       },
+      "ReviewedBeam": {
+        "properties": {
+          "expected_profile_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Profile Hash"
+          },
+          "bending_axis": {
+            "type": "string",
+            "enum": [
+              "x",
+              "y"
+            ],
+            "title": "Bending Axis"
+          },
+          "geometry_reviewed": {
+            "type": "boolean",
+            "title": "Geometry Reviewed"
+          },
+          "review_basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 20,
+            "title": "Review Basis"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/BeamInput"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_profile_hash",
+          "bending_axis",
+          "geometry_reviewed",
+          "review_basis",
+          "analysis"
+        ],
+        "title": "ReviewedBeam"
+      },
       "Rule": {
         "properties": {
           "rule_id": {
@@ -14405,6 +14755,56 @@
           "budget"
         ],
         "title": "Search"
+      },
+      "SectionProfile": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "rectangle",
+              "circle",
+              "rectangular_hollow",
+              "circular_hollow",
+              "i_section"
+            ],
+            "title": "Kind"
+          },
+          "dimensions": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "maxProperties": 5,
+            "minProperties": 1,
+            "title": "Dimensions"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "cm",
+              "mm"
+            ],
+            "title": "Unit"
+          },
+          "bending_axis": {
+            "type": "string",
+            "enum": [
+              "x",
+              "y"
+            ],
+            "title": "Bending Axis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "dimensions",
+          "unit",
+          "bending_axis"
+        ],
+        "title": "SectionProfile"
       },
       "Sheet": {
         "properties": {
