@@ -1,6 +1,6 @@
 # 稀土智暖 VRA-Trust
 本仓库服务既有公共建筑改造前期的可核验工程决策。保留残图补证、材料验证、工程工具、研究与产品主线。
-修改前读 docs/CURRENT_STATE_AUDIT.md、docs/IMPLEMENTATION_STATUS.md 和 .agents/skills/vra-trust/SKILL.md。以代码和新运行证据判断实现，目标文档不是证明。
+选择任务先读 docs/CURRENT_WORK_PLAN.md 和 docs/CURRENT_SCORE.json；修改前读 .agents/skills/vra-trust/SKILL.md，再按模块查阅 docs/CURRENT_STATE_AUDIT.md、docs/IMPLEMENTATION_STATUS.md 的历史背景。旧报告的“下一步/未实现”不作为当前待办，必须先追踪实际代码；已收口测试无新变更或失败不重跑。以代码和新运行证据判断实现，目标文档不是证明。
 - 活动服务 backend/api.py；物理计算复用 backend/core.py。frontend/legacy、legacy 是归档，含 mock，不能自动导入活动服务。
 - 缺证、严重 ERR、失败或 stale 不输出确定结果；空值为 null/—，禁止 Demo fallback。
 - fixtures/demo 仅供明确选择的参考输入/历史示例。参考模型真实运行不等于实测建筑。
