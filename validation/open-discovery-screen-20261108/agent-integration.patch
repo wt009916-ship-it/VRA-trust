@@ -1,0 +1,199 @@
+diff --git a/backend/agent.py b/backend/agent.py
+index 9992a3b..482641c 100644
+--- a/backend/agent.py
++++ b/backend/agent.py
+@@ -26,7 +26,7 @@ from . import agent_missing as missing_records
+ from . import agent_recovery as read_recovery
+ from . import agent_requests as requested_scopes
+ from . import agent_simulation
+-from . import agent_outputs
++from . import agent_outputs, agent_discovery
+ from . import agent_read_execution, agent_standards
+ from . import agent_intent_catalog, agent_reviews
+ 
+@@ -37,6 +37,7 @@ class Chat(Contract):
+     allow_compute: bool = False
+     calculation_plans: list[calculations.CalculationPlan] = Field(default_factory=list, max_length=2)
+     read_requests: list[requested_scopes.ReadRequest] = Field(default_factory=list, max_length=6)
++    discover_tools: bool = False
+     infer_outputs: bool = True
+     read_execution: Literal['application', 'model'] = 'application'
+     search_plan: Search | None = None
+@@ -54,6 +55,8 @@ class Chat(Contract):
+ 
+     @model_validator(mode='after')
+     def target_scope(self):
++        if self.discover_tools and (self.mode=='local' or self.objective!='open_ended' or self.read_requests or self.calculation_plans):
++            raise ValueError('Tool discovery requires an open model task without explicit read/calculation plans')
+         if self.read_requests:
+             if self.mode=='local' or self.objective!='open_ended' or self.allow_compute or self.calculation_plans or self.search_plan or self.cost_plan or self.target_run_id:
+                 raise ValueError('Declared read requests require an open-ended model task without compute permission or calculation plans')
+@@ -75,6 +78,7 @@ class Chat(Contract):
+ 
+ 
+ class ToolArgs(Contract):
++    scope_selection: agent_discovery.Selection | None = None
+     review: agent_reviews.SourceReview | None = None
+     output_plan: list[agent_outputs.OutputItem] | None = Field(default=None, min_length=1, max_length=6)
+     request_keys: list[str] | None = Field(default=None,min_length=1,max_length=6)
+@@ -122,6 +126,8 @@ class ToolArgs(Contract):
+ 
+ 
+ TOOLS = {
++    'task_scope_select':'先选择本轮原问题所需全部工具领域，逐字引用request_quote；只选择一次，模型推断不是用户确认或完整理解证明。',
++    'standards_catalog':'发现本项目规范资料的完整编号、版次、条号和当前复核/来源状态；目录名称不是指令，之后按用户要求查询条文。',
+     'professional_review': '实际读取后，提交review中的kind、record_id、record_hash与view_hash核验当前状态/范围；不交付任何数值，不认证整体工程有效性。仅用于已冻结的纯解释输出计划。',
+     'requested_output_plan': '先根据原用户问题为每个request_key选择所问fact_keys和explanation_topics，并选择应用提供的原问题片段编号question_fragment_ids。只能用本轮计划目录；计划提交后冻结，不得根据资料名称或内容改写。此为模型解析，不是原问题已被完整理解的认证。',
+     'requested_availability':'按用户本轮声明的request_keys（1到6个）核验记录存在或缺失，同一目录快照逐项返回；只核查可用性，不读取工程数值，不替换编号。全部声明目标交付后可finish=true。',
+@@ -170,6 +176,8 @@ TOOLS = {
+ 
+ # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
+ TOOL_FIELDS = {
++    'task_scope_select': ('scope_selection',),
++    'standards_catalog': (),
+     'requested_output_plan': ('output_plan',),
+     'requested_availability': ('request_keys','finish'),
+     'professional_inventory': ('kinds',),
+@@ -264,7 +272,7 @@ class Agent:
+         schema = ToolArgs.model_json_schema()
+         tools = []
+         for name, desc in TOOLS.items():
+-            if allowed is None and name in {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability', 'professional_review'}:continue
++            if allowed is None and name in {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability', 'professional_review', 'task_scope_select', 'standards_catalog'}:continue
+             if allowed is not None and name not in allowed:
+                 continue
+             # The same root display title adds no constraint and repeats for every tool.
+@@ -346,6 +354,7 @@ class Agent:
+             answer = read_recovery.attach(answer,record)
+             answer = requested_scopes.attach(answer,self.domain,project_id,record)
+             answer = agent_standards.attach(answer,self.domain,project_id,record)
++            answer = agent_discovery.attach(answer,record)
+             answer['basis'] = (record.get('answer') or {}).get('basis', [])
+             return {**record, 'answer': answer, 'read_request_progress':requested_scopes.progress(record,answer), 'calculation_progress': calculations.progress(record, answer), 'answer_checked_at': core.now(),
+                     'historical_task_completion': (record.get('answer') or {}).get('task_completion'),
+@@ -374,6 +383,10 @@ class Agent:
+             raise core.ValidationError('Unexpected arguments for ' + name)
+         args = ToolArgs.model_validate(arguments)
+         d = self.domain
++        if name == 'task_scope_select':
++            raise ToolRefusal('Task scope selection requires an active executor')
++        if name == 'standards_catalog':
++            return agent_discovery.catalog(d,project_id)
+         if name == 'professional_inventory':
+             return missing_records.inventory(d,project_id,args.kinds)
+         if name == 'professional_missing':
+@@ -486,7 +499,7 @@ class Agent:
+                 'question': body.message, 'mode': body.mode, 'status': 'running', 'events': [], 'answer': None,
+                 'created_at': core.now(), 'llm_commentary': None, 'error': None, 'objective': body.objective,
+                 'target_run_id': body.target_run_id, 'previous_agent_id': body.previous_agent_id,
+-                'context_snapshot': history, 'recovery_attempts': 0, 'provider_recovery_attempts': 0}
++                'context_snapshot': history, 'discover_tools': body.discover_tools, 'recovery_attempts': 0, 'provider_recovery_attempts': 0}
+         if body.objective == 'inspect_results':record['llm_commentary_policy'] = 'audit_only'
+         if body.objective == 'open_ended':
+             record.update(professional_deliveries=[], professional_reviews=[], missing_deliveries=[], llm_commentary_policy='audit_only')
+@@ -512,6 +525,7 @@ class Agent:
+         offered = {'project_get', spec.list_tool, spec.read_tool} if spec else (set(TOOLS) if body.allow_compute else set(TOOLS) - WRITE_TOOLS)
+         if body.objective == 'inspect_results':offered &= agent_simulation.INSPECTION_TOOLS
+         offered -= {'requested_availability', 'requested_output_plan', 'professional_review'}
++        if not body.discover_tools:offered -= {'task_scope_select','standards_catalog'}
+         if not spec:offered -= {s.list_tool for s in INSPECTIONS.values()}
+         if body.calculation_plans:
+             offered = {'project_get', 'calculation_execute', 'calculation_prepare', 'professional_read_many', 'professional_deliver','professional_limit'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
+@@ -533,9 +547,14 @@ class Agent:
+             ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('missing_references',[]) if r.get('record_id'))
+             return ids
+         def turn_tools():
++            if body.discover_tools and not record.get('tool_scope'):
++                result=self.tools({'task_scope_select'});result[0]['function']['parameters']['required']=['scope_selection'];return result
+             if body.read_requests and body.infer_outputs and not record.get('output_plan'):
+                 return [agent_outputs.constrain_tool(self.tools({'requested_output_plan'})[0], record['read_requests'], record['question'])]
+             available = set(offered) - {'requested_output_plan'}
++            if body.discover_tools:
++                available &= agent_discovery.allowed(record,INSPECTIONS)
++                if not any(e['tool']=='standards_catalog' and e['status']=='succeeded' for e in record['events']):available.discard('standards_search')
+             review_keys = {i['request_key'] for i in (record.get('output_plan') or {}).get('items', [])
+                            if not i['fact_keys'] and i['explanation_topics'] and not i.get('clarification_question')}
+             waiting = set(requested_scopes.pending(record))
+@@ -650,11 +669,23 @@ class Agent:
+                         parameters['$defs']['Statement']['properties']['fact']['enum'] = sorted({f['fact'] for _,r in candidates for f in r['explanation_facts']})
+                     parameters['$defs'][definition]['required'].append('finish')
+                     parameters['required'] = ['limitation' if limited else 'delivery']
++            if body.discover_tools:
++                domains={x['domain'] for x in record['tool_scope']['scopes']}
++                for tool in result:
++                    name=tool['function']['name'];parameters=tool['function']['parameters']
++                    if name=='standards_search':
++                        parameters['$defs']['Query']=agent_discovery.query_schema(parameters['$defs']['Query'],record)
++                        codes=agent_discovery.query_codes(record)
++                        if codes:parameters['$defs']['ExactTarget']['properties']['standard_code']={'type':'string','enum':codes}
++                    if name=='professional_inventory':
++                        parameters['properties']['kinds']={'type':'array','minItems':1,'maxItems':6,'items':{'type':'string','enum':sorted(domains & agent_discovery.PROFESSIONS)}}
+             return result
+         def save():
+             nonlocal record
+             record = self.store.put('agent', record, record['revision'])
+         def ensure_read_scope(ds, ident):
++            if body.discover_tools and ds.kind not in {x['domain'] for x in (record.get('tool_scope') or {}).get('scopes',[])}:
++                raise ToolRefusal('Professional record kind exceeds frozen inferred task scope')
+             if body.read_requests and ident not in requested_scopes.result_ids(record['read_requests']):
+                 raise ToolRefusal('Record is outside this task user-declared result scopes; no substitution permitted')
+             if body.calculation_plans and not any(e['tool']=='calculation_execute' and e['status']=='succeeded'
+@@ -718,6 +749,21 @@ class Agent:
+                 if not isinstance(args, dict) or set(args) - set(TOOL_FIELDS[name]):
+                     raise core.ValidationError('Unexpected arguments for ' + name)
+                 canonical = ToolArgs.model_validate(args).model_dump(mode='json', include=set(TOOL_FIELDS[name]))
++                if body.discover_tools and origin=='model':
++                    if name not in agent_discovery.allowed(record,INSPECTIONS):raise ToolRefusal('Tool is outside the frozen inferred task domains')
++                    if name=='task_scope_select':
++                        if record.get('tool_scope'):raise ToolRefusal('Task scope is already frozen')
++                        record['tool_scope']=agent_discovery.freeze(record['question'],ToolArgs.model_validate(args).scope_selection)
++                        result={'status':'scope_frozen',**record['tool_scope']}
++                        event.update(status='succeeded',result=result,result_hash=core.hash_json(result));return result
++                    domains={x['domain'] for x in record['tool_scope']['scopes']}
++                    if name=='professional_inventory' and not set(canonical['kinds'] or []) <= domains:raise ToolRefusal('Inventory kinds exceed inferred task scope')
++                    if name=='standards_search':agent_discovery.validate_query(record,ToolArgs.model_validate(args).standards_query)
++                    if name=='professional_missing' and not set((canonical['missing'] or {}).get('kinds') or [(canonical['missing'] or {}).get('kind')]) <= domains:raise ToolRefusal('Missing-record kinds exceed inferred task scope')
++                    if name in {'professional_deliver','professional_limit'}:
++                        payload=canonical['delivery' if name=='professional_deliver' else 'limitation'] or {}
++                        if payload.get('kind') not in domains:raise ToolRefusal('Delivery kind exceeds inferred task scope')
++
+                 if name == 'requested_output_plan':
+                     if not body.read_requests or not body.infer_outputs or not canonical['output_plan']:
+                         raise core.ValidationError('Output planning requires this task declared read scopes')
+@@ -962,6 +1008,10 @@ class Agent:
+                             messages[0]['content'] = agent_outputs.planning_instruction(record)
+                         if len(json.dumps(messages, ensure_ascii=False)) > 64000:
+                             raise core.ValidationError('Context budget exceeded; narrow the project/task instead of silently truncating evidence')
++                        if body.discover_tools and not record.get('tool_scope'):
++                            messages[0]['content']=agent_discovery.PLANNING_INSTRUCTION
++                        elif body.discover_tools:
++                            messages[0]['content']+=' 当前模型推断范围与进度：'+json.dumps(agent_discovery.progress(record),ensure_ascii=False)+'。规范先读目录，使用完整代码和所问版次条号。所选范围未处理完不能结束；范围选择不是完整理解证明。'
+                         raw_message=gateway.complete(messages,turn_tools())
+                         try:
+                             answer=ProviderMessage.model_validate(raw_message).model_dump(exclude_none=True)
+@@ -1018,6 +1068,8 @@ class Agent:
+                                 messages[-1] = {'role': 'assistant', 'content': '上一段提前结束的解释已保留审计，未作为完整交付；其文字不在后续上下文重复发送。'}
+                                 messages.append({'role': 'user', 'content': '本次已选择的负荷读取尚有未覆盖行：' + json.dumps(coverage, ensure_ascii=False) + '。未读行不能说成不存在；按next_read继续，或明确本次预算内未完成。总预算不增加。'})
+                                 continue
++                        if body.discover_tools and turn<4 and (not record.get('tool_scope') or any(x['state']=='pending' for x in agent_discovery.progress(record))):
++                            messages.append({'role':'user','content':'所选范围仍未处理：'+json.dumps(agent_discovery.progress(record),ensure_ascii=False)+'。继续当前工具和预算；文字解释不能代替未执行任务。'});continue
+                         pending_declared=requested_scopes.pending(record)
+                         if pending_declared and turn<4:
+                             provider_event['declared_read_reminder']=pending_declared
+@@ -1112,6 +1164,8 @@ class Agent:
+                         if finish_requested:record['model_finished_delivery'] = True
+                         break  # Current-source final checks still run below; a frozen plan is not proof of user intent.
+                     if finish_requested and not batch_failed:
++                        if body.discover_tools and any(x['state']=='pending' for x in agent_discovery.progress(record)):
++                            messages.append({'role':'user','content':'仍有所选领域未处理，不能以单项交付结束。'+json.dumps(agent_discovery.progress(record),ensure_ascii=False)});save();continue
+                         pending_declared=requested_scopes.pending(record)
+                         if pending_declared:
+                             record['early_finish_with_declared_reads']=pending_declared
+@@ -1181,6 +1235,7 @@ class Agent:
+                 answer = read_recovery.attach(answer,record)
+                 answer = requested_scopes.attach(answer,self.domain,record['project_id'],record,reader=recheck_availability)
+                 answer = agent_standards.attach(answer,self.domain,record['project_id'],record)
++                answer = agent_discovery.attach(answer,record)
+                 if agent_standards.searches(record):record['llm_commentary_policy']='audit_only'
+                 answer.update(basis=[e['tool'] for e in record['events'] if e['status'] == 'succeeded' and e['tool'] in TOOLS],
+                               failed_tool_calls=sum(e['status'] == 'failed' and e['tool'] in TOOLS for e in record['events']))

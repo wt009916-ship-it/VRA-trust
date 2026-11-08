@@ -1,0 +1,245 @@
+{
+  "scope": "Fresh developer-authored mixed-domain actual application tasks. No regulatory or broad Agent certification.",
+  "as_of": "2026-08-23",
+  "gate": {
+    "candidate_pass_min": 8,
+    "net_gain_min": 3,
+    "baseline_pass_regressions_max": 0,
+    "fabricated_checked_values_max": 0
+  },
+  "variants": [
+    "baseline",
+    "candidate"
+  ],
+  "model": "Same pinned Qwen3-4B-Q4_K_M, existing 5-response/15-event budgets, one run per arm.",
+  "sources": [
+    {
+      "code": "TEST 857",
+      "clauses": [
+        [
+          "4.3.2",
+          1,
+          "The declared wall coefficient needs a traceable test certificate."
+        ],
+        [
+          "8.7.3",
+          2,
+          "Meter data must identify the billing interval and calibration date."
+        ]
+      ]
+    },
+    {
+      "code": "TEST 968",
+      "clauses": [
+        [
+          "7.2.6",
+          1,
+          "Ventilation inputs must identify occupied hours and outdoor air assumptions."
+        ],
+        [
+          "9.6.1",
+          2,
+          "Inspection notes need an equipment tag and a dated observation."
+        ]
+      ]
+    }
+  ],
+  "thermal_input": {
+    "name": "Fresh discovery wall",
+    "rsi_m2k_w": 0.12,
+    "rse_m2k_w": 0.04,
+    "surface_basis": "Explicit synthetic films, not design certification",
+    "application": "Uniform dry synthetic wall without thermal bridges",
+    "layers": [
+      {
+        "name": "brick",
+        "thickness": 180,
+        "thickness_unit": "mm",
+        "conductivity": 0.9,
+        "conductivity_unit": "W/(m K)",
+        "source": "New synthetic arithmetic input before model inference",
+        "correction_basis": "Declared dry reference"
+      },
+      {
+        "name": "insulation",
+        "thickness": 7,
+        "thickness_unit": "cm",
+        "conductivity": 45,
+        "conductivity_unit": "mW/(m K)",
+        "source": "New synthetic arithmetic input before model inference",
+        "correction_basis": "Declared dry reference"
+      }
+    ]
+  },
+  "thermal_oracle": {
+    "u_w_m2k": "225/431",
+    "total_resistance_m2k_w": "431/225"
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "question": "摘录合成TEST 857（2025版）第4.3.2条，注明PDF页。",
+      "citations": [
+        [
+          "TEST 857",
+          "4.3.2",
+          1
+        ]
+      ],
+      "domains": [
+        "standards"
+      ]
+    },
+    {
+      "id": "D02",
+      "question": "核对合成TEST 857的2025版4.3.2与8.7.3，给出两条原文及各自所在页。",
+      "citations": [
+        [
+          "TEST 857",
+          "4.3.2",
+          1
+        ],
+        [
+          "TEST 857",
+          "8.7.3",
+          2
+        ]
+      ],
+      "domains": [
+        "standards"
+      ]
+    },
+    {
+      "id": "D03",
+      "question": "分别查合成TEST 857和TEST 968在2025版的4.3.2条。不存在于已复核索引的那项单列，不得互相替代。",
+      "citations": [
+        [
+          "TEST 857",
+          "4.3.2",
+          1
+        ]
+      ],
+      "missing": [
+        [
+          "TEST 968",
+          "4.3.2"
+        ]
+      ],
+      "domains": [
+        "standards"
+      ]
+    },
+    {
+      "id": "D04",
+      "question": "比较合成TEST 857第4.3.2条与TEST 968第7.2.6条，均指定2025版。有生效版本冲突的项不引用，只说明冲突。",
+      "citations": [
+        [
+          "TEST 968",
+          "7.2.6",
+          1
+        ]
+      ],
+      "conflict": [
+        [
+          "TEST 857",
+          "4.3.2"
+        ]
+      ],
+      "domains": [
+        "standards"
+      ]
+    },
+    {
+      "id": "D05",
+      "question": "先给出合成TEST 968（2025）7.2.6条的来源原文，再检查本项目是否有热工构造记录。只检查有无，不做计算。",
+      "citations": [
+        [
+          "TEST 968",
+          "7.2.6",
+          1
+        ]
+      ],
+      "absent": [
+        "thermal"
+      ],
+      "domains": [
+        "standards",
+        "thermal"
+      ]
+    },
+    {
+      "id": "D06",
+      "question": "检查项目中阶段碳清单和施工进度记录是否存在；两类都分别说明，不要新建或计算。",
+      "citations": [],
+      "absent": [
+        "lifecycle",
+        "schedule"
+      ],
+      "domains": [
+        "lifecycle",
+        "schedule"
+      ]
+    },
+    {
+      "id": "D07",
+      "question": "这个软件能否进行限定梁分析？即使资料齐全，是否能够签发结构安全认证？请分别核验应用能力边界。",
+      "citations": [],
+      "capabilities": [
+        "beam_analysis",
+        "structural_safety_certification"
+      ],
+      "domains": [
+        "capabilities"
+      ]
+    },
+    {
+      "id": "D08",
+      "question": "按关键词“equipment tag”查本项目已复核条文，只列命中的原文和PDF页。",
+      "citations": [
+        [
+          "TEST 968",
+          "9.6.1",
+          2
+        ]
+      ],
+      "domains": [
+        "standards"
+      ]
+    },
+    {
+      "id": "D09",
+      "question": "读取热工记录{thermal_id}，只交付传热系数U和单位，不输出其他指标，不做新计算。",
+      "citations": [],
+      "thermal": [
+        "u_w_m2k"
+      ],
+      "domains": [
+        "thermal"
+      ]
+    },
+    {
+      "id": "D10",
+      "question": "请交付热工记录{thermal_id}的传热系数U和单位，同时摘录合成TEST 857的2025版4.3.2条及页码。不要额外计算或认证。",
+      "citations": [
+        [
+          "TEST 857",
+          "4.3.2",
+          1
+        ]
+      ],
+      "thermal": [
+        "u_w_m2k"
+      ],
+      "domains": [
+        "thermal",
+        "standards"
+      ]
+    }
+  ],
+  "not_tested": [
+    "real-world applicability",
+    "general injection robustness",
+    "writes inferred from natural language",
+    "full scope interpretation guarantee"
+  ]
+}
