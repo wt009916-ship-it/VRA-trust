@@ -1,0 +1,20 @@
+{
+  "scope": "Read-only capability discovery, not model test or product implementation",
+  "product_commit": "9009a84ee7324520c721db18a1d06c7b983b36c1",
+  "observations": [
+    {
+      "file": "backend/agent.py",
+      "sha256": "d4b8517467162b7bcb1ac86177ee9f05a4b0cda92abae8488cc50da8736695b3",
+      "finding": "Chat.calculation_plans supplied by caller; executable keys offered only from explicitly authorized frozen plans. No natural-language numerical plan producer in this path."
+    },
+    {
+      "file": "backend/local_model.py",
+      "sha256": "60d35e0f54c5ba4d035472b434773d0a1cf6555fc1c13968fec202de1ab25607",
+      "finding": "Current payload fixes enable_thinking false, temperature0 and1400 max_tokens; existing strict response/token/authorization limits must stay."
+    }
+  ],
+  "runtime_help_observation": "Cached b12110 --help explicitly lists --reasoning-budget and --reasoning [on|off|auto]; terminal observation, not a retained raw help transcript. No model server launched.",
+  "hardware_observation": "nvidia-smi reported RTX5060 Laptop GPU8151MiB total/7690MiB free at this inspection; not a future resource guarantee.",
+  "reference": "https://huggingface.co/Qwen/Qwen3-4B",
+  "status": "plan_only"
+}

@@ -1,0 +1,542 @@
+{
+  "scope": "Offline replay of retained raw model proposals through new protection. No new model requests; original failures and scores unchanged; not task completion.",
+  "model_requests": 0,
+  "rows": [
+    {
+      "id": "S01",
+      "original_diagnostic_match": false,
+      "before_outcome": "draft",
+      "after_guard": {
+        "outcome": "clarify",
+        "issue": "unaccounted_source",
+        "tasks": [],
+        "model_proposal": {
+          "outcome": "draft",
+          "issue": null,
+          "tasks": [
+            {
+              "kind": "thermal",
+              "layers": [
+                {
+                  "thickness_ref": "s000",
+                  "conductivity_ref": "s001",
+                  "correction_ref": "s004"
+                }
+              ],
+              "rsi_ref": "s005",
+              "rse_ref": "s006"
+            }
+          ]
+        },
+        "guard": "Original input contains unaccounted quantities/assumptions; review their role before calculation",
+        "tool": "propose_calculations",
+        "model_commentary_policy": "audit_only",
+        "execution_authorized": false,
+        "coverage": {
+          "all_source_atoms_accounted": false,
+          "unaccounted": [
+            {
+              "ref": "s002",
+              "quote": "8.2 cm",
+              "start": 31,
+              "end": 37,
+              "dimension": "length",
+              "context": "：A厚21 mm、导热0.7 W/(m K)；B厚8.2 cm、导热41 mW/(m K)。两层修正系数均1。内"
+            },
+            {
+              "ref": "s003",
+              "quote": "41 mW/(m K)",
+              "start": 40,
+              "end": 51,
+              "dimension": "conductivity",
+              "context": "导热0.7 W/(m K)；B厚8.2 cm、导热41 mW/(m K)。两层修正系数均1。内膜0.09 m2 K/W，外"
+            }
+          ],
+          "semantics_verified": false,
+          "notice": "来源覆盖不证明字段归属、否定/条件理解或工程适用性；历史/附件中的数值也不自动忽略。"
+        },
+        "proposed_tasks": [
+          {
+            "kind": "thermal",
+            "values": {
+              "layers.0.thickness": "0.021",
+              "layers.0.conductivity": "0.7",
+              "layers.0.correction": "1",
+              "rsi": "0.09",
+              "rse": "0.03"
+            },
+            "sources": {
+              "layers.0.thickness": {
+                "ref": "s000",
+                "start": 9,
+                "end": 14,
+                "quote": "21 mm",
+                "dimension": "length",
+                "value": "0.021"
+              },
+              "layers.0.conductivity": {
+                "ref": "s001",
+                "start": 17,
+                "end": 28,
+                "quote": "0.7 W/(m K)",
+                "dimension": "conductivity",
+                "value": "0.7"
+              },
+              "layers.0.correction": {
+                "ref": "s004",
+                "start": 59,
+                "end": 60,
+                "quote": "1",
+                "dimension": "scalar",
+                "value": "1"
+              },
+              "rsi": {
+                "ref": "s005",
+                "start": 63,
+                "end": 74,
+                "quote": "0.09 m2 K/W",
+                "dimension": "resistance",
+                "value": "0.09"
+              },
+              "rse": {
+                "ref": "s006",
+                "start": 77,
+                "end": 88,
+                "quote": "0.03 m2 K/W",
+                "dimension": "resistance",
+                "value": "0.03"
+              }
+            },
+            "input": {
+              "name": "用户自然语言热工草案",
+              "layers": [
+                {
+                  "name": "用户声明第1层",
+                  "thickness": 0.021,
+                  "thickness_unit": "m",
+                  "conductivity": 0.7,
+                  "conductivity_unit": "W/(m K)",
+                  "correction_factor": 1.0,
+                  "correction_basis": "用户明确声明修正；位置绑定",
+                  "source": "用户输入，未经独立核证",
+                  "evidence_id": null
+                }
+              ],
+              "rsi_m2k_w": 0.09,
+              "rse_m2k_w": 0.03,
+              "surface_basis": "用户明确声明膜阻；位置绑定",
+              "application": "一维稳态不透明围护结构；不作为节能合规结论"
+            },
+            "source_sha256": "d5a7818f29f88c44a82c324aab9864ece0ac638d9864cae72d946234775a1db2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S05",
+      "original_diagnostic_match": true,
+      "before_outcome": "draft",
+      "after_guard": {
+        "outcome": "draft",
+        "issue": null,
+        "tasks": [
+          {
+            "kind": "thermal",
+            "values": {
+              "layers.0.thickness": "0.067",
+              "layers.0.conductivity": "0.067",
+              "layers.0.correction": "1.1",
+              "rsi": "0.16",
+              "rse": "0.07"
+            },
+            "sources": {
+              "layers.0.thickness": {
+                "ref": "s000",
+                "start": 14,
+                "end": 19,
+                "quote": "67 mm",
+                "dimension": "length",
+                "value": "0.067"
+              },
+              "layers.0.conductivity": {
+                "ref": "s001",
+                "start": 22,
+                "end": 35,
+                "quote": "0.067 W/(m K)",
+                "dimension": "conductivity",
+                "value": "0.067"
+              },
+              "layers.0.correction": {
+                "ref": "s002",
+                "start": 38,
+                "end": 41,
+                "quote": "1.1",
+                "dimension": "scalar",
+                "value": "1.1"
+              },
+              "rsi": {
+                "ref": "s003",
+                "start": 44,
+                "end": 55,
+                "quote": "0.16 m2 K/W",
+                "dimension": "resistance",
+                "value": "0.16"
+              },
+              "rse": {
+                "ref": "s004",
+                "start": 57,
+                "end": 68,
+                "quote": "0.07 m2 K/W",
+                "dimension": "resistance",
+                "value": "0.07"
+              }
+            },
+            "input": {
+              "name": "用户自然语言热工草案",
+              "layers": [
+                {
+                  "name": "用户声明第1层",
+                  "thickness": 0.067,
+                  "thickness_unit": "m",
+                  "conductivity": 0.067,
+                  "conductivity_unit": "W/(m K)",
+                  "correction_factor": 1.1,
+                  "correction_basis": "用户明确声明修正；位置绑定",
+                  "source": "用户输入，未经独立核证",
+                  "evidence_id": null
+                }
+              ],
+              "rsi_m2k_w": 0.16,
+              "rse_m2k_w": 0.07,
+              "surface_basis": "用户明确声明膜阻；位置绑定",
+              "application": "一维稳态不透明围护结构；不作为节能合规结论"
+            },
+            "source_sha256": "3ef0fcf79694a0ece8d402bfd8cc822e14cf5e4d26067b689e3aa43fc74b3382"
+          },
+          {
+            "kind": "beam",
+            "values": {
+              "support": "cantilever",
+              "span": "4.6",
+              "width": "0.210",
+              "depth": "0.310",
+              "modulus": "27000000000",
+              "force": "4400.0",
+              "position": "3.7",
+              "no_self_weight": "no_self_weight",
+              "linear_elastic": "linear_elastic",
+              "small_deflection": "small_deflection"
+            },
+            "sources": {
+              "support": {
+                "ref": "s005",
+                "start": 74,
+                "end": 76,
+                "quote": "悬臂",
+                "dimension": "support",
+                "value": "cantilever"
+              },
+              "span": {
+                "ref": "s006",
+                "start": 82,
+                "end": 87,
+                "quote": "4.6 m",
+                "dimension": "length",
+                "value": "4.6"
+              },
+              "width": {
+                "ref": "s007",
+                "start": 89,
+                "end": 95,
+                "quote": "210 mm",
+                "dimension": "length",
+                "value": "0.210"
+              },
+              "depth": {
+                "ref": "s008",
+                "start": 97,
+                "end": 103,
+                "quote": "310 mm",
+                "dimension": "length",
+                "value": "0.310"
+              },
+              "modulus": {
+                "ref": "s009",
+                "start": 106,
+                "end": 112,
+                "quote": "27 GPa",
+                "dimension": "pressure",
+                "value": "27000000000"
+              },
+              "force": {
+                "ref": "s010",
+                "start": 116,
+                "end": 122,
+                "quote": "4.4 kN",
+                "dimension": "force",
+                "value": "4400.0"
+              },
+              "position": {
+                "ref": "s011",
+                "start": 127,
+                "end": 132,
+                "quote": "3.7 m",
+                "dimension": "length",
+                "value": "3.7"
+              },
+              "no_self_weight": {
+                "ref": "s012",
+                "start": 133,
+                "end": 137,
+                "quote": "忽略自重",
+                "dimension": "assumption",
+                "value": "no_self_weight"
+              },
+              "linear_elastic": {
+                "ref": "s013",
+                "start": 138,
+                "end": 141,
+                "quote": "线弹性",
+                "dimension": "assumption",
+                "value": "linear_elastic"
+              },
+              "small_deflection": {
+                "ref": "s014",
+                "start": 142,
+                "end": 145,
+                "quote": "小挠度",
+                "dimension": "assumption",
+                "value": "small_deflection"
+              }
+            },
+            "input": {
+              "name": "用户自然语言梁草案",
+              "support": "cantilever",
+              "span": 4.6,
+              "span_unit": "m",
+              "width": 0.21,
+              "depth": 0.31,
+              "section_unit": "m",
+              "section_profile": null,
+              "elastic_modulus": 27000000000.0,
+              "modulus_unit": "Pa",
+              "geometry_source": "用户明确声明几何；位置绑定",
+              "material_source": "用户明确声明模量；位置绑定",
+              "support_basis": "用户明确声明支承；位置绑定",
+              "analysis_basis": "用户明确声明：忽略自重、线弹性、小挠度；并非结构安全认证",
+              "evidence_ids": [],
+              "loads": [
+                {
+                  "type": "point",
+                  "name": "用户集中力",
+                  "magnitude": 4400.0,
+                  "unit": "N",
+                  "position": 3.7,
+                  "position_unit": "m",
+                  "source": "用户明确声明集中力及其位置"
+                }
+              ]
+            },
+            "source_sha256": "3ef0fcf79694a0ece8d402bfd8cc822e14cf5e4d26067b689e3aa43fc74b3382"
+          }
+        ],
+        "model_proposal": {
+          "outcome": "draft",
+          "issue": null,
+          "tasks": [
+            {
+              "kind": "thermal",
+              "layers": [
+                {
+                  "thickness_ref": "s000",
+                  "conductivity_ref": "s001",
+                  "correction_ref": "s002"
+                }
+              ],
+              "rsi_ref": "s003",
+              "rse_ref": "s004"
+            },
+            {
+              "kind": "beam",
+              "support_ref": "s005",
+              "span_ref": "s006",
+              "width_ref": "s007",
+              "depth_ref": "s008",
+              "modulus_ref": "s009",
+              "force_ref": "s010",
+              "position_ref": "s011",
+              "no_self_weight_ref": "s012",
+              "linear_elastic_ref": "s013",
+              "small_deflection_ref": "s014"
+            }
+          ]
+        },
+        "guard": null,
+        "tool": "propose_calculations",
+        "model_commentary_policy": "audit_only",
+        "execution_authorized": false,
+        "coverage": {
+          "all_source_atoms_accounted": true,
+          "unaccounted": [],
+          "semantics_verified": false,
+          "notice": "来源覆盖不证明字段归属、否定/条件理解或工程适用性；历史/附件中的数值也不自动忽略。"
+        }
+      }
+    },
+    {
+      "id": "S13",
+      "original_diagnostic_match": false,
+      "before_outcome": "draft",
+      "after_guard": {
+        "outcome": "clarify",
+        "issue": "unaccounted_source",
+        "tasks": [],
+        "model_proposal": {
+          "outcome": "draft",
+          "issue": null,
+          "tasks": [
+            {
+              "kind": "thermal",
+              "layers": [
+                {
+                  "thickness_ref": "s003",
+                  "conductivity_ref": "s004",
+                  "correction_ref": "s005"
+                }
+              ],
+              "rsi_ref": "s000",
+              "rse_ref": "s002"
+            }
+          ]
+        },
+        "guard": "Original input contains unaccounted quantities/assumptions; review their role before calculation",
+        "tool": "propose_calculations",
+        "model_commentary_policy": "audit_only",
+        "execution_authorized": false,
+        "coverage": {
+          "all_source_atoms_accounted": false,
+          "unaccounted": [
+            {
+              "ref": "s001",
+              "quote": "0.17 m2 K/W",
+              "start": 24,
+              "end": 35,
+              "dimension": "resistance",
+              "context": "同一墙体内膜两份表分别写0.11 m2 K/W和0.17 m2 K/W，尚未决定采用哪份；外膜0.04 m2 K/W，单"
+            }
+          ],
+          "semantics_verified": false,
+          "notice": "来源覆盖不证明字段归属、否定/条件理解或工程适用性；历史/附件中的数值也不自动忽略。"
+        },
+        "proposed_tasks": [
+          {
+            "kind": "thermal",
+            "values": {
+              "layers.0.thickness": "0.060",
+              "layers.0.conductivity": "0.06",
+              "layers.0.correction": "1",
+              "rsi": "0.11",
+              "rse": "0.04"
+            },
+            "sources": {
+              "layers.0.thickness": {
+                "ref": "s003",
+                "start": 62,
+                "end": 67,
+                "quote": "60 mm",
+                "dimension": "length",
+                "value": "0.060"
+              },
+              "layers.0.conductivity": {
+                "ref": "s004",
+                "start": 69,
+                "end": 81,
+                "quote": "0.06 W/(m K)",
+                "dimension": "conductivity",
+                "value": "0.06"
+              },
+              "layers.0.correction": {
+                "ref": "s005",
+                "start": 83,
+                "end": 84,
+                "quote": "1",
+                "dimension": "scalar",
+                "value": "1"
+              },
+              "rsi": {
+                "ref": "s000",
+                "start": 12,
+                "end": 23,
+                "quote": "0.11 m2 K/W",
+                "dimension": "resistance",
+                "value": "0.11"
+              },
+              "rse": {
+                "ref": "s002",
+                "start": 47,
+                "end": 58,
+                "quote": "0.04 m2 K/W",
+                "dimension": "resistance",
+                "value": "0.04"
+              }
+            },
+            "input": {
+              "name": "用户自然语言热工草案",
+              "layers": [
+                {
+                  "name": "用户声明第1层",
+                  "thickness": 0.06,
+                  "thickness_unit": "m",
+                  "conductivity": 0.06,
+                  "conductivity_unit": "W/(m K)",
+                  "correction_factor": 1.0,
+                  "correction_basis": "用户明确声明修正；位置绑定",
+                  "source": "用户输入，未经独立核证",
+                  "evidence_id": null
+                }
+              ],
+              "rsi_m2k_w": 0.11,
+              "rse_m2k_w": 0.04,
+              "surface_basis": "用户明确声明膜阻；位置绑定",
+              "application": "一维稳态不透明围护结构；不作为节能合规结论"
+            },
+            "source_sha256": "afe06070ba9a3ca89594fd88b6635c95631f07aa2403483078c6ee8a6eec4591"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S17",
+      "original_diagnostic_match": true,
+      "before_outcome": "reject",
+      "after_guard": {
+        "outcome": "reject",
+        "issue": "invalid_parameter",
+        "tasks": [],
+        "model_proposal": {
+          "outcome": "draft",
+          "issue": null,
+          "tasks": [
+            {
+              "kind": "beam",
+              "support_ref": "s000",
+              "span_ref": "s001",
+              "width_ref": "s002",
+              "depth_ref": "s003",
+              "modulus_ref": "s004",
+              "force_ref": "s005",
+              "position_ref": "s006",
+              "no_self_weight_ref": "s007",
+              "linear_elastic_ref": "s008",
+              "small_deflection_ref": "s009"
+            }
+          ]
+        },
+        "guard": "Existing calculator input validator: 1 validation error for BeamInput\n  Value error, Load is outside beam span after unit conversion [type=value_error, input_value={'name': '用户自然语...中力及其位置'}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+        "tool": "propose_calculations",
+        "model_commentary_policy": "audit_only",
+        "execution_authorized": false
+      }
+    }
+  ]
+}

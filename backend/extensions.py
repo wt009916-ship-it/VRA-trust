@@ -2,7 +2,7 @@
 import json
 import zipfile
 from fastapi.responses import FileResponse, HTMLResponse
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, Query
 from .agent import Agent, Chat
 from .gateway import Gateway, ProviderSettings
 from .local_model import LocalModelSettings
@@ -268,6 +268,13 @@ def register_extensions(app, domain, auth):
     @app.get('/api/projects/{project_id}/cad-inspections')
     def cad_history(project_id: str):
         return [cad.view(project_id, r['cad_id']) for r in domain.store.list('cad', project_id)]
+
+    @app.get('/api/projects/{project_id}/cad-inspection-page')
+    def cad_page(project_id: str, limit: int = Query(default=20, ge=1, le=20),
+                 before: int | None = Query(default=None, ge=0, le=2**53-1),
+                 snapshot: int | None = Query(default=None, ge=0, le=2**53-1)):
+        from .cad_history import page
+        return page(cad, project_id, limit=limit, before=before, snapshot=snapshot)
 
     @app.get('/api/projects/{project_id}/cad-inspections/{cad_id}')
     def cad_record(project_id: str, cad_id: str):
