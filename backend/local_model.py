@@ -9,6 +9,7 @@ import httpx
 from pydantic import Field
 
 from . import core
+from .model_recovery import ModelServiceUnavailable, TRANSIENT_STATUS, TRANSIENT_TRANSPORT
 from .schema import Contract
 
 
@@ -63,6 +64,8 @@ class LocalModelGateway:
                 with client.stream('POST', f'http://127.0.0.1:{config.port}/v1/chat/completions',
                                    headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
                                    content=raw) as response:
+                    if response.status_code in TRANSIENT_STATUS:
+                        raise ModelServiceUnavailable('http_' + str(response.status_code), response.headers.get('Retry-After'))
                     if response.status_code != 200:
                         raise core.ValidationError('本地模型请求失败，HTTP ' + str(response.status_code) + '；未生成工程结果')
                     data = bytearray()
@@ -80,6 +83,10 @@ class LocalModelGateway:
             if not isinstance(message, dict):
                 raise ValueError('Invalid message')
             return {k: message[k] for k in ('role', 'content', 'tool_calls') if k in message}
+        except ModelServiceUnavailable:
+            raise
+        except TRANSIENT_TRANSPORT as exc:
+            raise ModelServiceUnavailable(type(exc).__name__) from None
         except (httpx.HTTPError, ValueError, KeyError, TypeError, IndexError):
             # Do not expose endpoint error bodies, credentials, prompts or raw responses.
             raise core.ValidationError('本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果') from None

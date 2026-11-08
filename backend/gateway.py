@@ -8,6 +8,7 @@ import httpx
 from pydantic import Field, SecretStr
 
 from . import core
+from .model_recovery import ModelServiceUnavailable, TRANSIENT_STATUS, TRANSIENT_TRANSPORT
 from .schema import Contract
 
 
@@ -88,6 +89,8 @@ class Gateway:
                 payload = {'model': settings['model'], 'messages': messages, 'max_tokens': 1400,
                            'thinking': {'type': 'disabled'}, 'tools': tools, 'tool_choice': 'auto'}
                 with client.stream('POST', self.endpoint, headers={'Authorization': 'Bearer ' + key}, json=payload) as response:
+                    if response.status_code in TRANSIENT_STATUS:
+                        raise ModelServiceUnavailable('http_' + str(response.status_code), response.headers.get('Retry-After'))
                     if response.status_code != 200:
                         raise core.ValidationError('Provider 请求失败，HTTP ' + str(response.status_code) + '；请检查配置、余额和模型权限')
                     raw = bytearray()
@@ -100,6 +103,10 @@ class Gateway:
             message = data['choices'][0]['message']
             # Never store/display the provider's hidden reasoning_content.
             return {k: message[k] for k in ('role', 'content', 'tool_calls') if k in message}
+        except ModelServiceUnavailable:
+            raise
+        except TRANSIENT_TRANSPORT as exc:
+            raise ModelServiceUnavailable(type(exc).__name__) from None
         except (httpx.HTTPError, KeyError, ValueError) as exc:
             if isinstance(exc, core.ValidationError):
                 raise

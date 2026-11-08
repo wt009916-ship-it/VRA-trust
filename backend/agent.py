@@ -17,6 +17,7 @@ from .trust import Trust
 from .robustness import Search, Actions
 from .standards import Standards, Query as StandardQuery
 from .local_model import LocalModelGateway
+from . import model_recovery
 from .agent_inspections import INSPECTIONS
 from .agent_semantics import NumericDelivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection, accumulate
 from . import agent_calculations as calculations
@@ -485,7 +486,7 @@ class Agent:
                 'question': body.message, 'mode': body.mode, 'status': 'running', 'events': [], 'answer': None,
                 'created_at': core.now(), 'llm_commentary': None, 'error': None, 'objective': body.objective,
                 'target_run_id': body.target_run_id, 'previous_agent_id': body.previous_agent_id,
-                'context_snapshot': history, 'recovery_attempts': 0}
+                'context_snapshot': history, 'recovery_attempts': 0, 'provider_recovery_attempts': 0}
         if body.objective == 'inspect_results':record['llm_commentary_policy'] = 'audit_only'
         if body.objective == 'open_ended':
             record.update(professional_deliveries=[], professional_reviews=[], missing_deliveries=[], llm_commentary_policy='audit_only')
@@ -920,8 +921,12 @@ class Agent:
                 if body.read_requests:
                     system_instruction+='本轮以用户明确声明的读取清单限制工具和交付范围。availability目标用requested_availability选择request_keys，只检查记录存在/缺失，不能交付其工程数值；results目标只能读取并交付指定record_id，缺失按该编号professional_missing。不能替换其他记录，不新增计算；清单外自由问题仍未核验。'
                     messages.append({'role':'user','content':'本轮用户明确声明的只读范围（不是模型生成的草案，不延续历史权限）：'+json.dumps(record['read_requests'],ensure_ascii=False)})
+                retry_identity = None
                 for turn in range(5):
                     if self.domain.stop.is_set():raise core.ValidationError('Agent cancelled during service shutdown')
+                    current_provider_identity = model_recovery.identity(gateway)
+                    if retry_identity is not None and retry_identity != current_provider_identity:
+                        raise core.ValidationError('Model configuration changed during recovery; retry explicitly')
                     if len(record['events']) + 1 + reserved_reads() > 15:
                         raise core.ValidationError('Tool budget exceeded; no further requests executed')
                     provider_event = {'tool': 'llm.request', 'status': 'running', 'started_at': core.now(),
@@ -972,6 +977,21 @@ class Agent:
                         if len(ids) != len(set(ids)):
                             raise core.ValidationError('Duplicate provider tool call IDs')
                         provider_event.update(status='succeeded', result={'tool_calls_returned': len(answer.get('tool_calls') or []), 'engineering_values_accepted': False})
+                    except model_recovery.ModelServiceUnavailable as exc:
+                        recovery = model_recovery.decision(exc, record['provider_recovery_attempts'],
+                                                           turn, len(record['events']), reserved_reads())
+                        provider_event.update(status='failed', error=str(exc), provider_recovery=recovery)
+                        save()
+                        if not recovery['retry_allowed']:
+                            raise
+                        record['provider_recovery_attempts'] += 1
+                        retry_identity = current_provider_identity
+                        # Only inference is repeated. Successful tool events and their
+                        # outputs remain in the same conversation and locked plan state.
+                        if self.domain.stop.wait(recovery['delay_seconds']):
+                            recovery.update(retry_allowed=False, reason='cancelled')
+                            raise core.ValidationError('Agent cancelled during model recovery')
+                        continue
                     except Exception:
                         provider_event.update(status='failed', error='服务商调用失败；不会降级为假成功')
                         raise

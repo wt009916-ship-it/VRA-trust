@@ -1,0 +1,66 @@
+Traceback (most recent call last):
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_transports\default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_sync\connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_sync\connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_sync\connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_sync\http11.py", line 136, in handle_request
+    raise exc
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_sync\http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_sync\http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_sync\http11.py", line 217, in _receive_event
+    data = self._network_stream.read(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_backends\sync.py", line 126, in read
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\18483\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\稀土agent-稀土制暖全流程\outputs\vra-soak-20261108\run_mixed_workload.py", line 156, in monitor
+    started=time.perf_counter();r=c.get('/api/health',timeout=6);ms=(time.perf_counter()-started)*1000
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_client.py", line 1053, in get
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_transports\default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\18483\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
