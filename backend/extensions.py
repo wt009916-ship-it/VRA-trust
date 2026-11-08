@@ -33,6 +33,8 @@ def register_extensions(app, domain, auth):
     register_diagnostics(app, domain)
     from .timestep_studies import register as register_timestep_studies
     register_timestep_studies(app,domain)
+    from .end_use_records import register as register_end_use
+    register_end_use(app,domain)
     from .retrofit_models import register as register_retrofit_models
     register_retrofit_models(app,domain)
     cad = Cad(domain)
