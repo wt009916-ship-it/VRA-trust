@@ -1,0 +1,71 @@
+{
+  "results": [
+    {
+      "id": "G01",
+      "valid_request_admitted": false,
+      "error": "Original request constraint mismatch; do not substitute another metric: {\"missing_required_facts\": [\"total_resistance_m2k_w\"]}",
+      "audit": null
+    },
+    {
+      "id": "G02",
+      "valid_request_admitted": false,
+      "error": "Original request constraint mismatch; do not substitute another metric: {\"requires_clarification_or_unsupported\": [\"CONTRADICTORY_EXPLANATION_REQUEST\"], \"missing_required_topics\": [\"meaning\"]}",
+      "audit": null
+    },
+    {
+      "id": "G03",
+      "valid_request_admitted": false,
+      "error": "Original request constraint mismatch; do not substitute another metric: {\"requires_clarification_or_unsupported\": [\"ANNUAL_CARBON_NOT_A_STORED_STUDY_PERIOD_FACT\"]}",
+      "audit": null
+    },
+    {
+      "id": "G04",
+      "valid_request_admitted": true,
+      "error": null,
+      "audit": {
+        "required_facts": [
+          "layer_resistance_m2k_w",
+          "u_w_m2k"
+        ],
+        "forbidden_facts": [
+          "total_resistance_m2k_w"
+        ],
+        "required_topics": [],
+        "forbidden_topics": [],
+        "unsupported": [],
+        "uncertain": [],
+        "matches": [
+          {
+            "field": "total_resistance_m2k_w",
+            "polarity": "excluded",
+            "text": "不要给总热阻",
+            "normalized_start": 0,
+            "normalized_end": 6
+          },
+          {
+            "field": "layer_resistance_m2k_w",
+            "polarity": "requested",
+            "text": "给材料层热阻和传热系数",
+            "normalized_start": 7,
+            "normalized_end": 18
+          },
+          {
+            "field": "u_w_m2k",
+            "polarity": "requested",
+            "text": "给材料层热阻和传热系数",
+            "normalized_start": 7,
+            "normalized_end": 18
+          }
+        ],
+        "intent_verified": false,
+        "notice": "Checks explicit supported vocabulary and exclusions only; not proof of full language understanding."
+      }
+    }
+  ],
+  "adopt": false,
+  "model_runs": 0,
+  "source_sha256": {
+    "agent_intent_constraints.py": "e3239ce95c92ba15fec5e57fc2009b38bc0d0cc86fae6a642efc065e55397a3a",
+    "agent_outputs.py": "627b74799a21c5c72fe13d19349fe21a13c9878ed9c7d86deb1a495d6043a32b"
+  }
+}

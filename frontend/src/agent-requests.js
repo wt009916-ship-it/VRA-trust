@@ -65,10 +65,12 @@ export function readRequestProgressMarkup(task) {
   const rows=task.read_request_progress||task.answer?.read_request_progress||[];
   if(!rows.length)return outputContractMarkup(task);
   const states={fields_unavailable:'所问字段含不可计算项',required_facts_missing:'尚缺所问指标',output_plan_missing:'尚未形成输出计划',unfulfilled:'尚未交付',delivery_not_currently_verified:'交付目前未通过核验',availability_verified:'可用性已核验',result_verified:'所选结果已核验',limitation_verified:'当前限制已核验',record_unavailable:'指定记录不可用'};
+  const rowState=r=>r.state==='result_verified'&&(task.answer?.artifacts||[]).some(a=>a.record_id===r.record_id&&!a.verified)
+    ?'所列字段已核对 · 整体记录仍受限':states[r.state]||r.state;
   const available=task.answer?.checked_availability||[];
   const termination=task.termination||task.answer?.termination;
   const stopped=termination?.reason==='response_budget_exhausted'?'<p role="status">已到模型轮次上限。已提交内容仍按当前来源核验，未交付的目标继续标示；流程结束不等于全部任务完成。</p>':'';
-  return outputContractMarkup(task)+`<section aria-label="声明读取目标进度"><h3>本次明确读取范围</h3>${stopped}<p>逐项检查声明范围，清单外问题的完整覆盖未获核验。记录存在不等于结果有效，缺失不记为零。</p>${rows.map(r=>`<article><h4>${esc(readKinds[r.kind]||r.kind)} · ${r.purpose==='availability'?'可用性':'指定结果'}</h4><p><strong>${esc(states[r.state]||r.state)}</strong> · ${esc(r.request_key)}</p><small class="mono">${esc(r.record_id||'该专业完整项目目录')}</small>${available.filter(a=>a.request_key===r.request_key).map(a=>`<p>${a.state==='records_present'?'声明范围内存在记录；未据此认定工程数值有效。':'声明范围内没有可用记录；不推断其他项目或计算历史。'}</p>`).join('')}</article>`).join('')}</section>`;
+  return outputContractMarkup(task)+`<section aria-label="声明读取目标进度"><h3>本次明确读取范围</h3>${stopped}<p>逐项检查声明范围，清单外问题的完整覆盖未获核验。记录存在不等于结果有效，缺失不记为零。</p>${rows.map(r=>`<article><h4>${esc(readKinds[r.kind]||r.kind)} · ${r.purpose==='availability'?'可用性':'指定结果'}</h4><p><strong>${esc(rowState(r))}</strong> · ${esc(r.request_key)}</p><small class="mono">${esc(r.record_id||'该专业完整项目目录')}</small>${available.filter(a=>a.request_key===r.request_key).map(a=>`<p>${a.state==='records_present'?'声明范围内存在记录；未据此认定工程数值有效。':'声明范围内没有可用记录；不推断其他项目或计算历史。'}</p>`).join('')}</article>`).join('')}</section>`;
 }
 
 const factLabels={total_resistance_m2k_w:'总热阻 R',layer_resistance_m2k_w:'材料层热阻',u_w_m2k:'传热系数 U',

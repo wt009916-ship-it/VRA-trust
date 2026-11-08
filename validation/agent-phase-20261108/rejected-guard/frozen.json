@@ -1,0 +1,102 @@
+{
+  "gate": "All valid requests must remain admissible; any false refusal rejects this candidate blocking architecture. Do not patch these cases to claim independent success.",
+  "cases": [
+    {
+      "id": "G01",
+      "question": "总热阻不要，只返回传热系数。",
+      "request": {
+        "request_key": "wall",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "requests": [
+        {
+          "request_key": "wall",
+          "kind": "thermal",
+          "purpose": "results",
+          "record_id": "thermal_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "facts": [
+        "u_w_m2k"
+      ],
+      "topics": []
+    },
+    {
+      "id": "G02",
+      "question": "墙体只列传热系数，不要解释；设备运维记录请解释规则事件次数之和的含义。",
+      "request": {
+        "request_key": "wall",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "requests": [
+        {
+          "request_key": "wall",
+          "kind": "thermal",
+          "purpose": "results",
+          "record_id": "thermal_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "request_key": "meter",
+          "kind": "operation",
+          "purpose": "results",
+          "record_id": "operation_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "facts": [
+        "u_w_m2k"
+      ],
+      "topics": []
+    },
+    {
+      "id": "G03",
+      "question": "给出运行阶段碳排放，并说明这个值是每年排放还是整个评估期累计量。",
+      "request": {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "requests": [
+        {
+          "request_key": "carbon",
+          "kind": "lifecycle",
+          "purpose": "results",
+          "record_id": "lifecycle_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "facts": [
+        "stage.operation"
+      ],
+      "topics": [
+        "period"
+      ]
+    },
+    {
+      "id": "G04",
+      "question": "不要给总热阻，给材料层热阻和传热系数。",
+      "request": {
+        "request_key": "wall",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "requests": [
+        {
+          "request_key": "wall",
+          "kind": "thermal",
+          "purpose": "results",
+          "record_id": "thermal_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "facts": [
+        "layer_resistance_m2k_w",
+        "u_w_m2k"
+      ],
+      "topics": []
+    }
+  ]
+}

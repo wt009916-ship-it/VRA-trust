@@ -917,6 +917,8 @@ class Agent:
                             '\n总预算仍为5轮/15事件。多份明确计划优先用calculation_prepare选择plan_keys，真实执行并读取后逐份交付；已有多记录可用professional_read_many。批量子操作也计入15事件。'
                             '不要逐条走完整流程后才处理下一条而耗尽轮次。已知记录ID可直接读取，无需重复查询项目或列表。'
                             '只在所需交付完成时finish=true；未执行条件任务时明确原因，不能偷偷忽略用户提交的另一计划。')
+                        if body.read_requests and body.infer_outputs and not record.get('output_plan'):
+                            messages[0]['content'] = agent_outputs.planning_instruction(record)
                         if len(json.dumps(messages, ensure_ascii=False)) > 64000:
                             raise core.ValidationError('Context budget exceeded; narrow the project/task instead of silently truncating evidence')
                         raw_message=gateway.complete(messages,turn_tools())

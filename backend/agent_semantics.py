@@ -140,6 +140,24 @@ def facts(record, kind):
     return rows
 
 
+
+def can_deliver_requested_facts(record, kind, required):
+    """Count observed data even when it cannot support an overall equipment review.
+
+    This does not change artifact.verified or allow a stale source, a diagnosis,
+    an unsupported engineering result, or inferred missing measurements.
+    """
+    if inspection(kind).artifact(record)['verified']:
+        return True
+    if kind != 'operation' or record['status'] not in {
+            'calculated', 'events_detected', 'insufficient_evidence'}:
+        return False
+    allowed = {'sample_count', 'cell_issue_count', 'gap_count',
+               'rule_event_sum', 'rule_unknown_sample_sum'}
+    available = {f['fact'] for f in facts(record, kind) if f['value'] is not None}
+    return bool(required) and set(required) <= allowed & available
+
+
 def readable(record, kind):
     return {**record, 'explanation_facts': facts(record, kind),
             'explanation_instruction': '开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。'

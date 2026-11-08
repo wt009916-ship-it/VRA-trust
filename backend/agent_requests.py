@@ -7,7 +7,7 @@ from pydantic import Field, model_validator
 
 from . import core, agent_missing, agent_outputs
 from .schema import Contract
-from .agent_semantics import inspection
+from .agent_semantics import inspection, can_deliver_requested_facts
 
 
 class ReadRequest(Contract):
@@ -160,7 +160,8 @@ def next_actions(record):
         current = reads.get(ident)
         action = {'request_key': request['request_key'], 'record_id': ident}
         if current is not None:
-            if not spec.artifact(current)['verified']:
+            wanted = agent_outputs.requirement(record, request['request_key']) or {}
+            if not can_deliver_requested_facts(current, kind, wanted.get('fact_keys', [])):
                 action.update(tool='professional_limit', arguments={'limitation': {
                     'kind': kind, 'record_id': ident, 'record_hash': current['hash'],
                     'status': current['status'], 'finish': False}})

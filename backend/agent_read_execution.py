@@ -1,6 +1,6 @@
 """Execute a frozen, user-scoped read plan. No model-generated numeric delivery."""
 from . import core, agent_outputs
-from .agent_semantics import Statement, inspection
+from .agent_semantics import Statement, inspection, can_deliver_requested_facts
 from .agent_recovery import RecordsUnavailable
 
 
@@ -32,11 +32,11 @@ def execute(record, invoke, *, cancelled):
                 continue
             row['source_hash'] = source['hash']
             common = {'kind': kind, 'record_id': ident, 'record_hash': source['hash'], 'finish': False}
-            if not spec.artifact(source)['verified']:
+            required = agent_outputs.requirement(record, key)['fact_keys']
+            if not can_deliver_requested_facts(source, kind, required):
                 invoke('professional_limit', {'limitation': {**common, 'status': source['status']}})
                 row['state'] = 'limitation_submitted'
             else:
-                required = agent_outputs.requirement(record, key)['fact_keys']
                 facts = {f['fact']: f for f in source['explanation_facts']}
                 statements = [{field: facts[fact][field] for field in Statement.model_fields}
                               for fact in required if fact in facts]
