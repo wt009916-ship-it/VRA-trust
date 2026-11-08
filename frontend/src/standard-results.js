@@ -1,6 +1,6 @@
 import {escape as esc} from './api.js';
 
-const outcomes={CITATIONS_FOUND:'找到已复核引文',VERSION_CONFLICT:'版本冲突，未采用引文',NOT_FOUND_IN_REVIEWED_INDEX:'索引中未找到',ALL_TARGETS_FOUND:'全部指定条款已找到',PARTIAL_TARGETS_FOUND:'部分条款未找到或存在冲突',NO_TARGETS_FOUND:'未取得指定条款'};
+const outcomes={RELEVANCE_REVIEW_REQUIRED:'语义候选 · 相关性待核对',CITATIONS_FOUND:'找到已复核引文',VERSION_CONFLICT:'版本冲突，未采用引文',NOT_FOUND_IN_REVIEWED_INDEX:'索引中未找到',ALL_TARGETS_FOUND:'全部指定条款已找到',PARTIAL_TARGETS_FOUND:'部分条款未找到或存在冲突',NO_TARGETS_FOUND:'未取得指定条款'};
 
 export function standardQueryBody(values,rows=[]){
  const body={as_of:values.as_of};
@@ -11,6 +11,7 @@ export function standardQueryBody(values,rows=[]){
  }else{
   for(const key of ['text','standard_code','edition','clause_id'])body[key]=values[key]?.trim()||(key==='text'?'':null);
  }
+ if(values.mode==='semantic')body.retrieval='semantic';
  return body;
 }
 
@@ -18,7 +19,7 @@ export function standardResultMarkup(result,pid){
  if(!result)return '<p role="status">当前查询或来源未通过核验，已撤下引文。请重新检索。</p>';
  const base='/api/projects/'+encodeURIComponent(pid);
  const groups=result.targets||[result];
- return `<section class="standard-results" aria-label="当前规范查询结果"><h2>${esc(outcomes[result.status]||'查询状态未知')}</h2><p>${esc(result.notice)}</p>${groups.map((g,i)=>`<section aria-label="条款查询 ${i+1}"><h3>${g.query.standard_code?esc(g.query.standard_code)+' · ':''}${g.query.edition?esc(g.query.edition)+' · ':''}${esc(g.query.clause_id||'关键词查询')}：${esc(outcomes[g.status]||'未核验')}</h3>${g.conflicts.length?'<p role="alert">冲突编号：'+g.conflicts.map(esc).join('、')+'</p>':''}${g.citations.map(c=>`<article><h4>${esc(c.standard_code)}-${esc(c.edition)} · ${esc(c.clause_id)}</h4><p>${esc(c.title)} · PDF第${esc(c.pdf_page)}页 / 印刷页${esc(c.printed_page)} · ${c.coverage==='excerpt'?'片段摘录':'人工声明完整条款'} · ${c.transcription==='ocr_assisted'?'OCR辅助摘录 · 人工修订复核':c.transcription==='manual_scan'?'扫描件人工摘录':c.transcription==='text_layer'?'文字层位置已核对':'摘录来源未说明'}</p><blockquote>${esc(c.text)}</blockquote>${c.transcription==='ocr_assisted'?`<p>转录核验依据：${esc(c.transcription_basis)}</p><a href="${base}/standard-ocr/${encodeURIComponent(c.ocr_id)}" target="_blank" rel="noopener">原始 OCR 候选、位置与识别分数</a>`:''}<p>适用范围：${esc(c.scope)}；地区：${esc(c.jurisdiction)}</p><p><a href="${base}/standards/${encodeURIComponent(c.standard_id)}/source.pdf#page=${encodeURIComponent(c.pdf_page)}" target="_blank" rel="noopener">核对原件与上下文</a> · <a href="${esc(c.source_url)}" target="_blank" rel="noopener noreferrer">登记的来源网站</a></p></article>`).join('')}<p>匹配 ${esc(g.total_matches)} 条，显示 ${g.citations.length} 条；排除 ${g.excluded.length} 份资料。</p>${g.excluded.length?'<details><summary>未采用资料的原因</summary><pre>'+esc(JSON.stringify(g.excluded,null,2))+'</pre></details>':''}</section>`).join('')}</section>`;
+ return `<section class="standard-results" aria-label="当前规范查询结果"><h2>${esc(outcomes[result.status]||'查询状态未知')}</h2><p>${esc(result.notice)}</p>${groups.map((g,i)=>`<section aria-label="条款查询 ${i+1}"><h3>${g.query.standard_code?esc(g.query.standard_code)+' · ':''}${g.query.edition?esc(g.query.edition)+' · ':''}${esc(g.query.clause_id||(g.retrieval?.method==='semantic'?'语义候选':'关键词查询'))}：${esc(outcomes[g.status]||'未核验')}</h3>${g.conflicts.length?'<p role="alert">冲突编号：'+g.conflicts.map(esc).join('、')+'</p>':''}${g.citations.map(c=>`<article><h4>${esc(c.standard_code)}-${esc(c.edition)} · ${esc(c.clause_id)}</h4><p>${esc(c.title)} · PDF第${esc(c.pdf_page)}页 / 印刷页${esc(c.printed_page)} · ${c.coverage==='excerpt'?'片段摘录':'人工声明完整条款'} · ${c.transcription==='ocr_assisted'?'OCR辅助摘录 · 人工修订复核':c.transcription==='manual_scan'?'扫描件人工摘录':c.transcription==='text_layer'?'文字层位置已核对':'摘录来源未说明'}</p>${c.relevance_verified===false?'<p role="note">仅核验原文来源；与本问题是否相关仍待确认，相似度不是置信度。</p>':''}<blockquote>${esc(c.text)}</blockquote>${c.transcription==='ocr_assisted'?`<p>转录核验依据：${esc(c.transcription_basis)}</p><a href="${base}/standard-ocr/${encodeURIComponent(c.ocr_id)}" target="_blank" rel="noopener">原始 OCR 候选、位置与识别分数</a>`:''}<p>适用范围：${esc(c.scope)}；地区：${esc(c.jurisdiction)}</p><p><a href="${base}/standards/${encodeURIComponent(c.standard_id)}/source.pdf#page=${encodeURIComponent(c.pdf_page)}" target="_blank" rel="noopener">核对原件与上下文</a> · <a href="${esc(c.source_url)}" target="_blank" rel="noopener noreferrer">登记的来源网站</a></p></article>`).join('')}<p>${g.retrieval?.method==='semantic'?'参与排序':'匹配'} ${esc(g.total_matches)} 条，显示 ${g.citations.length} 条；排除 ${g.excluded.length} 份资料。</p>${g.excluded.length?'<details><summary>未采用资料的原因</summary><pre>'+esc(JSON.stringify(g.excluded,null,2))+'</pre></details>':''}</section>`).join('')}</section>`;
 }
 
 export function standardAgentMarkup(answer){
