@@ -1,3 +1,5 @@
+2026-11-08符号检测验收：真实几何检测新14参考图及2公开原图已完成；清晰/退化门窗门槛和新增原图局部正例均未通过。未接入应用、未加分，75保持。见DRAWING_SYMBOL_SCREEN.md，调度仅以CURRENT_WORK_PLAN.md为准。
+
 2026-11-08构件识别基线：父提交f9fa47a三项CI已收口。新增14公开/生成参考输入和42次固定Florence-2推理，门窗定位与墙分割未过门槛，未接入应用、未加分，D08仍开放。见DRAWING_COMPONENT_SCREEN.md；调度仅以CURRENT_WORK_PLAN.md为准。
 
 2026-11-08集成候选更新：现有PR57整合55/56/58并连接材料方案Agent；176/144专项与真实浏览器核验完成，真实4B新题严格2/6，额外解释/输入区遮挡仍开放。未发布，75分保持；详SCENARIO_AGENT_INTEGRATION.md及CURRENT_WORK_PLAN.md。
