@@ -75,7 +75,8 @@ def parse_bill(path,resource,kind):
             if row['unit'] not in SCALES:raise core.ValidationError('Unsupported energy unit; power, volume and price are not energy')
             if kind=='hour' and end-start!=timedelta(hours=1):raise core.ValidationError('Hourly comparison requires one-hour intervals')
             if kind=='calendar_month':
-                expected=datetime(start.year+1,1,1) if start.month==12 else datetime(start.year,start.month+1,1)
+                try:expected=datetime(start.year+1,1,1) if start.month==12 else datetime(start.year,start.month+1,1)
+                except ValueError:raise core.ValidationError('Utility month boundary exceeds the supported date range') from None
                 if start.day!=1 or start.hour or end!=expected:raise core.ValidationError('Monthly comparison requires complete calendar months')
             result.append({'line':reader.line_num,'start':start,'end':end,'raw':row,'kwh':quantity(row['energy'])*SCALES[row['unit']]})
     except (UnicodeError,csv.Error) as exc:raise core.ValidationError('Malformed utility CSV: '+str(exc)) from None

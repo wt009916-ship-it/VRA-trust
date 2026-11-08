@@ -182,3 +182,11 @@ def test_excessive_native_energy_is_a_controlled_error(native):
 
 def test_thirteen_decimal_bill_values_are_preserved():
     assert calc.quantity('608.7272727272727')==F('608.7272727272727')
+
+
+def test_calendar_upper_bound_is_controlled_api_rejection(client,native,monkeypatch):
+    p=native/'matched.csv';p.write_text('start,end,energy,unit,carrier\n9999-12-01,9999-12-02,1,kWh,Electricity\n9999-12-02,9999-12-03,1,kWh,Electricity\n')
+    pid,ev,service,_=prepare(client,native,monkeypatch)
+    response=client.post('/api/projects/'+pid+'/utility-comparisons',json=body(bill_evidence_id=ev['evidence_id']).model_dump())
+    assert response.status_code==409 and 'supported date range' in response.text
+    assert service.store.list('utility',pid)==[]
