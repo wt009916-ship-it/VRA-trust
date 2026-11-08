@@ -1,0 +1,69 @@
+{
+  "scope": "Previously seen four-case diagnostic; contract+prompt+tool framing changed together; no causal isolation, no acceptance or score gain, no write permission",
+  "frozen_sha256": "f9177d255058ef13dce19eea8485036c896bf6d4415a6034f7786abed882e4df",
+  "runtime_sha256": "00d50686815af38249d0218c91558fbd0e9093ac8c074bac86196907f4305e31",
+  "server_arguments": [
+    "E:\\VRA-local-model-20261106\\runtime\\llama-server.exe",
+    "-m",
+    "E:\\VRA-local-model-20261106\\models\\Qwen3-4B-Q4_K_M.gguf",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "56691",
+    "--alias",
+    "vra-tool-diagnostic",
+    "-c",
+    "16384",
+    "-np",
+    "1",
+    "-t",
+    "4",
+    "-ngl",
+    "99",
+    "--fit",
+    "off",
+    "--cache-ram",
+    "0",
+    "--no-context-shift",
+    "--offline",
+    "--no-webui",
+    "--no-agent",
+    "--no-webui-mcp-proxy",
+    "--no-slots",
+    "--jinja",
+    "--reasoning",
+    "off",
+    "--timeout",
+    "120"
+  ],
+  "cases": [
+    {
+      "id": "S01",
+      "diagnostic_match": false,
+      "failure": "AssertionError: Role/source mismatch",
+      "seconds": 1.688
+    },
+    {
+      "id": "S05",
+      "diagnostic_match": true,
+      "seconds": 3.187
+    },
+    {
+      "id": "S13",
+      "diagnostic_match": false,
+      "failure": "AssertionError: Decision mismatch",
+      "seconds": 1.5
+    },
+    {
+      "id": "S17",
+      "diagnostic_match": true,
+      "seconds": 2.172
+    }
+  ],
+  "server_stopped": true,
+  "score_delta": 0,
+  "application_accepted": false,
+  "pid": 30532,
+  "loopback_verified": true,
+  "unauthenticated_status": 401
+}
