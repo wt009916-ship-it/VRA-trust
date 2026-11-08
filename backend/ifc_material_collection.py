@@ -36,8 +36,8 @@ def measure_collection(path, ids):
     if len(projects) != 1 or len(products) > 10000:
         raise ValueError('Exactly one project and at most 10000 products required')
     lookup = {p.id(): p for p in products}
-    if any(i not in lookup or not lookup[i].is_a('IfcWall') for i in ids):
-        raise ValueError('Selection must contain physical IfcWall entities')
+    if any(i not in lookup or not any(lookup[i].is_a(kind) for kind in ('IfcWall', 'IfcSlab', 'IfcPlate')) for i in ids):
+        raise ValueError('Selection must contain physical IfcWall, IfcSlab or IfcPlate entities')
     # Validate every placement before any native geometry operation.
     chains = [placement_chain(lookup[i].ObjectPlacement) for i in ids]
     units = project_units(projects[0]).get('LENGTHUNIT', [])
@@ -53,7 +53,7 @@ def measure_collection(path, ids):
               'method': 'voided_layer_mesh_union_by_source_material_entity',
               'quantity_kind': 'selected_model_material_envelope_not_purchase_quantity',
               'limitations': [
-                  'Only selected straight-axis layered walls in one IFC are included.',
+                  'Only selected layered walls, slabs (including roof slabs), or plates with verified reference geometry in one IFC are included.',
                   'Grouping uses IFC material entity IDs, never equality of material names.',
                   'Same-material spatial overlap is counted once; cross-material overlap blocks all totals.',
                   'Layer envelopes may include cavities/studs; no density, solid fraction or purchasing rule is inferred.',
@@ -93,7 +93,8 @@ def measure_collection(path, ids):
                     or abs(solid.volume()-row['envelope_volume_m3']) > tolerance):
                 return refuse('world_layer_volume_mismatch')
             source = {'product_id': ident, 'layer_id': row['layer_id'], 'material_id': row['material_id'],
-                      'material_name': row['material_name'], 'envelope_volume_m3': row['envelope_volume_m3']}
+                      'material_name': row['material_name'], 'product_type':lookup[ident].is_a(),
+                      'layer_reference':measured['layer_reference'], 'envelope_volume_m3': row['envelope_volume_m3']}
             source_rows.append(source)
             groups.setdefault(row['material_id'], []).append((solid, source))
 

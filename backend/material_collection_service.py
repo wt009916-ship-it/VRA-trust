@@ -24,7 +24,7 @@ def report(record):
         '#'+str(r['material_id']), r['material_name'] or '未命名', r['source_sum_m3'],
         r['overlap_deduction_m3'], r['union_envelope_m3']))+'</tr>' for r in result.get('materials', [])) if valid else ''
     return ('<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>多构件材料包络计量</title>'
-            '<body><h1>多构件材料包络计量</h1><p>选定墙体：'+esc(', '.join('#'+str(i) for i in record['product_ids']))+'</p>'
+            '<body><h1>多构件材料包络计量</h1><p>选定构件：'+esc(', '.join('#'+str(i) for i in record['product_ids']))+'</p>'
             '<p>当前状态：'+esc(record['status'])+'。同一IFC材料实体的空间重叠只计一次；不同材料空间冲突时不提供汇总量。</p>'
             '<p>这是模型材料层包络，已沿用模型洞口；不是采购材料净量。实体比例、密度、损耗、报价和施工计量规则须另有依据。</p>'
             +('<table><tr><th>材料实体</th><th>模型名称</th><th>原始和 m³</th><th>重复扣除 m³</th><th>去重包络 m³</th></tr>'+rows+'</table>'

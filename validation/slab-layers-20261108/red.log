@@ -1,0 +1,32 @@
+F
+================================== FAILURES ===================================
+_ test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-None-IfcSlab] _
+
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-slab-layers-20261108/red/test_solid_reference_plane_rot0')
+kind = 'IfcSlab', prefix = None, sense = 'POSITIVE', tilted = False
+
+    @pytest.mark.parametrize('kind',['IfcSlab','IfcPlate'])
+    @pytest.mark.parametrize('prefix',[None,'MILLI'])
+    @pytest.mark.parametrize('sense',['POSITIVE','NEGATIVE'])
+    @pytest.mark.parametrize('tilted',[False,True])
+    def test_solid_reference_plane_rotation_units_and_partial_depth_void(tmp_path,kind,prefix,sense,tilted):
+        _,_,slab,_,_,path=slab_model(tmp_path,kind=kind,prefix=prefix,sense=sense,tilted=tilted)
+        r=measure_layers(path,slab.id())
+>       assert r['status']=='measured',r['reason']
+E       AssertionError: wall_layer_reference_not_supported
+E       assert 'unavailable' == 'measured'
+E         
+E         - measured
+E         + unavailable
+
+tests\test_ifc_slab_layers.py:45: AssertionError
+============================== warnings summary ===============================
+D:\ϡ��agent-ϡ����ůȫ����\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\ϡ��agent-ϡ����ůȫ����\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_ifc_slab_layers.py::test_solid_reference_plane_rotation_units_and_partial_depth_void[False-POSITIVE-None-IfcSlab]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 1 warning in 0.70s

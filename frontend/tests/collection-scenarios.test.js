@@ -4,7 +4,7 @@ import {scenarioFormMarkup,scenarioPayload,scenarioSourceShape} from '../src/mat
 const source={materialset_id:'materialset_'+'a'.repeat(32),result:{materials:[{material_id:3932,material_name:'Stud <unsafe>',union_envelope_m3:1.84266524},{material_id:3941,material_name:'Board',union_envelope_m3:.64092704}]}};
 test('collection form uses material entity identity and server-only volume',()=>{
  const html=scenarioFormMarkup(source,{building:{region:'US-CO'}});
- assert.ok(html.includes('从多墙去重材料建立两套方案')&&html.includes('来源材料实体 #3932'));
+ assert.ok(html.includes('从多构件去重材料建立两套方案')&&html.includes('来源材料实体 #3932'));
  assert.ok(!html.includes('来源层 #')&&!html.includes('<unsafe>'));
  assert.ok(!html.includes('name="union_envelope_m3"'));
  assert.equal(scenarioSourceShape(source).endpoint,'/collection-scenarios');

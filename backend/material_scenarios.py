@@ -212,10 +212,10 @@ def calculate(body, takeoff, project, *, source_kind='layer'):
                 'carbon_reduction_pct':None if base_carbon == 0 else str((base_carbon-alt_carbon)/base_carbon*100)}
     return {'status':'calculated' if complete else 'incomplete', 'alternatives':results, 'comparison':comparison,
         'functional_equivalence':'NOT_ASSESSED', 'certification':'NOT_ASSESSED', 'issued_credits_t':None,
-        'limitations':[('限定所选多墙去重材料包络及相同声明边界；材料功能等效、耐火、结构和节能效果未验证。' if collection else '限定同一构件及相同声明边界；材料功能等效、耐火、结构和节能效果未验证。'),
+        'limitations':[('限定所选分层构件去重材料包络及相同声明边界；材料功能等效、耐火、结构和节能效果未验证。' if collection else '限定同一构件及相同声明边界；材料功能等效、耐火、结构和节能效果未验证。'),
             '层包络乘显式实体比例得到条件材料量；比例、密度、损耗、价格和因子来源仍需专业复核。',
             '生产碳按含损耗采购量计；材料运输由采购质量、分批比例、附加质量和距离派生，其他活动须显式录入。阶段齐全不证明清单无遗漏或符合LCA标准。',
-            '单位面积分母来自项目建筑面积，不是所选墙面积；材料成本不等于工程总造价。']}
+            '单位面积分母来自项目建筑面积，不是所选构件面积；材料成本不等于工程总造价。']}
 
 
 class MaterialScenarios:
@@ -354,7 +354,7 @@ def report(record):
             content += carbon_report(alternative, declared, record['input']['study_years'])
 
     if collection:content = content.replace('逐层计量表', '逐材料计量表').replace('来源层 / 拟用材料', '来源材料实体 / 拟用材料')
-    return '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>材料方案比较</title><style>body{font:16px/1.7 system-ui;max-width:1000px;margin:30px auto;padding:20px}body{overflow-wrap:anywhere;box-sizing:border-box}.table-scroll{max-width:100%;overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px}td,th{border:1px solid #ccd6d4;padding:10px;text-align:left}td:not(:first-child){white-space:nowrap;overflow-wrap:normal}td:first-child,th:first-child{min-width:180px;max-width:260px;white-space:normal}td.prose{white-space:normal;min-width:200px;max-width:360px}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>材料方案比较</h1><p>状态：'+esc(state)+' · 功能等效性未核验，非总造价或碳资产认证。</p><p>表格数值按8位有效数字展示；金额保留分，原始精度见计算回执。窄屏可在表格内横向滚动。</p>'+content+'<details><summary>输入、逐层公式及来源回执</summary><pre>'+esc(json.dumps(record,ensure_ascii=False,indent=2))+'</pre></details></html>'
+    return '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>材料方案比较</title><style>body{font:16px/1.7 system-ui;max-width:1000px;margin:30px auto;padding:20px}body{overflow-wrap:anywhere;box-sizing:border-box}.table-scroll{max-width:100%;overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px}td,th{border:1px solid #ccd6d4;padding:10px;text-align:left}td:not(:first-child){white-space:nowrap;overflow-wrap:normal}td:first-child,th:first-child{min-width:180px;max-width:260px;white-space:normal}td.prose{white-space:normal;min-width:200px;max-width:360px}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>材料方案比较</h1><p>状态：'+esc(state)+' · 功能等效性未核验，非总造价或碳资产认证。</p><p>表格数值按8位有效数字展示；金额保留分，原始精度见计算回执。窄屏可在表格内横向滚动。</p>'+content+'<details><summary>输入、材料公式及来源回执</summary><pre>'+esc(json.dumps(record,ensure_ascii=False,indent=2))+'</pre></details></html>'
 
 
 def register(app, takeoffs):
