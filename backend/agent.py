@@ -27,7 +27,7 @@ from . import agent_requests as requested_scopes
 from . import agent_simulation
 from . import agent_outputs
 from . import agent_read_execution, agent_standards
-from . import agent_intent_catalog
+from . import agent_intent_catalog, agent_reviews
 
 
 class Chat(Contract):
@@ -74,6 +74,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    review: agent_reviews.SourceReview | None = None
     output_plan: list[agent_outputs.OutputItem] | None = Field(default=None, min_length=1, max_length=6)
     request_keys: list[str] | None = Field(default=None,min_length=1,max_length=6)
     finish: StrictBool = False
@@ -120,6 +121,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'professional_review': '实际读取后，提交review中的kind、record_id、record_hash与view_hash核验当前状态/范围；不交付任何数值，不认证整体工程有效性。仅用于已冻结的纯解释输出计划。',
     'requested_output_plan': '先根据原用户问题为每个request_key选择所问fact_keys和explanation_topics，并选择应用提供的原问题片段编号question_fragment_ids。只能用本轮计划目录；计划提交后冻结，不得根据资料名称或内容改写。此为模型解析，不是原问题已被完整理解的认证。',
     'requested_availability':'按用户本轮声明的request_keys（1到6个）核验记录存在或缺失，同一目录快照逐项返回；只核查可用性，不读取工程数值，不替换编号。全部声明目标交付后可finish=true。',
     'professional_inventory': '一次读取所选kinds（1到6类）的完整项目目录计数和最近记录，适合多专业可用性检查。空目录随后用professional_missing正式说明；存在记录则读取。不要逐轮分别查询六类而耗尽预算。',
@@ -174,6 +176,7 @@ TOOL_FIELDS = {
     'calculation_prepare': ('plan_keys',),
     'professional_read_many': ('record_ids',),
     'professional_limit': ('limitation',),
+    'professional_review': ('review',),
     'capability_lookup': ('capability_ids',),
     'capability_explain': ('capability_explanation',),
     'calculation_execute': ('plan_key',),
@@ -338,6 +341,7 @@ class Agent:
                 answer = capabilities.attach(answer, record['capability_delivery'])
             if record.get('missing_deliveries'):
                 answer = missing_records.attach(answer,self.domain,project_id,record['missing_deliveries'])
+            answer = agent_reviews.attach(answer,self.domain,project_id,record)
             answer = read_recovery.attach(answer,record)
             answer = requested_scopes.attach(answer,self.domain,project_id,record)
             answer = agent_standards.attach(answer,self.domain,project_id,record)
@@ -385,6 +389,12 @@ class Agent:
                 raise ToolRefusal('Calculation requires this task permission and frozen user inputs')
             plans, frozen = calculation_context
             return calculations.execute(d, project_id, args.plan_key, plans, frozen)
+        if name == 'professional_review':
+            if not args.review:raise core.ValidationError('Provide nonnumeric source review')
+            review = args.review; spec = inspection(review.kind)
+            if self.store.get(review.kind, review.record_id)['project_id'] != project_id:
+                raise ToolRefusal('Cross-project source review rejected')
+            return agent_reviews.check(spec.service(d).view(project_id, review.record_id), review)
         if name in {'professional_deliver','professional_limit'}:
             delivery = args.delivery.delivery() if name == 'professional_deliver' and args.delivery else args.limitation.delivery() if name == 'professional_limit' and args.limitation else None
             if not delivery:raise core.ValidationError('Provide delivery or limitation')
@@ -478,7 +488,7 @@ class Agent:
                 'context_snapshot': history, 'recovery_attempts': 0}
         if body.objective == 'inspect_results':record['llm_commentary_policy'] = 'audit_only'
         if body.objective == 'open_ended':
-            record.update(professional_deliveries=[], missing_deliveries=[], llm_commentary_policy='audit_only')
+            record.update(professional_deliveries=[], professional_reviews=[], missing_deliveries=[], llm_commentary_policy='audit_only')
         if body.read_requests:
             record.update(read_requests=[r.model_dump(mode='json') for r in body.read_requests],availability_deliveries=[], infer_outputs=body.infer_outputs,
                           read_execution=body.read_execution if body.infer_outputs else 'model')
@@ -500,7 +510,7 @@ class Agent:
         spec = INSPECTIONS.get(body.objective)
         offered = {'project_get', spec.list_tool, spec.read_tool} if spec else (set(TOOLS) if body.allow_compute else set(TOOLS) - WRITE_TOOLS)
         if body.objective == 'inspect_results':offered &= agent_simulation.INSPECTION_TOOLS
-        offered -= {'requested_availability', 'requested_output_plan'}
+        offered -= {'requested_availability', 'requested_output_plan', 'professional_review'}
         if not spec:offered -= {s.list_tool for s in INSPECTIONS.values()}
         if body.calculation_plans:
             offered = {'project_get', 'calculation_execute', 'calculation_prepare', 'professional_read_many', 'professional_deliver','professional_limit'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
@@ -509,12 +519,12 @@ class Agent:
             if body.infer_outputs:offered.add('requested_output_plan')
             if any(r.purpose=='availability' for r in body.read_requests):offered.add('requested_availability')
             if any(r.purpose=='results' for r in body.read_requests):
-                offered|={'professional_read_many','professional_deliver','professional_limit','professional_missing'}|{inspection(r.kind).read_tool for r in body.read_requests if r.purpose=='results'}
+                offered|={'professional_read_many','professional_deliver','professional_limit','professional_missing','professional_review'}|{inspection(r.kind).read_tool for r in body.read_requests if r.purpose=='results'}
         if not any(p.execution_authorized for p in body.calculation_plans):offered -= {'calculation_execute','calculation_prepare'}
         if body.objective != 'open_ended':offered -= {'professional_deliver','professional_limit','professional_missing'}
         if body.objective != 'open_ended':offered -= {'capability_lookup', 'capability_explain'}
         def reserved_reads():
-            return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + int(bool(record.get('missing_deliveries'))) + capabilities.read_count(record.get('capability_delivery')) + int(bool(record.get('availability_deliveries')))
+            return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + len(record.get('professional_reviews', [])) + int(bool(record.get('missing_deliveries'))) + capabilities.read_count(record.get('capability_delivery')) + int(bool(record.get('availability_deliveries')))
         def missing_targets():
             if body.read_requests:return requested_scopes.result_ids(record['read_requests'])
             ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}\b',body.message))
@@ -525,6 +535,13 @@ class Agent:
             if body.read_requests and body.infer_outputs and not record.get('output_plan'):
                 return [agent_outputs.constrain_tool(self.tools({'requested_output_plan'})[0], record['read_requests'], record['question'])]
             available = set(offered) - {'requested_output_plan'}
+            review_keys = {i['request_key'] for i in (record.get('output_plan') or {}).get('items', [])
+                           if not i['fact_keys'] and i['explanation_topics'] and not i.get('clarification_question')}
+            waiting = set(requested_scopes.pending(record))
+            review_ids = {r['record_id'] for r in record.get('read_requests', [])
+                          if r['purpose'] == 'results' and r['request_key'] in review_keys & waiting}
+            if not review_ids:
+                available.discard('professional_review')
             choices = {}
             read_records = []
             capability_reads = [e['result'] for e in record['events'] if e['tool']=='capability_lookup' and e['status']=='succeeded']
@@ -557,6 +574,7 @@ class Agent:
                     read_records = [(ds, r) for ds, r in read_records if r[ds.record_key] in pending_ids]
                 if not read_any or not any(r.get('explanation_facts') for _,r in read_records):available.discard('professional_deliver')
                 if not any(not ds.artifact(r)['verified'] for ds,r in read_records):available.discard('professional_limit')
+                if not any(r[ds.record_key] in review_ids for ds,r in read_records):available.discard('professional_review')
             if not choices:available.discard('professional_read_many')
             declared_missing = []
             pending_availability = []
@@ -757,10 +775,26 @@ class Agent:
                         raise core.ValidationError('Read each capability and its current catalog hash in this task before explaining')
                 ds = next((s for s in INSPECTIONS.values() if s.read_tool == name), None)
                 if ds:ensure_read_scope(ds,args.get(ds.argument))
+                if name == 'professional_review':
+                    review = agent_reviews.SourceReview.model_validate(args.get('review'))
+                    ds = inspection(review.kind); ensure_read_scope(ds, review.record_id)
+                    requested = next((r for r in record.get('read_requests', []) if r['record_id'] == review.record_id), None)
+                    wanted = agent_outputs.requirement(record, requested['request_key']) if requested else None
+                    if not wanted or wanted['fact_keys'] or not wanted['explanation_topics'] or wanted.get('clarification_question'):
+                        raise ToolRefusal('Source review requires a frozen nonnumeric output plan')
+                    if not any(e['tool'] == ds.read_tool and e['status'] == 'succeeded'
+                               and e.get('result', {}).get(ds.record_key) == review.record_id
+                               and agent_reviews.view_hash(e['result'], review.kind) == review.view_hash for e in record['events']):
+                        raise core.ValidationError('Read this source state before reviewing it')
                 if name in {'professional_deliver','professional_limit'}:
                     delivery = NumericDelivery.model_validate(args.get('delivery')).delivery() if name == 'professional_deliver' else Limitation.model_validate(args.get('limitation')).delivery()
                     ds = inspection(delivery.kind)
-                    if body.read_requests:ensure_read_scope(ds,delivery.record_id)
+                    if body.read_requests:
+                        ensure_read_scope(ds,delivery.record_id)
+                        request = next(r for r in record['read_requests'] if r['record_id'] == delivery.record_id)
+                        wanted = agent_outputs.requirement(record, request['request_key'])
+                        if wanted and (wanted.get('clarification_question') or not wanted['fact_keys']):
+                            raise ToolRefusal('Unresolved or nonnumeric plan cannot deliver numeric facts or substitute a limitation')
                     if not any(e['tool'] == ds.read_tool and e['status'] == 'succeeded'
                                and e.get('result', {}).get(ds.record_key) == delivery.record_id
                                and e.get('result', {}).get('hash') == delivery.record_hash for e in record['events']):
@@ -797,6 +831,8 @@ class Agent:
                 result = self.call(record['project_id'], name, args, body.allow_compute, **context)
                 if name in {'professional_deliver','professional_limit'}:
                     record['professional_deliveries'] = accumulate(record['professional_deliveries'], result['reference'])
+                if name == 'professional_review':
+                    record['professional_reviews'] = [r for r in record.get('professional_reviews', []) if r['record_id'] != result['reference']['record_id']] + [result['reference']]
                 if name == 'capability_explain':
                     record['capability_delivery'] = result['reference']
                 if name == 'professional_missing':
@@ -988,7 +1024,7 @@ class Agent:
                     if (record.get('read_execution') == 'application' and not record.get('output_plan')
                             and len(calls) != 1):
                         raise core.ValidationError('Application read execution requires one frozen plan call before source access')
-                    new_deliveries = sum(c['function']['name'] in {'professional_deliver','professional_limit','professional_missing'} for c in calls)
+                    new_deliveries = sum(c['function']['name'] in {'professional_deliver','professional_limit','professional_missing','professional_review'} for c in calls)
                     if not record.get('availability_deliveries') and any(c['function']['name']=='requested_availability' for c in calls):new_deliveries+=1
                     current_capability_reads = capabilities.read_count(record.get('capability_delivery'))
                     future_capability_reads = current_capability_reads
@@ -1009,7 +1045,7 @@ class Agent:
                     for call in calls:
                         result = invoke(call['function']['name'], call['function']['arguments'], recoverable=True, origin='model')
                         batch_failed |= isinstance(result, dict) and result.get('status') == 'TOOL_ERROR'
-                        if call['function']['name'] in {'professional_deliver','professional_limit','capability_explain'} and result.get('status') == 'verified':
+                        if call['function']['name'] in {'professional_deliver','professional_limit','professional_review','capability_explain'} and result.get('status') == 'verified':
                             finish_requested |= result['reference']['finish']
                         if call['function']['name']=='professional_missing' and result.get('status')=='verified':
                             finish_requested |= any(r['request']['finish'] for r in missing_records.references(result))
@@ -1098,6 +1134,10 @@ class Agent:
                         'reason': 'model_finish' if record.get('model_finished_delivery') else 'model_commentary',
                         'model_declared_finished': bool(record.get('model_finished_delivery')),
                         'pending_request_keys': requested_scopes.pending(record)})
+            unresolved = [i['request_key'] for i in (record.get('output_plan') or {}).get('items', []) if i.get('clarification_question')]
+            if unresolved:
+                record['termination'] = {'reason':'clarification_required', 'model_declared_finished':False,
+                    'pending_request_keys':unresolved}
             # Authoritative decision fields are computed from current tools, never model prose.
             if body.objective == 'open_ended':
                 if record['professional_deliveries']:
@@ -1116,6 +1156,8 @@ class Agent:
                 if record.get('missing_deliveries'):
                     answer = missing_records.attach(answer,self.domain,record['project_id'],record['missing_deliveries'],
                         reader=recheck_missing)
+                answer = agent_reviews.attach(answer,self.domain,record['project_id'],record,
+                    reader=lambda ds, ident: invoke(ds.read_tool, {ds.argument: ident}))
                 answer = read_recovery.attach(answer,record)
                 answer = requested_scopes.attach(answer,self.domain,record['project_id'],record,reader=recheck_availability)
                 answer = agent_standards.attach(answer,self.domain,record['project_id'],record)

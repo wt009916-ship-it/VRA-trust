@@ -64,7 +64,7 @@ export function bindReadRequests(host,pid,action) {
 export function readRequestProgressMarkup(task) {
   const rows=task.read_request_progress||task.answer?.read_request_progress||[];
   if(!rows.length)return outputContractMarkup(task);
-  const states={fields_unavailable:'所问字段含不可计算项',required_facts_missing:'尚缺所问指标',output_plan_missing:'尚未形成输出计划',unfulfilled:'尚未交付',delivery_not_currently_verified:'交付目前未通过核验',availability_verified:'可用性已核验',result_verified:'所选结果已核验',limitation_verified:'当前限制已核验',record_unavailable:'指定记录不可用'};
+  const states={needs_clarification:'等待澄清 · 尚未交付',source_review_verified:'状态与口径已复核 · 未交付数值',fields_unavailable:'所问字段含不可计算项',required_facts_missing:'尚缺所问指标',output_plan_missing:'尚未形成输出计划',unfulfilled:'尚未交付',delivery_not_currently_verified:'交付目前未通过核验',availability_verified:'可用性已核验',result_verified:'所选结果已核验',limitation_verified:'当前限制已核验',record_unavailable:'指定记录不可用'};
   const rowState=r=>r.state==='result_verified'&&(task.answer?.artifacts||[]).some(a=>a.record_id===r.record_id&&!a.verified)
     ?'所列字段已核对 · 整体记录仍受限':states[r.state]||r.state;
   const available=task.answer?.checked_availability||[];
@@ -79,11 +79,16 @@ export function outputContractMarkup(task) {
   const answer=task.answer||{},plan=answer.output_plan||task.output_plan;
   if(!task.infer_outputs&&!plan)return '';
   if(!plan)return '<section aria-label="任务产物核验"><h3>任务产物</h3><p>尚未形成指标与解释计划，不能认定已完整回答问题。</p></section>';
-  const states={fulfilled:'计划内产物已交付',source_limited:'已说明来源限制，数值未完成',incomplete:'仍有产物未交付'};
+  const states={needs_clarification:'等待澄清 · 任务未完成',fulfilled:'计划内产物已交付',source_limited:'已说明来源限制，数值未完成',incomplete:'仍有产物未交付'};
   const invalid=answer.output_contract_coverage==='contract_changed';
   const outputs=invalid?[]:(answer.requested_outputs||[]);
   return `<section aria-label="任务产物核验"><h3>指标与解释</h3><p>以下要求由模型从原问题解析，请核对是否准确。计划完成不等于已证明完整理解问题；解释由应用依据当前核验来源生成。</p>${invalid?'<p role="status">解释契约已变化，历史解释已撤下，请重新核验。</p>':''}${plan.items.map(item=>{
     const out=outputs.find(o=>o.request_key===item.request_key);
-    return `<article><h4>${esc(item.request_key)} · ${esc(states[out?.state]||'待交付')}</h4><blockquote>${esc(item.question_excerpt)}</blockquote><p>所选指标：${esc(item.fact_keys.map(k=>factLabels[k]||k).join('、')||'记录可用性')}</p>${out?.missing_fact_keys?.length?`<p role="status">尚缺指标：${esc(out.missing_fact_keys.map(k=>factLabels[k]||k).join('、'))}</p>`:''}${(out?.explanations||[]).map(e=>`<p>${esc(e.text)}</p>`).join('')}</article>`;
+    const clarification=invalid?null:(answer.clarification_requests||[]).find(q=>q.request_key===item.request_key);
+    const review=invalid?null:(answer.checked_reviews||[]).find(r=>r.record_id===out?.record_id);
+    const withdrawn=(answer.review_failures||[]).find(r=>r.record_id===out?.record_id);
+    const purpose=(task.read_requests||[]).find(r=>r.request_key===item.request_key)?.purpose;
+    const emptyLabel=item.clarification_question?'等待澄清':purpose==='availability'?'记录可用性':'仅说明口径或状态，不交付数值';
+    return `<article><h4>${esc(item.request_key)} · ${esc(states[out?.state]||'待交付')}</h4><blockquote>${esc(item.question_excerpt)}</blockquote><p>所选指标：${esc(item.fact_keys.map(k=>factLabels[k]||k).join('、')||emptyLabel)}</p>${out?.missing_fact_keys?.length?`<p role="status">尚缺指标：${esc(out.missing_fact_keys.map(k=>factLabels[k]||k).join('、'))}</p>`:''}${clarification?`<p role="status"><strong>请补充确认：</strong>${esc(clarification.question)}</p><p>${esc(clarification.notice)}</p><p>在输入框补充说明后重新提交；本次未执行替代计算。</p>`:''}${withdrawn?`<p role="status">${esc(withdrawn.notice)}</p>`:''}${(out?.explanations||[]).map(e=>`<p>${esc(e.text)}</p>`).join('')}${review?`<p class="subtle">非数值来源复核 · ${esc(review.checked_at)}</p><small class="mono">${esc(review.record_id)} · ${esc(review.record_hash)}</small>`:''}</article>`;
   }).join('')}</section>`;
 }

@@ -159,7 +159,8 @@ def can_deliver_requested_facts(record, kind, required):
 
 
 def readable(record, kind):
-    return {**record, 'explanation_facts': facts(record, kind),
+    from .agent_reviews import reference
+    return {**record, 'nonnumeric_review_reference': reference(record, kind), 'explanation_facts': facts(record, kind),
             'explanation_instruction': '开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。'
             '只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。'}
 
@@ -171,6 +172,7 @@ def model_projection(record, kind):
     return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record_name(record),
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
+            'nonnumeric_review_reference': record['nonnumeric_review_reference'],
             'limitation_delivery': None if artifact['verified'] else {
                 'limitation_status':record['status'], 'statements':[],
                 'stale_details':record.get('stale_details', []) if record['status']=='stale' else [],

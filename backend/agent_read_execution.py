@@ -1,5 +1,5 @@
 """Execute a frozen, user-scoped read plan. No model-generated numeric delivery."""
-from . import core, agent_outputs
+from . import core, agent_outputs, agent_reviews
 from .agent_semantics import Statement, inspection, can_deliver_requested_facts
 from .agent_recovery import RecordsUnavailable
 
@@ -20,6 +20,10 @@ def execute(record, invoke, *, cancelled):
         if request['purpose'] != 'results':
             continue
         key, kind, ident = request['request_key'], request['kind'], request['record_id']
+        wanted = agent_outputs.requirement(record, key)
+        if wanted.get('clarification_question'):
+            rows.append({'request_key': key, 'record_id': ident, 'state': 'needs_clarification'})
+            continue
         spec = inspection(kind)
         row = {'request_key': key, 'record_id': ident, 'state': 'failed'}
         try:
@@ -32,8 +36,11 @@ def execute(record, invoke, *, cancelled):
                 continue
             row['source_hash'] = source['hash']
             common = {'kind': kind, 'record_id': ident, 'record_hash': source['hash'], 'finish': False}
-            required = agent_outputs.requirement(record, key)['fact_keys']
-            if not can_deliver_requested_facts(source, kind, required):
+            required = wanted['fact_keys']
+            if not required and wanted['explanation_topics']:
+                invoke('professional_review', {'review': agent_reviews.reference(source, kind)})
+                row['state'] = 'source_review_submitted'
+            elif not can_deliver_requested_facts(source, kind, required):
                 invoke('professional_limit', {'limitation': {**common, 'status': source['status']}})
                 row['state'] = 'limitation_submitted'
             else:
@@ -49,7 +56,7 @@ def execute(record, invoke, *, cancelled):
             # parser failure or permission failure as absence, or retry a write.
             row['error'] = 'See failed tool event; no substitute record or numeric fallback.'
         rows.append(row)
-    keys = [r['request_key'] for r in record['read_requests'] if r['purpose'] == 'availability']
+    keys = [r['request_key'] for r in record['read_requests'] if r['purpose'] == 'availability' and not agent_outputs.requirement(record, r['request_key']).get('clarification_question')]
     if keys:
         if cancelled():
             raise core.ValidationError('Task cancelled during declared read execution')
