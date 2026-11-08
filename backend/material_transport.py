@@ -7,10 +7,9 @@ from . import core, lifecycle
 from .schema import Contract
 
 
-class TransportLeg(Contract):
+class TransportInput(Contract):
     leg_id: str = Field(min_length=1, max_length=60, pattern=r'^[a-zA-Z0-9_-]+$')
     name: str = Field(min_length=2, max_length=160)
-    layer_ids: list[StrictInt] = Field(min_length=1, max_length=32)
     purchase_fraction: StrictFloat | None = Field(default=None, gt=0, le=1)
     fraction_source: str = Field(min_length=5, max_length=1000)
     distance_km: StrictFloat | None = Field(default=None, ge=0, le=1000000)
@@ -24,28 +23,37 @@ class TransportLeg(Contract):
     def coherent(self):
         if len(set(self.evidence_ids)) != len(self.evidence_ids):
             raise ValueError('Duplicate transport source evidence')
-        if len(set(self.layer_ids)) != len(self.layer_ids) or any(i <= 0 for i in self.layer_ids):
+        if len(set(self.selected_ids)) != len(self.selected_ids) or any(i <= 0 for i in self.selected_ids):
             raise ValueError('Transport layers must be distinct positive IDs')
         if self.factor.stage != 'transport' or self.factor.denominator != 'tkm':
             raise ValueError('Transport leg requires a transport factor in kgCO2e/tkm')
         return self
 
 
-def derive(legs, mappings, derivations, takeoff):
-    materials = {r.layer_id:r for r in mappings}
-    volumes = {r['layer_id']:r for r in derivations}
+class TransportLeg(TransportInput):
+    layer_ids: list[StrictInt] = Field(min_length=1, max_length=32)
+
+    @property
+    def selected_ids(self):
+        return self.layer_ids
+
+
+def derive(legs, mappings, derivations, takeoff, *, identity_field='layer_id', selection_field='layer_ids',
+           parts_field='layers', record_id_field='takeoff_id'):
+    materials = {getattr(r, identity_field):r for r in mappings}
+    volumes = {r[identity_field]:r for r in derivations}
     activities, receipts = [], []
     with localcontext() as ctx:
         ctx.prec = 80
         for leg in legs:
-            if not set(leg.layer_ids) <= materials.keys():
+            if not set(getattr(leg, selection_field)) <= materials.keys():
                 raise core.ValidationError('Transport leg contains an excluded or unknown material layer')
             parts, missing = [], []
-            for layer_id in leg.layer_ids:
+            for layer_id in getattr(leg, selection_field):
                 mapping, quantity = materials[layer_id], volumes[layer_id]['purchase_volume_m3']
                 mass = None if quantity is None or mapping.density_kg_m3 is None else Decimal(quantity)*Decimal(str(mapping.density_kg_m3))
-                if mass is None:missing.append('layer_'+str(layer_id)+':purchase_mass')
-                parts.append({'layer_id':layer_id,'purchase_volume_m3':quantity,
+                if mass is None:missing.append(('material_' if identity_field=='source_material_id' else 'layer_')+str(layer_id)+':purchase_mass')
+                parts.append({identity_field:layer_id,'purchase_volume_m3':quantity,
                     'density_kg_m3':mapping.density_kg_m3,'density_source':mapping.density_source,
                     'purchase_mass_kg':None if mass is None else str(mass)})
             for key in ['purchase_fraction','distance_km','additional_mass_kg']:
@@ -56,8 +64,8 @@ def derive(legs, mappings, derivations, takeoff):
             key = 'transport_'+leg.leg_id
             activities.append(lifecycle.Activity(activity_id=key,name=leg.name,stage='transport',
                 quantity=None if tkm is None else float(tkm),unit='tkm',period='whole_period',
-                source=takeoff['takeoff_id']+' / '+takeoff['hash']+' / leg '+leg.leg_id,factor=leg.factor))
-            receipts.append({'activity_id':key,'leg_id':leg.leg_id,'name':leg.name,'layers':parts,
+                source=takeoff[record_id_field]+' / '+takeoff['hash']+' / leg '+leg.leg_id,factor=leg.factor))
+            receipts.append({'activity_id':key,'leg_id':leg.leg_id,'name':leg.name,parts_field:parts,
                 'purchase_mass_kg':None if total is None else str(total),'purchase_fraction':leg.purchase_fraction,
                 'additional_mass_kg':leg.additional_mass_kg,'shipped_mass_kg':None if shipped is None else str(shipped),
                 'distance_km':leg.distance_km,'quantity_tkm':None if tkm is None else str(tkm),'missing':missing,

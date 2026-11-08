@@ -1695,6 +1695,227 @@
         ]
       }
     },
+    "/api/projects/{project_id}/collection-scenarios": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__collection_scenarios_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectionScenarioRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__collection_scenarios_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/collection-scenarios/{collectionscenario_id}": {
+      "get": {
+        "summary": "Current",
+        "operationId": "current_api_projects__project_id__collection_scenarios__collectionscenario_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "collectionscenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Collectionscenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/collection-scenarios/{collectionscenario_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__collection_scenarios__collectionscenario_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "collectionscenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Collectionscenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/ifc-material-collections": {
       "post": {
         "summary": "Create",
@@ -8690,6 +8911,223 @@
         ],
         "title": "Clause"
       },
+      "CollectionMaterial": {
+        "properties": {
+          "material_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Material Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "solid_fraction": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Solid Fraction"
+          },
+          "fraction_source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Fraction Source"
+          },
+          "waste_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waste Ratio"
+          },
+          "waste_basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Waste Basis"
+          },
+          "density_kg_m3": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Density Kg M3"
+          },
+          "density_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Density Source"
+          },
+          "quote": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "factor": {
+            "$ref": "#/components/schemas/EmissionFactor"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Evidence Ids"
+          },
+          "source_material_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Source Material Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "material_id",
+          "name",
+          "fraction_source",
+          "waste_basis",
+          "quote",
+          "factor",
+          "source_material_id"
+        ],
+        "title": "CollectionMaterial"
+      },
+      "CollectionScenarioRequest": {
+        "properties": {
+          "functional_scope": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Functional Scope"
+          },
+          "region": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Region"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY",
+              "USD",
+              "EUR"
+            ],
+            "title": "Currency"
+          },
+          "tax_basis": {
+            "type": "string",
+            "enum": [
+              "included",
+              "excluded"
+            ],
+            "title": "Tax Basis"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "exclusions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Exclusions"
+          },
+          "study_years": {
+            "type": "integer",
+            "maximum": 200.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Study Years"
+          },
+          "method": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Method"
+          },
+          "boundaries": {
+            "items": {
+              "$ref": "#/components/schemas/Boundary"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 5,
+            "title": "Boundaries"
+          },
+          "materialset_id": {
+            "type": "string",
+            "pattern": "^materialset_[a-f0-9]{32}$",
+            "title": "Materialset Id"
+          },
+          "excluded_materials": {
+            "items": {
+              "$ref": "#/components/schemas/MaterialExclusion"
+            },
+            "type": "array",
+            "maxItems": 255,
+            "title": "Excluded Materials"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/MaterialAlternative"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Alternatives"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "functional_scope",
+          "region",
+          "currency",
+          "tax_basis",
+          "as_of",
+          "exclusions",
+          "study_years",
+          "method",
+          "boundaries",
+          "materialset_id",
+          "alternatives"
+        ],
+        "title": "CollectionScenarioRequest"
+      },
       "ComparisonRequest": {
         "properties": {
           "run_ids": {
@@ -9965,11 +10403,6 @@
       },
       "LayerMaterial": {
         "properties": {
-          "layer_id": {
-            "type": "integer",
-            "exclusiveMinimum": 0.0,
-            "title": "Layer Id"
-          },
           "material_id": {
             "type": "string",
             "maxLength": 100,
@@ -10059,18 +10492,23 @@
             "type": "array",
             "maxItems": 30,
             "title": "Evidence Ids"
+          },
+          "layer_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Layer Id"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "layer_id",
           "material_id",
           "name",
           "fraction_source",
           "waste_basis",
           "quote",
-          "factor"
+          "factor",
+          "layer_id"
         ],
         "title": "LayerMaterial"
       },
@@ -10178,6 +10616,48 @@
         "type": "object",
         "title": "LocalModelSettings"
       },
+      "MaterialAlternative": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "materials": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionMaterial"
+            },
+            "type": "array",
+            "maxItems": 256,
+            "minItems": 1,
+            "title": "Materials"
+          },
+          "other_activities": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioActivity"
+            },
+            "type": "array",
+            "maxItems": 300,
+            "title": "Other Activities"
+          },
+          "transport_legs": {
+            "items": {
+              "$ref": "#/components/schemas/MaterialTransportLeg"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Transport Legs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "materials"
+        ],
+        "title": "MaterialAlternative"
+      },
       "MaterialCollectionRequest": {
         "properties": {
           "cad_id": {
@@ -10202,6 +10682,28 @@
           "product_ids"
         ],
         "title": "MaterialCollectionRequest"
+      },
+      "MaterialExclusion": {
+        "properties": {
+          "source_material_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Source Material Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_material_id",
+          "reason"
+        ],
+        "title": "MaterialExclusion"
       },
       "MaterialLine": {
         "properties": {
@@ -10294,6 +10796,112 @@
           "quote"
         ],
         "title": "MaterialLine"
+      },
+      "MaterialTransportLeg": {
+        "properties": {
+          "leg_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "title": "Leg Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "purchase_fraction": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchase Fraction"
+          },
+          "fraction_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Fraction Source"
+          },
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km"
+          },
+          "distance_source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Distance Source"
+          },
+          "additional_mass_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Additional Mass Kg"
+          },
+          "additional_mass_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Additional Mass Source"
+          },
+          "factor": {
+            "$ref": "#/components/schemas/EmissionFactor"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Evidence Ids"
+          },
+          "material_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 256,
+            "minItems": 1,
+            "title": "Material Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "leg_id",
+          "name",
+          "fraction_source",
+          "distance_source",
+          "additional_mass_source",
+          "factor",
+          "material_ids"
+        ],
+        "title": "MaterialTransportLeg"
       },
       "Measure": {
         "properties": {
@@ -11832,11 +12440,6 @@
       },
       "ScenarioRequest": {
         "properties": {
-          "takeoff_id": {
-            "type": "string",
-            "pattern": "^takeoff_[a-f0-9]{32}$",
-            "title": "Takeoff Id"
-          },
           "functional_scope": {
             "type": "string",
             "maxLength": 1000,
@@ -11880,14 +12483,6 @@
             "minItems": 1,
             "title": "Exclusions"
           },
-          "excluded_layers": {
-            "items": {
-              "$ref": "#/components/schemas/LayerExclusion"
-            },
-            "type": "array",
-            "maxItems": 31,
-            "title": "Excluded Layers"
-          },
           "study_years": {
             "type": "integer",
             "maximum": 200.0,
@@ -11909,6 +12504,19 @@
             "minItems": 5,
             "title": "Boundaries"
           },
+          "takeoff_id": {
+            "type": "string",
+            "pattern": "^takeoff_[a-f0-9]{32}$",
+            "title": "Takeoff Id"
+          },
+          "excluded_layers": {
+            "items": {
+              "$ref": "#/components/schemas/LayerExclusion"
+            },
+            "type": "array",
+            "maxItems": 31,
+            "title": "Excluded Layers"
+          },
           "alternatives": {
             "items": {
               "$ref": "#/components/schemas/Alternative"
@@ -11922,7 +12530,6 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "takeoff_id",
           "functional_scope",
           "region",
           "currency",
@@ -11932,6 +12539,7 @@
           "study_years",
           "method",
           "boundaries",
+          "takeoff_id",
           "alternatives"
         ],
         "title": "ScenarioRequest"
@@ -12468,15 +13076,6 @@
             "minLength": 2,
             "title": "Name"
           },
-          "layer_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array",
-            "maxItems": 32,
-            "minItems": 1,
-            "title": "Layer Ids"
-          },
           "purchase_fraction": {
             "anyOf": [
               {
@@ -12544,6 +13143,15 @@
             "type": "array",
             "maxItems": 30,
             "title": "Evidence Ids"
+          },
+          "layer_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Layer Ids"
           }
         },
         "additionalProperties": false,
@@ -12551,11 +13159,11 @@
         "required": [
           "leg_id",
           "name",
-          "layer_ids",
           "fraction_source",
           "distance_source",
           "additional_mass_source",
-          "factor"
+          "factor",
+          "layer_ids"
         ],
         "title": "TransportLeg"
       },

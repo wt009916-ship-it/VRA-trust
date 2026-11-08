@@ -26,13 +26,13 @@ function readFactor(data,prefix,stage,transport=false){
   region:value(data,prefix+'factor_region'),method:value(data,prefix+'factor_method'),evidence_id:value(data,prefix+'factor_evidence')||null};
 }
 
-export function readCarbonEditors(data){
+export function readCarbonEditors(data,collection=false){
  const boundaries=Object.keys(stageLabels).map(stage=>({stage,included:stage==='production'||data.has('boundary_'+stage),reason:value(data,'boundary_reason_'+stage)}));
  const alternatives=[0,1].map(i=>({transport_legs:[],other_activities:[]}));
  for(const [name,id] of data.entries()){
   const match=/^carbon_(transport|activity)_([01])_(\d+)_id$/.exec(name);if(!match)continue;
   const [,kind,index,sequence]=match,prefix=`carbon_${kind}_${index}_${sequence}_`;
-  if(kind==='transport')alternatives[Number(index)].transport_legs.push({leg_id:id,name:value(data,prefix+'name'),layer_ids:data.getAll(prefix+'layers').map(Number),
+  if(kind==='transport')alternatives[Number(index)].transport_legs.push({leg_id:id,name:value(data,prefix+'name'),[collection?'material_ids':'layer_ids']:data.getAll(prefix+'layers').map(Number),
    purchase_fraction:number(data,prefix+'purchase_fraction'),fraction_source:value(data,prefix+'fraction_source'),distance_km:number(data,prefix+'distance'),distance_source:value(data,prefix+'distance_source'),
    additional_mass_kg:number(data,prefix+'additional_mass'),additional_mass_source:value(data,prefix+'additional_mass_source'),factor:readFactor(data,prefix,'transport',true),evidence_ids:data.getAll(prefix+'source_evidence')});
   else{const stage=value(data,prefix+'stage');alternatives[Number(index)].other_activities.push({activity_id:id,name:value(data,prefix+'name'),stage,
@@ -43,6 +43,7 @@ export function readCarbonEditors(data){
 }
 
 export function bindCarbonEditors(form,takeoff,evidence){
+ const collection=Boolean(takeoff.materialset_id),sourceRows=takeoff.result[collection?'materials':'layers'],sourceId=collection?'material_id':'layer_id';
  let sequence=0;
  for(const boundary of form.querySelectorAll('[data-carbon-boundary]')){
   const check=boundary.querySelector('[type=checkbox]'),reason=boundary.querySelector('[type=text]');
@@ -52,7 +53,7 @@ export function bindCarbonEditors(form,takeoff,evidence){
   sequence++;const index=section.dataset.carbonAlternative,prefix=`carbon_${kind}_${index}_${sequence}_`;
   const row=document.createElement('fieldset');row.dataset.carbonRow=kind;
   row.innerHTML=`<legend>${kind==='transport'?'材料运段':'阶段活动'} ${sequence}</legend>${input(prefix+'id','唯一编号','text','required',kind+'_'+sequence)}${input(prefix+'name',kind==='transport'?'运段名称与运输方式':'活动名称','text','required minlength="2"')}`;
-  if(kind==='transport')row.innerHTML+=`<p>只选该运段承运的材料层，不能包含方案已排除的层。分批比例针对采购材料；包装/托盘附加质量单列。</p><div class="scenario-fields">${takeoff.result.layers.map(r=>`<label><input type="checkbox" name="${prefix}layers" value="${r.layer_id}" checked>#${r.layer_id} ${esc(r.material_name||'未命名')}</label>`).join('')}${input(prefix+'purchase_fraction','该运段承运的采购材料比例（未知留空）','number','min="0.000001" max="1" step="any"')}${input(prefix+'fraction_source','分批比例依据','text','required minlength="5"')}${input(prefix+'distance','本运段距离 km（未知留空）','number','min="0" max="1000000" step="any"')}${input(prefix+'distance_source','距离及路径依据','text','required minlength="5"')}${input(prefix+'additional_mass','本运段附加包装/托盘质量 kg（无则明确填0）','number','min="0" step="any"')}${input(prefix+'additional_mass_source','附加质量依据','text','required minlength="5"')}</div>${evidenceSelect(prefix+'source_evidence','绑定运段来源证据（可多选）',evidence,true)}${factorMarkup(prefix,'transport',evidence)}`;
+  if(kind==='transport')row.innerHTML+=`<p>只选该运段承运的${collection?'材料实体':'材料层'}，不能包含方案已排除的材料。分批比例针对采购材料；包装/托盘附加质量单列。</p><div class="scenario-fields">${sourceRows.map(r=>`<label><input type="checkbox" name="${prefix}layers" value="${r[sourceId]}" checked>#${r[sourceId]} ${esc(r.material_name||'未命名')}</label>`).join('')}${input(prefix+'purchase_fraction','该运段承运的采购材料比例（未知留空）','number','min="0.000001" max="1" step="any"')}${input(prefix+'fraction_source','分批比例依据','text','required minlength="5"')}${input(prefix+'distance','本运段距离 km（未知留空）','number','min="0" max="1000000" step="any"')}${input(prefix+'distance_source','距离及路径依据','text','required minlength="5"')}${input(prefix+'additional_mass','本运段附加包装/托盘质量 kg（无则明确填0）','number','min="0" step="any"')}${input(prefix+'additional_mass_source','附加质量依据','text','required minlength="5"')}</div>${evidenceSelect(prefix+'source_evidence','绑定运段来源证据（可多选）',evidence,true)}${factorMarkup(prefix,'transport',evidence)}`;
   else row.innerHTML+=`<div class="scenario-fields">${select(prefix+'stage','阶段',Object.entries(stageLabels).filter(([s])=>s!=='production'))}${input(prefix+'quantity','活动量（未知留空）','number','min="0" step="any"')}${select(prefix+'unit','活动量单位',units.map(x=>[x,x]))}${select(prefix+'period','数量口径',[['whole_period','整个评估期合计'],['annual','每年（仅运行阶段）']])}${input(prefix+'source','活动量来源与定位','text','required minlength="5"')}${evidenceSelect(prefix+'source_evidence','绑定活动来源证据（可多选）',evidence,true)}</div>${factorMarkup(prefix,'activity',evidence)}`;
   row.insertAdjacentHTML('beforeend','<button type="button" data-remove-carbon-row>移除此条</button>');
   row.querySelector('[data-remove-carbon-row]').onclick=()=>row.remove();

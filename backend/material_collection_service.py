@@ -36,6 +36,8 @@ def report(record):
 def register(app, cad):
     service = MaterialCollections(cad)
     app.state.material_collections = service
+    from .collection_scenarios import register as register_scenarios
+    register_scenarios(app, service)
 
     @app.post('/api/projects/{project_id}/ifc-material-collections', status_code=201)
     def create(project_id: str, body: MaterialCollectionRequest):
