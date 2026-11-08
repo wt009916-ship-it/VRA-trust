@@ -31,6 +31,8 @@ def register_extensions(app, domain, auth):
     thermal = Thermal(domain)
     from .ideal_loads import register_diagnostics
     register_diagnostics(app, domain)
+    from .timestep_studies import register as register_timestep_studies
+    register_timestep_studies(app,domain)
     from .retrofit_models import register as register_retrofit_models
     register_retrofit_models(app,domain)
     cad = Cad(domain)

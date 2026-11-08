@@ -10,7 +10,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, PageBreak
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, PageBreak, KeepTogether
 
 
 def report_html(report):
@@ -46,10 +46,10 @@ def report_pdf(report):
         return Paragraph(text, style)
     def section(title):
         story.append(para(title, sub))
-    def rows(items):
+    def rows(items, keep=False):
         table = Table([[para(a), para(b)] for a, b in items], colWidths=[120, 403], hAlign="LEFT")
         table.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LINEBELOW", (0, 0), (-1, -1), .3, colors.HexColor("#d7e0d5")), ("BOTTOMPADDING", (0, 0), (-1, -1), 7), ("TOPPADDING", (0, 0), (-1, -1), 7)]))
-        story.append(table)
+        story.append(KeepTogether([table]) if keep else table)
     run, project, cert = report["run"], report["project"], report["certificate"]
     metrics, carbon = run["metrics"] or {}, run["carbon"] or {}
     def numeric(value):
@@ -161,7 +161,7 @@ def report_pdf(report):
                     items=summary['aggregate'];total=items[f'{group}_total_{mode}_W'];clock=total['peak']['time']
                     rows([('边界 / 方向',label+' / '+direction),
                           ('期间显热 / 潜热 / 合计 kWh', ' / '.join(numeric(items[f'{group}_{part}_{mode}_W']['energy_kWh']) for part in ('sensible','latent','total'))),
-                          ('合计小时峰值 kW / 时刻',numeric(total['peak']['value']/1000)+f" / {clock['month']}/{clock['day']} {clock['hour_ending']:02d}:00")])
+                          ('合计小时峰值 kW / 时刻',numeric(total['peak']['value']/1000)+f" / {clock['month']}/{clock['day']} {clock['hour_ending']:02d}:00")], keep=True)
             story.append(para('四个边界不能相加为总耗电；原生数值已经包含分区/分组倍率。设备逐项绑定、未覆盖分区、其他设备和SQL字典行见同源JSON。'))
         else:
             story.append(para('无可交付数值：'+ideal.get('reason','未核验')))

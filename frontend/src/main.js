@@ -1,3 +1,4 @@
+import {timestepWorkspace} from './timestep-ui.js';
 import {idealLoadsMarkup} from './ideal-loads.js';
 import {bindSimulationGate} from './simulation-gate.js';
 import {weatherQualityMarkup} from './weather-quality.js';
@@ -162,6 +163,8 @@ function renderProject() {
     state.comparedIds = latest.map(r => r.run_id);
     document.querySelector('#comparison').innerHTML = '<div class="comparison"><h3>当前能耗排序：' + data.energy_order.map(esc).join(' → ') + '</h3><p>' + esc(data.note) + '</p><table><thead><tr><th>方案</th><th>节能率</th><th>工程 CO₂ 差值</th><th>综合推荐</th></tr></thead><tbody>' + data.results.map(r => '<tr><td>' + esc(r.scheme_id) + '</td><td>' + num(r.saving_rate_pct) + '%</td><td>' + num(r.engineering_reduction_kg) + ' kg</td><td>证据不足</td></tr>').join('') + '</tbody></table></div>';
   }, e.currentTarget);
+  const timestepDetails=document.createElement('details');timestepDetails.innerHTML='<summary>时间步敏感性检查</summary><div data-timestep-workspace></div>';document.querySelector('#simulation').append(timestepDetails);
+  timestepDetails.ontoggle=()=>{if(timestepDetails.open&&!timestepDetails.dataset.loaded){timestepDetails.dataset.loaded='true';timestepWorkspace(state,timestepDetails.querySelector('[data-timestep-workspace]'));}};
   renderEvidence(); renderRuns(); switchView(state.view);
   refreshAgentMode();
 }
