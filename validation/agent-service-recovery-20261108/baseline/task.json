@@ -1,0 +1,152 @@
+{
+  "agent_id": "agent_41fa27fee213452bbf3cc9508ef92e39",
+  "project_id": "project_d2eecdcc7ef440dca354b3528d0faabb",
+  "question": "执行本轮明确授权的 wall 计算计划，读取结果，交付总热阻和传热系数及其单位；不要增加其他计算。",
+  "mode": "local_model",
+  "status": "failed",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:26:43.072247+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Service recovery reference",
+        "building": {
+          "use": "office",
+          "location": "Synthetic",
+          "region": "US-CO",
+          "area_m2": 510.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_d2eecdcc7ef440dca354b3528d0faabb",
+        "revision": 1,
+        "created_at": "2026-11-08T06:26:43.037522+00:00",
+        "updated_at": "2026-11-08T06:26:43.037522+00:00"
+      },
+      "result_hash": "e531c416e238a3d6cc35fb95fdeca427675c17c4fc326ce3323603d416457445",
+      "duration_ms": 0,
+      "finished_at": "2026-11-08T06:26:43.085336+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:26:43.088845+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 812,
+      "finished_at": "2026-11-08T06:26:43.903839+00:00"
+    },
+    {
+      "tool": "calculation_execute",
+      "arguments": {
+        "plan_key": "wall"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:26:43.906956+00:00",
+      "origin": "model",
+      "result": {
+        "plan_key": "wall",
+        "kind": "thermal",
+        "record_id": "thermal_662a734ca9834951bd29bb57d7620a85",
+        "record_hash": "638917e0e50510c43edc77916c1891f5a045fd49e1fa092709b1bf2febfb945c",
+        "status": "calculated",
+        "input_hash": "9033e4f6aaa0e8574be450e79d8131b5fed3e55a6c42edd69297840e99574459",
+        "next_tool": "thermal_read",
+        "next_arguments": {
+          "thermal_id": "thermal_662a734ca9834951bd29bb57d7620a85"
+        },
+        "notice": "已保存真实计算记录；需读取当前结果并交付核验事实。保存成功不等于结果完整、来源独立核证或任务完成。"
+      },
+      "result_hash": "e7710cb0e5cca8b151019914042aceff5314636d425058c5d3ad5b36e720f0b4",
+      "duration_ms": 16,
+      "finished_at": "2026-11-08T06:26:43.930689+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "failed",
+      "started_at": "2026-11-08T06:26:43.934241+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "error": "服务商调用失败；不会降级为假成功",
+      "duration_ms": 31,
+      "finished_at": "2026-11-08T06:26:43.967510+00:00"
+    }
+  ],
+  "answer": null,
+  "created_at": "2026-11-08T06:26:43.067716+00:00",
+  "llm_commentary": null,
+  "error": "本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果",
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "professional_deliveries": [],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "calculation_plan_snapshot": {
+    "items": [
+      {
+        "plan": {
+          "execution_authorized": true,
+          "plan_key": "wall",
+          "kind": "thermal",
+          "input": {
+            "name": "Public-formula recovery reference",
+            "layers": [
+              {
+                "name": "Reference layer",
+                "thickness": 175.0,
+                "thickness_unit": "mm",
+                "conductivity": 0.35,
+                "conductivity_unit": "W/(m K)",
+                "correction_factor": 1.0,
+                "correction_basis": "Synthetic declared correction",
+                "source": "Independent arithmetic reference",
+                "evidence_id": null
+              }
+            ],
+            "rsi_m2k_w": 0.13,
+            "rse_m2k_w": 0.04,
+            "surface_basis": "Synthetic reference film resistances, not a compliance default",
+            "application": "Uniform opaque reference layer, no thermal bridge"
+          }
+        },
+        "bindings": {
+          "project_revision": 1,
+          "sources": [],
+          "files_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      }
+    ],
+    "hash": "ca16de7a5e2ddbd45fd05840dc03b8a3f7a3cdedd51572db9972ffecdeb1d394"
+  },
+  "revision": 10,
+  "unresolved_selected_reads": [],
+  "calculation_progress": [
+    {
+      "plan_key": "wall",
+      "kind": "thermal",
+      "name": "Public-formula recovery reference",
+      "record_id": "thermal_662a734ca9834951bd29bb57d7620a85",
+      "state": "saved_unverified"
+    }
+  ],
+  "finished_at": "2026-11-08T06:26:43.971516+00:00"
+}

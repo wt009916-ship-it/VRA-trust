@@ -1,0 +1,823 @@
+{
+  "agent_id": "agent_bd0180e62cb24fc6bfb04388448f14a9",
+  "project_id": "project_035ed9b954be400e98aea782b4071826",
+  "question": "只返回所选墙体的传热系数U及单位，不需要其他数值或解释。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:08:44.060122+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Mixed parser and model load",
+        "building": {
+          "use": "office",
+          "location": "Synthetic",
+          "region": "US-CO",
+          "area_m2": 800.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_035ed9b954be400e98aea782b4071826",
+        "revision": 1,
+        "created_at": "2026-11-08T05:51:27.572272+00:00",
+        "updated_at": "2026-11-08T05:51:27.572272+00:00"
+      },
+      "result_hash": "3fa32bcbcd296021bab80ef0c44524f7eaa7b4d514e61e06c3e4cc1ae889f7cd",
+      "duration_ms": 31,
+      "finished_at": "2026-11-08T06:08:44.266934+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:08:44.277442+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 844,
+      "finished_at": "2026-11-08T06:08:45.136146+00:00"
+    },
+    {
+      "tool": "requested_output_plan",
+      "arguments": {
+        "output_plan": [
+          {
+            "request_key": "wall",
+            "question_fragment_ids": [
+              "q1"
+            ],
+            "fact_keys": [
+              "u_w_m2k"
+            ],
+            "explanation_topics": []
+          }
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:08:45.145668+00:00",
+      "origin": "model",
+      "result": {
+        "status": "plan_frozen",
+        "origin": "model_inferred_from_user_question",
+        "version": "d57d1c751461e94458c10c4b42b0d67224603d2b078baa5cfb8e5a0d29d8c184",
+        "question_hash": "eb4ee839ab9a8edbdeeb53ab792009f7c1e7ea36cd4402e9ea86bb89ea0d99ea",
+        "items": [
+          {
+            "request_key": "wall",
+            "question_fragment_ids": [
+              "q1"
+            ],
+            "fact_keys": [
+              "u_w_m2k"
+            ],
+            "explanation_topics": [],
+            "question_spans": [
+              {
+                "fragment_id": "q1",
+                "start": 0,
+                "end": 28,
+                "text": "只返回所选墙体的传热系数U及单位，不需要其他数值或解释。"
+              }
+            ],
+            "question_excerpt": "只返回所选墙体的传热系数U及单位，不需要其他数值或解释。"
+          }
+        ],
+        "intent_verified": false,
+        "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+      },
+      "result_hash": "714d191cafd97b9c693cc7270db6b9d6832f0f13f2a552ff2338a93746399d7e",
+      "duration_ms": 0,
+      "finished_at": "2026-11-08T06:08:45.159690+00:00"
+    },
+    {
+      "tool": "thermal_read",
+      "arguments": {
+        "thermal_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:08:45.167200+00:00",
+      "origin": "controller",
+      "result": {
+        "thermal_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+        "project_id": "project_035ed9b954be400e98aea782b4071826",
+        "project_revision": 1,
+        "input": {
+          "name": "New independent wall",
+          "layers": [
+            {
+              "name": "core",
+              "thickness": 180.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.9,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null
+            },
+            {
+              "name": "insulation",
+              "thickness": 4.5,
+              "thickness_unit": "cm",
+              "conductivity": 0.045,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.11,
+          "rse_m2k_w": 0.05,
+          "surface_basis": "Explicit synthetic films",
+          "application": "Homogeneous test layers only"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "core",
+              "thickness": 180.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.9,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null,
+              "thickness_m": 0.18,
+              "conductivity_w_mk": 0.9,
+              "effective_conductivity_w_mk": 0.9,
+              "resistance_m2k_w": 0.19999999999999998,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            },
+            {
+              "name": "insulation",
+              "thickness": 4.5,
+              "thickness_unit": "cm",
+              "conductivity": 0.045,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null,
+              "thickness_m": 0.045,
+              "conductivity_w_mk": 0.045,
+              "effective_conductivity_w_mk": 0.045,
+              "resistance_m2k_w": 1.0,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 1.2,
+          "total_resistance_m2k_w": 1.36,
+          "u_w_m2k": 0.7352941176470588,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "calculator_version": "f114f3d884db7cece43d1c46d688766b1edf2d219c50f1bfa69b82b3e2bc2973",
+        "evidence_snapshot": [],
+        "created_at": "2026-11-08T05:51:27.594182+00:00",
+        "hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+        "revision": 1,
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "nonnumeric_review_reference": {
+          "kind": "thermal",
+          "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+          "record_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+          "view_hash": "2c8fa2414db19c33832312a4b50d5b26819b92918af14581123dfd14c43d8c2a",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "1.36",
+            "source_value": "1.36",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/total_resistance_m2k_w"
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "1.2",
+            "source_value": "1.2",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/layer_resistance_m2k_w"
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.735294117647",
+            "source_value": "0.7352941176470588",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k"
+          }
+        ],
+        "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "44e06f7113007b12d59fa8f8a5990f83eb654bc007c3cfb8b619a577e64c02e3",
+      "duration_ms": 0,
+      "finished_at": "2026-11-08T06:08:45.182738+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "thermal",
+          "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+          "record_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+          "finish": false,
+          "statements": [
+            {
+              "fact": "u_w_m2k",
+              "value": "0.735294117647",
+              "unit": "W/(m2 K)",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ]
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:08:45.187750+00:00",
+      "origin": "controller",
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "thermal",
+          "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+          "record_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+          "statements": [
+            {
+              "fact": "u_w_m2k",
+              "value": "0.735294117647",
+              "unit": "W/(m2 K)",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": false
+        },
+        "statements": [
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.735294117647",
+            "source_value": "0.7352941176470588",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k"
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "36b2da16eddc3351356251f089e2fc78fa332fa847a23ef48049847b2bb08781",
+      "duration_ms": 15,
+      "finished_at": "2026-11-08T06:08:45.204871+00:00"
+    },
+    {
+      "tool": "thermal_read",
+      "arguments": {
+        "thermal_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-08T06:08:45.216894+00:00",
+      "origin": "controller",
+      "result": {
+        "thermal_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+        "project_id": "project_035ed9b954be400e98aea782b4071826",
+        "project_revision": 1,
+        "input": {
+          "name": "New independent wall",
+          "layers": [
+            {
+              "name": "core",
+              "thickness": 180.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.9,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null
+            },
+            {
+              "name": "insulation",
+              "thickness": 4.5,
+              "thickness_unit": "cm",
+              "conductivity": 0.045,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.11,
+          "rse_m2k_w": 0.05,
+          "surface_basis": "Explicit synthetic films",
+          "application": "Homogeneous test layers only"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "core",
+              "thickness": 180.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.9,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null,
+              "thickness_m": 0.18,
+              "conductivity_w_mk": 0.9,
+              "effective_conductivity_w_mk": 0.9,
+              "resistance_m2k_w": 0.19999999999999998,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            },
+            {
+              "name": "insulation",
+              "thickness": 4.5,
+              "thickness_unit": "cm",
+              "conductivity": 0.045,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null,
+              "thickness_m": 0.045,
+              "conductivity_w_mk": 0.045,
+              "effective_conductivity_w_mk": 0.045,
+              "resistance_m2k_w": 1.0,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 1.2,
+          "total_resistance_m2k_w": 1.36,
+          "u_w_m2k": 0.7352941176470588,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "calculator_version": "f114f3d884db7cece43d1c46d688766b1edf2d219c50f1bfa69b82b3e2bc2973",
+        "evidence_snapshot": [],
+        "created_at": "2026-11-08T05:51:27.594182+00:00",
+        "hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+        "revision": 1,
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "nonnumeric_review_reference": {
+          "kind": "thermal",
+          "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+          "record_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+          "view_hash": "2c8fa2414db19c33832312a4b50d5b26819b92918af14581123dfd14c43d8c2a",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "1.36",
+            "source_value": "1.36",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/total_resistance_m2k_w"
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "1.2",
+            "source_value": "1.2",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/layer_resistance_m2k_w"
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.735294117647",
+            "source_value": "0.7352941176470588",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k"
+          }
+        ],
+        "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "44e06f7113007b12d59fa8f8a5990f83eb654bc007c3cfb8b619a577e64c02e3",
+      "duration_ms": 16,
+      "finished_at": "2026-11-08T06:08:45.233673+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "partial",
+    "execution_scope": "checked_professional_deliveries",
+    "artifacts": [
+      {
+        "kind": "thermal_review",
+        "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+        "project_id": "project_035ed9b954be400e98aea782b4071826",
+        "record_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+        "name": "New independent wall",
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "checked_at": "2026-11-08T06:08:45.339635+00:00",
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "input": {
+          "name": "New independent wall",
+          "layers": [
+            {
+              "name": "core",
+              "thickness": 180.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.9,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null
+            },
+            {
+              "name": "insulation",
+              "thickness": 4.5,
+              "thickness_unit": "cm",
+              "conductivity": 0.045,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.11,
+          "rse_m2k_w": 0.05,
+          "surface_basis": "Explicit synthetic films",
+          "application": "Homogeneous test layers only"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "core",
+              "thickness": 180.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.9,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null,
+              "thickness_m": 0.18,
+              "conductivity_w_mk": 0.9,
+              "effective_conductivity_w_mk": 0.9,
+              "resistance_m2k_w": 0.19999999999999998,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            },
+            {
+              "name": "insulation",
+              "thickness": 4.5,
+              "thickness_unit": "cm",
+              "conductivity": 0.045,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1,
+              "correction_basis": "Explicit unity factor",
+              "source": "Independent synthetic data",
+              "evidence_id": null,
+              "thickness_m": 0.045,
+              "conductivity_w_mk": 0.045,
+              "effective_conductivity_w_mk": 0.045,
+              "resistance_m2k_w": 1.0,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 1.2,
+          "total_resistance_m2k_w": 1.36,
+          "u_w_m2k": 0.7352941176470588,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "verified": true,
+        "scope": "一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。",
+        "report_path": "/api/projects/project_035ed9b954be400e98aea782b4071826/thermal/thermal_6eb4c4fd7235429fb2301c163b6e932d/report.html"
+      }
+    ],
+    "checked_statements": [
+      {
+        "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+        "name": "New independent wall",
+        "facts": [
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.735294117647",
+            "source_value": "0.7352941176470588",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k"
+          }
+        ]
+      }
+    ],
+    "checked_limitations": [],
+    "verification": [
+      {
+        "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+        "passed": true,
+        "meaning": "结构化数值、单位与期间对照当前记录"
+      }
+    ],
+    "summary": "已核验所选结果或限制；自由问题的完整覆盖度仍未评估。",
+    "task_notice": "只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。",
+    "gaps": [],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-08T06:08:45.339635+00:00",
+    "checked_reviews": [],
+    "review_failures": [],
+    "read_execution": "application",
+    "read_execution_receipt": {
+      "origin": "application_from_frozen_read_plan",
+      "requests": [
+        {
+          "request_key": "wall",
+          "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+          "state": "facts_submitted",
+          "source_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+          "missing_fact_keys": []
+        }
+      ],
+      "intent_verified": false,
+      "final_source_check_required": true,
+      "notice": "Application executes declared read scopes; this is not autonomous model tool selection, verified user intent, or an engineering certification."
+    },
+    "termination": {
+      "reason": "application_read_plan_executed",
+      "model_declared_finished": false,
+      "pending_request_keys": []
+    },
+    "checked_availability": [],
+    "read_request_progress": [
+      {
+        "request_key": "wall",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+        "state": "result_verified"
+      }
+    ],
+    "read_request_coverage": "all_declared_scopes_checked",
+    "output_plan": {
+      "origin": "model_inferred_from_user_question",
+      "version": "d57d1c751461e94458c10c4b42b0d67224603d2b078baa5cfb8e5a0d29d8c184",
+      "question_hash": "eb4ee839ab9a8edbdeeb53ab792009f7c1e7ea36cd4402e9ea86bb89ea0d99ea",
+      "items": [
+        {
+          "request_key": "wall",
+          "question_fragment_ids": [
+            "q1"
+          ],
+          "fact_keys": [
+            "u_w_m2k"
+          ],
+          "explanation_topics": [],
+          "question_spans": [
+            {
+              "fragment_id": "q1",
+              "start": 0,
+              "end": 28,
+              "text": "只返回所选墙体的传热系数U及单位，不需要其他数值或解释。"
+            }
+          ],
+          "question_excerpt": "只返回所选墙体的传热系数U及单位，不需要其他数值或解释。"
+        }
+      ],
+      "intent_verified": false,
+      "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+    },
+    "requested_outputs": [
+      {
+        "request_key": "wall",
+        "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+        "missing_fact_keys": [],
+        "state": "fulfilled",
+        "unknown_fact_keys": [],
+        "explanations": [],
+        "explanation_origin": "application_from_current_verified_sources",
+        "source_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+        "explanation_version": "d57d1c751461e94458c10c4b42b0d67224603d2b078baa5cfb8e5a0d29d8c184"
+      }
+    ],
+    "clarification_requests": [],
+    "output_contract_coverage": "fulfilled",
+    "output_contract_notice": "仅检查模型解析计划中的指标和解释主题是否交付；计划对原始问题的理解仍需核对。解释由应用按当前来源生成，模型自由原文未获语义认证。",
+    "basis": [
+      "project_get",
+      "requested_output_plan",
+      "thermal_read",
+      "professional_deliver",
+      "thermal_read"
+    ]
+  },
+  "created_at": "2026-11-08T06:08:43.954724+00:00",
+  "llm_commentary": null,
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "professional_deliveries": [
+    {
+      "kind": "thermal",
+      "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+      "record_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+      "statements": [
+        {
+          "fact": "u_w_m2k",
+          "value": "0.735294117647",
+          "unit": "W/(m2 K)",
+          "period": "steady_state",
+          "study_years": null,
+          "area_m2": null
+        }
+      ],
+      "limitation_status": null,
+      "finish": false
+    }
+  ],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "read_requests": [
+    {
+      "request_key": "wall",
+      "kind": "thermal",
+      "purpose": "results",
+      "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d"
+    }
+  ],
+  "availability_deliveries": [],
+  "infer_outputs": true,
+  "read_execution": "application",
+  "revision": 15,
+  "output_plan": {
+    "origin": "model_inferred_from_user_question",
+    "version": "d57d1c751461e94458c10c4b42b0d67224603d2b078baa5cfb8e5a0d29d8c184",
+    "question_hash": "eb4ee839ab9a8edbdeeb53ab792009f7c1e7ea36cd4402e9ea86bb89ea0d99ea",
+    "items": [
+      {
+        "request_key": "wall",
+        "question_fragment_ids": [
+          "q1"
+        ],
+        "fact_keys": [
+          "u_w_m2k"
+        ],
+        "explanation_topics": [],
+        "question_spans": [
+          {
+            "fragment_id": "q1",
+            "start": 0,
+            "end": 28,
+            "text": "只返回所选墙体的传热系数U及单位，不需要其他数值或解释。"
+          }
+        ],
+        "question_excerpt": "只返回所选墙体的传热系数U及单位，不需要其他数值或解释。"
+      }
+    ],
+    "intent_verified": false,
+    "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+  },
+  "read_execution_receipt": {
+    "origin": "application_from_frozen_read_plan",
+    "requests": [
+      {
+        "request_key": "wall",
+        "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+        "state": "facts_submitted",
+        "source_hash": "80f3f1dd1b55260340fc01c4a5e565bb0ed08153f970a18689636924b8e96dc0",
+        "missing_fact_keys": []
+      }
+    ],
+    "intent_verified": false,
+    "final_source_check_required": true,
+    "notice": "Application executes declared read scopes; this is not autonomous model tool selection, verified user intent, or an engineering certification."
+  },
+  "termination": {
+    "reason": "application_read_plan_executed",
+    "model_declared_finished": false,
+    "pending_request_keys": []
+  },
+  "read_request_progress": [
+    {
+      "request_key": "wall",
+      "kind": "thermal",
+      "purpose": "results",
+      "record_id": "thermal_6eb4c4fd7235429fb2301c163b6e932d",
+      "state": "result_verified"
+    }
+  ],
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-08T06:08:45.238780+00:00",
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-08T06:08:45.340634+00:00",
+  "historical_task_completion": "partial",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}
