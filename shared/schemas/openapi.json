@@ -8590,6 +8590,16 @@
             ],
             "title": "Period"
           },
+          "replacement_overlap": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "excluded",
+              "included"
+            ],
+            "title": "Replacement Overlap",
+            "default": "unknown"
+          },
           "source": {
             "type": "string",
             "maxLength": 2000,
@@ -11210,6 +11220,24 @@
             "type": "array",
             "maxItems": 500,
             "title": "Activities"
+          },
+          "replacement_scope": {
+            "type": "string",
+            "enum": [
+              "not_assessed",
+              "included_in_activities",
+              "separate_ledger"
+            ],
+            "title": "Replacement Scope",
+            "default": "not_assessed"
+          },
+          "replacements": {
+            "items": {
+              "$ref": "#/components/schemas/ReplacementComponent"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Replacements"
           }
         },
         "additionalProperties": false,
@@ -12958,6 +12986,154 @@
         ],
         "title": "Registration"
       },
+      "ReplacementComponent": {
+        "properties": {
+          "component_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Component Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "condition": {
+            "type": "string",
+            "enum": [
+              "new",
+              "existing"
+            ],
+            "title": "Condition"
+          },
+          "service_life_years": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Life Years"
+          },
+          "remaining_life_years": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Life Years"
+          },
+          "life_source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Life Source"
+          },
+          "life_evidence_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^evidence_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Evidence Id"
+          },
+          "endpoint": {
+            "type": "string",
+            "const": "strictly_before_horizon",
+            "title": "Endpoint"
+          },
+          "scope": {
+            "type": "string",
+            "const": "same_function_replacements_only",
+            "title": "Scope"
+          },
+          "overlap_review": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 20,
+            "title": "Overlap Review"
+          },
+          "processes": {
+            "items": {
+              "$ref": "#/components/schemas/ReplacementProcess"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Processes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "component_id",
+          "name",
+          "condition",
+          "life_source",
+          "endpoint",
+          "scope",
+          "overlap_review",
+          "processes"
+        ],
+        "title": "ReplacementComponent"
+      },
+      "ReplacementProcess": {
+        "properties": {
+          "process": {
+            "type": "string",
+            "enum": [
+              "production",
+              "transport",
+              "installation",
+              "removal"
+            ],
+            "title": "Process"
+          },
+          "included": {
+            "type": "boolean",
+            "title": "Included"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Reason"
+          },
+          "activity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Activity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "process",
+          "included",
+          "reason"
+        ],
+        "title": "ReplacementProcess"
+      },
       "Resource": {
         "properties": {
           "resource_id": {
@@ -13500,6 +13676,16 @@
               "annual"
             ],
             "title": "Period"
+          },
+          "replacement_overlap": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "excluded",
+              "included"
+            ],
+            "title": "Replacement Overlap",
+            "default": "unknown"
           },
           "source": {
             "type": "string",
