@@ -23,3 +23,9 @@ test('zero replacements is distinct from missing and unassessed',()=>{
   assert(replacementResultMarkup({}).includes('未单独核算'));
   assert(replacementResultMarkup(null).includes('未单独核算'));
 });
+
+
+test('positive sub-microyear event is never displayed as initial installation at zero',()=>{
+  const html=replacementResultMarkup({replacement:{components:[{name:'precision probe',years:[1e-8],count:1,kgco2e:1,all_four_processes_included:true}]}}).split('<details>')[0];
+  assert(html.includes('<td>1e-8</td>'));assert(!html.includes('<td>0</td>'));
+});

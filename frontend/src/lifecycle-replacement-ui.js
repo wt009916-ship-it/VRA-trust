@@ -13,7 +13,7 @@ export function readReplacementFields(get,readProcesses){
 export function replacementResultMarkup(result){
   const ledger=result?.replacement;
   if(!ledger?.components?.length)return '<p>替换周期未单独核算；五阶段有值不证明生命周期完整。</p>';
-  return `<h3>替换事件账 · 已计入使用阶段</h3><p>严格早于评估终点，初次安装与终点处置另账。寿命和未来因子是声明情景。</p><table><tr><th>构件</th><th>发生年份</th><th>次数</th><th>kgCO₂e</th><th>过程覆盖</th></tr>${ledger.components.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.years===null?'寿命缺失':c.years.length?c.years.map(y=>num(y,6)).join('、'):'评估期内无替换'}</td><td>${num(c.count,0)}</td><td>${num(c.kgco2e,6)}</td><td>${c.all_four_processes_included?'四过程纳入':'有明确排除过程'}</td></tr>`).join('')}</table><details><summary>逐次排放及过程明细</summary><pre>${esc(JSON.stringify(ledger,null,2))}</pre></details>`;
+  return `<h3>替换事件账 · 已计入使用阶段</h3><p>严格早于评估终点，初次安装与终点处置另账。寿命和未来因子是声明情景。</p><table><tr><th>构件</th><th>发生年份</th><th>次数</th><th>kgCO₂e</th><th>过程覆盖</th></tr>${ledger.components.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.years===null?'寿命缺失':c.years.length?c.years.map(y=>esc(String(y))).join('、'):'评估期内无替换'}</td><td>${num(c.count,0)}</td><td>${num(c.kgco2e,6)}</td><td>${c.all_four_processes_included?'四过程纳入':'有明确排除过程'}</td></tr>`).join('')}</table><details><summary>逐次排放及过程明细</summary><pre>${esc(JSON.stringify(ledger,null,2))}</pre></details>`;
 }
 
 export function replacementEditor(host,evidence,addActivity,readActivity){
