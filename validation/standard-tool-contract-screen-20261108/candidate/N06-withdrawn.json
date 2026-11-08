@@ -1,0 +1,217 @@
+{
+  "agent_id": "agent_b33f0f92e7c54df197b641c71b1e67da",
+  "project_id": "project_a5ee378d8dae43b49e6d732478ffdc7e",
+  "question": "分别查询合成TEST 811的1997版3.2.7条和合成TEST 922的2025版6.1.4条。没有指定版本就明确未找到，不要用新版替代。 查询适用日期2026-09-16。仅使用本项目已复核资料。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-08T09:50:43.351318+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Contract N06",
+        "building": {
+          "use": "office",
+          "location": "Synthetic",
+          "region": "US-CO",
+          "area_m2": 840.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_a5ee378d8dae43b49e6d732478ffdc7e",
+        "revision": 1,
+        "created_at": "2026-11-08T09:50:41.204444+00:00",
+        "updated_at": "2026-11-08T09:50:41.204444+00:00"
+      },
+      "result_hash": "48cb6b1360de19b0ac5edaf528da5b63e66cf7e834e603535cdcfb10e422d1bc",
+      "duration_ms": 0,
+      "finished_at": "2026-11-08T09:50:43.362842+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-08T09:50:43.368258+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 2,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 3203,
+      "finished_at": "2026-11-08T09:50:46.574400+00:00"
+    },
+    {
+      "tool": "standards_search",
+      "arguments": {
+        "standards_query": {
+          "as_of": "2026-09-16",
+          "text": "",
+          "standard_code": "TEST",
+          "edition": "1997",
+          "clause_id": "3.2.7",
+          "retrieval": "lexical",
+          "limit": 10
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-08T09:50:46.577399+00:00",
+      "origin": "model",
+      "result": {
+        "status": "NOT_FOUND_IN_REVIEWED_INDEX",
+        "citations": [],
+        "total_matches": 0,
+        "conflicts": [],
+        "excluded": [],
+        "query": {
+          "text": "",
+          "standard_code": "TEST",
+          "edition": "1997",
+          "clause_id": "3.2.7",
+          "retrieval": "lexical",
+          "as_of": "2026-09-16",
+          "limit": 10,
+          "targets": []
+        },
+        "catalog_hash": "9b66a82e40394fe7f8dd6ba578b9f417971ca954edc6da3acbec947f529243c6",
+        "retriever_hash": "99778db8e37ad619cad8ce6ae392c7649f1c2fe9f687a73420178de1bcb6172a",
+        "notice": "只检索本项目已复核条款索引；未命中不证明条款不存在。摘录不等于完整条文。有效期和适用范围仍需工程师核对，不生成合规结论。",
+        "retrieval": {
+          "method": "exact",
+          "relevance_verified": false
+        }
+      },
+      "result_hash": "fcae05afb53456c6a0ec9b86f69a96638c5d66eda6a7903e5811f78cd6a65b33",
+      "duration_ms": 16,
+      "finished_at": "2026-11-08T09:50:46.602217+00:00"
+    },
+    {
+      "tool": "standards_search",
+      "arguments": {
+        "standards_query": {
+          "as_of": "2026-09-16",
+          "text": "",
+          "standard_code": "TEST",
+          "edition": "2025",
+          "clause_id": "6.1.4",
+          "retrieval": "lexical",
+          "limit": 10
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-08T09:50:46.604303+00:00",
+      "origin": "model",
+      "result": {
+        "status": "NOT_FOUND_IN_REVIEWED_INDEX",
+        "citations": [],
+        "total_matches": 0,
+        "conflicts": [],
+        "excluded": [],
+        "query": {
+          "text": "",
+          "standard_code": "TEST",
+          "edition": "2025",
+          "clause_id": "6.1.4",
+          "retrieval": "lexical",
+          "as_of": "2026-09-16",
+          "limit": 10,
+          "targets": []
+        },
+        "catalog_hash": "9b66a82e40394fe7f8dd6ba578b9f417971ca954edc6da3acbec947f529243c6",
+        "retriever_hash": "99778db8e37ad619cad8ce6ae392c7649f1c2fe9f687a73420178de1bcb6172a",
+        "notice": "只检索本项目已复核条款索引；未命中不证明条款不存在。摘录不等于完整条文。有效期和适用范围仍需工程师核对，不生成合规结论。",
+        "retrieval": {
+          "method": "exact",
+          "relevance_verified": false
+        }
+      },
+      "result_hash": "c78fe8a0e3b7db57219a9139b0dd1173753aab8214461c7951d8be7a76108651",
+      "duration_ms": 15,
+      "finished_at": "2026-11-08T09:50:46.631617+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-08T09:50:46.634407+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "result": {
+        "tool_calls_returned": 0,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 5562,
+      "finished_at": "2026-11-08T09:50:52.200055+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "incomplete",
+    "execution_scope": "checked_professional_deliveries",
+    "artifacts": [],
+    "checked_statements": [],
+    "checked_limitations": [],
+    "verification": [],
+    "summary": "先前交付已失效或来源不可用，不能复用历史数值。",
+    "task_notice": "模型选择记录与事实，应用核对字段；这不是对模型自由解释或整个复杂任务的认证。",
+    "gaps": [],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-08T09:50:52.460043+00:00",
+    "checked_reviews": [],
+    "review_failures": [],
+    "checked_standards": [],
+    "standard_query_progress": [
+      {
+        "query_index": 1,
+        "state": "source_unverified",
+        "outcome": null
+      },
+      {
+        "query_index": 2,
+        "state": "source_unverified",
+        "outcome": null
+      }
+    ],
+    "standard_query_coverage": "incomplete",
+    "standard_query_notice": "仅核验模型实际选择的查询及当前索引，不证明原问题已完整覆盖，也不作规范适用性或工程合规结论。",
+    "basis": [
+      "project_get",
+      "standards_search",
+      "standards_search"
+    ]
+  },
+  "created_at": "2026-11-08T09:50:43.347231+00:00",
+  "llm_commentary": "{\"status\": \"NOT_FOUND_IN_REVIEWED_INDEX\", \"citations\": [], \"total_matches\": 0, \"conflicts\": [], \"excluded\": [], \"query\": {\"text\": \"\", \"standard_code\": \"TEST\", \"edition\": \"1997\", \"clause_id\": \"3.2.7\", \"retrieval\": \"lexical\", \"as_of\": \"2026-09-16\", \"limit\": 10, \"targets\": []}, \"catalog_hash\": \"9b66a82e40394fe7f8dd6ba578b9f417971ca954edc6da3acbec947f529243c6\", \"retriever_hash\": \"99778db8e37ad619cad8ce6ae392c7649f1c2fe9f687a73420178de1bcb6172a\", \"notice\": \"只检索本项目已复核条款索引；未命中不证明条款不存在。摘录不等于完整条文。有效期和适用范围仍需工程师核对，不生成合规结论。\", \"retrieval\": {\"method\": \"exact\", \"relevance_verified\": false}}",
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "revision": 12,
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-08T09:50:52.226863+00:00",
+  "read_request_progress": [],
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-08T09:50:52.471663+00:00",
+  "historical_task_completion": "partial",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}

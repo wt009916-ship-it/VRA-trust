@@ -1,0 +1,171 @@
+{
+  "scope": "Fresh developer-authored synthetic sources; real Agent/API/local-model calls, no regulatory certification.",
+  "as_of": "2026-09-16",
+  "gate": {
+    "candidate_pass_min": 6,
+    "net_gain_min": 2,
+    "baseline_pass_regressions_max": 0,
+    "fabricated_checked_citations_max": 0
+  },
+  "variants": [
+    "baseline",
+    "candidate"
+  ],
+  "model": "Same pinned Qwen3-4B-Q4_K_M; temperature 0; unchanged product prompt and limits; one pass per arm.",
+  "sources": [
+    {
+      "code": "TEST 811",
+      "clauses": [
+        [
+          "3.2.7",
+          1,
+          "The reference wall conductivity needs an identified laboratory report."
+        ],
+        [
+          "8.4.2",
+          2,
+          "Meter readings need a meter identifier and a declared observation interval."
+        ]
+      ]
+    },
+    {
+      "code": "TEST 922",
+      "clauses": [
+        [
+          "6.1.4",
+          1,
+          "The reference ventilation schedule needs a stated occupancy profile."
+        ],
+        [
+          "9.2.5",
+          2,
+          "Each maintenance record needs an equipment tag and inspection date."
+        ]
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "N01",
+      "question": "请查阅合成资料TEST 811的2025版3.2.7条，摘录原文并给出PDF页码。",
+      "citations": [
+        [
+          "TEST 811",
+          "3.2.7",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "N02",
+      "question": "我只需要合成资料TEST 922（2025版）6.1.4的原文和来源页，不要作合规判断。",
+      "citations": [
+        [
+          "TEST 922",
+          "6.1.4",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "N03",
+      "question": "把合成TEST 811的3.2.7和8.4.2两条都找出来，均用2025版。分别保留各条的原文和页码。",
+      "citations": [
+        [
+          "TEST 811",
+          "3.2.7",
+          1
+        ],
+        [
+          "TEST 811",
+          "8.4.2",
+          2
+        ]
+      ]
+    },
+    {
+      "id": "N04",
+      "question": "需要并列核对两份合成资料：TEST 922第6.1.4条，以及TEST 811第8.4.2条，都是2025版。给出各自引用。",
+      "citations": [
+        [
+          "TEST 922",
+          "6.1.4",
+          1
+        ],
+        [
+          "TEST 811",
+          "8.4.2",
+          2
+        ]
+      ]
+    },
+    {
+      "id": "N05",
+      "question": "查询合成TEST 811和TEST 922的3.2.7条，均限定2025版。各自查询，不得把另一份资料的同号条文当作缺失资料的答案。",
+      "citations": [
+        [
+          "TEST 811",
+          "3.2.7",
+          1
+        ]
+      ],
+      "missing": [
+        [
+          "TEST 922",
+          "3.2.7"
+        ]
+      ]
+    },
+    {
+      "id": "N06",
+      "question": "分别查询合成TEST 811的1997版3.2.7条和合成TEST 922的2025版6.1.4条。没有指定版本就明确未找到，不要用新版替代。",
+      "citations": [
+        [
+          "TEST 922",
+          "6.1.4",
+          1
+        ]
+      ],
+      "missing": [
+        [
+          "TEST 811",
+          "3.2.7"
+        ]
+      ]
+    },
+    {
+      "id": "N07",
+      "question": "对照合成TEST 811第3.2.7和TEST 922第6.1.4，版本都指定2025。有生效版本冲突的资料请单独说明，不要擅自裁决。",
+      "citations": [
+        [
+          "TEST 922",
+          "6.1.4",
+          1
+        ]
+      ],
+      "conflict": [
+        [
+          "TEST 811",
+          "3.2.7"
+        ]
+      ]
+    },
+    {
+      "id": "N08",
+      "question": "请在本项目已复核的合成资料中，用关键词“meter identifier”检索，列出命中的原文和PDF页码。",
+      "citations": [
+        [
+          "TEST 811",
+          "8.4.2",
+          2
+        ]
+      ]
+    }
+  ],
+  "not_tested": [
+    "semantic mode autonomous selection",
+    "general injection resistance",
+    "current real regulations",
+    "expert applicability"
+  ]
+}

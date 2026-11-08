@@ -1,0 +1,58 @@
+diff --git a/backend/agent.py b/backend/agent.py
+index 9992a3b..875571a 100644
+--- a/backend/agent.py
++++ b/backend/agent.py
+@@ -294,6 +294,8 @@ class Agent:
+                     **({'properties': {field: {k:v for k,v in definition.items() if k != 'title'}
+                         for field,definition in value['properties'].items()}} if 'properties' in value else {})}
+                     for key,value in definitions.items()}
++            if name == 'standards_search':
++                parameters['$defs']['Query'] = agent_standards.tool_query_schema(parameters['$defs']['Query'])
+             tools.append({'type': 'function', 'function': {'name': name, 'description': desc, 'parameters': parameters}})
+         return tools
+ 
+diff --git a/backend/agent_standards.py b/backend/agent_standards.py
+index a172f9d..df50045 100644
+--- a/backend/agent_standards.py
++++ b/backend/agent_standards.py
+@@ -1,4 +1,5 @@
+ """Current source-bound standard citations, never model-written compliance advice."""
++from copy import deepcopy
+ from . import core
+ from .standards import Standards, query_identity
+ 
+@@ -38,3 +39,20 @@ def attach(answer, domain, pid, record):
+             answer['summary'] = '已核验所选规范查询的当前来源；逐项查看引文、缺失或冲突，不代表原问题完整覆盖或合规。'
+         answer['gaps'] = [g for g in answer.get('gaps', []) if g.get('message') != '本轮没有通过核验的专业交付']
+     return answer
++
++
++def tool_query_schema(definition):
++    """Complete disjoint objects for decoders that cannot mix properties + oneOf.
++
++    The API Query still validates all inputs. The batch tool advertises only its
++    meaningful fields; omitted single-query fields retain their server defaults.
++    Source bounds and ExactTarget refs come from the same canonical definition.
++    """
++    single = {key: deepcopy(value) for key, value in definition.items() if key != 'oneOf'}
++    single['properties'].pop('targets')
++    batch = {'type': 'object', 'additionalProperties': False,
++             'required': ['as_of', 'targets'],
++             'properties': {key: deepcopy(definition['properties'][key])
++                            for key in ('targets', 'as_of', 'limit')}}
++    batch['properties']['targets']['minItems'] = 1
++    return {'oneOf': [single, batch]}
+diff --git a/tests/test_local_model.py b/tests/test_local_model.py
+index 56ab523..3bb4eb6 100644
+--- a/tests/test_local_model.py
++++ b/tests/test_local_model.py
+@@ -143,6 +143,9 @@ def test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs(
+                     if 'properties' in expected:
+                         expected['properties'] = {name:{k:v for k,v in field.items() if k != 'title'}
+                                                   for name,field in expected['properties'].items()}
++                    if name == 'standards_search' and key == 'Query':
++                        from backend.agent_standards import tool_query_schema
++                        expected = tool_query_schema(expected)
+                     assert schema['$defs'][key] == expected
+                     if key not in references:
+                         references.add(key); walk(schema['$defs'][key])
