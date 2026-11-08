@@ -152,9 +152,17 @@ class Maintenance:
                 completed = maintenance_recheck.instant(body.work_completed_at)
                 if completed < maintenance_recheck.instant(record['source_event']['end']):
                     raise core.ValidationError('Work completion precedes source event')
+                previous_work = [maintenance_recheck.instant(a['work_completed_at']) for a in record['actions'] if a.get('work_completed_at')]
+                previous_windows = [maintenance_recheck.instant(self._operation(pid, old['operation_id'])['result']['quality']['last_time'])
+                                    for old in record['operation_snapshots'][1:]]
+                if any(completed <= prior for prior in previous_work + previous_windows):
+                    raise core.ValidationError('New work must follow prior work and all prior recheck windows')
                 record.update(state='work_recorded',work_completed_at=body.work_completed_at,recheck=None)
             elif body.action == 'recheck':
                 before = self._operation(pid,record['input']['operation_id']);after = self._operation(pid,body.after_operation_id)
+                previous_files = {self._operation(pid, old['operation_id'])['file_snapshot']['hash'] for old in record['operation_snapshots']}
+                if after['file_snapshot']['hash'] in previous_files:
+                    raise core.ValidationError('Every recheck requires a new original; previous-cycle evidence cannot be reused')
                 result = maintenance_recheck.assess(before,after,record['input']['rule_id'],record['input']['event_index'],record['work_completed_at'],record['input']['minimum_observation_seconds'])
                 record.update(recheck=result,state='rechecked' if result['eligible_for_human_closure'] else 'recheck_failed')
                 if after['operation_id'] not in {r['operation_id'] for r in record['operation_snapshots']}:

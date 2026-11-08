@@ -134,3 +134,37 @@ def test_write_boundary_refuses_changed_sources_or_fake_recheck(client,tmp_path,
     assert result.status_code==409,result.text
     saved=client.app.state.domain.store.get('maintenance',order['maintenance_id'])
     assert saved['revision']==3 and saved['state']=='work_recorded' and saved['recheck'] is None
+
+
+
+@pytest.mark.parametrize('fault',['backdated_work','same_record','same_file_new_record'])
+def test_reopened_order_cannot_reuse_previous_cycle(client,tmp_path,fault):
+    pid,base,ops,ev,order=setup(client,tmp_path);order=close(client,base,order,ops,ev)
+    if fault=='backdated_work':
+        order=act(client,base,order,'reopen')
+        body=payload(order,'record_work',evidence_ids=[ev['evidence_id']],work_completed_at='2026-01-01T00:30:00Z')
+    else:
+        # Current closed order must reopen and record genuinely later work.
+        order=act(client,base,order,'reopen')
+        order=act(client,base,order,'record_work',evidence_ids=[ev['evidence_id']],work_completed_at='2026-01-01T01:30:00Z')
+        target=ops[1]['operation_id']
+        if fault=='same_file_new_record':
+            r=client.post(base+'/operations',json=ops[1]['input']);assert r.status_code==201
+            target=r.json()['operation_id']
+        body=payload(order,'recheck',after_operation_id=target)
+    r=client.post(base+'/maintenance-orders/'+order['maintenance_id']+'/actions',json=body)
+    assert r.status_code==409,r.text
+    assert client.app.state.domain.store.get('maintenance',order['maintenance_id'])['revision']==order['revision']
+
+
+def test_second_cycle_new_observations_can_close(client,tmp_path):
+    pid,base,ops,ev,order=setup(client,tmp_path);order=close(client,base,order,ops,ev)
+    order=act(client,base,order,'reopen')
+    order=act(client,base,order,'record_work',evidence_ids=[ev['evidence_id']],work_completed_at='2026-01-01T01:30:00Z')
+    fixture=record(tmp_path,'second_after',hour=2,values=[27,28,26,28])
+    uploaded=client.post(base+'/files',files={'file':('second.csv',(tmp_path/'second_after.csv').read_bytes())});assert uploaded.status_code==201
+    data=fixture['input'];data['file_id']=uploaded.json()['file_id'];r=client.post(base+'/operations',json=data);assert r.status_code==201
+    order=act(client,base,order,'recheck',after_operation_id=r.json()['operation_id'])
+    order=act(client,base,order,'close',evidence_ids=[ev['evidence_id']],same_equipment_and_conditions=True)
+    assert order['state']=='closed_under_declared_rule' and order['revision']==9
+    assert order['recheck']['after_id']==r.json()['operation_id']

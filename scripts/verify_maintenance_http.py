@@ -17,7 +17,7 @@ def main():
     out=Path(sys.argv[1]).resolve();out.mkdir(parents=True,exist_ok=False)
     runtime=Path(tempfile.mkdtemp(prefix='vra-maintenance-http-'))
     os.environ['VRA_DATA_DIR']=str(runtime/'oracle-runtime')
-    from test_maintenance_api import setup, close, payload
+    from test_maintenance_api import setup, close, payload, act, record
     with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
     responses=[];checks=[]
     def check(name,condition):
@@ -42,6 +42,21 @@ def main():
                 check('no diagnosis or health certification',closed['equipment_health']=='NOT_ASSESSED' and closed['cause_confirmed'] is False and closed['data_nature']=='synthetic')
                 route=base+'/maintenance-orders/'+closed['maintenance_id']
                 report=client.get(route+'/report.html');check('same source report',report.status_code==200 and closed['hash'] in report.text)
+                closed=act(client,base,closed,'reopen');check('reopen for second cycle',closed['state']=='triaged')
+                backdated=client.post(route+'/actions',json=payload(closed,'record_work',evidence_ids=[ev['evidence_id']],work_completed_at='2026-01-01T00:30:00Z'))
+                check('previous work time rejected',backdated.status_code==409)
+                closed=act(client,base,closed,'record_work',evidence_ids=[ev['evidence_id']],work_completed_at='2026-01-01T01:30:00Z')
+                check('later work recorded',closed['state']=='work_recorded')
+                reused=client.post(route+'/actions',json=payload(closed,'recheck',after_operation_id=ops[1]['operation_id']))
+                check('previous recheck source rejected',reused.status_code==409)
+                fresh=record(runtime,'second_after',hour=2,values=[27,28,26,28])
+                uploaded=client.post(base+'/files',files={'file':('second.csv',(runtime/'second_after.csv').read_bytes())});assert uploaded.status_code==201
+                data=fresh['input'];data['file_id']=uploaded.json()['file_id']
+                next_analysis=client.post(base+'/operations',json=data);check('new analysis for second cycle',next_analysis.status_code==201)
+                closed=act(client,base,closed,'recheck',after_operation_id=next_analysis.json()['operation_id'])
+                closed=act(client,base,closed,'close',evidence_ids=[ev['evidence_id']],same_equipment_and_conditions=True)
+                check('new cycle closes with new observations',closed['state']=='closed_under_declared_rule' and closed['revision']==9)
+                report=client.get(route+'/report.html');assert report.status_code==200 and closed['hash'] in report.text
                 (out/'closed.json').write_text(json.dumps(closed,ensure_ascii=False,indent=2),encoding='utf-8');(out/'report.html').write_text(report.text,encoding='utf-8')
                 check('old revision cannot overwrite',client.post(route+'/actions',json=payload(order,'triage')).status_code==409)
                 csrf=client.headers.pop('X-CSRF-Token');check('CSRF enforced',client.post(route+'/actions',json=payload(closed,'reopen')).status_code==403);client.headers['X-CSRF-Token']=csrf
@@ -53,7 +68,7 @@ def main():
                 client.cookies.clear();check('anonymous report denied',client.get(route+'/report.html').status_code==401)
         finally:
             process.terminate();process.wait(timeout=15)
-            receipt={'checks':checks,'all_passed':len(checks)==12 and all(c['passed'] for c in checks),'http_responses':responses,'server_stopped':process.poll() is not None,'scope':'synthetic local HTTP, not actual field repair or browser acceptance'}
+            receipt={'checks':checks,'all_passed':len(checks)==18 and all(c['passed'] for c in checks),'http_responses':responses,'server_stopped':process.poll() is not None,'scope':'synthetic local HTTP, not actual field repair or browser acceptance'}
             (out/'summary.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2),encoding='utf-8')
             print(json.dumps({'checks':len(checks),'all_passed':receipt['all_passed'],'http_responses':len(responses),'server_stopped':receipt['server_stopped']}))
 
