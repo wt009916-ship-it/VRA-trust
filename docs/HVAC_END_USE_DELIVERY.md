@@ -1,6 +1,6 @@
 # 年度设备与用途能耗账交付（2026-11-09）
 
-本批补齐实际设备模拟能耗的用途分项。原应用只读取各载体 Total End Uses，现可建立来源绑定的供暖、制冷、风机、水泵等14用途×5载体年度账，分别保留电力、燃气、其他燃料和区域冷热量。限定 EnergyPlus9.0.1 完整年度、原生载体与场地总量可核对的运行；不是设备选型、实测节能或合规认证。正式原型未更新，当前已核验候选仍78；本批精确提交CI完成后再按原量表复评。
+本批补齐实际设备模拟能耗的用途分项。原应用只读取各载体 Total End Uses，现可建立来源绑定的供暖、制冷、风机、水泵等14用途×5载体年度账，分别保留电力、燃气、其他燃料和区域冷热量。限定 EnergyPlus9.0.1 完整年度、原生载体与场地总量可核对的运行；不是设备选型、实测节能或合规认证。正式原型未更新；产品9884366a3e616400c01463958a4d3a67e11ff5a4（PR70）三个精确CI通过，候选复评78.5，正式76，详RESCORE_20261109_HVAC.md。
 
 ## 使用及实现
 
@@ -35,7 +35,7 @@
 ## 验收与边界
 
 - 首年度实现457项通过；修复解析异常、来源映射及前端轮询后，最终真实HTTP471项通过。主客户端108响应，另8次匿名/外账号请求；后者在server.log及checks有记录，未进入主客户端events。所有测试账户仅在隔离库，随机凭据只在内存，服务已停止。
-- 后端首轮4失败/23通过：三个实现/接口缺口和一个测试器名称错；纠正后27通过，增加有界历史和实际HTTP错误协议测试后29通过。前端新增10项包含于完整225项通过，语法检查及Vite构建成功。精确提交CI在后续独立证据分支补录，当前不提前宣称通过。
+- 后端首轮4失败/23通过：三个实现/接口缺口和一个测试器名称错；纠正后27通过，增加有界历史和实际HTTP错误协议测试后29通过。前端新增10项包含于完整225项通过，语法检查及Vite构建成功。精确提交CI全部成功：后端1834通过/22跳过/2警告/6子测试，前端225及lint/build成功，集成30通过/1警告；原始日志和回执在post-ci，独立证据分支补录，不改产品SHA。
 - 真实引擎保留无热容/合成地理位置/泵效率低/未请求设备变量等Warning；无Severe/Fatal的最终运行才可用。污染排放因子缺失警告不能据原生零污染值称零碳，本账不输出碳结论。物理简化警告限制实楼外推，不被成功退出消除。
 - 其他燃料、蒸汽及其聚合已按9.0载体映射实现，但本批未取得这些设备的独立原生非零基准；未验现场发电、变频复杂部分负荷、真实气候下效率/容量和实楼账单校准。解析阶段沿用核心校验，非独立完整资源沙箱；不宣称长期性能验收。
 - 本批功能界面已接通且逻辑/构建通过，用户选择不开浏览器，因此布局、点击及可用性待验，无体验加分。没有扩大数据训练、没有整体视觉改版。
@@ -46,7 +46,7 @@
 |---|---|---|---|---|---|
 |HVAC-01|测试模型/中|运行frozen-v1六个PTAC模型|设备进风接区排风节点|原生Severe/Fatal，native-v1各ERR|修正ZoneHVAC:EquipmentConnections排风/回风分离；新冻结v2只重跑六失败例|
 |HVAC-02|测试适配/中|用Heating:NaturalGas查9.0泵锅炉SQL|命中原生燃气表|计量缺失断言，原生实际Heating:Gas|固定9.0别名，pump-adapter-review.json在原SQL复核；原失败留存|
-|HVAC-03|异常接口/中|改原生版本为25.1或删除计量字典，再建立账|明确409拒绝且不保存账|首轮HourlyEvidenceError/sqlite异常未归一化，backend-first.log|转换受控ValidationError；最终HTTP协议测试与29专项通过|
+|HVAC-03|异常接口/中|改原生版本为25.1或删除计量字典，再建立账|明确409拒绝且不保存账|首轮解析层泄出HourlyEvidenceError/sqlite异常；版本异常存在未转换的API 500路径（代码追踪），删除字典在旧服务层已转409，backend-first.log|转换受控ValidationError；最终HTTP协议测试与29专项通过|
 |HVAC-04|来源完整性/高|删除MTD中零供暖计量归属，保留SQL序列|来源不完整时不称逐时核对成功|首轮未拒绝，backend-first.log|所有已读取逐时计量均要求MTD映射（MTD存在时）；缺MTD只给舍入表、不称逐时核对|
 |HVAC-05|前端慢网络/中|核验响应慢于5秒轮询周期|请求在10秒窗口内可完成|初始代码每轮clear/abort，静态发现，未伪称浏览器复现|pending状态阻止重入，单元验证超时/取消/迟到；浏览器仍待验|
 |HVAC-06|测试断言/低|读取真实混合理想系统名|以原模型名称核对|测试写Ideal System，实际模型Ideal，首轮断言失败|修正测试名称；不是改物理答案|
@@ -61,6 +61,6 @@ python -B scripts/verify_hvac_enduse_annual.py --inputs REHYDRATED_ANNUAL_FROZEN
 python -B -m pytest tests/test_end_use.py -q -p no:cacheprovider
 ```
 
-年度先将 annual-frozen-final 复制到新目录，把各 weather.epw.gz 解压为 weather.epw，保持frozen.json/模型不变。脚本会核对冻结脚本、模型、天气SHA。CI的gzip原生SQL投影来自首次成功M01运行，保留6个用途计量共52560条，不是模拟生成的通过输出。完整原生SQL路径/大小/SHA在local-raw-sql-index.json；不发布运行账户库或凭据。
+冻结脚本按Windows原始字节计算SHA；Git跨平台检出可能转换换行。复现前在专用检出副本把 validation/hvac-enduse-20261109/replay-scripts 下两脚本按字节复制到 scripts 同名位置（保持目录，以便定位仓库根），不要修改原证据。年度先将 annual-frozen-final 复制到新目录，把各 weather.epw.gz 解压为 weather.epw，保持frozen.json/模型不变。脚本会核对冻结脚本、模型、天气SHA。CI的gzip原生SQL投影来自首次成功M01运行，保留6个用途计量共52560条，不是模拟生成的通过输出。完整原生SQL路径/大小/SHA在local-raw-sql-index.json；不发布运行账户库或凭据。
 
 9.0文档依据：[ABUPS与用途表](https://bigladdersoftware.com/epx/docs/9-0/input-output-reference/output-table-summaryreports.html)、[风机](https://bigladdersoftware.com/epx/docs/9-0/input-output-reference/group-fans.html)、[水泵](https://bigladdersoftware.com/epx/docs/9-0/input-output-reference/group-pumps.html)。固定版本原生输出决定实际名称；未以25.1文档套用9.0。模型为自建受控参考，不代表制造商设备验证或工程审签。
