@@ -1,0 +1,10 @@
+{
+  "type": "integration-repair-rerun, not an untouched holdout",
+  "original_runner_sha256": "a8a9bc7a2adaf0389f57b57a7aec0190fffd304054d3b2646614a24f6de45a7c",
+  "failed_arm": "candidate: 0/20, 27 model calls; all retained",
+  "reason": "Unsupported properties + oneOf/anyOf schema combination documented by llama.cpp",
+  "source": "https://github.com/ggml-org/llama.cpp/blob/master/grammars/README.md#json-schemas--gbnf",
+  "change": "Complete disjoint schema branches; no model, prompt, question, gold, budget or scoring changes",
+  "adoption": "Original gate remains necessary; a pass still needs a new untouched holdout before adoption",
+  "stop_rule": "If repaired comparison fails gate, stop this second-pass approach; do not tune prompts on these cases"
+}

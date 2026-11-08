@@ -1,0 +1,4604 @@
+{
+  "case": {
+    "id": "V08",
+    "question": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。每栏给数值和单位即可，不加解释。",
+    "wants": [
+      {
+        "key": "device",
+        "kind": "operation",
+        "facts": [
+          "sample_count"
+        ],
+        "topics": []
+      },
+      {
+        "key": "build",
+        "kind": "schedule",
+        "facts": [
+          "forecast_finish_variance_days"
+        ],
+        "topics": []
+      },
+      {
+        "key": "carbon",
+        "kind": "lifecycle",
+        "facts": [
+          "stage.production"
+        ],
+        "topics": []
+      }
+    ]
+  },
+  "records": {
+    "device": {
+      "operation_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+      "project_id": "project_bb6495a549d643fb853656ce5015214a",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh data quality window",
+        "file_id": "file_3cb8a19dfa0a4b4fa60b96238b8b3d5f",
+        "equipment": "Synthetic FCU",
+        "data_nature": "synthetic",
+        "source": "New independent synthetic CSV",
+        "time_column": "time",
+        "time_format": "iso8601",
+        "clock_basis": "offset_aware",
+        "clock_source": "Explicit UTC",
+        "expected_interval_seconds": 60.0,
+        "maximum_gap_seconds": 90.0,
+        "channels": [
+          {
+            "channel_id": "t",
+            "column": "t",
+            "name": "Temperature",
+            "unit": "degC",
+            "source": "Declared synthetic units"
+          }
+        ],
+        "rules": [
+          {
+            "rule_id": "hot",
+            "name": "Upper band",
+            "kind": "range",
+            "channel_id": "t",
+            "other_channel_id": null,
+            "unit": "degC",
+            "lower": null,
+            "upper": 22.0,
+            "threshold": null,
+            "minimum_duration_seconds": 60.0,
+            "gate_channel_id": null,
+            "gate_minimum": null,
+            "gate_unit": null,
+            "source": "Synthetic threshold, not a fault diagnosis"
+          }
+        ],
+        "evidence_ids": []
+      },
+      "result": {
+        "status": "events_detected",
+        "quality": {
+          "sample_count": 7,
+          "cell_issue_count": 1,
+          "cell_issues": [
+            {
+              "line": 5,
+              "channel_id": "t",
+              "reason": "missing"
+            }
+          ],
+          "cell_issues_truncated": false,
+          "gap_count": 1,
+          "gaps": [
+            {
+              "before_line": 6,
+              "seconds": 120.0
+            }
+          ],
+          "gaps_truncated": false,
+          "irregular_intervals": 1,
+          "first_time": "2026-07-12T00:00:00+00:00",
+          "last_time": "2026-07-12T00:07:00+00:00"
+        },
+        "channels": [
+          {
+            "channel_id": "t",
+            "name": "Temperature",
+            "input_unit": "degC",
+            "unit": "degC",
+            "valid_samples": 6,
+            "missing_or_invalid": 1,
+            "minimum": 20.0,
+            "maximum": 28.0,
+            "sample_mean": 24.0
+          }
+        ],
+        "rules": [
+          {
+            "rule_id": "hot",
+            "name": "Upper band",
+            "kind": "range",
+            "unit": "degC",
+            "evaluated_samples": 6,
+            "excluded_by_gate_samples": 0,
+            "unknown_samples": 1,
+            "violating_samples": 4,
+            "event_count": 2,
+            "events": [
+              {
+                "first_line": 3,
+                "last_line": 4,
+                "start": "2026-07-12T00:01:00+00:00",
+                "end": "2026-07-12T00:02:00+00:00",
+                "observed_span_seconds": 60.0,
+                "samples": 2
+              },
+              {
+                "first_line": 6,
+                "last_line": 7,
+                "start": "2026-07-12T00:05:00+00:00",
+                "end": "2026-07-12T00:06:00+00:00",
+                "observed_span_seconds": 60.0,
+                "samples": 2
+              }
+            ],
+            "events_truncated": false,
+            "state": "events_detected",
+            "recommended_checks": [
+              "复核对应行、采样时钟、单位和传感器校准；确认规则适用于当前工况。",
+              "核查设定值和运行边界，比较独立测点；不能仅凭越限判断故障部件。"
+            ],
+            "cause_confirmed": false
+          }
+        ],
+        "series_preview": [
+          {
+            "line": 2,
+            "timestamp": "2026-07-12T00:00:00+00:00",
+            "values": {
+              "t": 20.0
+            }
+          },
+          {
+            "line": 3,
+            "timestamp": "2026-07-12T00:01:00+00:00",
+            "values": {
+              "t": 24.0
+            }
+          },
+          {
+            "line": 4,
+            "timestamp": "2026-07-12T00:02:00+00:00",
+            "values": {
+              "t": 25.0
+            }
+          },
+          {
+            "line": 5,
+            "timestamp": "2026-07-12T00:03:00+00:00",
+            "values": {
+              "t": null
+            }
+          },
+          {
+            "line": 6,
+            "timestamp": "2026-07-12T00:05:00+00:00",
+            "values": {
+              "t": 27.0
+            }
+          },
+          {
+            "line": 7,
+            "timestamp": "2026-07-12T00:06:00+00:00",
+            "values": {
+              "t": 28.0
+            }
+          },
+          {
+            "line": 8,
+            "timestamp": "2026-07-12T00:07:00+00:00",
+            "values": {
+              "t": 20.0
+            }
+          }
+        ],
+        "preview_downsampled": false,
+        "source_status": "USER_DECLARED",
+        "data_nature": "synthetic",
+        "equipment": "Synthetic FCU",
+        "diagnosis": "NOT_CONFIRMED",
+        "control_action": "NONE",
+        "limitations": [
+          "仅检测声明规则，不把无告警当作设备健康；故障原因及维修措施需专业复核。",
+          "持续时间是首末异常样本间跨度；缺测或超出最大间隔会断开事件，不外推最后一个样本后的持续时间。",
+          "样本间连续性为明确采样假设，无法证明两次采样之间没有变化。均值是样本均值，不是时间加权均值或能耗积分。",
+          "本地时钟不自动推断时区或夏令时；预览最多200个抽样点，完整数据以原件和事件行号为准。",
+          "事件判断用原始十进制有理数计算；数值单元限128字符、40位有效数字和±100十进制指数。汇总与预览转为浮点显示。"
+        ]
+      },
+      "file_snapshot": {
+        "file_id": "file_3cb8a19dfa0a4b4fa60b96238b8b3d5f",
+        "project_id": "project_bb6495a549d643fb853656ce5015214a",
+        "name": "fresh.csv",
+        "path": "files/file_3cb8a19dfa0a4b4fa60b96238b8b3d5f.csv",
+        "hash": "16dfa4464973aa08b1c4da6c42dd8e856e5645caa960fe0a6fe499ea6e94b791",
+        "size": 173,
+        "timestamp": "2026-11-08T08:46:18.384983+00:00",
+        "revision": 1
+      },
+      "source_snapshot": [],
+      "calculator_hash": "802d4864cdca672a9eae52e83e2537a662f83f897a2b6358e8a11c0f1699f0a3",
+      "created_at": "2026-11-08T08:46:18.404582+00:00",
+      "hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "events_detected"
+    },
+    "build": {
+      "schedule_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+      "project_id": "project_bb6495a549d643fb853656ce5015214a",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh progress network",
+        "scope": "Synthetic network, not site instructions",
+        "calendar": "continuous_elapsed_days",
+        "time_origin": "Synthetic day zero",
+        "tasks": [
+          {
+            "task_id": "A",
+            "name": "Task A",
+            "duration_days": 2.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [],
+            "demands": []
+          },
+          {
+            "task_id": "B",
+            "name": "Task B",
+            "duration_days": 5.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "A",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          },
+          {
+            "task_id": "C",
+            "name": "Task C",
+            "duration_days": 3.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "A",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          },
+          {
+            "task_id": "D",
+            "name": "Task D",
+            "duration_days": 2.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "B",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              },
+              {
+                "task_id": "C",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          }
+        ],
+        "resources": [],
+        "evidence_ids": [],
+        "progress": {
+          "as_of_day": 4.0,
+          "source": "Synthetic progress",
+          "observations": [
+            {
+              "task_id": "A",
+              "state": "completed",
+              "actual_start_day": 0.0,
+              "actual_finish_day": 2.0,
+              "remaining_days": null,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "B",
+              "state": "in_progress",
+              "actual_start_day": 2.0,
+              "actual_finish_day": null,
+              "remaining_days": 6.0,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "C",
+              "state": "in_progress",
+              "actual_start_day": 2.0,
+              "actual_finish_day": null,
+              "remaining_days": 1.0,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "D",
+              "state": "not_started",
+              "actual_start_day": null,
+              "actual_finish_day": null,
+              "remaining_days": null,
+              "source": "Synthetic observation"
+            }
+          ]
+        },
+        "import_file_id": null
+      },
+      "result": {
+        "calendar": "continuous_elapsed_days",
+        "time_origin": "Synthetic day zero",
+        "scope": "Synthetic network, not site instructions",
+        "missing_duration_tasks": [],
+        "source_status": "USER_DECLARED",
+        "site_safety": "NOT_ASSESSED",
+        "resource_leveling": "NOT_IMPLEMENTED",
+        "limitations": [
+          "连续经过日，从声明的第0天起算；不自动跳过周末、节假日、天气或夜间。",
+          "只支持完成到开始FS及非负间隔；零工期表示里程碑。关键路径基于声明工期，不代表施工安全或履约保证。",
+          "预测使用显式剩余工期；不按完成百分比推测，不自动补齐未报告工序。资源冲突未自动调平。"
+        ],
+        "status": "calculated",
+        "planned": {
+          "duration_days": "9",
+          "rows": [
+            {
+              "task_id": "A",
+              "name": "Task A",
+              "start_day": "0",
+              "finish_day": "2",
+              "latest_start_day": "0",
+              "latest_finish_day": "2",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            },
+            {
+              "task_id": "B",
+              "name": "Task B",
+              "start_day": "2",
+              "finish_day": "7",
+              "latest_start_day": "2",
+              "latest_finish_day": "7",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            },
+            {
+              "task_id": "C",
+              "name": "Task C",
+              "start_day": "2",
+              "finish_day": "5",
+              "latest_start_day": "4",
+              "latest_finish_day": "7",
+              "total_float_days": "2",
+              "free_float_days": "2",
+              "critical": false
+            },
+            {
+              "task_id": "D",
+              "name": "Task D",
+              "start_day": "7",
+              "finish_day": "9",
+              "latest_start_day": "7",
+              "latest_finish_day": "9",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            }
+          ],
+          "critical_tasks": [
+            "A",
+            "B",
+            "D"
+          ],
+          "critical_dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "lag_days": "0"
+            },
+            {
+              "from": "B",
+              "to": "D",
+              "lag_days": "0"
+            }
+          ],
+          "resources": {
+            "status": "not_assessed",
+            "conflicts": [],
+            "unknown": [],
+            "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+          },
+          "formulas": [
+            "ES=max(EF predecessor + FS lag), EF=ES+duration",
+            "LF=min(LS successor - lag), LS=LF-duration",
+            "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+          ]
+        },
+        "forecast": {
+          "status": "scenario",
+          "as_of_day": "4",
+          "finish_day": "12",
+          "finish_variance_days": "3",
+          "missing": [],
+          "unverified_actual_dependencies": [],
+          "rows": [
+            {
+              "task_id": "A",
+              "state": "completed",
+              "start_day": "0",
+              "finish_day": "2"
+            },
+            {
+              "task_id": "B",
+              "state": "in_progress",
+              "start_day": "2",
+              "finish_day": "10"
+            },
+            {
+              "task_id": "C",
+              "state": "in_progress",
+              "start_day": "2",
+              "finish_day": "5"
+            },
+            {
+              "task_id": "D",
+              "state": "not_started",
+              "start_day": "10",
+              "finish_day": "12"
+            }
+          ],
+          "resources": {
+            "status": "not_assessed",
+            "conflicts": [],
+            "unknown": [],
+            "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+          }
+        }
+      },
+      "source_snapshot": [],
+      "import_source": null,
+      "calculator_hash": "ddcb7730d511001cb6bcd6c2d026826e900a5c559fa31d0a223bfc2b0a33afbf",
+      "created_at": "2026-11-08T08:46:18.416099+00:00",
+      "hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "calculated"
+    },
+    "carbon": {
+      "lifecycle_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+      "project_id": "project_bb6495a549d643fb853656ce5015214a",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh twelve-year inventory",
+        "area_m2": 960.0,
+        "study_years": 12,
+        "region": "US-CO",
+        "method": "Synthetic GWP arithmetic",
+        "functional_unit": "960 declared square metres over twelve years",
+        "import_file_id": null,
+        "boundaries": [
+          {
+            "stage": "production",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "transport",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "construction",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "operation",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "end_of_life",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          }
+        ],
+        "activities": [
+          {
+            "activity_id": "production",
+            "name": "production",
+            "stage": "production",
+            "quantity": 2.4,
+            "unit": "t",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "production-fixed",
+              "value": 0.6,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "production",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "transport",
+            "name": "transport",
+            "stage": "transport",
+            "quantity": 210.0,
+            "unit": "tkm",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "transport-fixed",
+              "value": 0.09,
+              "denominator": "tkm",
+              "numerator": "kgCO2e",
+              "stage": "transport",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "construction",
+            "name": "construction",
+            "stage": "construction",
+            "quantity": 150.0,
+            "unit": "kWh",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "construction-fixed",
+              "value": 0.37,
+              "denominator": "kWh",
+              "numerator": "kgCO2e",
+              "stage": "construction",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "operation",
+            "name": "operation",
+            "stage": "operation",
+            "quantity": 510.0,
+            "unit": "kWh",
+            "period": "annual",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "operation-fixed",
+              "value": 0.31,
+              "denominator": "kWh",
+              "numerator": "kgCO2e",
+              "stage": "operation",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "end_of_life",
+            "name": "end_of_life",
+            "stage": "end_of_life",
+            "quantity": 40.0,
+            "unit": "kg",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "end_of_life-fixed",
+              "value": 0.06,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "end_of_life",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          }
+        ]
+      },
+      "result": {
+        "status": "calculated",
+        "rows": [
+          {
+            "activity_id": "production",
+            "stage": "production",
+            "quantity_in_factor_unit": 2400.0,
+            "factor_unit": "kgCO2e/kg",
+            "period_multiplier": 1,
+            "kgco2e": 1440.0,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "transport",
+            "stage": "transport",
+            "quantity_in_factor_unit": 210.0,
+            "factor_unit": "kgCO2e/tkm",
+            "period_multiplier": 1,
+            "kgco2e": 18.9,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "construction",
+            "stage": "construction",
+            "quantity_in_factor_unit": 150.0,
+            "factor_unit": "kgCO2e/kWh",
+            "period_multiplier": 1,
+            "kgco2e": 55.5,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "operation",
+            "stage": "operation",
+            "quantity_in_factor_unit": 6120.0,
+            "factor_unit": "kgCO2e/kWh",
+            "period_multiplier": 12,
+            "kgco2e": 1897.2,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "end_of_life",
+            "stage": "end_of_life",
+            "quantity_in_factor_unit": 40.0,
+            "factor_unit": "kgCO2e/kg",
+            "period_multiplier": 1,
+            "kgco2e": 2.4,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          }
+        ],
+        "stages": {
+          "production": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 1440.0
+          },
+          "transport": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 18.9
+          },
+          "construction": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 55.5
+          },
+          "operation": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 1897.2
+          },
+          "end_of_life": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 2.4
+          }
+        },
+        "missing": [],
+        "boundary_total_kgco2e": 3414.0,
+        "kgco2e_m2_over_study_period": 3.55625,
+        "all_five_stages_entered": true,
+        "source_status": "USER_DECLARED",
+        "certification": "NOT_ASSESSED",
+        "issued_credits_t": null,
+        "limitations": [
+          "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+          "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+          "年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。",
+          "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+        ]
+      },
+      "source_snapshot": [],
+      "import_source": null,
+      "calculator_hash": "6d0b613ba5293b782a40d0b9580f1e66710ed941ca595a44ca5475b9c5cd4e3e",
+      "created_at": "2026-11-08T08:46:18.430674+00:00",
+      "hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "calculated"
+    }
+  },
+  "task": {
+    "agent_id": "agent_a668a29453d34e269431ae0553094d0d",
+    "project_id": "project_bb6495a549d643fb853656ce5015214a",
+    "question": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。每栏给数值和单位即可，不加解释。",
+    "mode": "local_model",
+    "status": "succeeded",
+    "events": [
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:18.457894+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "result": {
+          "tool_calls_returned": 1,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 2781,
+        "finished_at": "2026-11-08T08:46:21.257517+00:00"
+      },
+      {
+        "tool": "requested_output_plan",
+        "arguments": {
+          "output_plan": [
+            {
+              "request_key": "device",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "sample_count"
+              ],
+              "explanation_topics": []
+            },
+            {
+              "request_key": "build",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "forecast_finish_variance_days"
+              ],
+              "explanation_topics": []
+            },
+            {
+              "request_key": "carbon",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "stage.production"
+              ],
+              "explanation_topics": []
+            }
+          ]
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:21.265536+00:00",
+        "origin": "model",
+        "result": {
+          "status": "plan_proposed_not_executable",
+          "origin": "model_inferred_from_user_question",
+          "version": "b1b96b7598a6496e922d85707b003b0d8559902a2fe7134c54ec0a4cfe8670ef",
+          "question_hash": "fbe85901961796d33668e876bbca4bb5017a924b89331b5e09a76439bbe43e3c",
+          "items": [
+            {
+              "request_key": "device",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "sample_count"
+              ],
+              "explanation_topics": [],
+              "question_spans": [
+                {
+                  "fragment_id": "q1",
+                  "start": 0,
+                  "end": 40,
+                  "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+                },
+                {
+                  "fragment_id": "q2",
+                  "start": 40,
+                  "end": 56,
+                  "text": "每栏给数值和单位即可，不加解释。"
+                }
+              ],
+              "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+            },
+            {
+              "request_key": "build",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "forecast_finish_variance_days"
+              ],
+              "explanation_topics": [],
+              "question_spans": [
+                {
+                  "fragment_id": "q1",
+                  "start": 0,
+                  "end": 40,
+                  "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+                },
+                {
+                  "fragment_id": "q2",
+                  "start": 40,
+                  "end": 56,
+                  "text": "每栏给数值和单位即可，不加解释。"
+                }
+              ],
+              "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+            },
+            {
+              "request_key": "carbon",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "stage.production"
+              ],
+              "explanation_topics": [],
+              "question_spans": [
+                {
+                  "fragment_id": "q1",
+                  "start": 0,
+                  "end": 40,
+                  "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+                },
+                {
+                  "fragment_id": "q2",
+                  "start": 40,
+                  "end": 56,
+                  "text": "每栏给数值和单位即可，不加解释。"
+                }
+              ],
+              "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+            }
+          ],
+          "intent_verified": false,
+          "notice": "A separate model review of the original question is required before any source read."
+        },
+        "result_hash": "5a5ea3d47a4cddfeea03f83d742b0da1996a2919cba98817080f57ac7380cd8a",
+        "duration_ms": 15,
+        "finished_at": "2026-11-08T08:46:21.278054+00:00"
+      },
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:21.288085+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "result": {
+          "tool_calls_returned": 1,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 3156,
+        "finished_at": "2026-11-08T08:46:24.454434+00:00"
+      },
+      {
+        "tool": "requested_output_plan",
+        "arguments": {
+          "output_plan": [
+            {
+              "request_key": "device",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "sample_count"
+              ],
+              "explanation_topics": []
+            },
+            {
+              "request_key": "build",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "forecast_finish_variance_days"
+              ],
+              "explanation_topics": []
+            },
+            {
+              "request_key": "carbon",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "stage.production"
+              ],
+              "explanation_topics": []
+            }
+          ]
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.458433+00:00",
+        "origin": "model",
+        "result": {
+          "status": "plan_frozen",
+          "origin": "model_inferred_from_user_question",
+          "version": "b1b96b7598a6496e922d85707b003b0d8559902a2fe7134c54ec0a4cfe8670ef",
+          "question_hash": "fbe85901961796d33668e876bbca4bb5017a924b89331b5e09a76439bbe43e3c",
+          "items": [
+            {
+              "request_key": "device",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "sample_count"
+              ],
+              "explanation_topics": [],
+              "question_spans": [
+                {
+                  "fragment_id": "q1",
+                  "start": 0,
+                  "end": 40,
+                  "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+                },
+                {
+                  "fragment_id": "q2",
+                  "start": 40,
+                  "end": 56,
+                  "text": "每栏给数值和单位即可，不加解释。"
+                }
+              ],
+              "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+            },
+            {
+              "request_key": "build",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "forecast_finish_variance_days"
+              ],
+              "explanation_topics": [],
+              "question_spans": [
+                {
+                  "fragment_id": "q1",
+                  "start": 0,
+                  "end": 40,
+                  "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+                },
+                {
+                  "fragment_id": "q2",
+                  "start": 40,
+                  "end": 56,
+                  "text": "每栏给数值和单位即可，不加解释。"
+                }
+              ],
+              "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+            },
+            {
+              "request_key": "carbon",
+              "question_fragment_ids": [
+                "q1",
+                "q2"
+              ],
+              "fact_keys": [
+                "stage.production"
+              ],
+              "explanation_topics": [],
+              "question_spans": [
+                {
+                  "fragment_id": "q1",
+                  "start": 0,
+                  "end": 40,
+                  "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+                },
+                {
+                  "fragment_id": "q2",
+                  "start": 40,
+                  "end": 56,
+                  "text": "每栏给数值和单位即可，不加解释。"
+                }
+              ],
+              "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+            }
+          ],
+          "intent_verified": false,
+          "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+        },
+        "result_hash": "2709cdfbe55955b62873f9b5c37683c5839c5a2db1a2272b785768b5a75be261",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T08:46:24.471030+00:00"
+      },
+      {
+        "tool": "operations_read",
+        "arguments": {
+          "operation_id": "operation_92d28eeff604473e9e11760f095a5a1c"
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.484484+00:00",
+        "origin": "controller",
+        "result": {
+          "operation_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "project_revision": 1,
+          "input": {
+            "name": "Fresh data quality window",
+            "file_id": "file_3cb8a19dfa0a4b4fa60b96238b8b3d5f",
+            "equipment": "Synthetic FCU",
+            "data_nature": "synthetic",
+            "source": "New independent synthetic CSV",
+            "time_column": "time",
+            "time_format": "iso8601",
+            "clock_basis": "offset_aware",
+            "clock_source": "Explicit UTC",
+            "expected_interval_seconds": 60.0,
+            "maximum_gap_seconds": 90.0,
+            "channels": [
+              {
+                "channel_id": "t",
+                "column": "t",
+                "name": "Temperature",
+                "unit": "degC",
+                "source": "Declared synthetic units"
+              }
+            ],
+            "rules": [
+              {
+                "rule_id": "hot",
+                "name": "Upper band",
+                "kind": "range",
+                "channel_id": "t",
+                "other_channel_id": null,
+                "unit": "degC",
+                "lower": null,
+                "upper": 22.0,
+                "threshold": null,
+                "minimum_duration_seconds": 60.0,
+                "gate_channel_id": null,
+                "gate_minimum": null,
+                "gate_unit": null,
+                "source": "Synthetic threshold, not a fault diagnosis"
+              }
+            ],
+            "evidence_ids": []
+          },
+          "result": {
+            "status": "events_detected",
+            "quality": {
+              "sample_count": 7,
+              "cell_issue_count": 1,
+              "cell_issues": [
+                {
+                  "line": 5,
+                  "channel_id": "t",
+                  "reason": "missing"
+                }
+              ],
+              "cell_issues_truncated": false,
+              "gap_count": 1,
+              "gaps": [
+                {
+                  "before_line": 6,
+                  "seconds": 120.0
+                }
+              ],
+              "gaps_truncated": false,
+              "irregular_intervals": 1,
+              "first_time": "2026-07-12T00:00:00+00:00",
+              "last_time": "2026-07-12T00:07:00+00:00"
+            },
+            "channels": [
+              {
+                "channel_id": "t",
+                "name": "Temperature",
+                "input_unit": "degC",
+                "unit": "degC",
+                "valid_samples": 6,
+                "missing_or_invalid": 1,
+                "minimum": 20.0,
+                "maximum": 28.0,
+                "sample_mean": 24.0
+              }
+            ],
+            "rules": [
+              {
+                "rule_id": "hot",
+                "name": "Upper band",
+                "kind": "range",
+                "unit": "degC",
+                "evaluated_samples": 6,
+                "excluded_by_gate_samples": 0,
+                "unknown_samples": 1,
+                "violating_samples": 4,
+                "event_count": 2,
+                "events": [
+                  {
+                    "first_line": 3,
+                    "last_line": 4,
+                    "start": "2026-07-12T00:01:00+00:00",
+                    "end": "2026-07-12T00:02:00+00:00",
+                    "observed_span_seconds": 60.0,
+                    "samples": 2
+                  },
+                  {
+                    "first_line": 6,
+                    "last_line": 7,
+                    "start": "2026-07-12T00:05:00+00:00",
+                    "end": "2026-07-12T00:06:00+00:00",
+                    "observed_span_seconds": 60.0,
+                    "samples": 2
+                  }
+                ],
+                "events_truncated": false,
+                "state": "events_detected",
+                "recommended_checks": [
+                  "复核对应行、采样时钟、单位和传感器校准；确认规则适用于当前工况。",
+                  "核查设定值和运行边界，比较独立测点；不能仅凭越限判断故障部件。"
+                ],
+                "cause_confirmed": false
+              }
+            ],
+            "series_preview": [
+              {
+                "line": 2,
+                "timestamp": "2026-07-12T00:00:00+00:00",
+                "values": {
+                  "t": 20.0
+                }
+              },
+              {
+                "line": 3,
+                "timestamp": "2026-07-12T00:01:00+00:00",
+                "values": {
+                  "t": 24.0
+                }
+              },
+              {
+                "line": 4,
+                "timestamp": "2026-07-12T00:02:00+00:00",
+                "values": {
+                  "t": 25.0
+                }
+              },
+              {
+                "line": 5,
+                "timestamp": "2026-07-12T00:03:00+00:00",
+                "values": {
+                  "t": null
+                }
+              },
+              {
+                "line": 6,
+                "timestamp": "2026-07-12T00:05:00+00:00",
+                "values": {
+                  "t": 27.0
+                }
+              },
+              {
+                "line": 7,
+                "timestamp": "2026-07-12T00:06:00+00:00",
+                "values": {
+                  "t": 28.0
+                }
+              },
+              {
+                "line": 8,
+                "timestamp": "2026-07-12T00:07:00+00:00",
+                "values": {
+                  "t": 20.0
+                }
+              }
+            ],
+            "preview_downsampled": false,
+            "source_status": "USER_DECLARED",
+            "data_nature": "synthetic",
+            "equipment": "Synthetic FCU",
+            "diagnosis": "NOT_CONFIRMED",
+            "control_action": "NONE",
+            "limitations": [
+              "仅检测声明规则，不把无告警当作设备健康；故障原因及维修措施需专业复核。",
+              "持续时间是首末异常样本间跨度；缺测或超出最大间隔会断开事件，不外推最后一个样本后的持续时间。",
+              "样本间连续性为明确采样假设，无法证明两次采样之间没有变化。均值是样本均值，不是时间加权均值或能耗积分。",
+              "本地时钟不自动推断时区或夏令时；预览最多200个抽样点，完整数据以原件和事件行号为准。",
+              "事件判断用原始十进制有理数计算；数值单元限128字符、40位有效数字和±100十进制指数。汇总与预览转为浮点显示。"
+            ]
+          },
+          "file_snapshot": {
+            "file_id": "file_3cb8a19dfa0a4b4fa60b96238b8b3d5f",
+            "project_id": "project_bb6495a549d643fb853656ce5015214a",
+            "name": "fresh.csv",
+            "path": "files/file_3cb8a19dfa0a4b4fa60b96238b8b3d5f.csv",
+            "hash": "16dfa4464973aa08b1c4da6c42dd8e856e5645caa960fe0a6fe499ea6e94b791",
+            "size": 173,
+            "timestamp": "2026-11-08T08:46:18.384983+00:00",
+            "revision": 1
+          },
+          "source_snapshot": [],
+          "calculator_hash": "802d4864cdca672a9eae52e83e2537a662f83f897a2b6358e8a11c0f1699f0a3",
+          "created_at": "2026-11-08T08:46:18.404582+00:00",
+          "hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+          "revision": 1,
+          "stale_reasons": [],
+          "stale_details": [],
+          "status": "events_detected",
+          "nonnumeric_review_reference": {
+            "kind": "operation",
+            "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+            "record_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+            "view_hash": "82eb51d562babf8a9ac25c6a66c6bb6339a7685a9b2fd32fe8830325ce6935df",
+            "finish": false
+          },
+          "explanation_facts": [
+            {
+              "fact": "sample_count",
+              "label": "CSV样本数",
+              "value": "7",
+              "source_value": "7",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/quality/sample_count"
+            },
+            {
+              "fact": "cell_issue_count",
+              "label": "缺失或无效数值单元数",
+              "value": "1",
+              "source_value": "1",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/quality/cell_issue_count"
+            },
+            {
+              "fact": "gap_count",
+              "label": "超出最大间隔的采样缺口数",
+              "value": "1",
+              "source_value": "1",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/quality/gap_count"
+            },
+            {
+              "fact": "rule_event_sum",
+              "label": "各规则事件次数之和（可能重叠，非故障数）",
+              "value": "2",
+              "source_value": "2",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "derived:sum(/result/rules/*/event_count)"
+            },
+            {
+              "fact": "rule_unknown_sample_sum",
+              "label": "各规则未知样本次数之和（可能重复）",
+              "value": "1",
+              "source_value": "1",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "derived:sum(/result/rules/*/unknown_samples)"
+            }
+          ],
+          "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+        },
+        "result_hash": "8ec97336948c2b707978100df7d6f39a3ee3a6d5a822b1b524d3fcc19648b34e",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T08:46:24.507214+00:00"
+      },
+      {
+        "tool": "professional_deliver",
+        "arguments": {
+          "delivery": {
+            "kind": "operation",
+            "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+            "record_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+            "finish": false,
+            "statements": [
+              {
+                "fact": "sample_count",
+                "value": "7",
+                "unit": "count",
+                "period": "observed_window",
+                "study_years": null,
+                "area_m2": null
+              }
+            ]
+          }
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.511737+00:00",
+        "origin": "controller",
+        "result": {
+          "status": "verified",
+          "reference": {
+            "kind": "operation",
+            "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+            "record_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+            "statements": [
+              {
+                "fact": "sample_count",
+                "value": "7",
+                "unit": "count",
+                "period": "observed_window",
+                "study_years": null,
+                "area_m2": null
+              }
+            ],
+            "limitation_status": null,
+            "finish": false
+          },
+          "statements": [
+            {
+              "fact": "sample_count",
+              "label": "CSV样本数",
+              "value": "7",
+              "source_value": "7",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/quality/sample_count"
+            }
+          ],
+          "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+        },
+        "result_hash": "5c2d8cc23a6c72d265528a2e37ffe52b533df02225d833416702baacd874ab44",
+        "duration_ms": 15,
+        "finished_at": "2026-11-08T08:46:24.538435+00:00"
+      },
+      {
+        "tool": "schedule_read",
+        "arguments": {
+          "schedule_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5"
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.542435+00:00",
+        "origin": "controller",
+        "result": {
+          "schedule_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "project_revision": 1,
+          "input": {
+            "name": "Fresh progress network",
+            "scope": "Synthetic network, not site instructions",
+            "calendar": "continuous_elapsed_days",
+            "time_origin": "Synthetic day zero",
+            "tasks": [
+              {
+                "task_id": "A",
+                "name": "Task A",
+                "duration_days": 2.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [],
+                "demands": []
+              },
+              {
+                "task_id": "B",
+                "name": "Task B",
+                "duration_days": 5.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "A",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              },
+              {
+                "task_id": "C",
+                "name": "Task C",
+                "duration_days": 3.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "A",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              },
+              {
+                "task_id": "D",
+                "name": "Task D",
+                "duration_days": 2.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "B",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  },
+                  {
+                    "task_id": "C",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              }
+            ],
+            "resources": [],
+            "evidence_ids": [],
+            "progress": {
+              "as_of_day": 4.0,
+              "source": "Synthetic progress",
+              "observations": [
+                {
+                  "task_id": "A",
+                  "state": "completed",
+                  "actual_start_day": 0.0,
+                  "actual_finish_day": 2.0,
+                  "remaining_days": null,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "B",
+                  "state": "in_progress",
+                  "actual_start_day": 2.0,
+                  "actual_finish_day": null,
+                  "remaining_days": 6.0,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "C",
+                  "state": "in_progress",
+                  "actual_start_day": 2.0,
+                  "actual_finish_day": null,
+                  "remaining_days": 1.0,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "D",
+                  "state": "not_started",
+                  "actual_start_day": null,
+                  "actual_finish_day": null,
+                  "remaining_days": null,
+                  "source": "Synthetic observation"
+                }
+              ]
+            },
+            "import_file_id": null
+          },
+          "result": {
+            "calendar": "continuous_elapsed_days",
+            "time_origin": "Synthetic day zero",
+            "scope": "Synthetic network, not site instructions",
+            "missing_duration_tasks": [],
+            "source_status": "USER_DECLARED",
+            "site_safety": "NOT_ASSESSED",
+            "resource_leveling": "NOT_IMPLEMENTED",
+            "limitations": [
+              "连续经过日，从声明的第0天起算；不自动跳过周末、节假日、天气或夜间。",
+              "只支持完成到开始FS及非负间隔；零工期表示里程碑。关键路径基于声明工期，不代表施工安全或履约保证。",
+              "预测使用显式剩余工期；不按完成百分比推测，不自动补齐未报告工序。资源冲突未自动调平。"
+            ],
+            "status": "calculated",
+            "planned": {
+              "duration_days": "9",
+              "rows": [
+                {
+                  "task_id": "A",
+                  "name": "Task A",
+                  "start_day": "0",
+                  "finish_day": "2",
+                  "latest_start_day": "0",
+                  "latest_finish_day": "2",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                },
+                {
+                  "task_id": "B",
+                  "name": "Task B",
+                  "start_day": "2",
+                  "finish_day": "7",
+                  "latest_start_day": "2",
+                  "latest_finish_day": "7",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                },
+                {
+                  "task_id": "C",
+                  "name": "Task C",
+                  "start_day": "2",
+                  "finish_day": "5",
+                  "latest_start_day": "4",
+                  "latest_finish_day": "7",
+                  "total_float_days": "2",
+                  "free_float_days": "2",
+                  "critical": false
+                },
+                {
+                  "task_id": "D",
+                  "name": "Task D",
+                  "start_day": "7",
+                  "finish_day": "9",
+                  "latest_start_day": "7",
+                  "latest_finish_day": "9",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                }
+              ],
+              "critical_tasks": [
+                "A",
+                "B",
+                "D"
+              ],
+              "critical_dependencies": [
+                {
+                  "from": "A",
+                  "to": "B",
+                  "lag_days": "0"
+                },
+                {
+                  "from": "B",
+                  "to": "D",
+                  "lag_days": "0"
+                }
+              ],
+              "resources": {
+                "status": "not_assessed",
+                "conflicts": [],
+                "unknown": [],
+                "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+              },
+              "formulas": [
+                "ES=max(EF predecessor + FS lag), EF=ES+duration",
+                "LF=min(LS successor - lag), LS=LF-duration",
+                "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+              ]
+            },
+            "forecast": {
+              "status": "scenario",
+              "as_of_day": "4",
+              "finish_day": "12",
+              "finish_variance_days": "3",
+              "missing": [],
+              "unverified_actual_dependencies": [],
+              "rows": [
+                {
+                  "task_id": "A",
+                  "state": "completed",
+                  "start_day": "0",
+                  "finish_day": "2"
+                },
+                {
+                  "task_id": "B",
+                  "state": "in_progress",
+                  "start_day": "2",
+                  "finish_day": "10"
+                },
+                {
+                  "task_id": "C",
+                  "state": "in_progress",
+                  "start_day": "2",
+                  "finish_day": "5"
+                },
+                {
+                  "task_id": "D",
+                  "state": "not_started",
+                  "start_day": "10",
+                  "finish_day": "12"
+                }
+              ],
+              "resources": {
+                "status": "not_assessed",
+                "conflicts": [],
+                "unknown": [],
+                "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+              }
+            }
+          },
+          "source_snapshot": [],
+          "import_source": null,
+          "calculator_hash": "ddcb7730d511001cb6bcd6c2d026826e900a5c559fa31d0a223bfc2b0a33afbf",
+          "created_at": "2026-11-08T08:46:18.416099+00:00",
+          "hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+          "revision": 1,
+          "stale_reasons": [],
+          "stale_details": [],
+          "status": "calculated",
+          "nonnumeric_review_reference": {
+            "kind": "schedule",
+            "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+            "record_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+            "view_hash": "0b1fceb03e9df6ddc4c7637917dd4eee34cb6332be0c83340e43580b25de2ac6",
+            "finish": false
+          },
+          "explanation_facts": [
+            {
+              "fact": "planned_duration_days",
+              "label": "声明计划总工期",
+              "value": "9",
+              "source_value": "9",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/planned/duration_days"
+            },
+            {
+              "fact": "forecast_as_of_day",
+              "label": "进度记录截至日",
+              "value": "4",
+              "source_value": "4",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/forecast/as_of_day"
+            },
+            {
+              "fact": "forecast_finish_day",
+              "label": "显式情景完工日",
+              "value": "12",
+              "source_value": "12",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/forecast/finish_day"
+            },
+            {
+              "fact": "forecast_finish_variance_days",
+              "label": "情景相对计划的完工偏差",
+              "value": "3",
+              "source_value": "3",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/forecast/finish_variance_days"
+            }
+          ],
+          "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+        },
+        "result_hash": "676ddc06db9296402210e6459953000a7c045d516173bafcca4840110c360a53",
+        "duration_ms": 16,
+        "finished_at": "2026-11-08T08:46:24.567193+00:00"
+      },
+      {
+        "tool": "professional_deliver",
+        "arguments": {
+          "delivery": {
+            "kind": "schedule",
+            "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+            "record_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+            "finish": false,
+            "statements": [
+              {
+                "fact": "forecast_finish_variance_days",
+                "value": "3",
+                "unit": "day",
+                "period": "elapsed_days",
+                "study_years": null,
+                "area_m2": null
+              }
+            ]
+          }
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.572113+00:00",
+        "origin": "controller",
+        "result": {
+          "status": "verified",
+          "reference": {
+            "kind": "schedule",
+            "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+            "record_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+            "statements": [
+              {
+                "fact": "forecast_finish_variance_days",
+                "value": "3",
+                "unit": "day",
+                "period": "elapsed_days",
+                "study_years": null,
+                "area_m2": null
+              }
+            ],
+            "limitation_status": null,
+            "finish": false
+          },
+          "statements": [
+            {
+              "fact": "forecast_finish_variance_days",
+              "label": "情景相对计划的完工偏差",
+              "value": "3",
+              "source_value": "3",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/forecast/finish_variance_days"
+            }
+          ],
+          "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+        },
+        "result_hash": "18d05737d6c679bf095b501a31a7609a41cd1a85f1b46dcdac3363c7f25daf50",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T08:46:24.586156+00:00"
+      },
+      {
+        "tool": "lifecycle_read",
+        "arguments": {
+          "lifecycle_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced"
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.589163+00:00",
+        "origin": "controller",
+        "result": {
+          "lifecycle_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "project_revision": 1,
+          "input": {
+            "name": "Fresh twelve-year inventory",
+            "area_m2": 960.0,
+            "study_years": 12,
+            "region": "US-CO",
+            "method": "Synthetic GWP arithmetic",
+            "functional_unit": "960 declared square metres over twelve years",
+            "import_file_id": null,
+            "boundaries": [
+              {
+                "stage": "production",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "transport",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "construction",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "operation",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "end_of_life",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              }
+            ],
+            "activities": [
+              {
+                "activity_id": "production",
+                "name": "production",
+                "stage": "production",
+                "quantity": 2.4,
+                "unit": "t",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "production-fixed",
+                  "value": 0.6,
+                  "denominator": "kg",
+                  "numerator": "kgCO2e",
+                  "stage": "production",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "transport",
+                "name": "transport",
+                "stage": "transport",
+                "quantity": 210.0,
+                "unit": "tkm",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "transport-fixed",
+                  "value": 0.09,
+                  "denominator": "tkm",
+                  "numerator": "kgCO2e",
+                  "stage": "transport",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "construction",
+                "name": "construction",
+                "stage": "construction",
+                "quantity": 150.0,
+                "unit": "kWh",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "construction-fixed",
+                  "value": 0.37,
+                  "denominator": "kWh",
+                  "numerator": "kgCO2e",
+                  "stage": "construction",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "operation",
+                "name": "operation",
+                "stage": "operation",
+                "quantity": 510.0,
+                "unit": "kWh",
+                "period": "annual",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "operation-fixed",
+                  "value": 0.31,
+                  "denominator": "kWh",
+                  "numerator": "kgCO2e",
+                  "stage": "operation",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "end_of_life",
+                "name": "end_of_life",
+                "stage": "end_of_life",
+                "quantity": 40.0,
+                "unit": "kg",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "end_of_life-fixed",
+                  "value": 0.06,
+                  "denominator": "kg",
+                  "numerator": "kgCO2e",
+                  "stage": "end_of_life",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              }
+            ]
+          },
+          "result": {
+            "status": "calculated",
+            "rows": [
+              {
+                "activity_id": "production",
+                "stage": "production",
+                "quantity_in_factor_unit": 2400.0,
+                "factor_unit": "kgCO2e/kg",
+                "period_multiplier": 1,
+                "kgco2e": 1440.0,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "transport",
+                "stage": "transport",
+                "quantity_in_factor_unit": 210.0,
+                "factor_unit": "kgCO2e/tkm",
+                "period_multiplier": 1,
+                "kgco2e": 18.9,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "construction",
+                "stage": "construction",
+                "quantity_in_factor_unit": 150.0,
+                "factor_unit": "kgCO2e/kWh",
+                "period_multiplier": 1,
+                "kgco2e": 55.5,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "operation",
+                "stage": "operation",
+                "quantity_in_factor_unit": 6120.0,
+                "factor_unit": "kgCO2e/kWh",
+                "period_multiplier": 12,
+                "kgco2e": 1897.2,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "end_of_life",
+                "stage": "end_of_life",
+                "quantity_in_factor_unit": 40.0,
+                "factor_unit": "kgCO2e/kg",
+                "period_multiplier": 1,
+                "kgco2e": 2.4,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              }
+            ],
+            "stages": {
+              "production": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 1440.0
+              },
+              "transport": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 18.9
+              },
+              "construction": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 55.5
+              },
+              "operation": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 1897.2
+              },
+              "end_of_life": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 2.4
+              }
+            },
+            "missing": [],
+            "boundary_total_kgco2e": 3414.0,
+            "kgco2e_m2_over_study_period": 3.55625,
+            "all_five_stages_entered": true,
+            "source_status": "USER_DECLARED",
+            "certification": "NOT_ASSESSED",
+            "issued_credits_t": null,
+            "limitations": [
+              "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+              "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+              "年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。",
+              "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+            ]
+          },
+          "source_snapshot": [],
+          "import_source": null,
+          "calculator_hash": "6d0b613ba5293b782a40d0b9580f1e66710ed941ca595a44ca5475b9c5cd4e3e",
+          "created_at": "2026-11-08T08:46:18.430674+00:00",
+          "hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+          "revision": 1,
+          "stale_reasons": [],
+          "stale_details": [],
+          "status": "calculated",
+          "nonnumeric_review_reference": {
+            "kind": "lifecycle",
+            "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+            "record_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+            "view_hash": "165ea5079d07a5e3b45395a18ebefdce097f3c1fa763759fddbb6a901d16aaaa",
+            "finish": false
+          },
+          "explanation_facts": [
+            {
+              "fact": "boundary_total_kgco2e",
+              "label": "声明边界碳排总量",
+              "value": "3414",
+              "source_value": "3414.0",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/boundary_total_kgco2e"
+            },
+            {
+              "fact": "kgco2e_m2_over_study_period",
+              "label": "整个评估期单位面积碳排",
+              "value": "3.55625",
+              "source_value": "3.55625",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e/m2",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": 960.0,
+              "area_basis": "explicit_area_denominator",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/kgco2e_m2_over_study_period"
+            },
+            {
+              "fact": "stage.production",
+              "label": "production阶段总量",
+              "value": "1440",
+              "source_value": "1440.0",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/production/kgco2e"
+            },
+            {
+              "fact": "stage.transport",
+              "label": "transport阶段总量",
+              "value": "18.9",
+              "source_value": "18.9",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/transport/kgco2e"
+            },
+            {
+              "fact": "stage.construction",
+              "label": "construction阶段总量",
+              "value": "55.5",
+              "source_value": "55.5",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/construction/kgco2e"
+            },
+            {
+              "fact": "stage.operation",
+              "label": "operation阶段总量",
+              "value": "1897.2",
+              "source_value": "1897.2",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/operation/kgco2e"
+            },
+            {
+              "fact": "stage.end_of_life",
+              "label": "end_of_life阶段总量",
+              "value": "2.4",
+              "source_value": "2.4",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/end_of_life/kgco2e"
+            }
+          ],
+          "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+        },
+        "result_hash": "76c40abb85dd202bfc565dd8abcfbec2249504e6690a82fd9c25bbc5809dd703",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T08:46:24.604190+00:00"
+      },
+      {
+        "tool": "professional_deliver",
+        "arguments": {
+          "delivery": {
+            "kind": "lifecycle",
+            "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+            "record_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+            "finish": false,
+            "statements": [
+              {
+                "fact": "stage.production",
+                "value": "1440",
+                "unit": "kgCO2e",
+                "period": "study_period",
+                "study_years": 12,
+                "area_m2": null
+              }
+            ]
+          }
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.620653+00:00",
+        "origin": "controller",
+        "result": {
+          "status": "verified",
+          "reference": {
+            "kind": "lifecycle",
+            "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+            "record_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+            "statements": [
+              {
+                "fact": "stage.production",
+                "value": "1440",
+                "unit": "kgCO2e",
+                "period": "study_period",
+                "study_years": 12,
+                "area_m2": null
+              }
+            ],
+            "limitation_status": null,
+            "finish": false
+          },
+          "statements": [
+            {
+              "fact": "stage.production",
+              "label": "production阶段总量",
+              "value": "1440",
+              "source_value": "1440.0",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/production/kgco2e"
+            }
+          ],
+          "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+        },
+        "result_hash": "c6194d2600bd3c741bead3b40bb7e406b300ceacead929358e12329de4b1a830",
+        "duration_ms": 16,
+        "finished_at": "2026-11-08T08:46:24.638716+00:00"
+      },
+      {
+        "tool": "operations_read",
+        "arguments": {
+          "operation_id": "operation_92d28eeff604473e9e11760f095a5a1c"
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.651377+00:00",
+        "origin": "controller",
+        "result": {
+          "operation_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "project_revision": 1,
+          "input": {
+            "name": "Fresh data quality window",
+            "file_id": "file_3cb8a19dfa0a4b4fa60b96238b8b3d5f",
+            "equipment": "Synthetic FCU",
+            "data_nature": "synthetic",
+            "source": "New independent synthetic CSV",
+            "time_column": "time",
+            "time_format": "iso8601",
+            "clock_basis": "offset_aware",
+            "clock_source": "Explicit UTC",
+            "expected_interval_seconds": 60.0,
+            "maximum_gap_seconds": 90.0,
+            "channels": [
+              {
+                "channel_id": "t",
+                "column": "t",
+                "name": "Temperature",
+                "unit": "degC",
+                "source": "Declared synthetic units"
+              }
+            ],
+            "rules": [
+              {
+                "rule_id": "hot",
+                "name": "Upper band",
+                "kind": "range",
+                "channel_id": "t",
+                "other_channel_id": null,
+                "unit": "degC",
+                "lower": null,
+                "upper": 22.0,
+                "threshold": null,
+                "minimum_duration_seconds": 60.0,
+                "gate_channel_id": null,
+                "gate_minimum": null,
+                "gate_unit": null,
+                "source": "Synthetic threshold, not a fault diagnosis"
+              }
+            ],
+            "evidence_ids": []
+          },
+          "result": {
+            "status": "events_detected",
+            "quality": {
+              "sample_count": 7,
+              "cell_issue_count": 1,
+              "cell_issues": [
+                {
+                  "line": 5,
+                  "channel_id": "t",
+                  "reason": "missing"
+                }
+              ],
+              "cell_issues_truncated": false,
+              "gap_count": 1,
+              "gaps": [
+                {
+                  "before_line": 6,
+                  "seconds": 120.0
+                }
+              ],
+              "gaps_truncated": false,
+              "irregular_intervals": 1,
+              "first_time": "2026-07-12T00:00:00+00:00",
+              "last_time": "2026-07-12T00:07:00+00:00"
+            },
+            "channels": [
+              {
+                "channel_id": "t",
+                "name": "Temperature",
+                "input_unit": "degC",
+                "unit": "degC",
+                "valid_samples": 6,
+                "missing_or_invalid": 1,
+                "minimum": 20.0,
+                "maximum": 28.0,
+                "sample_mean": 24.0
+              }
+            ],
+            "rules": [
+              {
+                "rule_id": "hot",
+                "name": "Upper band",
+                "kind": "range",
+                "unit": "degC",
+                "evaluated_samples": 6,
+                "excluded_by_gate_samples": 0,
+                "unknown_samples": 1,
+                "violating_samples": 4,
+                "event_count": 2,
+                "events": [
+                  {
+                    "first_line": 3,
+                    "last_line": 4,
+                    "start": "2026-07-12T00:01:00+00:00",
+                    "end": "2026-07-12T00:02:00+00:00",
+                    "observed_span_seconds": 60.0,
+                    "samples": 2
+                  },
+                  {
+                    "first_line": 6,
+                    "last_line": 7,
+                    "start": "2026-07-12T00:05:00+00:00",
+                    "end": "2026-07-12T00:06:00+00:00",
+                    "observed_span_seconds": 60.0,
+                    "samples": 2
+                  }
+                ],
+                "events_truncated": false,
+                "state": "events_detected",
+                "recommended_checks": [
+                  "复核对应行、采样时钟、单位和传感器校准；确认规则适用于当前工况。",
+                  "核查设定值和运行边界，比较独立测点；不能仅凭越限判断故障部件。"
+                ],
+                "cause_confirmed": false
+              }
+            ],
+            "series_preview": [
+              {
+                "line": 2,
+                "timestamp": "2026-07-12T00:00:00+00:00",
+                "values": {
+                  "t": 20.0
+                }
+              },
+              {
+                "line": 3,
+                "timestamp": "2026-07-12T00:01:00+00:00",
+                "values": {
+                  "t": 24.0
+                }
+              },
+              {
+                "line": 4,
+                "timestamp": "2026-07-12T00:02:00+00:00",
+                "values": {
+                  "t": 25.0
+                }
+              },
+              {
+                "line": 5,
+                "timestamp": "2026-07-12T00:03:00+00:00",
+                "values": {
+                  "t": null
+                }
+              },
+              {
+                "line": 6,
+                "timestamp": "2026-07-12T00:05:00+00:00",
+                "values": {
+                  "t": 27.0
+                }
+              },
+              {
+                "line": 7,
+                "timestamp": "2026-07-12T00:06:00+00:00",
+                "values": {
+                  "t": 28.0
+                }
+              },
+              {
+                "line": 8,
+                "timestamp": "2026-07-12T00:07:00+00:00",
+                "values": {
+                  "t": 20.0
+                }
+              }
+            ],
+            "preview_downsampled": false,
+            "source_status": "USER_DECLARED",
+            "data_nature": "synthetic",
+            "equipment": "Synthetic FCU",
+            "diagnosis": "NOT_CONFIRMED",
+            "control_action": "NONE",
+            "limitations": [
+              "仅检测声明规则，不把无告警当作设备健康；故障原因及维修措施需专业复核。",
+              "持续时间是首末异常样本间跨度；缺测或超出最大间隔会断开事件，不外推最后一个样本后的持续时间。",
+              "样本间连续性为明确采样假设，无法证明两次采样之间没有变化。均值是样本均值，不是时间加权均值或能耗积分。",
+              "本地时钟不自动推断时区或夏令时；预览最多200个抽样点，完整数据以原件和事件行号为准。",
+              "事件判断用原始十进制有理数计算；数值单元限128字符、40位有效数字和±100十进制指数。汇总与预览转为浮点显示。"
+            ]
+          },
+          "file_snapshot": {
+            "file_id": "file_3cb8a19dfa0a4b4fa60b96238b8b3d5f",
+            "project_id": "project_bb6495a549d643fb853656ce5015214a",
+            "name": "fresh.csv",
+            "path": "files/file_3cb8a19dfa0a4b4fa60b96238b8b3d5f.csv",
+            "hash": "16dfa4464973aa08b1c4da6c42dd8e856e5645caa960fe0a6fe499ea6e94b791",
+            "size": 173,
+            "timestamp": "2026-11-08T08:46:18.384983+00:00",
+            "revision": 1
+          },
+          "source_snapshot": [],
+          "calculator_hash": "802d4864cdca672a9eae52e83e2537a662f83f897a2b6358e8a11c0f1699f0a3",
+          "created_at": "2026-11-08T08:46:18.404582+00:00",
+          "hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+          "revision": 1,
+          "stale_reasons": [],
+          "stale_details": [],
+          "status": "events_detected",
+          "nonnumeric_review_reference": {
+            "kind": "operation",
+            "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+            "record_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+            "view_hash": "82eb51d562babf8a9ac25c6a66c6bb6339a7685a9b2fd32fe8830325ce6935df",
+            "finish": false
+          },
+          "explanation_facts": [
+            {
+              "fact": "sample_count",
+              "label": "CSV样本数",
+              "value": "7",
+              "source_value": "7",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/quality/sample_count"
+            },
+            {
+              "fact": "cell_issue_count",
+              "label": "缺失或无效数值单元数",
+              "value": "1",
+              "source_value": "1",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/quality/cell_issue_count"
+            },
+            {
+              "fact": "gap_count",
+              "label": "超出最大间隔的采样缺口数",
+              "value": "1",
+              "source_value": "1",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/quality/gap_count"
+            },
+            {
+              "fact": "rule_event_sum",
+              "label": "各规则事件次数之和（可能重叠，非故障数）",
+              "value": "2",
+              "source_value": "2",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "derived:sum(/result/rules/*/event_count)"
+            },
+            {
+              "fact": "rule_unknown_sample_sum",
+              "label": "各规则未知样本次数之和（可能重复）",
+              "value": "1",
+              "source_value": "1",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "derived:sum(/result/rules/*/unknown_samples)"
+            }
+          ],
+          "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+        },
+        "result_hash": "8ec97336948c2b707978100df7d6f39a3ee3a6d5a822b1b524d3fcc19648b34e",
+        "duration_ms": 16,
+        "finished_at": "2026-11-08T08:46:24.678871+00:00"
+      },
+      {
+        "tool": "schedule_read",
+        "arguments": {
+          "schedule_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5"
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.682139+00:00",
+        "origin": "controller",
+        "result": {
+          "schedule_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "project_revision": 1,
+          "input": {
+            "name": "Fresh progress network",
+            "scope": "Synthetic network, not site instructions",
+            "calendar": "continuous_elapsed_days",
+            "time_origin": "Synthetic day zero",
+            "tasks": [
+              {
+                "task_id": "A",
+                "name": "Task A",
+                "duration_days": 2.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [],
+                "demands": []
+              },
+              {
+                "task_id": "B",
+                "name": "Task B",
+                "duration_days": 5.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "A",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              },
+              {
+                "task_id": "C",
+                "name": "Task C",
+                "duration_days": 3.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "A",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              },
+              {
+                "task_id": "D",
+                "name": "Task D",
+                "duration_days": 2.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "B",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  },
+                  {
+                    "task_id": "C",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              }
+            ],
+            "resources": [],
+            "evidence_ids": [],
+            "progress": {
+              "as_of_day": 4.0,
+              "source": "Synthetic progress",
+              "observations": [
+                {
+                  "task_id": "A",
+                  "state": "completed",
+                  "actual_start_day": 0.0,
+                  "actual_finish_day": 2.0,
+                  "remaining_days": null,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "B",
+                  "state": "in_progress",
+                  "actual_start_day": 2.0,
+                  "actual_finish_day": null,
+                  "remaining_days": 6.0,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "C",
+                  "state": "in_progress",
+                  "actual_start_day": 2.0,
+                  "actual_finish_day": null,
+                  "remaining_days": 1.0,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "D",
+                  "state": "not_started",
+                  "actual_start_day": null,
+                  "actual_finish_day": null,
+                  "remaining_days": null,
+                  "source": "Synthetic observation"
+                }
+              ]
+            },
+            "import_file_id": null
+          },
+          "result": {
+            "calendar": "continuous_elapsed_days",
+            "time_origin": "Synthetic day zero",
+            "scope": "Synthetic network, not site instructions",
+            "missing_duration_tasks": [],
+            "source_status": "USER_DECLARED",
+            "site_safety": "NOT_ASSESSED",
+            "resource_leveling": "NOT_IMPLEMENTED",
+            "limitations": [
+              "连续经过日，从声明的第0天起算；不自动跳过周末、节假日、天气或夜间。",
+              "只支持完成到开始FS及非负间隔；零工期表示里程碑。关键路径基于声明工期，不代表施工安全或履约保证。",
+              "预测使用显式剩余工期；不按完成百分比推测，不自动补齐未报告工序。资源冲突未自动调平。"
+            ],
+            "status": "calculated",
+            "planned": {
+              "duration_days": "9",
+              "rows": [
+                {
+                  "task_id": "A",
+                  "name": "Task A",
+                  "start_day": "0",
+                  "finish_day": "2",
+                  "latest_start_day": "0",
+                  "latest_finish_day": "2",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                },
+                {
+                  "task_id": "B",
+                  "name": "Task B",
+                  "start_day": "2",
+                  "finish_day": "7",
+                  "latest_start_day": "2",
+                  "latest_finish_day": "7",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                },
+                {
+                  "task_id": "C",
+                  "name": "Task C",
+                  "start_day": "2",
+                  "finish_day": "5",
+                  "latest_start_day": "4",
+                  "latest_finish_day": "7",
+                  "total_float_days": "2",
+                  "free_float_days": "2",
+                  "critical": false
+                },
+                {
+                  "task_id": "D",
+                  "name": "Task D",
+                  "start_day": "7",
+                  "finish_day": "9",
+                  "latest_start_day": "7",
+                  "latest_finish_day": "9",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                }
+              ],
+              "critical_tasks": [
+                "A",
+                "B",
+                "D"
+              ],
+              "critical_dependencies": [
+                {
+                  "from": "A",
+                  "to": "B",
+                  "lag_days": "0"
+                },
+                {
+                  "from": "B",
+                  "to": "D",
+                  "lag_days": "0"
+                }
+              ],
+              "resources": {
+                "status": "not_assessed",
+                "conflicts": [],
+                "unknown": [],
+                "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+              },
+              "formulas": [
+                "ES=max(EF predecessor + FS lag), EF=ES+duration",
+                "LF=min(LS successor - lag), LS=LF-duration",
+                "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+              ]
+            },
+            "forecast": {
+              "status": "scenario",
+              "as_of_day": "4",
+              "finish_day": "12",
+              "finish_variance_days": "3",
+              "missing": [],
+              "unverified_actual_dependencies": [],
+              "rows": [
+                {
+                  "task_id": "A",
+                  "state": "completed",
+                  "start_day": "0",
+                  "finish_day": "2"
+                },
+                {
+                  "task_id": "B",
+                  "state": "in_progress",
+                  "start_day": "2",
+                  "finish_day": "10"
+                },
+                {
+                  "task_id": "C",
+                  "state": "in_progress",
+                  "start_day": "2",
+                  "finish_day": "5"
+                },
+                {
+                  "task_id": "D",
+                  "state": "not_started",
+                  "start_day": "10",
+                  "finish_day": "12"
+                }
+              ],
+              "resources": {
+                "status": "not_assessed",
+                "conflicts": [],
+                "unknown": [],
+                "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+              }
+            }
+          },
+          "source_snapshot": [],
+          "import_source": null,
+          "calculator_hash": "ddcb7730d511001cb6bcd6c2d026826e900a5c559fa31d0a223bfc2b0a33afbf",
+          "created_at": "2026-11-08T08:46:18.416099+00:00",
+          "hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+          "revision": 1,
+          "stale_reasons": [],
+          "stale_details": [],
+          "status": "calculated",
+          "nonnumeric_review_reference": {
+            "kind": "schedule",
+            "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+            "record_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+            "view_hash": "0b1fceb03e9df6ddc4c7637917dd4eee34cb6332be0c83340e43580b25de2ac6",
+            "finish": false
+          },
+          "explanation_facts": [
+            {
+              "fact": "planned_duration_days",
+              "label": "声明计划总工期",
+              "value": "9",
+              "source_value": "9",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/planned/duration_days"
+            },
+            {
+              "fact": "forecast_as_of_day",
+              "label": "进度记录截至日",
+              "value": "4",
+              "source_value": "4",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/forecast/as_of_day"
+            },
+            {
+              "fact": "forecast_finish_day",
+              "label": "显式情景完工日",
+              "value": "12",
+              "source_value": "12",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/forecast/finish_day"
+            },
+            {
+              "fact": "forecast_finish_variance_days",
+              "label": "情景相对计划的完工偏差",
+              "value": "3",
+              "source_value": "3",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/forecast/finish_variance_days"
+            }
+          ],
+          "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+        },
+        "result_hash": "676ddc06db9296402210e6459953000a7c045d516173bafcca4840110c360a53",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T08:46:24.696850+00:00"
+      },
+      {
+        "tool": "lifecycle_read",
+        "arguments": {
+          "lifecycle_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced"
+        },
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:46:24.700687+00:00",
+        "origin": "controller",
+        "result": {
+          "lifecycle_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "project_revision": 1,
+          "input": {
+            "name": "Fresh twelve-year inventory",
+            "area_m2": 960.0,
+            "study_years": 12,
+            "region": "US-CO",
+            "method": "Synthetic GWP arithmetic",
+            "functional_unit": "960 declared square metres over twelve years",
+            "import_file_id": null,
+            "boundaries": [
+              {
+                "stage": "production",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "transport",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "construction",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "operation",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "end_of_life",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              }
+            ],
+            "activities": [
+              {
+                "activity_id": "production",
+                "name": "production",
+                "stage": "production",
+                "quantity": 2.4,
+                "unit": "t",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "production-fixed",
+                  "value": 0.6,
+                  "denominator": "kg",
+                  "numerator": "kgCO2e",
+                  "stage": "production",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "transport",
+                "name": "transport",
+                "stage": "transport",
+                "quantity": 210.0,
+                "unit": "tkm",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "transport-fixed",
+                  "value": 0.09,
+                  "denominator": "tkm",
+                  "numerator": "kgCO2e",
+                  "stage": "transport",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "construction",
+                "name": "construction",
+                "stage": "construction",
+                "quantity": 150.0,
+                "unit": "kWh",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "construction-fixed",
+                  "value": 0.37,
+                  "denominator": "kWh",
+                  "numerator": "kgCO2e",
+                  "stage": "construction",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "operation",
+                "name": "operation",
+                "stage": "operation",
+                "quantity": 510.0,
+                "unit": "kWh",
+                "period": "annual",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "operation-fixed",
+                  "value": 0.31,
+                  "denominator": "kWh",
+                  "numerator": "kgCO2e",
+                  "stage": "operation",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "end_of_life",
+                "name": "end_of_life",
+                "stage": "end_of_life",
+                "quantity": 40.0,
+                "unit": "kg",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "end_of_life-fixed",
+                  "value": 0.06,
+                  "denominator": "kg",
+                  "numerator": "kgCO2e",
+                  "stage": "end_of_life",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              }
+            ]
+          },
+          "result": {
+            "status": "calculated",
+            "rows": [
+              {
+                "activity_id": "production",
+                "stage": "production",
+                "quantity_in_factor_unit": 2400.0,
+                "factor_unit": "kgCO2e/kg",
+                "period_multiplier": 1,
+                "kgco2e": 1440.0,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "transport",
+                "stage": "transport",
+                "quantity_in_factor_unit": 210.0,
+                "factor_unit": "kgCO2e/tkm",
+                "period_multiplier": 1,
+                "kgco2e": 18.9,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "construction",
+                "stage": "construction",
+                "quantity_in_factor_unit": 150.0,
+                "factor_unit": "kgCO2e/kWh",
+                "period_multiplier": 1,
+                "kgco2e": 55.5,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "operation",
+                "stage": "operation",
+                "quantity_in_factor_unit": 6120.0,
+                "factor_unit": "kgCO2e/kWh",
+                "period_multiplier": 12,
+                "kgco2e": 1897.2,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "end_of_life",
+                "stage": "end_of_life",
+                "quantity_in_factor_unit": 40.0,
+                "factor_unit": "kgCO2e/kg",
+                "period_multiplier": 1,
+                "kgco2e": 2.4,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              }
+            ],
+            "stages": {
+              "production": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 1440.0
+              },
+              "transport": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 18.9
+              },
+              "construction": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 55.5
+              },
+              "operation": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 1897.2
+              },
+              "end_of_life": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 2.4
+              }
+            },
+            "missing": [],
+            "boundary_total_kgco2e": 3414.0,
+            "kgco2e_m2_over_study_period": 3.55625,
+            "all_five_stages_entered": true,
+            "source_status": "USER_DECLARED",
+            "certification": "NOT_ASSESSED",
+            "issued_credits_t": null,
+            "limitations": [
+              "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+              "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+              "年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。",
+              "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+            ]
+          },
+          "source_snapshot": [],
+          "import_source": null,
+          "calculator_hash": "6d0b613ba5293b782a40d0b9580f1e66710ed941ca595a44ca5475b9c5cd4e3e",
+          "created_at": "2026-11-08T08:46:18.430674+00:00",
+          "hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+          "revision": 1,
+          "stale_reasons": [],
+          "stale_details": [],
+          "status": "calculated",
+          "nonnumeric_review_reference": {
+            "kind": "lifecycle",
+            "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+            "record_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+            "view_hash": "165ea5079d07a5e3b45395a18ebefdce097f3c1fa763759fddbb6a901d16aaaa",
+            "finish": false
+          },
+          "explanation_facts": [
+            {
+              "fact": "boundary_total_kgco2e",
+              "label": "声明边界碳排总量",
+              "value": "3414",
+              "source_value": "3414.0",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/boundary_total_kgco2e"
+            },
+            {
+              "fact": "kgco2e_m2_over_study_period",
+              "label": "整个评估期单位面积碳排",
+              "value": "3.55625",
+              "source_value": "3.55625",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e/m2",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": 960.0,
+              "area_basis": "explicit_area_denominator",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/kgco2e_m2_over_study_period"
+            },
+            {
+              "fact": "stage.production",
+              "label": "production阶段总量",
+              "value": "1440",
+              "source_value": "1440.0",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/production/kgco2e"
+            },
+            {
+              "fact": "stage.transport",
+              "label": "transport阶段总量",
+              "value": "18.9",
+              "source_value": "18.9",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/transport/kgco2e"
+            },
+            {
+              "fact": "stage.construction",
+              "label": "construction阶段总量",
+              "value": "55.5",
+              "source_value": "55.5",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/construction/kgco2e"
+            },
+            {
+              "fact": "stage.operation",
+              "label": "operation阶段总量",
+              "value": "1897.2",
+              "source_value": "1897.2",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/operation/kgco2e"
+            },
+            {
+              "fact": "stage.end_of_life",
+              "label": "end_of_life阶段总量",
+              "value": "2.4",
+              "source_value": "2.4",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/end_of_life/kgco2e"
+            }
+          ],
+          "explanation_instruction": "开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+        },
+        "result_hash": "76c40abb85dd202bfc565dd8abcfbec2249504e6690a82fd9c25bbc5809dd703",
+        "duration_ms": 16,
+        "finished_at": "2026-11-08T08:46:24.718328+00:00"
+      }
+    ],
+    "answer": {
+      "can_simulate": null,
+      "can_recommend": false,
+      "workflow_completed": true,
+      "task_completion": "partial",
+      "execution_scope": "checked_professional_deliveries",
+      "artifacts": [
+        {
+          "kind": "operation_review",
+          "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "record_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+          "name": "Fresh data quality window",
+          "status": "events_detected",
+          "stale_reasons": [],
+          "stale_details": [],
+          "checked_at": "2026-11-08T08:46:24.957105+00:00",
+          "source_status": "USER_DECLARED",
+          "scope": "声明CSV、时钟与阈值下的规则筛查；事件可跨规则重叠，不是故障数量或根因确诊，无事件不证明健康。",
+          "input": {
+            "name": "Fresh data quality window",
+            "file_id": "file_3cb8a19dfa0a4b4fa60b96238b8b3d5f",
+            "equipment": "Synthetic FCU",
+            "data_nature": "synthetic",
+            "source": "New independent synthetic CSV",
+            "time_column": "time",
+            "time_format": "iso8601",
+            "clock_basis": "offset_aware",
+            "clock_source": "Explicit UTC",
+            "expected_interval_seconds": 60.0,
+            "maximum_gap_seconds": 90.0,
+            "channels": [
+              {
+                "channel_id": "t",
+                "column": "t",
+                "name": "Temperature",
+                "unit": "degC",
+                "source": "Declared synthetic units"
+              }
+            ],
+            "rules": [
+              {
+                "rule_id": "hot",
+                "name": "Upper band",
+                "kind": "range",
+                "channel_id": "t",
+                "other_channel_id": null,
+                "unit": "degC",
+                "lower": null,
+                "upper": 22.0,
+                "threshold": null,
+                "minimum_duration_seconds": 60.0,
+                "gate_channel_id": null,
+                "gate_minimum": null,
+                "gate_unit": null,
+                "source": "Synthetic threshold, not a fault diagnosis"
+              }
+            ],
+            "evidence_ids": []
+          },
+          "result": {
+            "status": "events_detected",
+            "quality": {
+              "sample_count": 7,
+              "cell_issue_count": 1,
+              "cell_issues": [
+                {
+                  "line": 5,
+                  "channel_id": "t",
+                  "reason": "missing"
+                }
+              ],
+              "cell_issues_truncated": false,
+              "gap_count": 1,
+              "gaps": [
+                {
+                  "before_line": 6,
+                  "seconds": 120.0
+                }
+              ],
+              "gaps_truncated": false,
+              "irregular_intervals": 1,
+              "first_time": "2026-07-12T00:00:00+00:00",
+              "last_time": "2026-07-12T00:07:00+00:00"
+            },
+            "channels": [
+              {
+                "channel_id": "t",
+                "name": "Temperature",
+                "input_unit": "degC",
+                "unit": "degC",
+                "valid_samples": 6,
+                "missing_or_invalid": 1,
+                "minimum": 20.0,
+                "maximum": 28.0,
+                "sample_mean": 24.0
+              }
+            ],
+            "rules": [
+              {
+                "rule_id": "hot",
+                "name": "Upper band",
+                "kind": "range",
+                "unit": "degC",
+                "evaluated_samples": 6,
+                "excluded_by_gate_samples": 0,
+                "unknown_samples": 1,
+                "violating_samples": 4,
+                "event_count": 2,
+                "events": [
+                  {
+                    "first_line": 3,
+                    "last_line": 4,
+                    "start": "2026-07-12T00:01:00+00:00",
+                    "end": "2026-07-12T00:02:00+00:00",
+                    "observed_span_seconds": 60.0,
+                    "samples": 2
+                  },
+                  {
+                    "first_line": 6,
+                    "last_line": 7,
+                    "start": "2026-07-12T00:05:00+00:00",
+                    "end": "2026-07-12T00:06:00+00:00",
+                    "observed_span_seconds": 60.0,
+                    "samples": 2
+                  }
+                ],
+                "events_truncated": false,
+                "state": "events_detected",
+                "recommended_checks": [
+                  "复核对应行、采样时钟、单位和传感器校准；确认规则适用于当前工况。",
+                  "核查设定值和运行边界，比较独立测点；不能仅凭越限判断故障部件。"
+                ],
+                "cause_confirmed": false
+              }
+            ],
+            "series_preview": [
+              {
+                "line": 2,
+                "timestamp": "2026-07-12T00:00:00+00:00",
+                "values": {
+                  "t": 20.0
+                }
+              },
+              {
+                "line": 3,
+                "timestamp": "2026-07-12T00:01:00+00:00",
+                "values": {
+                  "t": 24.0
+                }
+              },
+              {
+                "line": 4,
+                "timestamp": "2026-07-12T00:02:00+00:00",
+                "values": {
+                  "t": 25.0
+                }
+              },
+              {
+                "line": 5,
+                "timestamp": "2026-07-12T00:03:00+00:00",
+                "values": {
+                  "t": null
+                }
+              },
+              {
+                "line": 6,
+                "timestamp": "2026-07-12T00:05:00+00:00",
+                "values": {
+                  "t": 27.0
+                }
+              },
+              {
+                "line": 7,
+                "timestamp": "2026-07-12T00:06:00+00:00",
+                "values": {
+                  "t": 28.0
+                }
+              },
+              {
+                "line": 8,
+                "timestamp": "2026-07-12T00:07:00+00:00",
+                "values": {
+                  "t": 20.0
+                }
+              }
+            ],
+            "preview_downsampled": false,
+            "source_status": "USER_DECLARED",
+            "data_nature": "synthetic",
+            "equipment": "Synthetic FCU",
+            "diagnosis": "NOT_CONFIRMED",
+            "control_action": "NONE",
+            "limitations": [
+              "仅检测声明规则，不把无告警当作设备健康；故障原因及维修措施需专业复核。",
+              "持续时间是首末异常样本间跨度；缺测或超出最大间隔会断开事件，不外推最后一个样本后的持续时间。",
+              "样本间连续性为明确采样假设，无法证明两次采样之间没有变化。均值是样本均值，不是时间加权均值或能耗积分。",
+              "本地时钟不自动推断时区或夏令时；预览最多200个抽样点，完整数据以原件和事件行号为准。",
+              "事件判断用原始十进制有理数计算；数值单元限128字符、40位有效数字和±100十进制指数。汇总与预览转为浮点显示。"
+            ]
+          },
+          "verified": false,
+          "report_path": "/api/projects/project_bb6495a549d643fb853656ce5015214a/operations/operation_92d28eeff604473e9e11760f095a5a1c/report.html"
+        },
+        {
+          "kind": "schedule_review",
+          "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "record_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+          "name": "Fresh progress network",
+          "status": "calculated",
+          "stale_reasons": [],
+          "stale_details": [],
+          "checked_at": "2026-11-08T08:46:24.958904+00:00",
+          "source_status": "USER_DECLARED",
+          "scope": "连续经过日、FS关系的关键路径及显式剩余工期情景；资源冲突未调平，不是施工安全审批或履约保证。",
+          "input": {
+            "name": "Fresh progress network",
+            "scope": "Synthetic network, not site instructions",
+            "calendar": "continuous_elapsed_days",
+            "time_origin": "Synthetic day zero",
+            "tasks": [
+              {
+                "task_id": "A",
+                "name": "Task A",
+                "duration_days": 2.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [],
+                "demands": []
+              },
+              {
+                "task_id": "B",
+                "name": "Task B",
+                "duration_days": 5.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "A",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              },
+              {
+                "task_id": "C",
+                "name": "Task C",
+                "duration_days": 3.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "A",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              },
+              {
+                "task_id": "D",
+                "name": "Task D",
+                "duration_days": 2.0,
+                "duration_source": "Synthetic duration",
+                "predecessors": [
+                  {
+                    "task_id": "B",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  },
+                  {
+                    "task_id": "C",
+                    "lag_days": 0.0,
+                    "source": "Synthetic precedence"
+                  }
+                ],
+                "demands": []
+              }
+            ],
+            "resources": [],
+            "evidence_ids": [],
+            "progress": {
+              "as_of_day": 4.0,
+              "source": "Synthetic progress",
+              "observations": [
+                {
+                  "task_id": "A",
+                  "state": "completed",
+                  "actual_start_day": 0.0,
+                  "actual_finish_day": 2.0,
+                  "remaining_days": null,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "B",
+                  "state": "in_progress",
+                  "actual_start_day": 2.0,
+                  "actual_finish_day": null,
+                  "remaining_days": 6.0,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "C",
+                  "state": "in_progress",
+                  "actual_start_day": 2.0,
+                  "actual_finish_day": null,
+                  "remaining_days": 1.0,
+                  "source": "Synthetic observation"
+                },
+                {
+                  "task_id": "D",
+                  "state": "not_started",
+                  "actual_start_day": null,
+                  "actual_finish_day": null,
+                  "remaining_days": null,
+                  "source": "Synthetic observation"
+                }
+              ]
+            },
+            "import_file_id": null
+          },
+          "result": {
+            "calendar": "continuous_elapsed_days",
+            "time_origin": "Synthetic day zero",
+            "scope": "Synthetic network, not site instructions",
+            "missing_duration_tasks": [],
+            "source_status": "USER_DECLARED",
+            "site_safety": "NOT_ASSESSED",
+            "resource_leveling": "NOT_IMPLEMENTED",
+            "limitations": [
+              "连续经过日，从声明的第0天起算；不自动跳过周末、节假日、天气或夜间。",
+              "只支持完成到开始FS及非负间隔；零工期表示里程碑。关键路径基于声明工期，不代表施工安全或履约保证。",
+              "预测使用显式剩余工期；不按完成百分比推测，不自动补齐未报告工序。资源冲突未自动调平。"
+            ],
+            "status": "calculated",
+            "planned": {
+              "duration_days": "9",
+              "rows": [
+                {
+                  "task_id": "A",
+                  "name": "Task A",
+                  "start_day": "0",
+                  "finish_day": "2",
+                  "latest_start_day": "0",
+                  "latest_finish_day": "2",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                },
+                {
+                  "task_id": "B",
+                  "name": "Task B",
+                  "start_day": "2",
+                  "finish_day": "7",
+                  "latest_start_day": "2",
+                  "latest_finish_day": "7",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                },
+                {
+                  "task_id": "C",
+                  "name": "Task C",
+                  "start_day": "2",
+                  "finish_day": "5",
+                  "latest_start_day": "4",
+                  "latest_finish_day": "7",
+                  "total_float_days": "2",
+                  "free_float_days": "2",
+                  "critical": false
+                },
+                {
+                  "task_id": "D",
+                  "name": "Task D",
+                  "start_day": "7",
+                  "finish_day": "9",
+                  "latest_start_day": "7",
+                  "latest_finish_day": "9",
+                  "total_float_days": "0",
+                  "free_float_days": "0",
+                  "critical": true
+                }
+              ],
+              "critical_tasks": [
+                "A",
+                "B",
+                "D"
+              ],
+              "critical_dependencies": [
+                {
+                  "from": "A",
+                  "to": "B",
+                  "lag_days": "0"
+                },
+                {
+                  "from": "B",
+                  "to": "D",
+                  "lag_days": "0"
+                }
+              ],
+              "resources": {
+                "status": "not_assessed",
+                "conflicts": [],
+                "unknown": [],
+                "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+              },
+              "formulas": [
+                "ES=max(EF predecessor + FS lag), EF=ES+duration",
+                "LF=min(LS successor - lag), LS=LF-duration",
+                "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+              ]
+            },
+            "forecast": {
+              "status": "scenario",
+              "as_of_day": "4",
+              "finish_day": "12",
+              "finish_variance_days": "3",
+              "missing": [],
+              "unverified_actual_dependencies": [],
+              "rows": [
+                {
+                  "task_id": "A",
+                  "state": "completed",
+                  "start_day": "0",
+                  "finish_day": "2"
+                },
+                {
+                  "task_id": "B",
+                  "state": "in_progress",
+                  "start_day": "2",
+                  "finish_day": "10"
+                },
+                {
+                  "task_id": "C",
+                  "state": "in_progress",
+                  "start_day": "2",
+                  "finish_day": "5"
+                },
+                {
+                  "task_id": "D",
+                  "state": "not_started",
+                  "start_day": "10",
+                  "finish_day": "12"
+                }
+              ],
+              "resources": {
+                "status": "not_assessed",
+                "conflicts": [],
+                "unknown": [],
+                "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+              }
+            }
+          },
+          "verified": true,
+          "report_path": "/api/projects/project_bb6495a549d643fb853656ce5015214a/schedules/schedule_ae7f85bc926845f8bf2a2d27094cbbf5/report.html"
+        },
+        {
+          "kind": "lifecycle_review",
+          "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+          "project_id": "project_bb6495a549d643fb853656ce5015214a",
+          "record_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+          "name": "Fresh twelve-year inventory",
+          "status": "calculated",
+          "stale_reasons": [],
+          "stale_details": [],
+          "checked_at": "2026-11-08T08:46:24.961425+00:00",
+          "source_status": "USER_DECLARED",
+          "input": {
+            "name": "Fresh twelve-year inventory",
+            "area_m2": 960.0,
+            "study_years": 12,
+            "region": "US-CO",
+            "method": "Synthetic GWP arithmetic",
+            "functional_unit": "960 declared square metres over twelve years",
+            "import_file_id": null,
+            "boundaries": [
+              {
+                "stage": "production",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "transport",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "construction",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "operation",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              },
+              {
+                "stage": "end_of_life",
+                "included": true,
+                "reason": "Explicit synthetic scope"
+              }
+            ],
+            "activities": [
+              {
+                "activity_id": "production",
+                "name": "production",
+                "stage": "production",
+                "quantity": 2.4,
+                "unit": "t",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "production-fixed",
+                  "value": 0.6,
+                  "denominator": "kg",
+                  "numerator": "kgCO2e",
+                  "stage": "production",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "transport",
+                "name": "transport",
+                "stage": "transport",
+                "quantity": 210.0,
+                "unit": "tkm",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "transport-fixed",
+                  "value": 0.09,
+                  "denominator": "tkm",
+                  "numerator": "kgCO2e",
+                  "stage": "transport",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "construction",
+                "name": "construction",
+                "stage": "construction",
+                "quantity": 150.0,
+                "unit": "kWh",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "construction-fixed",
+                  "value": 0.37,
+                  "denominator": "kWh",
+                  "numerator": "kgCO2e",
+                  "stage": "construction",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "operation",
+                "name": "operation",
+                "stage": "operation",
+                "quantity": 510.0,
+                "unit": "kWh",
+                "period": "annual",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "operation-fixed",
+                  "value": 0.31,
+                  "denominator": "kWh",
+                  "numerator": "kgCO2e",
+                  "stage": "operation",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              },
+              {
+                "activity_id": "end_of_life",
+                "name": "end_of_life",
+                "stage": "end_of_life",
+                "quantity": 40.0,
+                "unit": "kg",
+                "period": "whole_period",
+                "source": "Independent synthetic activity",
+                "factor": {
+                  "factor_id": "end_of_life-fixed",
+                  "value": 0.06,
+                  "denominator": "kg",
+                  "numerator": "kgCO2e",
+                  "stage": "end_of_life",
+                  "source": "Synthetic test factor only",
+                  "publisher": "Application comparison",
+                  "version": "fixed-next-20261108",
+                  "year": 2026,
+                  "region": "*",
+                  "method": "Synthetic GWP arithmetic",
+                  "evidence_id": null
+                }
+              }
+            ]
+          },
+          "result": {
+            "status": "calculated",
+            "rows": [
+              {
+                "activity_id": "production",
+                "stage": "production",
+                "quantity_in_factor_unit": 2400.0,
+                "factor_unit": "kgCO2e/kg",
+                "period_multiplier": 1,
+                "kgco2e": 1440.0,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "transport",
+                "stage": "transport",
+                "quantity_in_factor_unit": 210.0,
+                "factor_unit": "kgCO2e/tkm",
+                "period_multiplier": 1,
+                "kgco2e": 18.9,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "construction",
+                "stage": "construction",
+                "quantity_in_factor_unit": 150.0,
+                "factor_unit": "kgCO2e/kWh",
+                "period_multiplier": 1,
+                "kgco2e": 55.5,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "operation",
+                "stage": "operation",
+                "quantity_in_factor_unit": 6120.0,
+                "factor_unit": "kgCO2e/kWh",
+                "period_multiplier": 12,
+                "kgco2e": 1897.2,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              },
+              {
+                "activity_id": "end_of_life",
+                "stage": "end_of_life",
+                "quantity_in_factor_unit": 40.0,
+                "factor_unit": "kgCO2e/kg",
+                "period_multiplier": 1,
+                "kgco2e": 2.4,
+                "formula": "quantity * unit_conversion * period_multiplier * factor"
+              }
+            ],
+            "stages": {
+              "production": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 1440.0
+              },
+              "transport": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 18.9
+              },
+              "construction": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 55.5
+              },
+              "operation": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 1897.2
+              },
+              "end_of_life": {
+                "included": true,
+                "reason": "Explicit synthetic scope",
+                "status": "calculated",
+                "kgco2e": 2.4
+              }
+            },
+            "missing": [],
+            "boundary_total_kgco2e": 3414.0,
+            "kgco2e_m2_over_study_period": 3.55625,
+            "all_five_stages_entered": true,
+            "source_status": "USER_DECLARED",
+            "certification": "NOT_ASSESSED",
+            "issued_credits_t": null,
+            "limitations": [
+              "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+              "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+              "年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。",
+              "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+            ]
+          },
+          "verified": true,
+          "scope": "声明边界内的阶段CO₂e清单；不是完整性认证、碳核证或可交易碳资产。",
+          "report_path": "/api/projects/project_bb6495a549d643fb853656ce5015214a/lifecycle/lifecycle_8b6c2cda4b7443b9824edde562abfced/report.html"
+        }
+      ],
+      "checked_statements": [
+        {
+          "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+          "name": "Fresh data quality window",
+          "facts": [
+            {
+              "fact": "sample_count",
+              "label": "CSV样本数",
+              "value": "7",
+              "source_value": "7",
+              "value_policy": "exact_decimal",
+              "unit": "count",
+              "period": "observed_window",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/quality/sample_count"
+            }
+          ]
+        },
+        {
+          "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+          "name": "Fresh progress network",
+          "facts": [
+            {
+              "fact": "forecast_finish_variance_days",
+              "label": "情景相对计划的完工偏差",
+              "value": "3",
+              "source_value": "3",
+              "value_policy": "exact_decimal",
+              "unit": "day",
+              "period": "elapsed_days",
+              "study_years": null,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "not_a_study_duration",
+              "source_path": "/result/forecast/finish_variance_days"
+            }
+          ]
+        },
+        {
+          "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+          "name": "Fresh twelve-year inventory",
+          "facts": [
+            {
+              "fact": "stage.production",
+              "label": "production阶段总量",
+              "value": "1440",
+              "source_value": "1440.0",
+              "value_policy": "12_significant_digits_display",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 12,
+              "area_m2": null,
+              "area_basis": "no_area_normalization",
+              "time_basis": "whole_study_period_not_annual",
+              "source_path": "/result/stages/production/kgco2e"
+            }
+          ]
+        }
+      ],
+      "checked_limitations": [],
+      "verification": [
+        {
+          "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+          "passed": true,
+          "meaning": "结构化数值、单位与期间对照当前记录"
+        },
+        {
+          "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+          "passed": true,
+          "meaning": "结构化数值、单位与期间对照当前记录"
+        },
+        {
+          "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+          "passed": true,
+          "meaning": "结构化数值、单位与期间对照当前记录"
+        }
+      ],
+      "summary": "已核验所选结果或限制；自由问题的完整覆盖度仍未评估。",
+      "task_notice": "只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。",
+      "gaps": [],
+      "limitations": [
+        "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+      ],
+      "checked_at": "2026-11-08T08:46:24.961425+00:00",
+      "checked_reviews": [],
+      "review_failures": [],
+      "read_execution": "application",
+      "read_execution_receipt": {
+        "origin": "application_from_frozen_read_plan",
+        "requests": [
+          {
+            "request_key": "device",
+            "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+            "state": "facts_submitted",
+            "source_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+            "missing_fact_keys": []
+          },
+          {
+            "request_key": "build",
+            "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+            "state": "facts_submitted",
+            "source_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+            "missing_fact_keys": []
+          },
+          {
+            "request_key": "carbon",
+            "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+            "state": "facts_submitted",
+            "source_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+            "missing_fact_keys": []
+          }
+        ],
+        "intent_verified": false,
+        "final_source_check_required": true,
+        "notice": "Application executes declared read scopes; this is not autonomous model tool selection, verified user intent, or an engineering certification."
+      },
+      "termination": {
+        "reason": "application_read_plan_executed",
+        "model_declared_finished": false,
+        "pending_request_keys": []
+      },
+      "checked_availability": [],
+      "read_request_progress": [
+        {
+          "request_key": "device",
+          "kind": "operation",
+          "purpose": "results",
+          "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+          "state": "result_verified"
+        },
+        {
+          "request_key": "build",
+          "kind": "schedule",
+          "purpose": "results",
+          "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+          "state": "result_verified"
+        },
+        {
+          "request_key": "carbon",
+          "kind": "lifecycle",
+          "purpose": "results",
+          "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+          "state": "result_verified"
+        }
+      ],
+      "read_request_coverage": "all_declared_scopes_checked",
+      "output_plan": {
+        "origin": "model_inferred_from_user_question",
+        "version": "b1b96b7598a6496e922d85707b003b0d8559902a2fe7134c54ec0a4cfe8670ef",
+        "question_hash": "fbe85901961796d33668e876bbca4bb5017a924b89331b5e09a76439bbe43e3c",
+        "items": [
+          {
+            "request_key": "device",
+            "question_fragment_ids": [
+              "q1",
+              "q2"
+            ],
+            "fact_keys": [
+              "sample_count"
+            ],
+            "explanation_topics": [],
+            "question_spans": [
+              {
+                "fragment_id": "q1",
+                "start": 0,
+                "end": 40,
+                "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+              },
+              {
+                "fragment_id": "q2",
+                "start": 40,
+                "end": 56,
+                "text": "每栏给数值和单位即可，不加解释。"
+              }
+            ],
+            "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+          },
+          {
+            "request_key": "build",
+            "question_fragment_ids": [
+              "q1",
+              "q2"
+            ],
+            "fact_keys": [
+              "forecast_finish_variance_days"
+            ],
+            "explanation_topics": [],
+            "question_spans": [
+              {
+                "fragment_id": "q1",
+                "start": 0,
+                "end": 40,
+                "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+              },
+              {
+                "fragment_id": "q2",
+                "start": 40,
+                "end": 56,
+                "text": "每栏给数值和单位即可，不加解释。"
+              }
+            ],
+            "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+          },
+          {
+            "request_key": "carbon",
+            "question_fragment_ids": [
+              "q1",
+              "q2"
+            ],
+            "fact_keys": [
+              "stage.production"
+            ],
+            "explanation_topics": [],
+            "question_spans": [
+              {
+                "fragment_id": "q1",
+                "start": 0,
+                "end": 40,
+                "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+              },
+              {
+                "fragment_id": "q2",
+                "start": 40,
+                "end": 56,
+                "text": "每栏给数值和单位即可，不加解释。"
+              }
+            ],
+            "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+          }
+        ],
+        "intent_verified": false,
+        "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+      },
+      "requested_outputs": [
+        {
+          "request_key": "device",
+          "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+          "missing_fact_keys": [],
+          "state": "fulfilled",
+          "unknown_fact_keys": [],
+          "explanations": [],
+          "explanation_origin": "application_from_current_verified_sources",
+          "source_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+          "explanation_version": "b1b96b7598a6496e922d85707b003b0d8559902a2fe7134c54ec0a4cfe8670ef"
+        },
+        {
+          "request_key": "build",
+          "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+          "missing_fact_keys": [],
+          "state": "fulfilled",
+          "unknown_fact_keys": [],
+          "explanations": [],
+          "explanation_origin": "application_from_current_verified_sources",
+          "source_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+          "explanation_version": "b1b96b7598a6496e922d85707b003b0d8559902a2fe7134c54ec0a4cfe8670ef"
+        },
+        {
+          "request_key": "carbon",
+          "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+          "missing_fact_keys": [],
+          "state": "fulfilled",
+          "unknown_fact_keys": [],
+          "explanations": [],
+          "explanation_origin": "application_from_current_verified_sources",
+          "source_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+          "explanation_version": "b1b96b7598a6496e922d85707b003b0d8559902a2fe7134c54ec0a4cfe8670ef"
+        }
+      ],
+      "clarification_requests": [],
+      "output_contract_coverage": "fulfilled",
+      "output_contract_notice": "仅检查模型解析计划中的指标和解释主题是否交付；计划对原始问题的理解仍需核对。解释由应用按当前来源生成，模型自由原文未获语义认证。",
+      "basis": [
+        "requested_output_plan",
+        "requested_output_plan",
+        "operations_read",
+        "professional_deliver",
+        "schedule_read",
+        "professional_deliver",
+        "lifecycle_read",
+        "professional_deliver",
+        "operations_read",
+        "schedule_read",
+        "lifecycle_read"
+      ]
+    },
+    "created_at": "2026-11-08T08:46:18.448517+00:00",
+    "llm_commentary": null,
+    "error": null,
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 0,
+    "provider_recovery_attempts": 0,
+    "professional_deliveries": [
+      {
+        "kind": "operation",
+        "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+        "record_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+        "statements": [
+          {
+            "fact": "sample_count",
+            "value": "7",
+            "unit": "count",
+            "period": "observed_window",
+            "study_years": null,
+            "area_m2": null
+          }
+        ],
+        "limitation_status": null,
+        "finish": false
+      },
+      {
+        "kind": "schedule",
+        "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+        "record_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+        "statements": [
+          {
+            "fact": "forecast_finish_variance_days",
+            "value": "3",
+            "unit": "day",
+            "period": "elapsed_days",
+            "study_years": null,
+            "area_m2": null
+          }
+        ],
+        "limitation_status": null,
+        "finish": false
+      },
+      {
+        "kind": "lifecycle",
+        "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+        "record_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+        "statements": [
+          {
+            "fact": "stage.production",
+            "value": "1440",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 12,
+            "area_m2": null
+          }
+        ],
+        "limitation_status": null,
+        "finish": false
+      }
+    ],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "device",
+        "kind": "operation",
+        "purpose": "results",
+        "record_id": "operation_92d28eeff604473e9e11760f095a5a1c"
+      },
+      {
+        "request_key": "build",
+        "kind": "schedule",
+        "purpose": "results",
+        "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5"
+      },
+      {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "review_intent": true,
+    "revision": 29,
+    "proposed_output_plan": {
+      "origin": "model_inferred_from_user_question",
+      "version": "b1b96b7598a6496e922d85707b003b0d8559902a2fe7134c54ec0a4cfe8670ef",
+      "question_hash": "fbe85901961796d33668e876bbca4bb5017a924b89331b5e09a76439bbe43e3c",
+      "items": [
+        {
+          "request_key": "device",
+          "question_fragment_ids": [
+            "q1",
+            "q2"
+          ],
+          "fact_keys": [
+            "sample_count"
+          ],
+          "explanation_topics": [],
+          "question_spans": [
+            {
+              "fragment_id": "q1",
+              "start": 0,
+              "end": 40,
+              "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+            },
+            {
+              "fragment_id": "q2",
+              "start": 40,
+              "end": 56,
+              "text": "每栏给数值和单位即可，不加解释。"
+            }
+          ],
+          "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+        },
+        {
+          "request_key": "build",
+          "question_fragment_ids": [
+            "q1",
+            "q2"
+          ],
+          "fact_keys": [
+            "forecast_finish_variance_days"
+          ],
+          "explanation_topics": [],
+          "question_spans": [
+            {
+              "fragment_id": "q1",
+              "start": 0,
+              "end": 40,
+              "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+            },
+            {
+              "fragment_id": "q2",
+              "start": 40,
+              "end": 56,
+              "text": "每栏给数值和单位即可，不加解释。"
+            }
+          ],
+          "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+        },
+        {
+          "request_key": "carbon",
+          "question_fragment_ids": [
+            "q1",
+            "q2"
+          ],
+          "fact_keys": [
+            "stage.production"
+          ],
+          "explanation_topics": [],
+          "question_spans": [
+            {
+              "fragment_id": "q1",
+              "start": 0,
+              "end": 40,
+              "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+            },
+            {
+              "fragment_id": "q2",
+              "start": 40,
+              "end": 56,
+              "text": "每栏给数值和单位即可，不加解释。"
+            }
+          ],
+          "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+        }
+      ],
+      "intent_verified": false,
+      "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+    },
+    "output_plan": {
+      "origin": "model_inferred_from_user_question",
+      "version": "b1b96b7598a6496e922d85707b003b0d8559902a2fe7134c54ec0a4cfe8670ef",
+      "question_hash": "fbe85901961796d33668e876bbca4bb5017a924b89331b5e09a76439bbe43e3c",
+      "items": [
+        {
+          "request_key": "device",
+          "question_fragment_ids": [
+            "q1",
+            "q2"
+          ],
+          "fact_keys": [
+            "sample_count"
+          ],
+          "explanation_topics": [],
+          "question_spans": [
+            {
+              "fragment_id": "q1",
+              "start": 0,
+              "end": 40,
+              "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+            },
+            {
+              "fragment_id": "q2",
+              "start": 40,
+              "end": 56,
+              "text": "每栏给数值和单位即可，不加解释。"
+            }
+          ],
+          "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+        },
+        {
+          "request_key": "build",
+          "question_fragment_ids": [
+            "q1",
+            "q2"
+          ],
+          "fact_keys": [
+            "forecast_finish_variance_days"
+          ],
+          "explanation_topics": [],
+          "question_spans": [
+            {
+              "fragment_id": "q1",
+              "start": 0,
+              "end": 40,
+              "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+            },
+            {
+              "fragment_id": "q2",
+              "start": 40,
+              "end": 56,
+              "text": "每栏给数值和单位即可，不加解释。"
+            }
+          ],
+          "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+        },
+        {
+          "request_key": "carbon",
+          "question_fragment_ids": [
+            "q1",
+            "q2"
+          ],
+          "fact_keys": [
+            "stage.production"
+          ],
+          "explanation_topics": [],
+          "question_spans": [
+            {
+              "fragment_id": "q1",
+              "start": 0,
+              "end": 40,
+              "text": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。"
+            },
+            {
+              "fragment_id": "q2",
+              "start": 40,
+              "end": 56,
+              "text": "每栏给数值和单位即可，不加解释。"
+            }
+          ],
+          "question_excerpt": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。\n每栏给数值和单位即可，不加解释。"
+        }
+      ],
+      "intent_verified": false,
+      "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+    },
+    "intent_review_receipt": {
+      "origin": "same_model_second_pass_before_source_read",
+      "proposal_hash": "81b2199a1396d803402e6f37f7b10331e3607fd988543f24719096d9d5ddc6e7",
+      "reviewed_plan_hash": "81b2199a1396d803402e6f37f7b10331e3607fd988543f24719096d9d5ddc6e7",
+      "changed_requests": [],
+      "intent_verified": false,
+      "notice": "模型已对照原问题复核一次；仍需核对语义，不证明独立审查、正确理解或工程任务全部完成。"
+    },
+    "read_execution_receipt": {
+      "origin": "application_from_frozen_read_plan",
+      "requests": [
+        {
+          "request_key": "device",
+          "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+          "state": "facts_submitted",
+          "source_hash": "c98cbbfc06f6bdfc2cb14b2b5869dc86d2bf7bd227a1c089759e03275180d6c4",
+          "missing_fact_keys": []
+        },
+        {
+          "request_key": "build",
+          "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+          "state": "facts_submitted",
+          "source_hash": "a4755708fa7dd8c2693d77ea0fb1b6a70a7f37b61ce9e906a894e3f273c16ef1",
+          "missing_fact_keys": []
+        },
+        {
+          "request_key": "carbon",
+          "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+          "state": "facts_submitted",
+          "source_hash": "cfe3f83454e62cb59606e197aa631d69eb86b8683895ce96756fba4ab9038db3",
+          "missing_fact_keys": []
+        }
+      ],
+      "intent_verified": false,
+      "final_source_check_required": true,
+      "notice": "Application executes declared read scopes; this is not autonomous model tool selection, verified user intent, or an engineering certification."
+    },
+    "termination": {
+      "reason": "application_read_plan_executed",
+      "model_declared_finished": false,
+      "pending_request_keys": []
+    },
+    "read_request_progress": [
+      {
+        "request_key": "device",
+        "kind": "operation",
+        "purpose": "results",
+        "record_id": "operation_92d28eeff604473e9e11760f095a5a1c",
+        "state": "result_verified"
+      },
+      {
+        "request_key": "build",
+        "kind": "schedule",
+        "purpose": "results",
+        "record_id": "schedule_ae7f85bc926845f8bf2a2d27094cbbf5",
+        "state": "result_verified"
+      },
+      {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_8b6c2cda4b7443b9824edde562abfced",
+        "state": "result_verified"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T08:46:24.722319+00:00",
+    "calculation_progress": [],
+    "answer_checked_at": "2026-11-08T08:46:24.962425+00:00",
+    "historical_task_completion": "partial",
+    "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+  }
+}
