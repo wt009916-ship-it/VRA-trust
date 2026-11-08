@@ -75,3 +75,22 @@
 复核依据：MATERIAL_COLLECTION_DELIVERY、COLLECTION_SCENARIOS_DELIVERY、SLAB_LAYERS_DELIVERY、SCENARIO_SOURCE_DELIVERY、STANDARD_OCR_DELIVERY、SCENARIO_AGENT_INTEGRATION、AGENT_PHASE_DELIVERY及各自原始证据索引；原分项来自本报告首表及RESCORE_20261106_LOCAL_MODEL、RESCORE_20261105_OCR。历史通过只支持其原输入域，当前未新增测试的领域不得说成重新通过。
 
 关键未过项仍单独阻断：ANN-02/03的意图替代与澄清失败、D08构件识别失败、动态粗时间步误差、未经现场/专业复核的安全与合规结论。CI即使成功也不能替代这些能力验收。下一批必须对照尚未获得的能力选完整任务；停止继续把已计分的来源/字段链路细化当主要提分路线。
+
+
+## 发布与候选分数分开（2026-11-08，DWG批同步总账）
+
+以下为新增证据后的开发侧复核，不是改写历史75/77，也不是独立认证。
+
+|维度|已发布44f344e|PR60候选及本DWG候选|新增分归属|
+|---|---:|---:|---|
+|建筑专业|15|15|未新增|
+|计算准确性|18|18|未新增|
+|Agent|9|9.5|恢复1/4→1.5/4；真实新任务第二次推理503后恢复且不重复计算。原广泛5/10不变|
+|文件图纸|6|6|DWG限定转换新增实际能力，复杂/无损与浏览器仍未完整验收，本批不预加分|
+|功能完整度|8|8|未新增|
+|稳定性|9|9|长稳并发0/2→1/2；44f344e真实1800秒混合30轮/90任务、350健康采样、排空重启保全。不是24小时生产SLA|
+|安全|8|8|未新增|
+|体验|3|3|浏览器待验，不新增|
+|合计|76|76.5|发布44与未发布76fa598/本候选区分|
+
+依据：LOCAL_SOAK_DELIVERY、MIXED_WORKLOAD_EVIDENCE、AGENT_READ_RECOVERY_DELIVERY、AGENT_READ_RECOVERY_EVIDENCE。PR60的三个精确提交CI已成功，后端1501通过/22跳过/6子测试通过；不再重复触发。DWG增量详CAD_BIM_DELIVERY、DWG_EVIDENCE，其完整CI单独按最终提交核验。95+仍未达到；训练扩展与整体视觉改版仍按原顺序后置。
