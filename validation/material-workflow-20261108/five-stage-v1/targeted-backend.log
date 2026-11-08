@@ -1,0 +1,168 @@
+F............FFFF....................................................... [ 68%]
+.................................                                        [100%]
+================================== FAILURES ===================================
+_________ test_five_stage_scenarios_crosscheck_independent_arithmetic _________
+
+    def test_five_stage_scenarios_crosscheck_independent_arithmetic():
+        takeoff,project=reference();body=ScenarioRequest.model_validate(full_payload(takeoff))
+        result=calculate(body,takeoff,project)
+        assert result['status']=='calculated'
+        for alt,production in zip(result['alternatives'],[24200,18150]):
+            stages=alt['carbon']['stages']
+            assert stages['production']['kgco2e']==production
+            assert stages['transport']['kgco2e']==123  # (22*.5*1.1*1000 + 200)/1000*100*.1
+            assert stages['construction']['kgco2e']==5
+            assert stages['operation']['kgco2e']==1200  # annual, 30 years
+            assert stages['end_of_life']['kgco2e']==10
+            assert alt['carbon']['boundary_total_kgco2e']==production+1338
+            assert alt['carbon']['all_five_stages_entered']
+        assert result['comparison']['carbon_reduction_kgco2e']=='6050.0'
+        rendered=report({'status':'calculated','input':body.model_dump(mode='json'),'result':result})
+        visible = rendered.split('<details><summary>输入、逐层公式及来源回执</summary>')[0]
+        assert '123' in visible
+        assert '阶段边界与排放' in visible and '寿命末期' in visible
+>       assert '期间倍数 30' in visible and '3000 kWh' in visible
+E       assert ('期间倍数 30' in '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>材料方案比较</title><style>body{font:16px/1.7 system-ui;max-...、地区一致；人工填写来源不等于独立核证。</li><li>年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。</li><li>不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。</li></ul>' and '3000 kWh' in '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>材料方案比较</title><style>body{font:16px/1.7 system-ui;max-...、地区一致；人工填写来源不等于独立核证。</li><li>年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。</li><li>不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。</li></ul>')
+
+tests\test_material_transport.py:57: AssertionError
+_ test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history[transport_source] _
+
+client = <starlette.testclient.TestClient object at 0x0000024964B320C0>
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/pytest-of-18483/pytest-214/test_bound_stage_evidence_revi0')
+binding = 'transport_source'
+
+    @pytest.mark.parametrize('binding', ['transport_source', 'activity_source', 'transport_factor', 'activity_factor'])
+    def test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history(client, tmp_path, binding):
+        pid,takeoff=create_takeoff(client,tmp_path)
+        ev_response=client.post(f'/api/projects/{pid}/evidence',json={
+            'type':'literature','name':'Stage source','source_locator':'Reference row 1','authority':'QA reference',
+            'permission':'test only','acquisition_method':'test','responsible_person':'auditor','status':'IMPORTED'})
+        assert ev_response.status_code==201
+        ev=ev_response.json();body=full_payload(takeoff)
+        for alt in body['alternatives']:
+            if binding=='transport_source':alt['transport_legs'][0]['evidence_ids']=[ev['evidence_id']]
+            if binding=='activity_source':alt['other_activities'][0]['source_evidence_ids']=[ev['evidence_id']]
+            if binding=='transport_factor':alt['transport_legs'][0]['factor']['evidence_id']=ev['evidence_id']
+            if binding=='activity_factor':alt['other_activities'][0]['factor']['evidence_id']=ev['evidence_id']
+        base=f'/api/projects/{pid}/material-scenarios';response=client.post(base,json=body)
+        assert response.status_code==201,response.text
+        record=response.json();assert record['status']=='calculated'
+        assert [e['evidence_id'] for e in record['source_snapshot']]==[ev['evidence_id']]
+        service=client.app.state.material_scenarios;stored=copy.deepcopy(service.store.get('scenario',record['scenario_id']))
+        updated=client.post(f"/api/projects/{pid}/evidence/{ev['evidence_id']}/review",json={
+            'expected_revision':ev['revision'],'review_state':'rejected','responsible_person':'auditor','review_note':'Source withdrawn for independent recheck'})
+>       assert updated.status_code==200,updated.text
+E       AssertionError: {"detail":"Method Not Allowed"}
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_material_transport.py:150: AssertionError
+_ test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history[activity_source] _
+
+client = <starlette.testclient.TestClient object at 0x0000024964F96F60>
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/pytest-of-18483/pytest-214/test_bound_stage_evidence_revi1')
+binding = 'activity_source'
+
+    @pytest.mark.parametrize('binding', ['transport_source', 'activity_source', 'transport_factor', 'activity_factor'])
+    def test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history(client, tmp_path, binding):
+        pid,takeoff=create_takeoff(client,tmp_path)
+        ev_response=client.post(f'/api/projects/{pid}/evidence',json={
+            'type':'literature','name':'Stage source','source_locator':'Reference row 1','authority':'QA reference',
+            'permission':'test only','acquisition_method':'test','responsible_person':'auditor','status':'IMPORTED'})
+        assert ev_response.status_code==201
+        ev=ev_response.json();body=full_payload(takeoff)
+        for alt in body['alternatives']:
+            if binding=='transport_source':alt['transport_legs'][0]['evidence_ids']=[ev['evidence_id']]
+            if binding=='activity_source':alt['other_activities'][0]['source_evidence_ids']=[ev['evidence_id']]
+            if binding=='transport_factor':alt['transport_legs'][0]['factor']['evidence_id']=ev['evidence_id']
+            if binding=='activity_factor':alt['other_activities'][0]['factor']['evidence_id']=ev['evidence_id']
+        base=f'/api/projects/{pid}/material-scenarios';response=client.post(base,json=body)
+        assert response.status_code==201,response.text
+        record=response.json();assert record['status']=='calculated'
+        assert [e['evidence_id'] for e in record['source_snapshot']]==[ev['evidence_id']]
+        service=client.app.state.material_scenarios;stored=copy.deepcopy(service.store.get('scenario',record['scenario_id']))
+        updated=client.post(f"/api/projects/{pid}/evidence/{ev['evidence_id']}/review",json={
+            'expected_revision':ev['revision'],'review_state':'rejected','responsible_person':'auditor','review_note':'Source withdrawn for independent recheck'})
+>       assert updated.status_code==200,updated.text
+E       AssertionError: {"detail":"Method Not Allowed"}
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_material_transport.py:150: AssertionError
+_ test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history[transport_factor] _
+
+client = <starlette.testclient.TestClient object at 0x0000024964B26DE0>
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/pytest-of-18483/pytest-214/test_bound_stage_evidence_revi2')
+binding = 'transport_factor'
+
+    @pytest.mark.parametrize('binding', ['transport_source', 'activity_source', 'transport_factor', 'activity_factor'])
+    def test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history(client, tmp_path, binding):
+        pid,takeoff=create_takeoff(client,tmp_path)
+        ev_response=client.post(f'/api/projects/{pid}/evidence',json={
+            'type':'literature','name':'Stage source','source_locator':'Reference row 1','authority':'QA reference',
+            'permission':'test only','acquisition_method':'test','responsible_person':'auditor','status':'IMPORTED'})
+        assert ev_response.status_code==201
+        ev=ev_response.json();body=full_payload(takeoff)
+        for alt in body['alternatives']:
+            if binding=='transport_source':alt['transport_legs'][0]['evidence_ids']=[ev['evidence_id']]
+            if binding=='activity_source':alt['other_activities'][0]['source_evidence_ids']=[ev['evidence_id']]
+            if binding=='transport_factor':alt['transport_legs'][0]['factor']['evidence_id']=ev['evidence_id']
+            if binding=='activity_factor':alt['other_activities'][0]['factor']['evidence_id']=ev['evidence_id']
+        base=f'/api/projects/{pid}/material-scenarios';response=client.post(base,json=body)
+        assert response.status_code==201,response.text
+        record=response.json();assert record['status']=='calculated'
+        assert [e['evidence_id'] for e in record['source_snapshot']]==[ev['evidence_id']]
+        service=client.app.state.material_scenarios;stored=copy.deepcopy(service.store.get('scenario',record['scenario_id']))
+        updated=client.post(f"/api/projects/{pid}/evidence/{ev['evidence_id']}/review",json={
+            'expected_revision':ev['revision'],'review_state':'rejected','responsible_person':'auditor','review_note':'Source withdrawn for independent recheck'})
+>       assert updated.status_code==200,updated.text
+E       AssertionError: {"detail":"Method Not Allowed"}
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_material_transport.py:150: AssertionError
+_ test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history[activity_factor] _
+
+client = <starlette.testclient.TestClient object at 0x00000249657E3140>
+tmp_path = WindowsPath('C:/Users/18483/AppData/Local/Temp/pytest-of-18483/pytest-214/test_bound_stage_evidence_revi3')
+binding = 'activity_factor'
+
+    @pytest.mark.parametrize('binding', ['transport_source', 'activity_source', 'transport_factor', 'activity_factor'])
+    def test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history(client, tmp_path, binding):
+        pid,takeoff=create_takeoff(client,tmp_path)
+        ev_response=client.post(f'/api/projects/{pid}/evidence',json={
+            'type':'literature','name':'Stage source','source_locator':'Reference row 1','authority':'QA reference',
+            'permission':'test only','acquisition_method':'test','responsible_person':'auditor','status':'IMPORTED'})
+        assert ev_response.status_code==201
+        ev=ev_response.json();body=full_payload(takeoff)
+        for alt in body['alternatives']:
+            if binding=='transport_source':alt['transport_legs'][0]['evidence_ids']=[ev['evidence_id']]
+            if binding=='activity_source':alt['other_activities'][0]['source_evidence_ids']=[ev['evidence_id']]
+            if binding=='transport_factor':alt['transport_legs'][0]['factor']['evidence_id']=ev['evidence_id']
+            if binding=='activity_factor':alt['other_activities'][0]['factor']['evidence_id']=ev['evidence_id']
+        base=f'/api/projects/{pid}/material-scenarios';response=client.post(base,json=body)
+        assert response.status_code==201,response.text
+        record=response.json();assert record['status']=='calculated'
+        assert [e['evidence_id'] for e in record['source_snapshot']]==[ev['evidence_id']]
+        service=client.app.state.material_scenarios;stored=copy.deepcopy(service.store.get('scenario',record['scenario_id']))
+        updated=client.post(f"/api/projects/{pid}/evidence/{ev['evidence_id']}/review",json={
+            'expected_revision':ev['revision'],'review_state':'rejected','responsible_person':'auditor','review_note':'Source withdrawn for independent recheck'})
+>       assert updated.status_code==200,updated.text
+E       AssertionError: {"detail":"Method Not Allowed"}
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_material_transport.py:150: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_material_transport.py::test_five_stage_scenarios_crosscheck_independent_arithmetic
+FAILED tests/test_material_transport.py::test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history[transport_source]
+FAILED tests/test_material_transport.py::test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history[activity_source]
+FAILED tests/test_material_transport.py::test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history[transport_factor]
+FAILED tests/test_material_transport.py::test_bound_stage_evidence_revision_withdraws_report_without_rewriting_history[activity_factor]
+5 failed, 100 passed, 1 warning in 139.49s (0:02:19)

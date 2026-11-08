@@ -12,9 +12,9 @@ from .agent_semantics import inspection
 
 class ReadRequest(Contract):
     request_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
-    kind: Literal['thermal','lifecycle','cost','engineering','schedule','operation']
+    kind: Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario']
     purpose: Literal['availability','results']
-    record_id: str | None = Field(default=None,pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
+    record_id: str | None = Field(default=None,pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
 
     @model_validator(mode='after')
     def scope(self):
@@ -90,6 +90,11 @@ def progress(record,answer):
         if state == 'result_verified':
             actual = [{'record_id': d['record_id'], 'statements': d['facts']} for d in answer.get('checked_statements', [])]
             if agent_outputs.missing_facts(record, r, actual):state='required_facts_missing'
+            else:
+                wanted=agent_outputs.requirement(record,r['request_key'])
+                if any(f['value'] is None for d in answer.get('checked_statements',[]) if d['record_id']==r['record_id']
+                       for f in d['facts'] if not wanted or f['fact'] in wanted['fact_keys']):
+                    state='fields_unavailable'
         if record.get('infer_outputs') and not record.get('output_plan'):state='output_plan_missing'
         if state=='unfulfilled' and r['request_key'] in submitted:state='delivery_not_currently_verified'
         rows.append({**r,'state':state})
@@ -99,6 +104,10 @@ def progress(record,answer):
 def attach(answer,domain,pid,record,reader=None):
     if not record.get('read_requests'):return answer
     answer={**answer,'verification':list(answer.get('verification',[])),'gaps':list(answer.get('gaps',[]))}
+    answer['read_execution'] = record.get('read_execution', 'model')
+    answer['read_execution_receipt'] = record.get('read_execution_receipt')
+    if record.get('read_execution') == 'application':
+        answer['task_notice'] = '模型解析所需字段；应用执行用户声明范围的读取与查询，并重验来源。执行记录不证明模型自主选工具、完整理解意图或工程合规。'
     refs=record.get('availability_deliveries',[]);checked=[]
     if refs:
         result=reader() if reader else recheck(domain,pid,record['read_requests'],refs)
@@ -177,7 +186,7 @@ def commentary_review(record, text):
     """Exact identifier membership only, not validation of numerical or semantic prose."""
     allowed = {r['record_id'] for r in record.get('read_requests', []) if r.get('record_id')}
     mentioned = set(re.findall(
-        r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[A-Za-z0-9_-]+\b', text or ''))
+        r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[A-Za-z0-9_-]+\b', text or ''))
     unknown = sorted(mentioned - allowed)
     return {'status': 'reference_mismatch' if unknown else 'references_match',
             'unknown_record_ids': unknown, 'allowed_record_ids': sorted(allowed),

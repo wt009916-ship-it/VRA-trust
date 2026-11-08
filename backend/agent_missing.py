@@ -9,14 +9,15 @@ from pydantic.json_schema import SkipJsonSchema
 from . import core
 from .schema import Contract
 from .agent_semantics import inspection
+from .agent_inspections import record_name
 
 
 class Missing(Contract):
     # Legacy single-kind receipts remain readable; the model sees one array selector only.
     model_config = ConfigDict(json_schema_extra={'required':['kinds']})
-    kind: SkipJsonSchema[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation'] | None] = None
-    kinds: Annotated[list[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation']], Field(min_length=1,max_length=6)] | SkipJsonSchema[None] = None
-    record_id: str | None = Field(default=None, pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$')
+    kind: SkipJsonSchema[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario'] | None] = None
+    kinds: Annotated[list[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']], Field(min_length=1,max_length=6)] | SkipJsonSchema[None] = None
+    record_id: str | None = Field(default=None, pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
     finish: StrictBool = False
 
     @model_validator(mode='after')
@@ -70,7 +71,7 @@ def catalog(domain, pid, spec):
 
 
 def catalog_rows(domain,pid,spec,records,digest):
-    recent = [{spec.record_key:r[spec.record_key], 'name':r['input']['name'],
+    recent = [{spec.record_key:r[spec.record_key], 'name':record_name(r),
                'status':spec.service(domain).view(pid,r[spec.record_key])['status']} for r in records[:6]]
     return {'kind':spec.kind, 'records':recent, 'total_count':len(records), 'returned_count':len(recent),
             'truncated':len(records)>len(recent), 'catalog_hash':digest,
@@ -171,7 +172,7 @@ def pending_empty(record):
         if event['tool']=='professional_inventory':
             for catalog in result['catalogs']:last[catalog['kind']]=catalog['total_count']
         else:
-            for kind in ['thermal','lifecycle','cost','engineering','schedule','operation']:
+            for kind in ['thermal','lifecycle','cost','engineering','schedule','operation','scenario']:
                 spec=inspection(kind)
                 if event['tool']==spec.list_tool and isinstance(result,dict):last[kind]=result['total_count']
                 if event['tool']==spec.read_tool:read.add(kind)

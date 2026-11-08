@@ -1,0 +1,54 @@
+F........                                                                [100%]
+================================== FAILURES ===================================
+___ test_three_records_three_catalogs_execute_in_one_model_response[kinds0] ___
+
+client = <starlette.testclient.TestClient object at 0x000002676613A0F0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026766158650>
+kinds = ('thermal', 'lifecycle', 'cost')
+
+    @pytest.mark.parametrize('kinds', [('thermal','lifecycle','cost'), ('engineering','schedule','operation')])
+    def test_three_records_three_catalogs_execute_in_one_model_response(client, monkeypatch, kinds):
+        pid = create_project(client)['project_id']
+        records = {k: make(client, pid, k) for k in kinds}
+        keys = {'thermal':['total_resistance_m2k_w','layer_resistance_m2k_w','u_w_m2k'],
+                'lifecycle':['boundary_total_kgco2e','kgco2e_m2_over_study_period','stage.operation'],
+                'cost':['material_total'], 'engineering':['left_reaction_n','max_abs_moment_nm'],
+                'schedule':['planned_duration_days'], 'operation':['sample_count','rule_event_sum']}
+        requests = [scope(k, records[k]) for k in kinds] + [availability(k) for k in kinds]
+>       task = execute(client, monkeypatch, pid, requests, keys)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_agent_read_execution.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+client = <starlette.testclient.TestClient object at 0x000002676613A0F0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026766158650>
+pid = 'project_0ea8e9d5ca4548e597e94fb2ccb26f42'
+requests = [{'request_key': 'thermal', 'kind': 'thermal', 'purpose': 'results', 'record_id': 'thermal_f4ffbfaf7b904a2eafa7963fab0...ty', 'record_id': None}, {'request_key': 'cost_catalog', 'kind': 'cost', 'purpose': 'availability', 'record_id': None}]
+requirements = {'thermal': ['total_resistance_m2k_w', 'layer_resistance_m2k_w', 'u_w_m2k'], 'lifecycle': ['boundary_total_kgco2e', 'k..._period', 'stage.operation'], 'cost': ['material_total'], 'engineering': ['left_reaction_n', 'max_abs_moment_nm'], ...}
+
+    def execute(client, monkeypatch, pid, requests, requirements):
+        message = 'Read the requested fields and query the declared catalogs.'
+        plan = [{'request_key': r['request_key'], 'question_excerpt': message,
+                 'fact_keys': requirements.get(r['request_key'], []), 'explanation_topics': ['status']}
+                for r in requests]
+        agent = client.app.state.agent
+        calls = scripted(agent, monkeypatch, [tool('requested_output_plan', {'output_plan': plan})])
+        result = agent.start(pid, Chat(message=message, mode='provider', read_requests=requests), background=False)
+>       assert result['status'] == 'succeeded', result.get('error')
+E       AssertionError: 'record_id'
+E       assert 'failed' == 'succeeded'
+E         
+E         - succeeded
+E         + failed
+
+tests\test_agent_read_execution.py:23: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_read_execution.py::test_three_records_three_catalogs_execute_in_one_model_response[kinds0]
+1 failed, 8 passed, 1 warning in 14.39s

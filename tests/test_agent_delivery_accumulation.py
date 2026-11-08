@@ -46,7 +46,7 @@ def split_task(client, monkeypatch, *, extra_scope=False):
     captured = scripted(agent, monkeypatch, [tool('requested_output_plan', {'output_plan': plan}),
         tool('thermal_read', {'thermal_id': record['thermal_id']}),
         *[tool('professional_deliver', {'delivery': r}) for r in refs]])
-    task = agent.start(project['project_id'], Chat(message=message, mode='provider', read_requests=scopes), background=False)
+    task = agent.start(project['project_id'], Chat(read_execution='model', message=message, mode='provider', read_requests=scopes), background=False)
     return project, record, task, captured
 
 
@@ -145,7 +145,7 @@ def test_rejected_later_fact_does_not_erase_previous_verified_fact(client, monke
     scripted(agent, monkeypatch, [tool('requested_output_plan', {'output_plan': [plan]}),
         tool('thermal_read', {'thermal_id': record['thermal_id']}),
         *[tool('professional_deliver', {'delivery': r}) for r in (total, bad, good)]])
-    task = agent.start(project['project_id'], Chat(message=message, mode='provider', read_requests=[scope]), background=False)
+    task = agent.start(project['project_id'], Chat(read_execution='model', message=message, mode='provider', read_requests=[scope]), background=False)
     assert task['status'] == 'succeeded', task.get('error')
     assert [e['status'] for e in task['events'] if e['tool'] == 'professional_deliver'] == ['succeeded', 'failed', 'succeeded']
     assert task['answer']['output_contract_coverage'] == 'fulfilled'

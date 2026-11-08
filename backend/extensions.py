@@ -40,6 +40,8 @@ def register_extensions(app, domain, auth):
     operations = Operations(domain)
     drawings = Drawings(domain)
     drawing_scales = DrawingScales(drawings)
+    from .drawing_associations import register as register_drawing_associations
+    register_drawing_associations(app, drawings)
     from .design_conditions import register as register_design_conditions
     register_design_conditions(app, domain)
 
@@ -49,7 +51,7 @@ def register_extensions(app, domain, auth):
 
     @app.get('/api/projects/{project_id}/drawings')
     def drawing_list(project_id: str):
-        return [{k:r[k] for k in ('drawing_id','source','created_at','revision')} for r in domain.store.list('drawing',project_id)]
+        return [{k:r[k] for k in ('drawing_id','source','created_at','revision')}|{'page':r['input']['page']} for r in domain.store.list('drawing',project_id)]
 
     @app.get('/api/projects/{project_id}/drawings/{drawing_id}')
     def drawing_get(project_id: str, drawing_id: str):

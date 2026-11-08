@@ -73,17 +73,40 @@ class Review(Contract):
     basis: str = Field(min_length=10, max_length=2000)
 
 
+class ExactTarget(Contract):
+    key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
+    standard_code: str = Field(min_length=2, max_length=80)
+    edition: str | None = Field(default=None, min_length=1, max_length=40)
+    clause_id: str = Field(min_length=1, max_length=60, pattern=r'^[A-Za-z0-9.()-]+$')
+
+
 class Query(Contract):
+    # Surface the same mutually exclusive input forms to clients and tool decoders.
+    model_config = {'json_schema_extra': {'oneOf': [
+        {'properties': {'targets': {'maxItems': 0}}},
+        {'required': ['targets'], 'properties': {
+            'targets': {'minItems': 1}, 'text': {'const': ''},
+            'standard_code': {'type': 'null'}, 'edition': {'type': 'null'}, 'clause_id': {'type': 'null'}}}
+    ]}}
     text: str = Field(default='', max_length=1000)
     standard_code: str | None = Field(default=None, min_length=2, max_length=80)
     edition: str | None = Field(default=None, min_length=1, max_length=40)
     clause_id: str | None = Field(default=None, min_length=1, max_length=60)
     as_of: date
     limit: StrictInt = Field(default=10, ge=1, le=20)
+    targets: list[ExactTarget] = Field(default_factory=list, max_length=8, description='Exact batch; leave text and single-query fields empty. Each target is resolved separately.')
 
     @model_validator(mode='after')
     def bounded(self):
-        if not self.text and not self.clause_id:
+        if self.targets:
+            if self.text or self.standard_code or self.edition or self.clause_id:
+                raise ValueError('Batch targets cannot be mixed with text or single-query fields')
+            if len({t.key for t in self.targets}) != len(self.targets):
+                raise ValueError('Each batch target needs a distinct key')
+            identities = {(normalized(t.standard_code), normalized(t.edition or ''), normalized(t.clause_id)) for t in self.targets}
+            if len(identities) != len(self.targets):
+                raise ValueError('Duplicate exact target')
+        elif not self.text and not self.clause_id:
             raise ValueError('Provide a query or exact clause identifier')
         if self.as_of > date.today():
             raise ValueError('Future standard validity is not verified')
@@ -187,6 +210,27 @@ class Standards:
 
     def search(self, pid, body):
         records = self.catalog(pid)
+        if not body.targets:
+            return self._search(records, body)
+        # One verified catalog snapshot for the whole batch, never a Cartesian
+        # product of all standard codes and all clause identifiers.
+        results = []
+        for target in body.targets:
+            single = Query(standard_code=target.standard_code, edition=target.edition,
+                           clause_id=target.clause_id, as_of=body.as_of, limit=body.limit)
+            results.append({'key': target.key, **self._search(records, single)})
+        found = sum(r['status'] == 'CITATIONS_FOUND' for r in results)
+        return {'status': 'ALL_TARGETS_FOUND' if found == len(results) else
+                'PARTIAL_TARGETS_FOUND' if found else 'NO_TARGETS_FOUND',
+                'targets': results, 'query': body.model_dump(mode='json'),
+                'citations': [{**c, 'target_key': r['key']} for r in results for c in r['citations']],
+                'total_matches': sum(r['total_matches'] for r in results),
+                'conflicts': sorted({c for r in results for c in r['conflicts']}),
+                'excluded': [{**e, 'target_key': r['key']} for r in results for e in r['excluded']],
+                'catalog_hash': core.hash_json(records), 'retriever_hash': core.sha(Path(__file__)),
+                'notice': '逐项查询明确指定的规范及条款；未找到、版本冲突和排除原因分别保留。各条款的地区、适用范围和版本独立，不自动合并为合规结论。'}
+
+    def _search(self, records, body):
         code, edition, clause_id = body.standard_code, body.edition, body.clause_id
         # An explicit code/clause in a question must never be replaced with a fuzzy match.
         question = unicodedata.normalize('NFKC', body.text)
@@ -241,7 +285,7 @@ class Standards:
         hits.sort(key=lambda h:(-h['score'],h['standard_code'],h['edition'],h['clause_id']))
         return {'status':'VERSION_CONFLICT' if conflicts else 'CITATIONS_FOUND' if hits else 'NOT_FOUND_IN_REVIEWED_INDEX',
             'citations':hits[:body.limit], 'total_matches':len(hits), 'conflicts':conflicts, 'excluded':excluded,
-            'query':body.model_dump(mode='json'), 'catalog_hash':core.hash_json(records),
+            'query':body.model_dump(mode='json'), 'catalog_hash':core.hash_json(records), 'retriever_hash':core.sha(Path(__file__)),
             'notice':'只检索本项目已复核条款索引；未命中不证明条款不存在。摘录不等于完整条文。有效期和适用范围仍需工程师核对，不生成合规结论。'}
 
     def query(self, pid, body):

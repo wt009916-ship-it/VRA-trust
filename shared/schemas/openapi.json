@@ -1870,6 +1870,352 @@
         ]
       }
     },
+    "/api/projects/{project_id}/drawing-associations": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__drawing_associations_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssociationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Listing",
+        "operationId": "listing_api_projects__project_id__drawing_associations_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawing-associations/{association_id}": {
+      "get": {
+        "summary": "Get",
+        "operationId": "get_api_projects__project_id__drawing_associations__association_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "association_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Association Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawing-associations/{association_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__drawing_associations__association_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "association_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Association Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawing-associations/{association_id}/review": {
+      "post": {
+        "summary": "Review",
+        "operationId": "review_api_projects__project_id__drawing_associations__association_id__review_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "association_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Association Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssociationReview"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawing-associations/{association_id}/history": {
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__drawing_associations__association_id__history_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "association_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Association Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/design-sources": {
       "post": {
         "summary": "Source Create",
@@ -7049,11 +7395,19 @@
           },
           "other_activities": {
             "items": {
-              "$ref": "#/components/schemas/Activity"
+              "$ref": "#/components/schemas/ScenarioActivity"
             },
             "type": "array",
             "maxItems": 300,
             "title": "Other Activities"
+          },
+          "transport_legs": {
+            "items": {
+              "$ref": "#/components/schemas/TransportLeg"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Transport Legs"
           }
         },
         "additionalProperties": false,
@@ -7251,6 +7605,70 @@
           "application"
         ],
         "title": "Assembly"
+      },
+      "AssociationInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "sheets": {
+            "items": {
+              "$ref": "#/components/schemas/Sheet"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 2,
+            "title": "Sheets"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "sheets"
+        ],
+        "title": "AssociationInput"
+      },
+      "AssociationReview": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "relation_id": {
+            "type": "string",
+            "pattern": "^link_[a-f0-9]{24}$",
+            "title": "Relation Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "association_confirmed",
+              "rejected",
+              "unresolved"
+            ],
+            "title": "Decision"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "relation_id",
+          "decision",
+          "basis"
+        ],
+        "title": "AssociationReview"
       },
       "Axis": {
         "properties": {
@@ -7785,6 +8203,15 @@
             "title": "Infer Outputs",
             "default": true
           },
+          "read_execution": {
+            "type": "string",
+            "enum": [
+              "application",
+              "model"
+            ],
+            "title": "Read Execution",
+            "default": "application"
+          },
           "search_plan": {
             "anyOf": [
               {
@@ -7816,7 +8243,8 @@
               "inspect_lifecycle",
               "inspect_engineering",
               "inspect_schedule",
-              "inspect_operations"
+              "inspect_operations",
+              "inspect_material_scenarios"
             ],
             "title": "Objective",
             "default": "open_ended"
@@ -7903,6 +8331,18 @@
               }
             ],
             "title": "Target Operation Id"
+          },
+          "target_scenario_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^scenario_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Scenario Id"
           },
           "previous_agent_id": {
             "anyOf": [
@@ -8890,6 +9330,49 @@
           "MISSING"
         ],
         "title": "EvidenceStatus"
+      },
+      "ExactTarget": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Key"
+          },
+          "standard_code": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 2,
+            "title": "Standard Code"
+          },
+          "edition": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edition"
+          },
+          "clause_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9.()-]+$",
+            "title": "Clause Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "standard_code",
+          "clause_id"
+        ],
+        "title": "ExactTarget"
       },
       "Factor": {
         "properties": {
@@ -10151,7 +10634,77 @@
         ],
         "title": "ProviderSettings"
       },
+      "QuantityLink": {
+        "properties": {
+          "mark_candidate_id": {
+            "type": "string",
+            "pattern": "^text_[1-9][0-9]{0,2}$",
+            "title": "Mark Candidate Id"
+          },
+          "value_candidate_id": {
+            "type": "string",
+            "pattern": "^text_[1-9][0-9]{0,2}$",
+            "title": "Value Candidate Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "width",
+              "height",
+              "length",
+              "thickness"
+            ],
+            "title": "Role"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mark_candidate_id",
+          "value_candidate_id",
+          "role",
+          "basis"
+        ],
+        "title": "QuantityLink"
+      },
       "Query": {
+        "oneOf": [
+          {
+            "properties": {
+              "targets": {
+                "maxItems": 0
+              }
+            }
+          },
+          {
+            "properties": {
+              "targets": {
+                "minItems": 1
+              },
+              "text": {
+                "const": ""
+              },
+              "standard_code": {
+                "type": "null"
+              },
+              "edition": {
+                "type": "null"
+              },
+              "clause_id": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "targets"
+            ]
+          }
+        ],
         "properties": {
           "text": {
             "type": "string",
@@ -10209,6 +10762,15 @@
             "minimum": 1.0,
             "title": "Limit",
             "default": 10
+          },
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/ExactTarget"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Targets",
+            "description": "Exact batch; leave text and single-query fields empty. Each target is resolved separately."
           }
         },
         "additionalProperties": false,
@@ -10329,7 +10891,8 @@
               "cost",
               "engineering",
               "schedule",
-              "operation"
+              "operation",
+              "scenario"
             ],
             "title": "Kind"
           },
@@ -10345,7 +10908,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}$"
+                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$"
               },
               {
                 "type": "null"
@@ -10931,6 +11494,96 @@
         ],
         "title": "ScaleReference"
       },
+      "ScenarioActivity": {
+        "properties": {
+          "activity_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Activity Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "production",
+              "transport",
+              "construction",
+              "operation",
+              "end_of_life"
+            ],
+            "title": "Stage"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "kg",
+              "t",
+              "tkm",
+              "kWh",
+              "m3",
+              "m2",
+              "item"
+            ],
+            "title": "Unit"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "whole_period",
+              "annual"
+            ],
+            "title": "Period"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Source"
+          },
+          "factor": {
+            "$ref": "#/components/schemas/EmissionFactor"
+          },
+          "source_evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Source Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "activity_id",
+          "name",
+          "stage",
+          "unit",
+          "period",
+          "source",
+          "factor"
+        ],
+        "title": "ScenarioActivity"
+      },
       "ScenarioRequest": {
         "properties": {
           "takeoff_id": {
@@ -11194,6 +11847,63 @@
           "budget"
         ],
         "title": "Search"
+      },
+      "Sheet": {
+        "properties": {
+          "drawing_id": {
+            "type": "string",
+            "pattern": "^drawing_[a-f0-9]{32}$",
+            "title": "Drawing Id"
+          },
+          "drawing_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Drawing Hash"
+          },
+          "scope_label": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Scope Label",
+            "default": ""
+          },
+          "scope_basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Scope Basis",
+            "default": ""
+          },
+          "candidate_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 500,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Ids"
+          },
+          "quantity_links": {
+            "items": {
+              "$ref": "#/components/schemas/QuantityLink"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Quantity Links"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "drawing_id",
+          "drawing_hash"
+        ],
+        "title": "Sheet"
       },
       "SourceInput": {
         "properties": {
@@ -11496,6 +12206,112 @@
           "input"
         ],
         "title": "ThermalPlan"
+      },
+      "TransportLeg": {
+        "properties": {
+          "leg_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "title": "Leg Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "layer_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Layer Ids"
+          },
+          "purchase_fraction": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchase Fraction"
+          },
+          "fraction_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Fraction Source"
+          },
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km"
+          },
+          "distance_source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Distance Source"
+          },
+          "additional_mass_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Additional Mass Kg"
+          },
+          "additional_mass_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Additional Mass Source"
+          },
+          "factor": {
+            "$ref": "#/components/schemas/EmissionFactor"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "leg_id",
+          "name",
+          "layer_ids",
+          "fraction_source",
+          "distance_source",
+          "additional_mass_source",
+          "factor"
+        ],
+        "title": "TransportLeg"
       },
       "UniformLoad": {
         "properties": {

@@ -8,7 +8,9 @@ test('source form escapes IFC names and does not offer editable source quantity'
  assert(html.includes('&lt;img'));
  assert(!html.includes('name="quantity"'));
  assert(html.includes('实体比例'));
- assert(html.includes('不包含运输、施工、运行和寿命末期'));
+ assert(html.includes('共同碳核算边界'));
+ assert(html.includes('排除不等于零排放'));
+ assert(html.includes('data-add-transport'));
 });
 test('blank conversions stay unknown and source volume is never sent by client',()=>{
  const data=new FormData();data.set('include_10','on');data.set('a0_10_solid_fraction','0.5');

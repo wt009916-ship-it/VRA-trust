@@ -1,6 +1,7 @@
 import {escape as esc} from './api.js';
 import {engineeringArtifactMarkup} from './agent-engineering.js';
 import {simulationArtifactMarkup} from './agent-simulation.js';
+import {standardAgentMarkup} from './standard-results.js';
 
 const value=x=>esc(x??'—');
 export function selectedReadProgressMarkup(task) {
@@ -45,7 +46,15 @@ function lifecycleMarkup(a) {
   const activities=new Map(b.activities.map(x=>[x.activity_id,x]));
   return `<p>声明边界合计：<strong>${engineeringValue(r.boundary_total_kgco2e)} kgCO₂e</strong></p><p>评估期单位面积量：${engineeringValue(r.kgco2e_m2_over_study_period)} kgCO₂e/m² · ${engineeringValue(b.study_years)} 年；声明面积 ${engineeringValue(b.area_m2)} m²</p><p>功能单位：${esc(b.functional_unit)}；方法：${esc(b.method)}；地区：${esc(b.region)}</p><p>五阶段均已录入且计算完整：${r.all_five_stages_entered?'是，仍不证明清单无遗漏':'否'}。碳核证：未评估；已签发信用：—。</p><ul>${Object.entries(r.stages).map(([key,s])=>`<li>${esc(stages[key]||key)}：${s.included?(s.status==='calculated'?engineeringValue(s.kgco2e)+' kgCO₂e':'资料不完整 · —'):'明确排除 · 不计为零排放'}；${esc(s.reason)}</li>`).join('')}</ul>${r.rows.map(row=>{const x=activities.get(row.activity_id),f=x.factor;return `<details><summary>${esc(x.name)} · ${engineeringValue(row.kgco2e)} kgCO₂e</summary><p>活动量：${engineeringValue(x.quantity)} ${esc(x.unit)}；${x.period==='annual'?'年量':'整个评估期量'} × ${engineeringValue(row.period_multiplier)} → 因子计量数量 ${engineeringValue(row.quantity_in_factor_unit)} ${esc(f.denominator)}</p><p>排放因子：${engineeringValue(f.value)} kgCO₂e/${esc(f.denominator)}；排放量 = 活动量×单位换算×期间倍数×因子。</p><p>活动来源：${esc(x.source)}</p><p>因子来源：${esc(f.source)}；发布者：${esc(f.publisher)}；版本：${esc(f.version)}；年份：${engineeringValue(f.year)}；地区：${esc(f.region)}；方法：${esc(f.method)}</p></details>`;}).join('')}${r.missing.length?`<p>缺参：${r.missing.map(esc).join('、')}</p>`:''}<p>来源为用户声明，填写来源或计算完整不等于因子真实性或独立核证通过。</p><ul>${r.limitations.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
 }
+export function scenarioArtifactMarkup(a){
+ const link=`<p><a href="/api/projects/${encodeURIComponent(a.project_id)}/material-scenarios/${encodeURIComponent(a.record_id)}/report.html" target="_blank" rel="noopener">打开同源两方案报告</a></p>`;
+ const head=`<h3>${esc(a.name)}</h3><p>${esc(a.scope)}</p><p>功能范围：${esc(a.input.functional_scope)}；评估期 ${esc(a.input.study_years)} 年；币种 ${esc(a.input.currency)}。</p>`;
+ if(!a.verified||!a.result)return `<section class="agent-artifact" aria-label="材料两方案核验">${head}<p role="status">${a.status==='stale'?'来源已变化，旧比较数值已撤下':'方案资料不完整，未交付确定比较'}。</p>${link}</section>`;
+ const stages={production:'生产',transport:'运输',construction:'施工',operation:'运行',end_of_life:'寿命末期'},r=a.result;
+ return `<section class="agent-artifact" aria-label="材料两方案核验">${head}${r.alternatives.map((alt,i)=>`<article><h4>${i?'替换方案':'基准方案'} · ${esc(alt.name)}</h4><p>材料采购金额 ${esc(alt.cost.material_total)} ${esc(a.input.currency)}；声明边界碳总量 ${engineeringValue(alt.carbon.boundary_total_kgco2e)} kgCO₂e（整个评估期）。</p><ul>${Object.entries(alt.carbon.stages).map(([stage,row])=>`<li>${esc(stages[stage])}：${row.included?engineeringValue(row.kgco2e)+' kgCO₂e':'未纳入，不等于零'}</li>`).join('')}</ul></article>`).join('')}<p>金额差（替换－基准）：${esc(r.comparison.cost_difference)} ${esc(a.input.currency)}；碳差（基准－替换）：${engineeringValue(Number(r.comparison.carbon_reduction_kgco2e))} kgCO₂e。</p><p>数值差异不证明材料功能等效、完整生命周期清单或可交易碳资产；详细量、价格、因子及排除项见同源报告。</p><small class="mono">${esc(a.record_id)}</small>${link}</section>`;
+}
 export function professionalArtifactMarkup(a) {
+  if(a?.kind==='scenario_review')return scenarioArtifactMarkup(a);
   if(a&&['engineering_review','schedule_review','operation_review'].includes(a.kind))return engineeringArtifactMarkup(a);
   if(!a || !['thermal_review','lifecycle_review'].includes(a.kind))return costArtifactMarkup(a);
   const thermal=a.kind==='thermal_review',path=thermal?'thermal':'lifecycle';
@@ -56,12 +65,12 @@ export function checkedDeliveryMarkup(answer) {
   if(!answer)return '';
   const checked=answer.checked_statements||[];
   const periods={steady_state:'稳态构造',study_period:'整个评估期',quote_date:'清单声明日期',static_load_case:'声明静力工况',elapsed_days:'声明原点的连续经过日',observed_window:'CSV观测窗口 · 非年量'};
-  const section=checked.length?`<section aria-label="经过核验的专业说明"><h3>模型选择 · 当前记录核验</h3><p>以下字段已与当前记录逐项核对。自由问题的完整覆盖度及模型原始文字未获核验。</p>${checked.map(s=>`<h4>${esc(s.name)}</h4><dl>${s.facts.map(f=>`<dt>${esc(f.label)}</dt><dd>${f.period==='quote_date'?value(f.value):engineeringValue(f.value===null?null:Number(f.value))} ${esc(f.unit)} · ${esc(periods[f.period]||f.period)}${f.study_years!==null?' '+value(f.study_years)+' 年':''}${f.area_m2!==null?' · 面积分母 '+value(f.area_m2)+' m²':''}<small> 来源字段 ${esc(f.source_path)}</small></dd>`).join('')}</dl><small class="mono">${esc(s.record_id)}</small>`).join('')}</section>`:'';
+  const section=checked.length?`<section aria-label="经过核验的专业说明"><h3>模型选择 · 当前记录核验</h3><p>以下字段已与当前记录逐项核对。自由问题的完整覆盖度及模型原始文字未获核验。</p>${checked.map(s=>`<h4>${esc(s.name)}</h4><dl>${s.facts.map(f=>`<dt>${esc(f.label)}</dt><dd>${f.period==='quote_date'?value(f.value):engineeringValue(f.value===null?null:Number(f.value))} ${esc(f.unit)} · ${esc(periods[f.period]||f.period)}${f.study_years!==null?' '+value(f.study_years)+' 年':''}${f.area_m2!==null?' · 面积分母 '+value(f.area_m2)+' m²':''}${f.unavailable_reason?`<strong> 不可计算：${esc(f.unavailable_reason)}</strong>`:''}<small> 来源字段 ${esc(f.source_path)}</small></dd>`).join('')}</dl><small class="mono">${esc(s.record_id)}</small>`).join('')}</section>`:'';
   const limitationStates={stale:'来源或版本已失效',incomplete:'资料不完整',outside_model_screen:'超出模型适用范围',constraints_unresolved:'资源约束未解决',incomplete_progress:'进度情景不完整',insufficient_evidence:'证据不充分',events_detected:'检出规则事件'};
   const limits=answer.checked_limitations||[];
   const limitations=limits.length?`<section aria-label="当前记录限制说明"><h3>限制说明已核验</h3><p>核验的是当前限制；不改变记录状态，不代表工程结果有效，也不会恢复历史数值。</p>${limits.map(r=>`<article><h4>${esc(limitationStates[r.state]||r.state)}</h4><p>${esc(r.scope)}</p>${r.state==='stale'?`<p>历史数值不可交付。请先复核来源变化，再另行提交计算。</p>${staleReasonMarkup(r)}`:''}<small class="mono">${esc(r.record_id)}</small></article>`).join('')}</section>`:'';
-  const kinds={thermal:'热工构造',lifecycle:'阶段碳清单',cost:'材料成本',engineering:'梁分析',schedule:'施工进度',operation:'设备规则核查'};
+  const kinds={thermal:'热工构造',lifecycle:'阶段碳清单',cost:'材料成本',engineering:'梁分析',schedule:'施工进度',operation:'设备规则核查',scenario:'材料两方案对照'};
   const missing=answer.checked_missing||[];
   const absence=missing.length?`<section aria-label="当前记录缺失说明"><h3>记录可用性已核验 · 尚无所需结果</h3><p>以下是当前项目记录范围的检查，不代表工程计算完成，也不表示应用不支持该功能。</p>${missing.map(r=>`<article><h4>${esc(kinds[r.kind]||r.kind)}</h4><p>${r.scope==='entire_project_kind'?'完整项目目录中没有该类记录。':'指定编号在当前项目中不可用；不能据此判断其他项目是否存在该记录。'}</p>${r.record_id?`<small class="mono">${esc(r.record_id)}</small>`:''}<p>核查时间：${esc(r.checked_at)}</p></article>`).join('')}<p>请核对项目与编号；需要计算时提交完整参数和本次授权。失败后不自动重试写操作，缺失结果不记为零。</p></section>`:'';
-  return simulationArtifactMarkup(answer)+section+limitations+absence+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
+  return standardAgentMarkup(answer)+simulationArtifactMarkup(answer)+section+limitations+absence+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
 }

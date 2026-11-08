@@ -26,6 +26,8 @@ from . import agent_recovery as read_recovery
 from . import agent_requests as requested_scopes
 from . import agent_simulation
 from . import agent_outputs
+from . import agent_read_execution, agent_standards
+from . import agent_intent_catalog
 
 
 class Chat(Contract):
@@ -35,9 +37,10 @@ class Chat(Contract):
     calculation_plans: list[calculations.CalculationPlan] = Field(default_factory=list, max_length=2)
     read_requests: list[requested_scopes.ReadRequest] = Field(default_factory=list, max_length=6)
     infer_outputs: bool = True
+    read_execution: Literal['application', 'model'] = 'application'
     search_plan: Search | None = None
     cost_plan: Actions | None = None
-    objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle', 'inspect_engineering', 'inspect_schedule', 'inspect_operations'] = 'open_ended'
+    objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle', 'inspect_engineering', 'inspect_schedule', 'inspect_operations', 'inspect_material_scenarios'] = 'open_ended'
     target_run_id: str | None = None
     target_cost_id: str | None = Field(default=None, pattern=r'^cost_[a-f0-9]{32}$')
     target_thermal_id: str | None = Field(default=None, pattern=r'^thermal_[a-f0-9]{32}$')
@@ -45,6 +48,7 @@ class Chat(Contract):
     target_engineering_id: str | None = Field(default=None, pattern=r'^engineering_[a-f0-9]{32}$')
     target_schedule_id: str | None = Field(default=None, pattern=r'^schedule_[a-f0-9]{32}$')
     target_operation_id: str | None = Field(default=None, pattern=r'^operation_[a-f0-9]{32}$')
+    target_scenario_id: str | None = Field(default=None, pattern=r"^scenario_[a-f0-9]{32}$")
     previous_agent_id: str | None = None
 
     @model_validator(mode='after')
@@ -73,7 +77,7 @@ class ToolArgs(Contract):
     output_plan: list[agent_outputs.OutputItem] | None = Field(default=None, min_length=1, max_length=6)
     request_keys: list[str] | None = Field(default=None,min_length=1,max_length=6)
     finish: StrictBool = False
-    kinds: list[Literal['thermal','lifecycle','cost','engineering','schedule','operation']] | None = Field(default=None,min_length=1,max_length=6)
+    kinds: list[Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario']] | None = Field(default=None,min_length=1,max_length=6)
     missing: missing_records.Missing | None = None
     plan_keys: list[str] | None = Field(default=None, min_length=1, max_length=2)
     record_ids: list[str] | None = Field(default=None, min_length=1, max_length=3)
@@ -84,6 +88,7 @@ class ToolArgs(Contract):
     delivery: NumericDelivery | None = None
     thermal_id: str | None = Field(default=None, pattern=r'^thermal_[a-f0-9]{32}$')
     lifecycle_id: str | None = Field(default=None, pattern=r'^lifecycle_[a-f0-9]{32}$')
+    scenario_id: str | None = Field(default=None, pattern=r"^scenario_[a-f0-9]{32}$")
     operation_id: str | None = None
     schedule_id: str | None = None
     material_cost_id: str | None = None
@@ -108,14 +113,14 @@ class ToolArgs(Contract):
             raise ValueError('Select distinct professional kinds')
         for values, pattern in [(self.plan_keys, r'[A-Za-z0-9_-]{1,40}'),
                                 (self.request_keys, r'[A-Za-z0-9_-]{1,40}'),
-                                (self.record_ids, r'(thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}')]:
+                                (self.record_ids, r'(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}')]:
             if values is not None and (len(set(values))!=len(values) or any(not re.fullmatch(pattern,v) for v in values)):
                 raise ValueError('Batch identifiers must be unique and valid; no arbitrary parameters or paths')
         return self
 
 
 TOOLS = {
-    'requested_output_plan': '先根据原用户问题为每个request_key选择所问fact_keys和explanation_topics，并逐项引用原问题片段question_excerpt。只能用本轮计划目录；计划提交后冻结，不得根据资料名称或内容改写。此为模型解析，不是原问题已被完整理解的认证。',
+    'requested_output_plan': '先根据原用户问题为每个request_key选择所问fact_keys和explanation_topics，并选择应用提供的原问题片段编号question_fragment_ids。只能用本轮计划目录；计划提交后冻结，不得根据资料名称或内容改写。此为模型解析，不是原问题已被完整理解的认证。',
     'requested_availability':'按用户本轮声明的request_keys（1到6个）核验记录存在或缺失，同一目录快照逐项返回；只核查可用性，不读取工程数值，不替换编号。全部声明目标交付后可finish=true。',
     'professional_inventory': '一次读取所选kinds（1到6类）的完整项目目录计数和最近记录，适合多专业可用性检查。空目录随后用professional_missing正式说明；存在记录则读取。不要逐轮分别查询六类而耗尽预算。',
     'professional_missing': '正式核验记录缺失。missing.kinds必填数组（1到6类），同一完整目录快照逐类核验。指定编号时只选1类并填写用户明确的record_id；不能用整类空目录代替指定编号检查。发现任一所选记录存在则整批拒绝，不补造结果或重试计算。全部所需交付结束才finish=true。',
@@ -124,8 +129,10 @@ TOOLS = {
     'capability_lookup': '查询当前应用能做什么及明确边界，每批1到4个capability_ids；超过4项请分批查询，批次上限不是不支持剩余能力。分别核对用户要求的有限计算、资料检索与认证/确诊，不漏支持项，也不加无关项；不检查项目资料充分性。',
     'capability_explain': '先分批capability_lookup，再按同一catalog_hash汇总全部所需claims（最多16项）：每项capability_id、assessment、reason_code必须与当前应用范围一致。不能只交付第一批，不以少量已查项代表整个需求完成。用于正式能力说明，不代表执行计算或取得认证。最后所需说明可finish=true。',
     'calculation_execute': '选择本轮用户明确提交的plan_key，按已锁定参数调用热工/阶段碳/材料成本/梁/进度/设备规则计算器并保存新记录。不能修改工程输入或CSV；随后按返回的next_tool读取并核验交付；不重复创建。',
-    'professional_deliver': '交付数值：先用专业list/read读取记录，再提交delivery的statements，核对数值、单位、期间及面积口径。支持thermal/lifecycle/cost/engineering/schedule/operation；来源hash必填。不提供limitation_status；若只说明不完整或不适用，请另用professional_limit。',
+    'professional_deliver': '先读取delivery.kind对应记录，再提交statements及当前hash，核对值、单位、期间和面积。明确无定义字段保留null及来源原因；整条记录不完整、不适用或stale时改用professional_limit。',
     'professional_limit': '交付限制说明：先实际读取当前记录，再提交limitation含kind、record_id、record_hash、status（复制当前状态，包括stale）及finish。只允许当前结果不完整、不适用或已失效；不填数值或statements。核验说明不改变原记录状态，不恢复旧数值，也不等于完成工程计算。',
+    'material_scenarios_list': '只读列出当前项目最近6份材料两方案对照；不创建计算，不认证等效或碳资产',
+    'material_scenarios_read': '按scenario_id读取两套材料方案的金额、声明边界/阶段碳与比较，保留数量来源和评估期；金额差为替换减基准，碳减少为基准减替换，不签发信用',
     'thermal_list': '只读列出最近6个热工构造的ID和当前状态，不生成材料参数',
     'thermal_read': '按thermal_id读取当前一维稳态热阻/U及单位、表面热阻、材料修正依据；U降低不是全年节能率，不判合规',
     'lifecycle_list': '建筑碳账/碳清单/生命周期阶段排放：只读列出最近6份阶段CO2e清单的ID和当前状态。阶段总量、每平方米量及期间通过lifecycle_read读取；不是运行碳重算或碳信用账户',
@@ -138,7 +145,7 @@ TOOLS = {
     'material_cost_read': '按material_cost_id读取当前来源核验后的成本清单；材料成本不等于工程总价或报价认证',
     'beam_analysis_list': '只读列出项目最近6条梁分析记录及当前状态；不创建荷载或判断结构安全',
     'beam_analysis_read': '读取来源及版本核验后的梁分析；需 engineering_id；不得把计算值当作安全或合规结论',
-    'standards_search': '只读检索本项目已复核规范摘录；需 standards_query 和查询日期；不虚构条款或自动判定合规',
+    'standards_search': '检索已复核规范。多条精确查询用targets，各自指定编号、版次、条款；text留空。需as_of。不判定合规。',
     'project_get': '读取当前项目建筑声明',
     'evidence_list': '读取证据清单及来源定位',
     'evidence_validate': '运行 Evidence Gate，检查缺口与准入',
@@ -171,6 +178,7 @@ TOOL_FIELDS = {
     'capability_explain': ('capability_explanation',),
     'calculation_execute': ('plan_key',),
     'professional_deliver': ('delivery',),
+    'material_scenarios_list': (), 'material_scenarios_read': ('scenario_id',),
     'thermal_list': (), 'thermal_read': ('thermal_id',),
     'lifecycle_list': (), 'lifecycle_read': ('lifecycle_id',),
     'operations_list': (), 'operations_read': ('operation_id',),
@@ -276,7 +284,12 @@ class Agent:
 
             collect(parameters)
             if definitions:
-                parameters['$defs'] = definitions
+                # Display titles are not constraints. Keep property names (even
+                # a field named title), defaults, unions and all validation rules.
+                parameters['$defs'] = {key: {**{k:v for k,v in value.items() if k not in {'title','properties'}},
+                    **({'properties': {field: {k:v for k,v in definition.items() if k != 'title'}
+                        for field,definition in value['properties'].items()}} if 'properties' in value else {})}
+                    for key,value in definitions.items()}
             tools.append({'type': 'function', 'function': {'name': name, 'description': desc, 'parameters': parameters}})
         return tools
 
@@ -319,7 +332,7 @@ class Agent:
                     'llm_commentary_policy': 'audit_only', 'answer_checked_at': core.now(),
                     'historical_task_completion': (record.get('answer') or {}).get('task_completion'),
                     'event_snapshot_notice': '工具事件是历史快照；下方原生结果按当前来源重新核验，失效后不显示旧数值。'}
-        if (record.get('professional_deliveries') or record.get('capability_delivery') or record.get('missing_deliveries') or record.get('read_requests')) and record['status'] == 'succeeded':
+        if (record.get('professional_deliveries') or record.get('capability_delivery') or record.get('missing_deliveries') or record.get('read_requests') or agent_standards.searches(record)) and record['status'] == 'succeeded':
             answer = current_answer(self.domain, project_id, record['professional_deliveries'])
             if record.get('capability_delivery'):
                 answer = capabilities.attach(answer, record['capability_delivery'])
@@ -327,6 +340,7 @@ class Agent:
                 answer = missing_records.attach(answer,self.domain,project_id,record['missing_deliveries'])
             answer = read_recovery.attach(answer,record)
             answer = requested_scopes.attach(answer,self.domain,project_id,record)
+            answer = agent_standards.attach(answer,self.domain,project_id,record)
             answer['basis'] = (record.get('answer') or {}).get('basis', [])
             return {**record, 'answer': answer, 'read_request_progress':requested_scopes.progress(record,answer), 'calculation_progress': calculations.progress(record, answer), 'answer_checked_at': core.now(),
                     'historical_task_completion': (record.get('answer') or {}).get('task_completion'),
@@ -466,7 +480,8 @@ class Agent:
         if body.objective == 'open_ended':
             record.update(professional_deliveries=[], missing_deliveries=[], llm_commentary_policy='audit_only')
         if body.read_requests:
-            record.update(read_requests=[r.model_dump(mode='json') for r in body.read_requests],availability_deliveries=[], infer_outputs=body.infer_outputs)
+            record.update(read_requests=[r.model_dump(mode='json') for r in body.read_requests],availability_deliveries=[], infer_outputs=body.infer_outputs,
+                          read_execution=body.read_execution if body.infer_outputs else 'model')
         if body.calculation_plans:
             record['calculation_plan_snapshot'] = calculations.snapshot(self.domain, project_id, body.calculation_plans)
         if spec:
@@ -502,13 +517,13 @@ class Agent:
             return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + int(bool(record.get('missing_deliveries'))) + capabilities.read_count(record.get('capability_delivery')) + int(bool(record.get('availability_deliveries')))
         def missing_targets():
             if body.read_requests:return requested_scopes.result_ids(record['read_requests'])
-            ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}\b',body.message))
+            ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}\b',body.message))
             ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('professional_references',[]))
             ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('missing_references',[]) if r.get('record_id'))
             return ids
         def turn_tools():
             if body.read_requests and body.infer_outputs and not record.get('output_plan'):
-                return [agent_outputs.constrain_tool(self.tools({'requested_output_plan'})[0], record['read_requests'])]
+                return [agent_outputs.constrain_tool(self.tools({'requested_output_plan'})[0], record['read_requests'], record['question'])]
             available = set(offered) - {'requested_output_plan'}
             choices = {}
             read_records = []
@@ -753,7 +768,7 @@ class Agent:
                     previous = record['professional_deliveries']
                     if len(previous) >= 3 and not any(x['record_id'] == delivery.record_id for x in previous):
                         raise ToolRefusal('At most three professional records per task')
-                if name == 'professional_missing' and origin == 'model':
+                if name == 'professional_missing':
                     candidate = {'request':canonical['missing']}
                     if not candidate['request']:raise core.ValidationError('Provide missing request')
                     if candidate['request'].get('record_id') and candidate['request']['record_id'] not in missing_targets():
@@ -762,7 +777,7 @@ class Agent:
                     if body.read_requests and any(r.record_id not in requested_scopes.result_ids(record['read_requests']) for r in selected):
                         raise ToolRefusal('Missing delivery is outside this task user-declared result scopes')
                     scopes={missing_records.key(x) for x in record.get('missing_deliveries',[])}
-                    explicit=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation)_[a-f0-9]{32}\b',body.message))
+                    explicit=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}\b',body.message))
                     for request in selected:
                         if request.record_id is None and any(ident.startswith(request.kind+'_') and (request.kind,ident) not in scopes for ident in explicit):
                             raise core.ValidationError('Check the explicitly requested record ID first; entire-kind absence cannot substitute for its requested scope')
@@ -784,7 +799,7 @@ class Agent:
                     record['professional_deliveries'] = accumulate(record['professional_deliveries'], result['reference'])
                 if name == 'capability_explain':
                     record['capability_delivery'] = result['reference']
-                if name == 'professional_missing' and origin == 'model':
+                if name == 'professional_missing':
                     new=missing_records.references(result);keys={missing_records.key(x) for x in new}
                     record['missing_deliveries'] = [x for x in record['missing_deliveries'] if missing_records.key(x) not in keys] + new
                 if isinstance(result, dict) and result.get('status') == 'ACTION_NOT_AUTHORIZED':
@@ -865,7 +880,7 @@ class Agent:
                 if body.objective == 'inspect_results':messages[0]['content'] = agent_simulation.INSPECTION_INSTRUCTION
                 system_instruction = messages[0]['content']
                 if body.read_requests and body.infer_outputs:
-                    system_instruction += '先调用requested_output_plan，逐项从原问题提取所问指标和解释主题；不能用材料层热阻替代总热阻。计划目录：' + json.dumps(agent_outputs.catalog(record['read_requests']),ensure_ascii=False) + '。计划冻结后只读声明来源，再交付全部所需指标。应用根据已核验事实生成所选主题的来源绑定解释，不需要模型补造专业说明；计划对原问题的理解仍须核对。'
+                    system_instruction += '原问题片段（编号可选，文字不可改写）：' + json.dumps(agent_intent_catalog.fragments(record['question']),ensure_ascii=False) + '。先调用requested_output_plan，逐项从原问题提取所问指标和解释主题；不能用材料层热阻替代总热阻。计划目录：' + json.dumps(agent_outputs.catalog(record['read_requests']),ensure_ascii=False) + '。计划冻结后只读声明来源，再交付全部所需指标。应用根据已核验事实生成所选主题的来源绑定解释，不需要模型补造专业说明；计划对原问题的理解仍须核对。'
                 if body.read_requests:
                     system_instruction+='本轮以用户明确声明的读取清单限制工具和交付范围。availability目标用requested_availability选择request_keys，只检查记录存在/缺失，不能交付其工程数值；results目标只能读取并交付指定record_id，缺失按该编号professional_missing。不能替换其他记录，不新增计算；清单外自由问题仍未核验。'
                     messages.append({'role':'user','content':'本轮用户明确声明的只读范围（不是模型生成的草案，不延续历史权限）：'+json.dumps(record['read_requests'],ensure_ascii=False)})
@@ -968,6 +983,9 @@ class Agent:
                             messages.append({'role':'user','content':'你已查询应用能力，但尚未完成正式说明。检查问题中的每个不同要求；遗漏的能力请用capability_lookup补查，可参考related_capabilities。随后capability_explain一次提交全部所需claims和catalog_hash；最后说明finish=true。自由文字不会成为正式结果；不要把计算支持与认证能力合并成一项。'})
                             continue
                         break
+                    if (record.get('read_execution') == 'application' and not record.get('output_plan')
+                            and len(calls) != 1):
+                        raise core.ValidationError('Application read execution requires one frozen plan call before source access')
                     new_deliveries = sum(c['function']['name'] in {'professional_deliver','professional_limit','professional_missing'} for c in calls)
                     if not record.get('availability_deliveries') and any(c['function']['name']=='requested_availability' for c in calls):new_deliveries+=1
                     current_capability_reads = capabilities.read_count(record.get('capability_delivery'))
@@ -1019,6 +1037,17 @@ class Agent:
                                 result = {'status':'verified', 'accepted_capabilities':[c['capability_id'] for c in result['capability_assessments']],
                                           'notice':'所列能力边界已核验，不代表实际工程任务完成；其他所需结果须另行执行工具并交付。'}
                         messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': json.dumps(agent_simulation.model_result(call['function']['name'], result), ensure_ascii=False)})
+                    if (record.get('read_execution') == 'application' and record.get('output_plan')
+                            and not batch_failed):
+                        needed = agent_read_execution.event_reserve(record['read_requests'])
+                        if len(record['events']) + reserved_reads() + needed > 15:
+                            raise ToolRefusal('Tool budget exceeded before declared read execution; no plan reads executed')
+                        record['read_execution_receipt'] = agent_read_execution.execute(
+                            record, invoke, cancelled=self.domain.stop.is_set)
+                        record['termination'] = {'reason':'application_read_plan_executed',
+                            'model_declared_finished':False, 'pending_request_keys':requested_scopes.pending(record)}
+                        save()
+                        break  # Source revalidation below remains mandatory, including partial execution.
                     if body.read_requests and body.infer_outputs and record.get('output_plan') and not batch_failed and not requested_scopes.pending(record):
                         record['termination'] = {'reason':'planned_outputs_submitted',
                             'model_declared_finished':bool(finish_requested), 'pending_request_keys':[]}
@@ -1087,6 +1116,8 @@ class Agent:
                         reader=recheck_missing)
                 answer = read_recovery.attach(answer,record)
                 answer = requested_scopes.attach(answer,self.domain,record['project_id'],record,reader=recheck_availability)
+                answer = agent_standards.attach(answer,self.domain,record['project_id'],record)
+                if agent_standards.searches(record):record['llm_commentary_policy']='audit_only'
                 answer.update(basis=[e['tool'] for e in record['events'] if e['status'] == 'succeeded' and e['tool'] in TOOLS],
                               failed_tool_calls=sum(e['status'] == 'failed' and e['tool'] in TOOLS for e in record['events']))
                 record.update(status='succeeded', answer=answer)
