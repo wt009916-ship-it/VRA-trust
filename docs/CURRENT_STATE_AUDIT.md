@@ -1,3 +1,5 @@
+2026-11-08构件识别基线：父提交f9fa47a三项CI已收口。新增14公开/生成参考输入和42次固定Florence-2推理，门窗定位与墙分割未过门槛，未接入应用、未加分，D08仍开放。见DRAWING_COMPONENT_SCREEN.md；调度仅以CURRENT_WORK_PLAN.md为准。
+
 2026-11-08集成候选更新：现有PR57整合55/56/58并连接材料方案Agent；176/144专项与真实浏览器核验完成，真实4B新题严格2/6，额外解释/输入区遮挡仍开放。未发布，75分保持；详SCENARIO_AGENT_INTEGRATION.md及CURRENT_WORK_PLAN.md。
 
 2026-11-08当前状态：已发布原型5209d744（PR53/54），证据复评75；本分支跨图标注关联为未发布候选，78后端/10前端及独立双页PDF浏览器流程通过，CI另验。D07仍部分，D08几何识别未完成；本批不加分。当前安排见CURRENT_WORK_PLAN.md，证据见DRAWING_ASSOCIATIONS_DELIVERY.md；下方历史评分和旧下一步仅为历史。
