@@ -1,0 +1,22 @@
+{
+  "scope": "Offline rendering of the actual final PDF; not browser acceptance or UX score",
+  "pdf_sha256": "12fc296d2c61e946fe15107260b3c58dfee5b5b479792db2d6babefeb94f4ef9",
+  "pages_inspected": [
+    6,
+    7
+  ],
+  "observed": "Chinese text, values, units and limitation statements visible; no numeric clipping in inspected pages.",
+  "open_issue": {
+    "id": "IL-06",
+    "severity": "low",
+    "function": "PDF pagination",
+    "reproduction": "Open the actual final report pages 6 and 7",
+    "expected": "Boundary label, energy values and peak row remain in one block or repeat the boundary label on continuation",
+    "actual": "Outdoor cooling peak row starts page 7, while its boundary label and energy values end page 6",
+    "evidence": [
+      "page-6.png",
+      "page-7.png"
+    ],
+    "suggested_fix": "Keep the three-row boundary group together during PDF composition; carry this low-impact layout change into next implementation batch, no duplicate full CI just for this observation."
+  }
+}
