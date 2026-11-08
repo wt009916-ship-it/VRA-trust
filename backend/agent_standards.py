@@ -1,7 +1,6 @@
 """Current source-bound standard citations, never model-written compliance advice."""
-from pathlib import Path
 from . import core
-from .standards import Standards
+from .standards import Standards, query_identity
 
 
 def searches(record):
@@ -17,10 +16,13 @@ def attach(answer, domain, pid, record):
         snapshot = core.hash_json(Standards(domain).catalog(pid))
     except (ValueError, KeyError, OSError):
         snapshot = None
-    retriever = core.sha(Path(__file__).with_name('standards.py'))
     for index, event in enumerate(events):
         result = event.get('result') or {}
-        current = (snapshot is not None and result.get('catalog_hash') == snapshot and
+        try:
+            retriever = query_identity(result)
+        except core.ValidationError:
+            retriever = None
+        current = (retriever is not None and snapshot is not None and result.get('catalog_hash') == snapshot and
                    result.get('retriever_hash') == retriever and
                    event.get('result_hash') == core.hash_json(result))
         answer['standard_query_progress'].append({'query_index': index + 1,

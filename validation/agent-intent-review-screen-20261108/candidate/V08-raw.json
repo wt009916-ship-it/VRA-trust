@@ -1,0 +1,1006 @@
+{
+  "case": {
+    "id": "V08",
+    "question": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。每栏给数值和单位即可，不加解释。",
+    "wants": [
+      {
+        "key": "device",
+        "kind": "operation",
+        "facts": [
+          "sample_count"
+        ],
+        "topics": []
+      },
+      {
+        "key": "build",
+        "kind": "schedule",
+        "facts": [
+          "forecast_finish_variance_days"
+        ],
+        "topics": []
+      },
+      {
+        "key": "carbon",
+        "kind": "lifecycle",
+        "facts": [
+          "stage.production"
+        ],
+        "topics": []
+      }
+    ]
+  },
+  "records": {
+    "device": {
+      "operation_id": "operation_54b3bb42f99a464c8ed8bedfcf3b70cd",
+      "project_id": "project_aad6188b22114b22a3cf4e77d3a47e1a",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh data quality window",
+        "file_id": "file_e63dc4c930f54d77b3c7ec5756c7bc1d",
+        "equipment": "Synthetic FCU",
+        "data_nature": "synthetic",
+        "source": "New independent synthetic CSV",
+        "time_column": "time",
+        "time_format": "iso8601",
+        "clock_basis": "offset_aware",
+        "clock_source": "Explicit UTC",
+        "expected_interval_seconds": 60.0,
+        "maximum_gap_seconds": 90.0,
+        "channels": [
+          {
+            "channel_id": "t",
+            "column": "t",
+            "name": "Temperature",
+            "unit": "degC",
+            "source": "Declared synthetic units"
+          }
+        ],
+        "rules": [
+          {
+            "rule_id": "hot",
+            "name": "Upper band",
+            "kind": "range",
+            "channel_id": "t",
+            "other_channel_id": null,
+            "unit": "degC",
+            "lower": null,
+            "upper": 22.0,
+            "threshold": null,
+            "minimum_duration_seconds": 60.0,
+            "gate_channel_id": null,
+            "gate_minimum": null,
+            "gate_unit": null,
+            "source": "Synthetic threshold, not a fault diagnosis"
+          }
+        ],
+        "evidence_ids": []
+      },
+      "result": {
+        "status": "events_detected",
+        "quality": {
+          "sample_count": 7,
+          "cell_issue_count": 1,
+          "cell_issues": [
+            {
+              "line": 5,
+              "channel_id": "t",
+              "reason": "missing"
+            }
+          ],
+          "cell_issues_truncated": false,
+          "gap_count": 1,
+          "gaps": [
+            {
+              "before_line": 6,
+              "seconds": 120.0
+            }
+          ],
+          "gaps_truncated": false,
+          "irregular_intervals": 1,
+          "first_time": "2026-07-12T00:00:00+00:00",
+          "last_time": "2026-07-12T00:07:00+00:00"
+        },
+        "channels": [
+          {
+            "channel_id": "t",
+            "name": "Temperature",
+            "input_unit": "degC",
+            "unit": "degC",
+            "valid_samples": 6,
+            "missing_or_invalid": 1,
+            "minimum": 20.0,
+            "maximum": 28.0,
+            "sample_mean": 24.0
+          }
+        ],
+        "rules": [
+          {
+            "rule_id": "hot",
+            "name": "Upper band",
+            "kind": "range",
+            "unit": "degC",
+            "evaluated_samples": 6,
+            "excluded_by_gate_samples": 0,
+            "unknown_samples": 1,
+            "violating_samples": 4,
+            "event_count": 2,
+            "events": [
+              {
+                "first_line": 3,
+                "last_line": 4,
+                "start": "2026-07-12T00:01:00+00:00",
+                "end": "2026-07-12T00:02:00+00:00",
+                "observed_span_seconds": 60.0,
+                "samples": 2
+              },
+              {
+                "first_line": 6,
+                "last_line": 7,
+                "start": "2026-07-12T00:05:00+00:00",
+                "end": "2026-07-12T00:06:00+00:00",
+                "observed_span_seconds": 60.0,
+                "samples": 2
+              }
+            ],
+            "events_truncated": false,
+            "state": "events_detected",
+            "recommended_checks": [
+              "复核对应行、采样时钟、单位和传感器校准；确认规则适用于当前工况。",
+              "核查设定值和运行边界，比较独立测点；不能仅凭越限判断故障部件。"
+            ],
+            "cause_confirmed": false
+          }
+        ],
+        "series_preview": [
+          {
+            "line": 2,
+            "timestamp": "2026-07-12T00:00:00+00:00",
+            "values": {
+              "t": 20.0
+            }
+          },
+          {
+            "line": 3,
+            "timestamp": "2026-07-12T00:01:00+00:00",
+            "values": {
+              "t": 24.0
+            }
+          },
+          {
+            "line": 4,
+            "timestamp": "2026-07-12T00:02:00+00:00",
+            "values": {
+              "t": 25.0
+            }
+          },
+          {
+            "line": 5,
+            "timestamp": "2026-07-12T00:03:00+00:00",
+            "values": {
+              "t": null
+            }
+          },
+          {
+            "line": 6,
+            "timestamp": "2026-07-12T00:05:00+00:00",
+            "values": {
+              "t": 27.0
+            }
+          },
+          {
+            "line": 7,
+            "timestamp": "2026-07-12T00:06:00+00:00",
+            "values": {
+              "t": 28.0
+            }
+          },
+          {
+            "line": 8,
+            "timestamp": "2026-07-12T00:07:00+00:00",
+            "values": {
+              "t": 20.0
+            }
+          }
+        ],
+        "preview_downsampled": false,
+        "source_status": "USER_DECLARED",
+        "data_nature": "synthetic",
+        "equipment": "Synthetic FCU",
+        "diagnosis": "NOT_CONFIRMED",
+        "control_action": "NONE",
+        "limitations": [
+          "仅检测声明规则，不把无告警当作设备健康；故障原因及维修措施需专业复核。",
+          "持续时间是首末异常样本间跨度；缺测或超出最大间隔会断开事件，不外推最后一个样本后的持续时间。",
+          "样本间连续性为明确采样假设，无法证明两次采样之间没有变化。均值是样本均值，不是时间加权均值或能耗积分。",
+          "本地时钟不自动推断时区或夏令时；预览最多200个抽样点，完整数据以原件和事件行号为准。",
+          "事件判断用原始十进制有理数计算；数值单元限128字符、40位有效数字和±100十进制指数。汇总与预览转为浮点显示。"
+        ]
+      },
+      "file_snapshot": {
+        "file_id": "file_e63dc4c930f54d77b3c7ec5756c7bc1d",
+        "project_id": "project_aad6188b22114b22a3cf4e77d3a47e1a",
+        "name": "fresh.csv",
+        "path": "files/file_e63dc4c930f54d77b3c7ec5756c7bc1d.csv",
+        "hash": "16dfa4464973aa08b1c4da6c42dd8e856e5645caa960fe0a6fe499ea6e94b791",
+        "size": 173,
+        "timestamp": "2026-11-08T08:40:15.044851+00:00",
+        "revision": 1
+      },
+      "source_snapshot": [],
+      "calculator_hash": "802d4864cdca672a9eae52e83e2537a662f83f897a2b6358e8a11c0f1699f0a3",
+      "created_at": "2026-11-08T08:40:15.073427+00:00",
+      "hash": "dc1b6b940e7cf9db3b2d60ad424f15cf6132c22c4bd75b1fab7686544de3a79e",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "events_detected"
+    },
+    "build": {
+      "schedule_id": "schedule_1653d9aee2724dda82f2c9f36e63fdf2",
+      "project_id": "project_aad6188b22114b22a3cf4e77d3a47e1a",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh progress network",
+        "scope": "Synthetic network, not site instructions",
+        "calendar": "continuous_elapsed_days",
+        "time_origin": "Synthetic day zero",
+        "tasks": [
+          {
+            "task_id": "A",
+            "name": "Task A",
+            "duration_days": 2.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [],
+            "demands": []
+          },
+          {
+            "task_id": "B",
+            "name": "Task B",
+            "duration_days": 5.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "A",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          },
+          {
+            "task_id": "C",
+            "name": "Task C",
+            "duration_days": 3.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "A",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          },
+          {
+            "task_id": "D",
+            "name": "Task D",
+            "duration_days": 2.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "B",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              },
+              {
+                "task_id": "C",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          }
+        ],
+        "resources": [],
+        "evidence_ids": [],
+        "progress": {
+          "as_of_day": 4.0,
+          "source": "Synthetic progress",
+          "observations": [
+            {
+              "task_id": "A",
+              "state": "completed",
+              "actual_start_day": 0.0,
+              "actual_finish_day": 2.0,
+              "remaining_days": null,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "B",
+              "state": "in_progress",
+              "actual_start_day": 2.0,
+              "actual_finish_day": null,
+              "remaining_days": 6.0,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "C",
+              "state": "in_progress",
+              "actual_start_day": 2.0,
+              "actual_finish_day": null,
+              "remaining_days": 1.0,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "D",
+              "state": "not_started",
+              "actual_start_day": null,
+              "actual_finish_day": null,
+              "remaining_days": null,
+              "source": "Synthetic observation"
+            }
+          ]
+        },
+        "import_file_id": null
+      },
+      "result": {
+        "calendar": "continuous_elapsed_days",
+        "time_origin": "Synthetic day zero",
+        "scope": "Synthetic network, not site instructions",
+        "missing_duration_tasks": [],
+        "source_status": "USER_DECLARED",
+        "site_safety": "NOT_ASSESSED",
+        "resource_leveling": "NOT_IMPLEMENTED",
+        "limitations": [
+          "连续经过日，从声明的第0天起算；不自动跳过周末、节假日、天气或夜间。",
+          "只支持完成到开始FS及非负间隔；零工期表示里程碑。关键路径基于声明工期，不代表施工安全或履约保证。",
+          "预测使用显式剩余工期；不按完成百分比推测，不自动补齐未报告工序。资源冲突未自动调平。"
+        ],
+        "status": "calculated",
+        "planned": {
+          "duration_days": "9",
+          "rows": [
+            {
+              "task_id": "A",
+              "name": "Task A",
+              "start_day": "0",
+              "finish_day": "2",
+              "latest_start_day": "0",
+              "latest_finish_day": "2",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            },
+            {
+              "task_id": "B",
+              "name": "Task B",
+              "start_day": "2",
+              "finish_day": "7",
+              "latest_start_day": "2",
+              "latest_finish_day": "7",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            },
+            {
+              "task_id": "C",
+              "name": "Task C",
+              "start_day": "2",
+              "finish_day": "5",
+              "latest_start_day": "4",
+              "latest_finish_day": "7",
+              "total_float_days": "2",
+              "free_float_days": "2",
+              "critical": false
+            },
+            {
+              "task_id": "D",
+              "name": "Task D",
+              "start_day": "7",
+              "finish_day": "9",
+              "latest_start_day": "7",
+              "latest_finish_day": "9",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            }
+          ],
+          "critical_tasks": [
+            "A",
+            "B",
+            "D"
+          ],
+          "critical_dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "lag_days": "0"
+            },
+            {
+              "from": "B",
+              "to": "D",
+              "lag_days": "0"
+            }
+          ],
+          "resources": {
+            "status": "not_assessed",
+            "conflicts": [],
+            "unknown": [],
+            "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+          },
+          "formulas": [
+            "ES=max(EF predecessor + FS lag), EF=ES+duration",
+            "LF=min(LS successor - lag), LS=LF-duration",
+            "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+          ]
+        },
+        "forecast": {
+          "status": "scenario",
+          "as_of_day": "4",
+          "finish_day": "12",
+          "finish_variance_days": "3",
+          "missing": [],
+          "unverified_actual_dependencies": [],
+          "rows": [
+            {
+              "task_id": "A",
+              "state": "completed",
+              "start_day": "0",
+              "finish_day": "2"
+            },
+            {
+              "task_id": "B",
+              "state": "in_progress",
+              "start_day": "2",
+              "finish_day": "10"
+            },
+            {
+              "task_id": "C",
+              "state": "in_progress",
+              "start_day": "2",
+              "finish_day": "5"
+            },
+            {
+              "task_id": "D",
+              "state": "not_started",
+              "start_day": "10",
+              "finish_day": "12"
+            }
+          ],
+          "resources": {
+            "status": "not_assessed",
+            "conflicts": [],
+            "unknown": [],
+            "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+          }
+        }
+      },
+      "source_snapshot": [],
+      "import_source": null,
+      "calculator_hash": "ddcb7730d511001cb6bcd6c2d026826e900a5c559fa31d0a223bfc2b0a33afbf",
+      "created_at": "2026-11-08T08:40:15.089012+00:00",
+      "hash": "7d66c5501399c126b135aa732d3dfa653de2da3b60d49bf3931df55f1fe47543",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "calculated"
+    },
+    "carbon": {
+      "lifecycle_id": "lifecycle_68a6b14469494c4ca86519c25facb7f2",
+      "project_id": "project_aad6188b22114b22a3cf4e77d3a47e1a",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh twelve-year inventory",
+        "area_m2": 960.0,
+        "study_years": 12,
+        "region": "US-CO",
+        "method": "Synthetic GWP arithmetic",
+        "functional_unit": "960 declared square metres over twelve years",
+        "import_file_id": null,
+        "boundaries": [
+          {
+            "stage": "production",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "transport",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "construction",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "operation",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "end_of_life",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          }
+        ],
+        "activities": [
+          {
+            "activity_id": "production",
+            "name": "production",
+            "stage": "production",
+            "quantity": 2.4,
+            "unit": "t",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "production-fixed",
+              "value": 0.6,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "production",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "transport",
+            "name": "transport",
+            "stage": "transport",
+            "quantity": 210.0,
+            "unit": "tkm",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "transport-fixed",
+              "value": 0.09,
+              "denominator": "tkm",
+              "numerator": "kgCO2e",
+              "stage": "transport",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "construction",
+            "name": "construction",
+            "stage": "construction",
+            "quantity": 150.0,
+            "unit": "kWh",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "construction-fixed",
+              "value": 0.37,
+              "denominator": "kWh",
+              "numerator": "kgCO2e",
+              "stage": "construction",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "operation",
+            "name": "operation",
+            "stage": "operation",
+            "quantity": 510.0,
+            "unit": "kWh",
+            "period": "annual",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "operation-fixed",
+              "value": 0.31,
+              "denominator": "kWh",
+              "numerator": "kgCO2e",
+              "stage": "operation",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "end_of_life",
+            "name": "end_of_life",
+            "stage": "end_of_life",
+            "quantity": 40.0,
+            "unit": "kg",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "end_of_life-fixed",
+              "value": 0.06,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "end_of_life",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          }
+        ]
+      },
+      "result": {
+        "status": "calculated",
+        "rows": [
+          {
+            "activity_id": "production",
+            "stage": "production",
+            "quantity_in_factor_unit": 2400.0,
+            "factor_unit": "kgCO2e/kg",
+            "period_multiplier": 1,
+            "kgco2e": 1440.0,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "transport",
+            "stage": "transport",
+            "quantity_in_factor_unit": 210.0,
+            "factor_unit": "kgCO2e/tkm",
+            "period_multiplier": 1,
+            "kgco2e": 18.9,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "construction",
+            "stage": "construction",
+            "quantity_in_factor_unit": 150.0,
+            "factor_unit": "kgCO2e/kWh",
+            "period_multiplier": 1,
+            "kgco2e": 55.5,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "operation",
+            "stage": "operation",
+            "quantity_in_factor_unit": 6120.0,
+            "factor_unit": "kgCO2e/kWh",
+            "period_multiplier": 12,
+            "kgco2e": 1897.2,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "end_of_life",
+            "stage": "end_of_life",
+            "quantity_in_factor_unit": 40.0,
+            "factor_unit": "kgCO2e/kg",
+            "period_multiplier": 1,
+            "kgco2e": 2.4,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          }
+        ],
+        "stages": {
+          "production": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 1440.0
+          },
+          "transport": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 18.9
+          },
+          "construction": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 55.5
+          },
+          "operation": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 1897.2
+          },
+          "end_of_life": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 2.4
+          }
+        },
+        "missing": [],
+        "boundary_total_kgco2e": 3414.0,
+        "kgco2e_m2_over_study_period": 3.55625,
+        "all_five_stages_entered": true,
+        "source_status": "USER_DECLARED",
+        "certification": "NOT_ASSESSED",
+        "issued_credits_t": null,
+        "limitations": [
+          "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+          "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+          "年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。",
+          "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+        ]
+      },
+      "source_snapshot": [],
+      "import_source": null,
+      "calculator_hash": "6d0b613ba5293b782a40d0b9580f1e66710ed941ca595a44ca5475b9c5cd4e3e",
+      "created_at": "2026-11-08T08:40:15.111863+00:00",
+      "hash": "4c6c38d08a0da4c2eab53a96d79b881697356d95ff59b1ca2d9edb128979b76c",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "calculated"
+    }
+  },
+  "task": {
+    "agent_id": "agent_e0ed2725f7394dadadb6f03e1ff8eecd",
+    "project_id": "project_aad6188b22114b22a3cf4e77d3a47e1a",
+    "question": "分三栏回答：设备只要样本总数，施工只要预测完工偏差，碳清单只要生产阶段累计排放。每栏给数值和单位即可，不加解释。",
+    "mode": "local_model",
+    "status": "failed",
+    "events": [
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:40:15.138434+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "result": {
+          "tool_calls_returned": 1,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 2313,
+        "finished_at": "2026-11-08T08:40:17.469877+00:00"
+      },
+      {
+        "tool": "requested_output_plan",
+        "arguments": {
+          "output_plan": [
+            {
+              "fact_keys": [
+                "sample_count",
+                "question_fragment_ids”: ["
+              ]
+            },
+            {
+              "fact_keys": [
+                "forecast_finish_variance_days",
+                "question_fragment_ids”: ["
+              ]
+            },
+            {
+              "fact_keys": [
+                "stage.production",
+                "question_fragment_ids”: ["
+              ]
+            }
+          ]
+        },
+        "status": "failed",
+        "started_at": "2026-11-08T08:40:17.473876+00:00",
+        "origin": "model",
+        "error": "6 validation errors for ToolArgs\noutput_plan.0.request_key\n  Field required [type=missing, input_value={'fact_keys': ['sample_co...on_fragment_ids”: [']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\noutput_plan.0.explanation_topics\n  Field required [type=missing, input_value={'fact_keys': ['sample_co...on_fragment_ids”: [']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\noutput_plan.1.request_key\n  Field required [type=missing, input_value={'fact_keys': ['forecast_...on_fragment_ids”: [']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\noutput_plan.1.explanation_topics\n  Field required [type=missing, input_value={'fact_keys': ['forecast_...on_fragment_ids”: [']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\noutput_plan.2.request_key\n  Field required [type=missing, input_value={'fact_keys': ['sta",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T08:40:17.486904+00:00"
+      },
+      {
+        "tool": "llm.request",
+        "status": "succeeded",
+        "started_at": "2026-11-08T08:40:17.493235+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "result": {
+          "tool_calls_returned": 1,
+          "engineering_values_accepted": false
+        },
+        "duration_ms": 8203,
+        "finished_at": "2026-11-08T08:40:25.704550+00:00"
+      },
+      {
+        "tool": "requested_output_plan",
+        "arguments": {
+          "output_plan": [
+            {
+              "fact_keys": [
+                "sample_count",
+                "cell_issue_count",
+                "gap_count",
+                "rule_event_sum",
+                "rule_unknown_sample_sum",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life",
+                "planned_duration_days",
+                "forecast_as_of_day",
+                "forecast_finish_day",
+                "forecast_finish_variance_days",
+                "boundary_total_kgco2e",
+                "kgco2e_m2_over_study_period",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life",
+                "planned_duration_days",
+                "forecast_as_of_day",
+                "forecast_finish_day",
+                "forecast_finish_variance_days",
+                "boundary_total_kgco2e",
+                "kgco2e_m2_over_study_period",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life"
+              ]
+            },
+            {
+              "fact_keys": [
+                "sample_count",
+                "cell_issue_count",
+                "gap_count",
+                "rule_event_sum",
+                "rule_unknown_sample_sum",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life",
+                "planned_duration_days",
+                "forecast_as_of_day",
+                "forecast_finish_day",
+                "forecast_finish_variance_days",
+                "boundary_total_kgco2e",
+                "kgco2e_m2_over_study_period",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life",
+                "planned_duration_days",
+                "forecast_as_of_day",
+                "forecast_finish_day",
+                "forecast_finish_variance_days",
+                "boundary_total_kgco2e",
+                "kgco2e_m2_over_study_period",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life"
+              ]
+            },
+            {
+              "fact_keys": [
+                "sample_count",
+                "cell_issue_count",
+                "gap_count",
+                "rule_event_sum",
+                "rule_unknown_sample_sum",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life",
+                "planned_duration_days",
+                "forecast_as_of_day",
+                "forecast_finish_day",
+                "forecast_finish_variance_days",
+                "boundary_total_kgco2e",
+                "kgco2e_m2_over_study_period",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life",
+                "planned_duration_days",
+                "forecast_as_of_day",
+                "forecast_finish_day",
+                "forecast_finish_variance_days",
+                "boundary_total_kgco2e",
+                "kgco2e_m2_over_study_period",
+                "stage.production",
+                "stage.construction",
+                "stage.operation",
+                "stage.end_of_life"
+              ]
+            }
+          ]
+        },
+        "status": "failed",
+        "started_at": "2026-11-08T08:40:25.710039+00:00",
+        "origin": "model",
+        "error": "9 validation errors for ToolArgs\noutput_plan.0.request_key\n  Field required [type=missing, input_value={'fact_keys': ['sample_co...', 'stage.end_of_life']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\noutput_plan.0.fact_keys\n  List should have at most 12 items after validation, not 29 [type=too_long, input_value=['sample_count', 'cell_is...n', 'stage.end_of_life'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/too_long\noutput_plan.0.explanation_topics\n  Field required [type=missing, input_value={'fact_keys': ['sample_co...', 'stage.end_of_life']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\noutput_plan.1.request_key\n  Field required [type=missing, input_value={'fact_keys': ['sample_co...', 'stage.end_of_life']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\noutput_plan.1.fact_keys\n  List should have a",
+        "duration_ms": 0,
+        "finished_at": "2026-11-08T08:40:25.722560+00:00"
+      },
+      {
+        "tool": "llm.request",
+        "status": "failed",
+        "started_at": "2026-11-08T08:40:25.731576+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "error": "服务商调用失败；不会降级为假成功",
+        "duration_ms": 20953,
+        "finished_at": "2026-11-08T08:40:46.688028+00:00"
+      }
+    ],
+    "answer": null,
+    "created_at": "2026-11-08T08:40:15.132921+00:00",
+    "llm_commentary": null,
+    "error": "本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果",
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 2,
+    "provider_recovery_attempts": 0,
+    "professional_deliveries": [],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "device",
+        "kind": "operation",
+        "purpose": "results",
+        "record_id": "operation_54b3bb42f99a464c8ed8bedfcf3b70cd"
+      },
+      {
+        "request_key": "build",
+        "kind": "schedule",
+        "purpose": "results",
+        "record_id": "schedule_1653d9aee2724dda82f2c9f36e63fdf2"
+      },
+      {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_68a6b14469494c4ca86519c25facb7f2"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "review_intent": true,
+    "revision": 12,
+    "read_request_progress": [
+      {
+        "request_key": "device",
+        "kind": "operation",
+        "purpose": "results",
+        "record_id": "operation_54b3bb42f99a464c8ed8bedfcf3b70cd",
+        "state": "output_plan_missing"
+      },
+      {
+        "request_key": "build",
+        "kind": "schedule",
+        "purpose": "results",
+        "record_id": "schedule_1653d9aee2724dda82f2c9f36e63fdf2",
+        "state": "output_plan_missing"
+      },
+      {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_68a6b14469494c4ca86519c25facb7f2",
+        "state": "output_plan_missing"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T08:40:46.697055+00:00"
+  }
+}
