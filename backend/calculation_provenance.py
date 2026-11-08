@@ -58,7 +58,7 @@ def validity(domain, record, calculator_version):
     return {'stale_reasons': list(dict.fromkeys(reasons)), 'stale_details': details}
 
 
-def persist(domain, kind, record, expected_bindings=None):
+def persist(domain, kind, record, expected_bindings=None, *, pre_insert_check=None):
     """Validate captured and approved revisions in the same SQLite write transaction.
 
     Another connection/process may revise before BEGIN, but cannot revise between
@@ -99,4 +99,6 @@ def persist(domain, kind, record, expected_bindings=None):
                     raise core.ValidationError('Calculation file changed; import and review again')
         if expected_bindings is not None and core.hash_json(actual_files) != expected_bindings['files_hash']:
             raise core.ValidationError('Calculation files changed; submit a new reviewed plan')
+        if pre_insert_check is not None:
+            pre_insert_check()
         return domain.store.put_in(con, kind, record)
