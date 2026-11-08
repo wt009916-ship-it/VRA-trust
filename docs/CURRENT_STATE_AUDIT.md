@@ -1,3 +1,5 @@
+> 调度提示（2026-11-09）：本文件保留各时点审计与历史更新，不是当前待办。开始新工作先读 [CURRENT_WORK_PLAN.md](CURRENT_WORK_PLAN.md) 和 [CURRENT_SCORE.json](CURRENT_SCORE.json)，再追踪代码确认缺口。下文旧“下一步”、旧分数及旧“未实现”不能覆盖当前入口；历史原文不删除。
+
 当前状态入口：CURRENT_WORK_PLAN.md；当前版本分数：CURRENT_SCORE.json。下方是原阶段记录，不以历史分数和待办覆盖当前结论。
 
 当前入口（2026-11-08）：正式44f344e/76分；PR60/61精确CI均成功，候选76.5。本批材料热工→明确IDF改模→真实年度比较完成134相关后端/12前端及23项实际HTTP核验；公开参考节能1.609718%，U降幅27.614808%，不混用。浏览器按用户选择暂不验，本批不加分，详MATERIAL_MODEL_BRIDGE_DELIVERY/EVIDENCE。仅CURRENT_WORK_PLAN调度。

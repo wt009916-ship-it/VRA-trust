@@ -1,0 +1,140 @@
+F...............F.F..F.....                                              [100%]
+================================== FAILURES ===================================
+__________ test_native_mixed_annual_device_energy_and_ideal_delivery __________
+
+native = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-enduse-pytest-first/test_native_mixed_annual_devic0/native')
+
+    def test_native_mixed_annual_device_energy_and_ideal_delivery(native):
+        r=inspect(native)
+        assert r['hours']==8760 and r['area_m2']==50 and len(r['rows'])==14
+>       assert r['model']['ideal_systems']==['Ideal System']
+E       AssertionError: assert ['Ideal'] == ['Ideal System']
+E         
+E         At index 0 diff: 'Ideal' != 'Ideal System'
+E         Use -v to get more diff
+
+tests\test_end_use.py:40: AssertionError
+_ test_corrupt_or_incompatible_native_data_rejected[UPDATE Simulations SET EnergyPlusVersion='EnergyPlus, Version 25.1.0'] _
+
+native = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-enduse-pytest-first/test_corrupt_or_incompatible_n15/native')
+query = "UPDATE Simulations SET EnergyPlusVersion='EnergyPlus, Version 25.1.0'"
+
+    @pytest.mark.parametrize('query',[
+     "DELETE FROM TabularDataWithStrings WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "INSERT INTO TabularDataWithStrings SELECT * FROM TabularDataWithStrings WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "UPDATE TabularDataWithStrings SET Units='kW' WHERE TableName='End Uses' AND RowName='Fans'",
+     "UPDATE TabularDataWithStrings SET Value='NaN' WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "UPDATE TabularDataWithStrings SET Value='-1' WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "UPDATE TabularDataWithStrings SET Value='999' WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "UPDATE TabularDataWithStrings SET RowName='Mystery' WHERE TableName='End Uses' AND RowName='Fans'",
+     "UPDATE TabularDataWithStrings SET ColumnName='Unknown fuel' WHERE TableName='End Uses' AND ColumnName='Natural Gas'",
+     "DELETE FROM ReportDataDictionary WHERE Name='Fans:Electricity'",
+     "INSERT INTO ReportDataDictionary SELECT * FROM ReportDataDictionary WHERE Name='Fans:Electricity'",
+     "UPDATE ReportDataDictionary SET Units='kWh' WHERE Name='Fans:Electricity'",
+     "DELETE FROM ReportData WHERE rowid=(SELECT MIN(rowid) FROM ReportData)",
+     "INSERT INTO ReportData SELECT * FROM ReportData WHERE rowid=(SELECT MIN(rowid) FROM ReportData)",
+     "UPDATE ReportData SET Value=-1 WHERE rowid=(SELECT MIN(rowid) FROM ReportData)",
+     "UPDATE ReportData SET Value=1e20 WHERE rowid=(SELECT MIN(rowid) FROM ReportData)",
+     "UPDATE Simulations SET EnergyPlusVersion='EnergyPlus, Version 25.1.0'",
+     "UPDATE Time SET Month=2,Day=29 WHERE TimeIndex=(SELECT MIN(TimeIndex) FROM Time)",
+     "DROP TABLE ReportDataDictionary",
+    ])
+    def test_corrupt_or_incompatible_native_data_rejected(native,query):
+        mutate(native,query)
+>       with pytest.raises(core.ValidationError):inspect(native)
+                                                 ^^^^^^^^^^^^^^^
+
+tests\test_end_use.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_end_use.py:31: in inspect
+    def inspect(rd,mtd=True):return end_use.inspect(rd/'output/eplusout.sql',rd/'input/model.idf',rd/'output/eplusout.mtd' if mtd else None)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend\end_use.py:66: in inspect
+    version,env,clocks,_,_=environment_rows(con,None);indices=[r['TimeIndex'] for r in clocks]
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+con = <sqlite3.Connection object at 0x0000020B3E0A8400>
+environment_index = None
+
+    def environment_rows(con, environment_index):
+        sim = bounded(con, 'SELECT EnergyPlusVersion,Completed,CompletedSuccessfully FROM Simulations', limit=1)
+        if (len(sim) != 1 or tuple(sim[0])[1:] != (1, 1) or not isinstance(sim[0][0], str)
+                or not re.search(r'\bVersion\s+9\.0\.1(?:[-,\s]|$)', sim[0][0])):
+>           raise HourlyEvidenceError('Expected successful pinned EnergyPlus 9.0.1 simulation')
+E           backend.hourly_thermal.HourlyEvidenceError: Expected successful pinned EnergyPlus 9.0.1 simulation
+
+backend\hourly_thermal.py:81: HourlyEvidenceError
+_ test_corrupt_or_incompatible_native_data_rejected[DROP TABLE ReportDataDictionary] _
+
+native = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-enduse-pytest-first/test_corrupt_or_incompatible_n17/native')
+query = 'DROP TABLE ReportDataDictionary'
+
+    @pytest.mark.parametrize('query',[
+     "DELETE FROM TabularDataWithStrings WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "INSERT INTO TabularDataWithStrings SELECT * FROM TabularDataWithStrings WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "UPDATE TabularDataWithStrings SET Units='kW' WHERE TableName='End Uses' AND RowName='Fans'",
+     "UPDATE TabularDataWithStrings SET Value='NaN' WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "UPDATE TabularDataWithStrings SET Value='-1' WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "UPDATE TabularDataWithStrings SET Value='999' WHERE TableName='End Uses' AND RowName='Fans' AND ColumnName='Electricity'",
+     "UPDATE TabularDataWithStrings SET RowName='Mystery' WHERE TableName='End Uses' AND RowName='Fans'",
+     "UPDATE TabularDataWithStrings SET ColumnName='Unknown fuel' WHERE TableName='End Uses' AND ColumnName='Natural Gas'",
+     "DELETE FROM ReportDataDictionary WHERE Name='Fans:Electricity'",
+     "INSERT INTO ReportDataDictionary SELECT * FROM ReportDataDictionary WHERE Name='Fans:Electricity'",
+     "UPDATE ReportDataDictionary SET Units='kWh' WHERE Name='Fans:Electricity'",
+     "DELETE FROM ReportData WHERE rowid=(SELECT MIN(rowid) FROM ReportData)",
+     "INSERT INTO ReportData SELECT * FROM ReportData WHERE rowid=(SELECT MIN(rowid) FROM ReportData)",
+     "UPDATE ReportData SET Value=-1 WHERE rowid=(SELECT MIN(rowid) FROM ReportData)",
+     "UPDATE ReportData SET Value=1e20 WHERE rowid=(SELECT MIN(rowid) FROM ReportData)",
+     "UPDATE Simulations SET EnergyPlusVersion='EnergyPlus, Version 25.1.0'",
+     "UPDATE Time SET Month=2,Day=29 WHERE TimeIndex=(SELECT MIN(TimeIndex) FROM Time)",
+     "DROP TABLE ReportDataDictionary",
+    ])
+    def test_corrupt_or_incompatible_native_data_rejected(native,query):
+        mutate(native,query)
+>       with pytest.raises(core.ValidationError):inspect(native)
+                                                 ^^^^^^^^^^^^^^^
+
+tests\test_end_use.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_end_use.py:31: in inspect
+    def inspect(rd,mtd=True):return end_use.inspect(rd/'output/eplusout.sql',rd/'input/model.idf',rd/'output/eplusout.mtd' if mtd else None)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend\end_use.py:71: in inspect
+    dictionary=bounded(con,"SELECT * FROM ReportDataDictionary WHERE IsMeter=1 AND ReportingFrequency='Hourly'",limit=10000)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+con = <sqlite3.Connection object at 0x0000020B3E0A87C0>
+query = "SELECT * FROM ReportDataDictionary WHERE IsMeter=1 AND ReportingFrequency='Hourly'"
+parameters = (), limit = 10000
+
+    def bounded(con, query, parameters=(), limit=MAX_HOURS):
+>       rows = con.execute(query, parameters).fetchmany(limit + 1)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       sqlite3.OperationalError: no such table: ReportDataDictionary
+
+backend\hourly_thermal.py:71: OperationalError
+_______ test_hourly_meter_missing_its_source_mapping_rejected_even_zero _______
+
+native = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-enduse-pytest-first/test_hourly_meter_missing_its_0/native')
+
+    def test_hourly_meter_missing_its_source_mapping_rejected_even_zero(native):
+        p=native/'output/eplusout.mtd';p.write_text(p.read_text().replace('OnMeter=Heating:Electricity [J]','OnMeter=Unrelated:Electricity [J]'))
+>       with pytest.raises(core.ValidationError,match='provenance'):inspect(native)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValidationError
+
+tests\test_end_use.py:91: Failed
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_end_use.py::test_native_mixed_annual_device_energy_and_ideal_delivery
+FAILED tests/test_end_use.py::test_corrupt_or_incompatible_native_data_rejected[UPDATE Simulations SET EnergyPlusVersion='EnergyPlus, Version 25.1.0']
+FAILED tests/test_end_use.py::test_corrupt_or_incompatible_native_data_rejected[DROP TABLE ReportDataDictionary]
+FAILED tests/test_end_use.py::test_hourly_meter_missing_its_source_mapping_rejected_even_zero
+4 failed, 23 passed, 1 warning in 7.40s
