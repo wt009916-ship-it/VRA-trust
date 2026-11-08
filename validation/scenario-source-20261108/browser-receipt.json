@@ -1,0 +1,70 @@
+{
+  "port": 18779,
+  "source_hash": "e3f3a2a285c5d668b4b438dd11a3280df06ee1f6fda35f0187b78d999253c339",
+  "project_id": "project_7f9ec77ba9ed4f58aca58251e8312b3c",
+  "cad_id": "cad_bf3d98f82d5c441793363390e1877126",
+  "file_id": "file_5e4ef90274d44583a944028b2ec465bf",
+  "materialset_id": "materialset_e2fefd6dc1ef450ca03ce66ad4c144aa",
+  "takeoff_id": "takeoff_43451fc731954ccb8e396168ee6b5f26",
+  "product_id": 21,
+  "created_scenarios": 1,
+  "stopped": true,
+  "private_state_deleted": true,
+  "fixture_original_unchanged": true,
+  "browser_checks": [
+    "offline blocks submit and retains draft",
+    "4s timeout blocks submit and ignores late response",
+    "hidden CAD view blocks submit and rechecks on return",
+    "actual isolated source corruption blocks submit and retains draft",
+    "source mutation inside preflight produces stale response with zero scenario POSTs",
+    "restoration permits one actual calculated scenario",
+    "successful refresh preserves current report link",
+    "closed old form response cannot enable new stale single-component form",
+    "single-component recovery retains its own draft"
+  ],
+  "coverage_limits": [
+    "Draft retained only in mounted form; browser reload/project replacement persistence not implemented.",
+    "Polling at five seconds and preflight do not eliminate all TOCTOU windows; server independently checks source.",
+    "Client current state checks source takeoff only; project/evidence/quote/factor changes remain validated by server at calculation/report access.",
+    "Actual tab visibility tested through application view switching; document visibilitychange handler tested by shared code path, not a separate OS-tab browser scenario.",
+    "Old browser request was cancelled; abort-ignoring reader case covered separately by unit test.",
+    "Screenshot confirms visible source warning and retained text, not an off-screen submit button; button state checked by DOM assertions."
+  ],
+  "observed_test_failures": [
+    {
+      "kind": "test harness",
+      "error": "ERR_MODULE_NOT_FOUND scenario-source.js",
+      "meaning": "New module not implemented yet; actual original defect independently evidenced by prior withdrawn.yml."
+    },
+    {
+      "kind": "environment",
+      "error": "npm-cli.js MODULE_NOT_FOUND",
+      "recovery": "Use existing node test runner and Vite JS entry; no install or dependency changes."
+    },
+    {
+      "kind": "browser locator",
+      "error": "Ref f1e441 not found",
+      "recovery": "Current named button after automatic history redraw."
+    },
+    {
+      "kind": "browser locator",
+      "error": "getByRole button isDisabled timeout after hiding CAD view",
+      "recovery": "includeHidden:true; no repeat of passed offline/timeout cases."
+    },
+    {
+      "kind": "browser locator",
+      "error": "details:not([open]) nth(2) timeout",
+      "recovery": "Expand first remaining closed details repeatedly; geometry/source unchanged."
+    },
+    {
+      "kind": "test timing",
+      "error": "Across-tool preflight suspension exceeded 4s",
+      "recovery": "Counted only as timeout blocking, then separate in-process HTTP fault-control test within deadline."
+    },
+    {
+      "kind": "browser script environment",
+      "error": "require is not defined; ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING",
+      "recovery": "Both failed before filesystem mutation; use isolated localhost fault-control helper."
+    }
+  ]
+}
