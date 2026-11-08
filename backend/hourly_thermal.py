@@ -74,7 +74,7 @@ def bounded(con, query, parameters=(), limit=MAX_HOURS):
     return rows
 
 
-def _read(con, names, environment_index):
+def environment_rows(con, environment_index):
     sim = bounded(con, 'SELECT EnergyPlusVersion,Completed,CompletedSuccessfully FROM Simulations', limit=1)
     if (len(sim) != 1 or tuple(sim[0])[1:] != (1, 1) or not isinstance(sim[0][0], str)
             or not re.search(r'\bVersion\s+9\.0\.1(?:[-,\s]|$)', sim[0][0])):
@@ -116,6 +116,12 @@ def _read(con, names, environment_index):
         clock_map[idx] = i
         stamps.append({'time_index': idx, 'year': row['Year'], 'month': month, 'day': day,
                        'hour_ending': hour, 'dst': dst, 'interval_minutes': 60})
+    return sim[0][0], env, clocks, clock_map, stamps
+
+
+def _read(con, names, environment_index):
+    sql_version, env, clocks, clock_map, stamps = environment_rows(con, environment_index)
+    env_id = env['EnvironmentPeriodIndex']
     zones = bounded(con, 'SELECT ZoneName,Multiplier,ListMultiplier FROM Zones', limit=MAX_ZONES)
     if any(not isinstance(r['ZoneName'], str) for r in zones):
         raise HourlyEvidenceError('Invalid native zone name')
@@ -173,7 +179,7 @@ def _read(con, names, environment_index):
         profiles.append({'selected_for': mode + '_coincident_peak', 'times': stamps[start:start + 24],
                          'building': {k: v[start:start + 24] for k, v in building.items()},
                          'zones': {name: {k: v[start:start + 24] for k, v in values.items()} for name, values in series.items()}})
-    return {'engine_sql_version': sim[0][0], 'environment': dict(env), 'hour_count': len(clocks),
+    return {'engine_sql_version': sql_version, 'environment': dict(env), 'hour_count': len(clocks),
             'coverage': 'all_model_zones_all_environment_hours', 'zones': summaries, 'building': totals,
             'peak_day_profiles': profiles}
 

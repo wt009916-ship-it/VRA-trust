@@ -1,3 +1,5 @@
+当前状态入口：CURRENT_WORK_PLAN.md；当前版本分数：CURRENT_SCORE.json。下方是原阶段记录，不以历史分数和待办覆盖当前结论。
+
 当前入口（2026-11-08）：正式44f344e/76分；PR60/61精确CI均成功，候选76.5。本批材料热工→明确IDF改模→真实年度比较完成134相关后端/12前端及23项实际HTTP核验；公开参考节能1.609718%，U降幅27.614808%，不混用。浏览器按用户选择暂不验，本批不加分，详MATERIAL_MODEL_BRIDGE_DELIVERY/EVIDENCE。仅CURRENT_WORK_PLAN调度。
 
 当前入口（2026-11-08）：PR57/59已合并并发布44f344e；混合负载验收完成。新模型故障恢复为独立未发布候选，实际新任务对照与限制见AGENT_READ_RECOVERY_DELIVERY末节，调度仅CURRENT_WORK_PLAN。下方为历史阶段记录。

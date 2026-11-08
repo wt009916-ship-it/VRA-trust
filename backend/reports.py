@@ -148,6 +148,24 @@ def report_pdf(report):
             story.append(para('当前没有可核验的逐时热工结果：' + hourly.get('reason', '缺少依据')))
         for note in hourly['limitations']:
             story.append(para(note))
+    ideal = metrics.get('ideal_loads')
+    if ideal:
+        section('05.5  理想空调显潜热与新风（独立边界）')
+        rows([('状态', ideal['status']), ('模型 / SQL SHA256', ideal['model_sha256']+' / '+ideal['sql_sha256'])])
+        summary = ideal.get('summary') if ideal['status']=='calculated_model_scenario' else None
+        if summary:
+            rows([('原生环境 / 小时数', summary['environment']['EnvironmentName']+' / '+str(summary['hour_count'])),
+                  ('覆盖范围', str(summary['coverage']['ideal_system_count'])+'套声明理想系统；其他设备不包含于该汇总')])
+            for group,label in [('zone','区内交付'),('supply','供风处理'),('outdoor','新风负荷'),('recovery','热回收')]:
+                for mode,direction in [('heating','加热'),('cooling','冷却')]:
+                    items=summary['aggregate'];total=items[f'{group}_total_{mode}_W'];clock=total['peak']['time']
+                    rows([('边界 / 方向',label+' / '+direction),
+                          ('期间显热 / 潜热 / 合计 kWh', ' / '.join(numeric(items[f'{group}_{part}_{mode}_W']['energy_kWh']) for part in ('sensible','latent','total'))),
+                          ('合计小时峰值 kW / 时刻',numeric(total['peak']['value']/1000)+f" / {clock['month']}/{clock['day']} {clock['hour_ending']:02d}:00")])
+            story.append(para('四个边界不能相加为总耗电；原生数值已经包含分区/分组倍率。设备逐项绑定、未覆盖分区、其他设备和SQL字典行见同源JSON。'))
+        else:
+            story.append(para('无可交付数值：'+ideal.get('reason','未核验')))
+        for note in ideal['limitations']:story.append(para(note))
     section("06  SQL 来源定位")
     for key, locator in metrics.get("locators", {}).items():
         story.append(para(key + " : " + " / ".join(str(locator.get(k, "")) for k in ["table", "row", "column", "unit", "raw_value"])))

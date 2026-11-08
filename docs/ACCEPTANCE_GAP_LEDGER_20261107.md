@@ -1,3 +1,5 @@
+> 当前性说明（2026-11-08）：下方含PR56/59时点和后续部分增补，不是当前发布/候选分数。请先读CURRENT_WORK_PLAN.md。G02的新IFC截面交付见IFC_BEAM_HANDOFF_DELIVERY.md；原历史判定保留，不把87条视作本轮已全部复验。
+
 # 原始验收需求与当前证据总账
 
 2026-11-08，已发布340dfdb（PR56）；整合候选PR59基于PR57，尚未发布。旧版75与本次候选证据复核分开，依据RESCORE_20261108_EVIDENCE_REVIEW.md。原v1逐字归档；不是改写历史通过/失败。CURRENT_WORK_PLAN.md仍为唯一调度入口。
