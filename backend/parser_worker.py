@@ -36,8 +36,13 @@ def main():
                 result=parse(source)
             maximum=8*1024**2
         elif kind=='standards':
-            from standards_worker import extract
-            result=extract(source);maximum=4*1024**2
+            from standards_worker import extract, select_page
+            if len(options)>1: raise ValueError('Unexpected standards options')
+            if options:
+                if json.loads(options[0])!={'operation':'select_page'}: raise ValueError('Invalid standards operation')
+                result=select_page(source,int(page),target.with_name('selected.pdf'))
+            else: result=extract(source)
+            maximum=4*1024**2
         elif kind=='drawing':
             from drawing_worker import parse
             if len(options)>1:raise ValueError('Unexpected drawing options')

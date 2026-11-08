@@ -142,7 +142,7 @@ def _workspace():
 def run(kind,source,page=1,options=None):
     if kind not in PACKAGES:raise core.ValidationError('Unknown parser')
     encoded=json.dumps(options,allow_nan=False,separators=(',',':')) if options is not None else None
-    if encoded is not None and (kind not in {'drawing','cad'} or len(encoded)>1024):raise core.ValidationError('Invalid parser options')
+    if encoded is not None and (kind not in {'drawing','cad','standards'} or len(encoded)>1024):raise core.ValidationError('Invalid parser options')
     if not _capacity.acquire(False):raise core.ValidationError('Native parsers busy; retry later')
     started=time.monotonic()
     try:

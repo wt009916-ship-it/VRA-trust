@@ -34,6 +34,8 @@ def register_extensions(app, domain, auth):
     register_material_takeoff(app, cad)
     lifecycle = Lifecycle(domain)
     standards = Standards(domain)
+    from .standard_ocr import register as register_standard_ocr
+    register_standard_ocr(app, domain)
     engineering = Engineering(domain)
     costs = Costs(domain)
     schedules = Schedules(domain)
