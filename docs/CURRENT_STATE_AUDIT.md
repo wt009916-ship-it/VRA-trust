@@ -1,3 +1,5 @@
+当前入口（2026-11-08）：正式44f344e/76分；PR60精确CI成功/候选76.5。DWG候选新增隔离转换与严格解析，真实API验收见CAD_BIM_DELIVERY末节及DWG_EVIDENCE；浏览器因Work关闭本地控制待验，本批不加分。仅CURRENT_WORK_PLAN调度。下方保留历史。
+
 当前入口（2026-11-08）：PR57/59已合并并发布44f344e；混合负载验收完成。新模型故障恢复为独立未发布候选，实际新任务对照与限制见AGENT_READ_RECOVERY_DELIVERY末节，调度仅CURRENT_WORK_PLAN。下方为历史阶段记录。
 
 当前版本索引（2026-11-08）：正式340dfdb；PR59整合候选新增非数值来源复核与澄清出口已完成应用验证，真实模型10题仅5题严格通过、真实澄清续答未验。候选独立版本证据复核75/100，完整CI以最终提交回执为准。详RESCORE_20261108_EVIDENCE_REVIEW末节、AGENT_PHASE_DELIVERY增量；仅CURRENT_WORK_PLAN调度，以下各批文字为历史状态，不再据旧待办重复开发。

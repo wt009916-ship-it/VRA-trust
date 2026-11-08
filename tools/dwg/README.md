@@ -1,0 +1,13 @@
+# Optional local DWG conversion
+
+This candidate supports partial DWG-to-DXF conversion on Windows only. It never downloads a runtime in response to an upload. Original DWG files remain unchanged. Unsupported objects/styles are listed; this is not lossless conversion or engineering approval. DXF that requires any ezdxf audit repair is rejected.
+
+The reviewed engine is [ACadSharp 3.8.35](https://www.nuget.org/packages/ACadSharp/3.8.35), package SHA256 `020013744e7415e6d7e244d1b2376be25614b83c2596a0ec3a9056237db759d4`, repository commit `90c6f871ff6f37a66170316ebd7a736c1b1ca828`. The hash pins downloaded package bytes; publisher signature verification is not claimed. ACadSharp uses the [MIT license](https://github.com/DomCR/ACadSharp/blob/master/LICENSE); its notice and installed .NET notices accompany generated runtime distributions. Public test drawing redistribution permission is not assumed; no upstream drawing or binary is committed here.
+
+Use `python tools/dwg/build_runtime.py --help`. Supply the official package, existing .NET root containing 8.0.21, Windows Framework csc.exe, and a new empty output location. The command builds our bridge and copies a private runtime; it does not install system software or change PATH. Preserve all generated license/third-party notices when packaging. Administrators must assess/update the reviewed .NET patch baseline before commercial deployment; this development validation does not assert current patch compliance.
+
+Set `VRA_DWG_RUNTIME` to the generated directory before starting an isolated test API. The manifest is a trusted administrator configuration, never a user upload. An unconfigured/non-Windows host reports unavailable and refuses conversion. All runtime code bytes are checked when changed and every run copies/rehashes its read-only snapshot. Same-account malicious administrators are outside this boundary.
+
+The native converter runs under Windows LPAC/job limits (network denied, 1 GiB private commit, 20 CPU seconds, 40 wall seconds). The derived DXF enters the existing separate isolated strict parser. Limits: 10 MiB source/output, one concurrent conversion, 20 conversion records per project, 256 MiB free-space reserve. This is not a global storage quota. Converter errors, missing receipts, resource violations and parser repairs refuse success. Warnings remain visible, even on successful partial extraction. Source, output or runtime changes withdraw quantities and the guarded DXF download. Backup preserves the registered derivative.
+
+Validation and unresolved cases: docs/CAD_BIM_DELIVERY.md, docs/DWG_EVIDENCE.json. Browser interaction remains unverified while local browser control is disabled. No local production runtime is enabled by this PR.

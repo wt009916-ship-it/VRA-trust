@@ -235,6 +235,18 @@ def register_extensions(app, domain, auth):
     def lifecycle_html(project_id: str, lifecycle_id: str):
         return lifecycle_report(lifecycle.view(project_id, lifecycle_id))
 
+    @app.get('/api/projects/{project_id}/dwg-capability')
+    def dwg_capability(project_id: str):
+        from . import dwg_runtime
+        return {'available':dwg_runtime.current() is not None,'coverage':'partial_not_lossless',
+                'platform':'windows','max_bytes':10*1024**2}
+
+    @app.get('/api/projects/{project_id}/cad-inspections/{cad_id}/converted.dxf')
+    def dwg_download(project_id: str, cad_id: str):
+        from .dwg import download
+        return FileResponse(download(cad,project_id,cad_id),media_type='application/dxf',
+                            filename='converted-partial.dxf',headers={'X-Content-Type-Options':'nosniff'})
+
     @app.post('/api/projects/{project_id}/cad-current-states')
     def cad_current_states(project_id: str, body: CurrentStates):
         return cad.current_states(project_id, body)
