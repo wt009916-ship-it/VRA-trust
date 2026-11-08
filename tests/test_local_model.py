@@ -132,14 +132,18 @@ def test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs(
     for tool in tools + scoped:
         name = tool['function']['name']; schema = tool['function']['parameters']
         assert schema['additionalProperties'] is False
-        # Only field display titles are omitted; every constraint and reachable definition is unchanged.
+        # Only display titles are omitted; every non-title property, default and validation constraint is unchanged.
         assert schema['properties'] == {k:{a:b for a,b in source['properties'][k].items() if a!='title'} for k in TOOL_FIELDS[name]}
         references = set()
         def walk(node):
             if isinstance(node, dict):
                 if '$ref' in node:
                     key = node['$ref'].removeprefix('#/$defs/')
-                    assert schema['$defs'][key] == source['$defs'][key]
+                    expected = {k:v for k,v in source['$defs'][key].items() if k != 'title'}
+                    if 'properties' in expected:
+                        expected['properties'] = {name:{k:v for k,v in field.items() if k != 'title'}
+                                                  for name,field in expected['properties'].items()}
+                    assert schema['$defs'][key] == expected
                     if key not in references:
                         references.add(key); walk(schema['$defs'][key])
                 for value in node.values(): walk(value)

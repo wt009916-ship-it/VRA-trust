@@ -1,6 +1,7 @@
 import {escape as esc} from './api.js';
 import {engineeringArtifactMarkup} from './agent-engineering.js';
 import {simulationArtifactMarkup} from './agent-simulation.js';
+import {standardAgentMarkup} from './standard-results.js';
 
 const value=x=>esc(x??'—');
 export function selectedReadProgressMarkup(task) {
@@ -71,5 +72,5 @@ export function checkedDeliveryMarkup(answer) {
   const kinds={thermal:'热工构造',lifecycle:'阶段碳清单',cost:'材料成本',engineering:'梁分析',schedule:'施工进度',operation:'设备规则核查',scenario:'材料两方案对照'};
   const missing=answer.checked_missing||[];
   const absence=missing.length?`<section aria-label="当前记录缺失说明"><h3>记录可用性已核验 · 尚无所需结果</h3><p>以下是当前项目记录范围的检查，不代表工程计算完成，也不表示应用不支持该功能。</p>${missing.map(r=>`<article><h4>${esc(kinds[r.kind]||r.kind)}</h4><p>${r.scope==='entire_project_kind'?'完整项目目录中没有该类记录。':'指定编号在当前项目中不可用；不能据此判断其他项目是否存在该记录。'}</p>${r.record_id?`<small class="mono">${esc(r.record_id)}</small>`:''}<p>核查时间：${esc(r.checked_at)}</p></article>`).join('')}<p>请核对项目与编号；需要计算时提交完整参数和本次授权。失败后不自动重试写操作，缺失结果不记为零。</p></section>`:'';
-  return simulationArtifactMarkup(answer)+section+limitations+absence+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
+  return standardAgentMarkup(answer)+simulationArtifactMarkup(answer)+section+limitations+absence+(answer.artifacts||[]).map(professionalArtifactMarkup).join('');
 }

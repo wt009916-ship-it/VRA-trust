@@ -9331,6 +9331,49 @@
         ],
         "title": "EvidenceStatus"
       },
+      "ExactTarget": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "title": "Key"
+          },
+          "standard_code": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 2,
+            "title": "Standard Code"
+          },
+          "edition": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edition"
+          },
+          "clause_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9.()-]+$",
+            "title": "Clause Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "standard_code",
+          "clause_id"
+        ],
+        "title": "ExactTarget"
+      },
       "Factor": {
         "properties": {
           "value": {
@@ -10631,6 +10674,37 @@
         "title": "QuantityLink"
       },
       "Query": {
+        "oneOf": [
+          {
+            "properties": {
+              "targets": {
+                "maxItems": 0
+              }
+            }
+          },
+          {
+            "properties": {
+              "targets": {
+                "minItems": 1
+              },
+              "text": {
+                "const": ""
+              },
+              "standard_code": {
+                "type": "null"
+              },
+              "edition": {
+                "type": "null"
+              },
+              "clause_id": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "targets"
+            ]
+          }
+        ],
         "properties": {
           "text": {
             "type": "string",
@@ -10688,6 +10762,15 @@
             "minimum": 1.0,
             "title": "Limit",
             "default": 10
+          },
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/ExactTarget"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Targets",
+            "description": "Exact batch; leave text and single-query fields empty. Each target is resolved separately."
           }
         },
         "additionalProperties": false,

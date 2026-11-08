@@ -26,7 +26,7 @@ from . import agent_recovery as read_recovery
 from . import agent_requests as requested_scopes
 from . import agent_simulation
 from . import agent_outputs
-from . import agent_read_execution
+from . import agent_read_execution, agent_standards
 from . import agent_intent_catalog
 
 
@@ -145,7 +145,7 @@ TOOLS = {
     'material_cost_read': '按material_cost_id读取当前来源核验后的成本清单；材料成本不等于工程总价或报价认证',
     'beam_analysis_list': '只读列出项目最近6条梁分析记录及当前状态；不创建荷载或判断结构安全',
     'beam_analysis_read': '读取来源及版本核验后的梁分析；需 engineering_id；不得把计算值当作安全或合规结论',
-    'standards_search': '只读检索本项目已复核规范摘录；需 standards_query 和查询日期；不虚构条款或自动判定合规',
+    'standards_search': '检索已复核规范。多条精确查询用targets，各自指定编号、版次、条款；text留空。需as_of。不判定合规。',
     'project_get': '读取当前项目建筑声明',
     'evidence_list': '读取证据清单及来源定位',
     'evidence_validate': '运行 Evidence Gate，检查缺口与准入',
@@ -284,7 +284,12 @@ class Agent:
 
             collect(parameters)
             if definitions:
-                parameters['$defs'] = definitions
+                # Display titles are not constraints. Keep property names (even
+                # a field named title), defaults, unions and all validation rules.
+                parameters['$defs'] = {key: {**{k:v for k,v in value.items() if k not in {'title','properties'}},
+                    **({'properties': {field: {k:v for k,v in definition.items() if k != 'title'}
+                        for field,definition in value['properties'].items()}} if 'properties' in value else {})}
+                    for key,value in definitions.items()}
             tools.append({'type': 'function', 'function': {'name': name, 'description': desc, 'parameters': parameters}})
         return tools
 
@@ -327,7 +332,7 @@ class Agent:
                     'llm_commentary_policy': 'audit_only', 'answer_checked_at': core.now(),
                     'historical_task_completion': (record.get('answer') or {}).get('task_completion'),
                     'event_snapshot_notice': '工具事件是历史快照；下方原生结果按当前来源重新核验，失效后不显示旧数值。'}
-        if (record.get('professional_deliveries') or record.get('capability_delivery') or record.get('missing_deliveries') or record.get('read_requests')) and record['status'] == 'succeeded':
+        if (record.get('professional_deliveries') or record.get('capability_delivery') or record.get('missing_deliveries') or record.get('read_requests') or agent_standards.searches(record)) and record['status'] == 'succeeded':
             answer = current_answer(self.domain, project_id, record['professional_deliveries'])
             if record.get('capability_delivery'):
                 answer = capabilities.attach(answer, record['capability_delivery'])
@@ -335,6 +340,7 @@ class Agent:
                 answer = missing_records.attach(answer,self.domain,project_id,record['missing_deliveries'])
             answer = read_recovery.attach(answer,record)
             answer = requested_scopes.attach(answer,self.domain,project_id,record)
+            answer = agent_standards.attach(answer,self.domain,project_id,record)
             answer['basis'] = (record.get('answer') or {}).get('basis', [])
             return {**record, 'answer': answer, 'read_request_progress':requested_scopes.progress(record,answer), 'calculation_progress': calculations.progress(record, answer), 'answer_checked_at': core.now(),
                     'historical_task_completion': (record.get('answer') or {}).get('task_completion'),
@@ -1110,6 +1116,8 @@ class Agent:
                         reader=recheck_missing)
                 answer = read_recovery.attach(answer,record)
                 answer = requested_scopes.attach(answer,self.domain,record['project_id'],record,reader=recheck_availability)
+                answer = agent_standards.attach(answer,self.domain,record['project_id'],record)
+                if agent_standards.searches(record):record['llm_commentary_policy']='audit_only'
                 answer.update(basis=[e['tool'] for e in record['events'] if e['status'] == 'succeeded' and e['tool'] in TOOLS],
                               failed_tool_calls=sum(e['status'] == 'failed' and e['tool'] in TOOLS for e in record['events']))
                 record.update(status='succeeded', answer=answer)

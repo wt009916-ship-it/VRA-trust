@@ -1,14 +1,14 @@
 import {request,post,escape as esc} from './api.js';
+import {standardQueryBody,standardResultMarkup,createStandardMonitor} from './standard-results.js';
 
 const input=(name,label,type='text',extra='')=>`<label>${label}<input name="${name}" type="${type}" ${extra}></label>`;
 const states={pending:'待复核',confirmed:'人工已复核',rejected:'已撤回'};
-const outcomes={CITATIONS_FOUND:'找到已复核引文',VERSION_CONFLICT:'存在版本冲突，请先处理资料库',NOT_FOUND_IN_REVIEWED_INDEX:'本项目已复核索引中未找到'};
 
 export async function standardsWorkspace(state,host,action){
   const base='/projects/'+state.project.project_id;
   let fileId=null, preview=null, catalog=[];
   host.innerHTML=`<div class="view-heading"><div><h1>规范资料与条款</h1><p>查询返回原文摘录和页码。未命中不代表规范不存在；人工复核和检索结果均不替代合规判断。</p></div></div>
-    <form id="norm-search"><div class="form-grid">${input('text','检索关键词或问题')}${input('standard_code','规范编号（不含年份，可选）')}${input('edition','版本年份（可选）')}${input('clause_id','精确条款号（可选）')}${input('as_of','查询适用日期','date','required')}</div><button class="primary" type="submit">检索已复核条款</button></form><div id="norm-result" aria-live="polite"></div>
+    <form id="norm-search"><label>查询方式<select name="mode"><option value="single">关键词或单条精确查询</option><option value="batch">多规范 / 多条款精确对照</option></select></label><div class="form-grid" id="norm-single-fields">${input('text','检索关键词或问题')}${input('standard_code','规范编号（不含年份，可选）')}${input('edition','版本年份（可选）')}${input('clause_id','精确条款号（可选）')}</div><div id="norm-target-panel" hidden><p>每条独立指定规范、版次及条款，最多8条。缺失和版本冲突逐项显示。</p><div id="norm-targets"></div><button id="norm-target-add" type="button">添加查询条款</button></div>${input('as_of','查询适用日期','date','required')}<button class="primary" type="submit">检索已复核条款</button></form><div id="norm-result" aria-live="polite"></div>
     <h2>项目规范资料库</h2><div id="norm-catalog"></div>
     <details><summary>复核或撤回一份资料</summary><form id="norm-review"><label>资料版本<select name="standard_id" id="norm-review-choice" required></select></label><label>复核结论<select name="state"><option value="confirmed">人工已复核</option><option value="rejected">撤回该版本</option></select></label><label>核验依据<textarea name="basis" required minlength="10" placeholder="记录原件、条款编号、摘录范围、页码、有效日期和适用范围的核对依据。"></textarea></label><p>确认是当前账号的人工声明；软件未自动验证发布机构、最新版本或扫描文字正确性。</p><button type="submit">保存复核记录</button></form></details>
     <details id="norm-import-panel"><summary>登记 PDF 与条款摘录</summary><p>保留原始PDF。文字层摘录校验所在页和条款编号；扫描页采用显式人工摘录。每份最多500条，每项目最多50份。</p>
@@ -18,6 +18,22 @@ export async function standardsWorkspace(state,host,action){
     <label>资料使用授权或公开依据<textarea name="permission" minlength="5" required></textarea></label><label>规范适用范围<textarea name="scope" minlength="5" required></textarea></label><label>版本状态核验依据<textarea name="status_basis" minlength="10" required></textarea></label>
     <h3>条款摘录</h3><div id="norm-clauses"></div><button id="norm-add-clause" type="button">添加条款摘录</button><button class="primary" type="submit">登记为待复核资料</button></form></details>`;
   const search=host.querySelector('#norm-search'), form=host.querySelector('#norm-add'), clauses=host.querySelector('#norm-clauses');
+  const targets=host.querySelector('#norm-targets'), resultHost=host.querySelector('#norm-result');
+  let searchTicket=0;
+  const active=()=>host.isConnected&&state.project.project_id===base.split('/').at(-1)&&!document.hidden;
+  const monitor=createStandardMonitor({isActive:active,fetchQuery:(id,signal)=>request(base+'/standard-queries/'+id,{signal}),
+    paint:(r,message)=>{if(!host.isConnected)return;resultHost.innerHTML=r?standardResultMarkup(r.result,state.project.project_id)+`<p><a href="/api${base}/standard-queries/${encodeURIComponent(r.normquery_id)}" target="_blank" rel="noopener">保存的查询与来源快照</a></p>`:'<p role="status">'+esc(message||'当前查询未核验')+'</p>';}});
+  function addTarget(){
+    if(targets.children.length>=8)return;
+    const row=document.createElement('fieldset');row.innerHTML='<legend>精确查询条款</legend><div class="form-grid">'+input('target_code','规范编号','text','required')+input('target_edition','版本年份（可选）')+input('target_clause','条款号','text','required')+'</div><button type="button">移除查询条款</button>';
+    row.querySelector('button').onclick=()=>{row.remove();};targets.append(row);
+  }
+  addTarget();addTarget();host.querySelector('#norm-target-add').onclick=addTarget;
+  function mode(){const batch=search.elements.mode.value==='batch';host.querySelector('#norm-target-panel').hidden=!batch;host.querySelector('#norm-single-fields').hidden=batch;
+    for(const e of targets.querySelectorAll('input'))e.disabled=!batch;
+    for(const e of host.querySelectorAll('#norm-single-fields input'))e.disabled=batch;}
+  search.elements.mode.onchange=mode;mode();
+  const timer=setInterval(()=>{if(!host.isConnected){clearInterval(timer);monitor.stop();return;}if(!active()){monitor.invalidate('页面未处于活动状态，返回后重新核验引文。');return;}monitor.refresh();},5000);
   const today=new Date(); search.elements.as_of.value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
   function addClause(){
     const row=document.createElement('fieldset');
@@ -44,16 +60,19 @@ export async function standardsWorkspace(state,host,action){
     const fields=['standard_code','edition','title','publisher','source_url','jurisdiction','effective_from','retired_on','status_checked_on','permission','scope','status_basis'];
     const input=Object.fromEntries(fields.map(k=>[k,b[k]]));input.file_id=fileId;input.retired_on=input.retired_on||null;
     input.clauses=[...clauses.children].map(row=>Object.fromEntries(['clause_id','pdf_page','printed_page','topic','transcription','coverage','text'].map(k=>[k,k==='pdf_page'?Number(row.querySelector('[name='+k+']').value):row.querySelector('[name='+k+']').value])));
-    await post(base+'/standards',input);await refresh();host.querySelector('#norm-result').textContent='资料已登记为待复核；复核前不会作为检索依据。';host.querySelector('#norm-import-panel').open=false;
+    searchTicket++;monitor.select(null);await post(base+'/standards',input);await refresh();host.querySelector('#norm-result').textContent='资料已登记为待复核；复核前不会作为检索依据。';host.querySelector('#norm-import-panel').open=false;
   },e.submitter);};
   host.querySelector('#norm-review').onsubmit=e=>{e.preventDefault();action(async()=>{
     const values=Object.fromEntries(new FormData(e.target)),r=catalog.find(x=>x.standard_id===values.standard_id);if(!r)throw Error('请选择资料版本');
-    await post(base+'/standards/'+r.standard_id+'/review',{expected_revision:r.revision,state:values.state,basis:values.basis});await refresh();host.querySelector('#norm-result').textContent='复核状态已更新。旧检索快照不再用于当前判断，请重新检索。';
+    searchTicket++;monitor.select(null);await post(base+'/standards/'+r.standard_id+'/review',{expected_revision:r.revision,state:values.state,basis:values.basis});await refresh();host.querySelector('#norm-result').textContent='复核状态已更新。旧检索快照不再用于当前判断，请重新检索。';
   },e.submitter);};
   search.onsubmit=e=>{e.preventDefault();action(async()=>{
-    const values=Object.fromEntries(new FormData(search));for(const key of ['standard_code','edition','clause_id'])if(!values[key])values[key]=null;
-    const r=await post(base+'/standard-queries',values);if(!host.isConnected)return;const result=r.result;
-    host.querySelector('#norm-result').innerHTML=`<h2>${outcomes[result.status]}</h2><p>${esc(result.notice)}</p>${result.conflicts.length?'<p>冲突编号：'+result.conflicts.map(esc).join('、')+'</p>':''}${result.citations.map(c=>`<article><h3>${esc(c.standard_code)}-${esc(c.edition)} · ${esc(c.clause_id)}</h3><p>${esc(c.title)} · PDF第${c.pdf_page}页 / 印刷页${esc(c.printed_page)} · ${c.coverage==='excerpt'?'片段摘录':'人工声明完整条款'} · ${c.transcription==='manual_scan'?'扫描件人工摘录':'文字层位置已核对'}</p><blockquote>${esc(c.text)}</blockquote><p>适用范围：${esc(c.scope)}；地区：${esc(c.jurisdiction)}</p><p><a href="/api${base}/standards/${c.standard_id}/source.pdf#page=${c.pdf_page}" target="_blank" rel="noopener">核对原件与上下文</a> · <a href="${esc(c.source_url)}" target="_blank" rel="noopener noreferrer">登记的来源网站</a></p></article>`).join('')}<p>因未复核、来源变化或日期不满足而排除 ${result.excluded.length} 份资料。匹配总数 ${result.total_matches}，显示前${result.citations.length}条。</p><details><summary>未采用资料的原因</summary><pre>${esc(JSON.stringify(result.excluded,null,2))}</pre></details><a href="/api${base}/standard-queries/${r.normquery_id}" target="_blank" rel="noopener">保存的查询与来源快照（自动核验是否失效）</a>`;
+    const ticket=++searchTicket;monitor.select(null);
+    const values=Object.fromEntries(new FormData(search));
+    const rows=[...targets.children].map(row=>({standard_code:row.querySelector('[name=target_code]').value,edition:row.querySelector('[name=target_edition]').value,clause_id:row.querySelector('[name=target_clause]').value}));
+    const r=await post(base+'/standard-queries',standardQueryBody(values,rows));
+    if(ticket!==searchTicket||!host.isConnected)return;
+    monitor.select(r.normquery_id);await monitor.refresh();
   },e.submitter);};
   await refresh();
 }
