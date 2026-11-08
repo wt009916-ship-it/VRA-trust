@@ -1,0 +1,339 @@
+{
+  "lifecycle_id": "lifecycle_53238c350c4c4e9089660ab66cb83c57",
+  "project_id": "project_bfe07ac5c9e34e6584a4f81b6a0be8a7",
+  "project_revision": 1,
+  "input": {
+    "name": "Independent audit inventory",
+    "area_m2": 927.2,
+    "study_years": 60,
+    "region": "US-CO",
+    "method": "Synthetic GWP test",
+    "functional_unit": "Same hypothetical office over twenty years",
+    "import_file_id": null,
+    "boundaries": [
+      {
+        "stage": "construction",
+        "included": true,
+        "reason": "Independent arithmetic fixture"
+      },
+      {
+        "stage": "end_of_life",
+        "included": true,
+        "reason": "Independent arithmetic fixture"
+      },
+      {
+        "stage": "operation",
+        "included": true,
+        "reason": "Independent arithmetic fixture"
+      },
+      {
+        "stage": "production",
+        "included": true,
+        "reason": "Independent arithmetic fixture"
+      },
+      {
+        "stage": "transport",
+        "included": true,
+        "reason": "Independent arithmetic fixture"
+      }
+    ],
+    "activities": [
+      {
+        "activity_id": "production",
+        "name": "production",
+        "stage": "production",
+        "quantity": 2.0,
+        "unit": "t",
+        "period": "whole_period",
+        "replacement_overlap": "excluded",
+        "source": "Independent arithmetic input",
+        "factor": {
+          "factor_id": "production-test",
+          "value": 0.5,
+          "denominator": "kg",
+          "numerator": "kgCO2e",
+          "stage": "production",
+          "source": "Synthetic test factor; not official",
+          "publisher": "Test author",
+          "version": "1",
+          "year": 2025,
+          "region": "*",
+          "method": "Synthetic GWP test",
+          "evidence_id": null
+        }
+      },
+      {
+        "activity_id": "transport",
+        "name": "transport",
+        "stage": "transport",
+        "quantity": 200.0,
+        "unit": "tkm",
+        "period": "whole_period",
+        "replacement_overlap": "excluded",
+        "source": "Independent arithmetic input",
+        "factor": {
+          "factor_id": "transport-test",
+          "value": 0.1,
+          "denominator": "tkm",
+          "numerator": "kgCO2e",
+          "stage": "transport",
+          "source": "Synthetic test factor; not official",
+          "publisher": "Test author",
+          "version": "1",
+          "year": 2025,
+          "region": "*",
+          "method": "Synthetic GWP test",
+          "evidence_id": null
+        }
+      },
+      {
+        "activity_id": "construction",
+        "name": "construction",
+        "stage": "construction",
+        "quantity": 100.0,
+        "unit": "kWh",
+        "period": "whole_period",
+        "replacement_overlap": "excluded",
+        "source": "Independent arithmetic input",
+        "factor": {
+          "factor_id": "construction-test",
+          "value": 0.5,
+          "denominator": "kWh",
+          "numerator": "kgCO2e",
+          "stage": "construction",
+          "source": "Synthetic test factor; not official",
+          "publisher": "Test author",
+          "version": "1",
+          "year": 2025,
+          "region": "*",
+          "method": "Synthetic GWP test",
+          "evidence_id": null
+        }
+      },
+      {
+        "activity_id": "operation",
+        "name": "operation",
+        "stage": "operation",
+        "quantity": 1000.0,
+        "unit": "kWh",
+        "period": "annual",
+        "replacement_overlap": "excluded",
+        "source": "Independent arithmetic input",
+        "factor": {
+          "factor_id": "operation-test",
+          "value": 0.5,
+          "denominator": "kWh",
+          "numerator": "kgCO2e",
+          "stage": "operation",
+          "source": "Synthetic test factor; not official",
+          "publisher": "Test author",
+          "version": "1",
+          "year": 2025,
+          "region": "*",
+          "method": "Synthetic GWP test",
+          "evidence_id": null
+        }
+      },
+      {
+        "activity_id": "end_of_life",
+        "name": "end_of_life",
+        "stage": "end_of_life",
+        "quantity": 10.0,
+        "unit": "t",
+        "period": "whole_period",
+        "replacement_overlap": "excluded",
+        "source": "Independent arithmetic input",
+        "factor": {
+          "factor_id": "end_of_life-test",
+          "value": 2.0,
+          "denominator": "t",
+          "numerator": "kgCO2e",
+          "stage": "end_of_life",
+          "source": "Synthetic test factor; not official",
+          "publisher": "Test author",
+          "version": "1",
+          "year": 2025,
+          "region": "*",
+          "method": "Synthetic GWP test",
+          "evidence_id": null
+        }
+      }
+    ],
+    "replacement_scope": "separate_ledger",
+    "replacements": [
+      {
+        "component_id": "wall-1",
+        "name": "Synthetic wall assembly",
+        "condition": "new",
+        "service_life_years": 20.0,
+        "remaining_life_years": null,
+        "life_source": "Synthetic independent schedule, not a recommended lifetime",
+        "life_evidence_id": "evidence_f3bd867f37c9485abeae8828d23a7b66",
+        "endpoint": "strictly_before_horizon",
+        "scope": "same_function_replacements_only",
+        "overlap_review": "Reviewed synthetic base inputs exclude every replacement event; initial and final disposal stay separate.",
+        "processes": [
+          {
+            "process": "production",
+            "included": true,
+            "reason": "Synthetic replacement process only",
+            "activity": {
+              "activity_id": "replacement-production",
+              "name": "production",
+              "stage": "production",
+              "quantity": 0.12,
+              "unit": "t",
+              "period": "whole_period",
+              "replacement_overlap": "excluded",
+              "source": "Independent arithmetic input",
+              "factor": {
+                "factor_id": "replacement-production",
+                "value": 1.8,
+                "denominator": "kg",
+                "numerator": "kgCO2e",
+                "stage": "production",
+                "source": "Synthetic test factor; not official",
+                "publisher": "Test author",
+                "version": "1",
+                "year": 2025,
+                "region": "*",
+                "method": "Synthetic GWP test",
+                "evidence_id": null
+              }
+            }
+          },
+          {
+            "process": "transport",
+            "included": true,
+            "reason": "Synthetic replacement process only",
+            "activity": {
+              "activity_id": "replacement-transport",
+              "name": "transport",
+              "stage": "transport",
+              "quantity": 7.2,
+              "unit": "tkm",
+              "period": "whole_period",
+              "replacement_overlap": "excluded",
+              "source": "Independent arithmetic input",
+              "factor": {
+                "factor_id": "replacement-transport",
+                "value": 0.09,
+                "denominator": "tkm",
+                "numerator": "kgCO2e",
+                "stage": "transport",
+                "source": "Synthetic test factor; not official",
+                "publisher": "Test author",
+                "version": "1",
+                "year": 2025,
+                "region": "*",
+                "method": "Synthetic GWP test",
+                "evidence_id": null
+              }
+            }
+          },
+          {
+            "process": "installation",
+            "included": true,
+            "reason": "Synthetic replacement process only",
+            "activity": {
+              "activity_id": "replacement-installation",
+              "name": "installation",
+              "stage": "construction",
+              "quantity": 8.0,
+              "unit": "kWh",
+              "period": "whole_period",
+              "replacement_overlap": "excluded",
+              "source": "Independent arithmetic input",
+              "factor": {
+                "factor_id": "replacement-installation",
+                "value": 0.42,
+                "denominator": "kWh",
+                "numerator": "kgCO2e",
+                "stage": "construction",
+                "source": "Synthetic test factor; not official",
+                "publisher": "Test author",
+                "version": "1",
+                "year": 2025,
+                "region": "*",
+                "method": "Synthetic GWP test",
+                "evidence_id": null
+              }
+            }
+          },
+          {
+            "process": "removal",
+            "included": true,
+            "reason": "Synthetic replacement process only",
+            "activity": {
+              "activity_id": "replacement-removal",
+              "name": "removal",
+              "stage": "end_of_life",
+              "quantity": 120.0,
+              "unit": "kg",
+              "period": "whole_period",
+              "replacement_overlap": "excluded",
+              "source": "Independent arithmetic input",
+              "factor": {
+                "factor_id": "replacement-removal",
+                "value": 0.08,
+                "denominator": "kg",
+                "numerator": "kgCO2e",
+                "stage": "end_of_life",
+                "source": "Synthetic test factor; not official",
+                "publisher": "Test author",
+                "version": "1",
+                "year": 2025,
+                "region": "*",
+                "method": "Synthetic GWP test",
+                "evidence_id": null
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "result": null,
+  "source_snapshot": [
+    {
+      "type": "literature",
+      "name": "Synthetic lifetime source",
+      "source_file": "file_96f8a074d9c649399ff362ada934af43",
+      "source_locator": "synthetic_life",
+      "value": null,
+      "unit": null,
+      "authority": "Test only",
+      "permission": "synthetic test",
+      "uncertainty": null,
+      "confidence": null,
+      "acquisition_method": "invented arithmetic fixture",
+      "responsible_person": "test runner",
+      "status": "ASSUMED",
+      "scheme_id": null,
+      "evidence_id": "evidence_f3bd867f37c9485abeae8828d23a7b66",
+      "project_id": "project_bfe07ac5c9e34e6584a4f81b6a0be8a7",
+      "revision": 1,
+      "timestamp": "2026-11-08T10:42:40.709550+00:00",
+      "hash": "595610c1359b3de13b2bcd7e5950047c7a76634ce8716e51450207b47ff2bbc7",
+      "review_state": "pending",
+      "review_note": null
+    }
+  ],
+  "import_source": null,
+  "calculator_hash": "1f69ebebea410f4bf558f8d2b8852af40bc188eb12c084aee6140a41d8294b96",
+  "created_at": "2026-11-08T10:42:40.732350+00:00",
+  "hash": "5d75292bb1280a44ce82c36c8d70a2ed9af993433af081439e7af5d3fe94481d",
+  "revision": 1,
+  "stale_reasons": [
+    "evidence_f3bd867f37c9485abeae8828d23a7b66"
+  ],
+  "stale_details": [
+    {
+      "code": "evidence_rejected",
+      "subject_id": "evidence_f3bd867f37c9485abeae8828d23a7b66",
+      "expected": "pending",
+      "current": "rejected"
+    }
+  ],
+  "status": "stale"
+}

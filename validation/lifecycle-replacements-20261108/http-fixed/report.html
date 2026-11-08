@@ -1,0 +1,502 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>阶段化碳清单</title><style>body{font:16px/1.7 system-ui,sans-serif;max-width:960px;margin:40px auto;padding:20px;color:#172e31}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccd6d4;padding:10px;text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}</style><h1>Independent audit inventory · 未核证</h1><p>不是完整性认证或碳资产凭证。</p><p>评估期 60 年 · 面积 927.2 m² · 地区 US-CO</p><p>方法：Synthetic GWP test<br>功能单位：Same hypothetical office over twenty years</p><h2>声明边界总排放：31549.216 kgCO₂e</h2><p>单位面积（整个评估期）：34.02633305 kgCO₂e/m²</p><table><tr><th>阶段</th><th>状态</th><th>kgCO₂e</th><th>范围依据</th></tr><tr><td>施工</td><td>calculated</td><td>50</td><td>Independent arithmetic fixture</td></tr><tr><td>寿命末期</td><td>calculated</td><td>20</td><td>Independent arithmetic fixture</td></tr><tr><td>使用阶段（运行及替换）</td><td>calculated</td><td>30459.216</td><td>Independent arithmetic fixture</td></tr><tr><td>材料生产</td><td>calculated</td><td>1000</td><td>Independent arithmetic fixture</td></tr><tr><td>材料运输</td><td>calculated</td><td>20</td><td>Independent arithmetic fixture</td></tr></table><ul><li>五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。</li><li>CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。</li><li>年运行量线性累计；替换仅按声明寿命离散发生，因子按当前版本固定，不预测电网、衰减或未来技术。</li><li>替换账列入使用阶段，逐项排除初次安装和评估终点处置；声明不重叠不等于独立证明没有重复计数。</li><li>replacement_scope=not_assessed 表示未评估替换；即使五阶段有值也不代表完整生命周期。</li><li>不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。</li></ul><h2>替换事件账（使用阶段内）</h2><table><tr><th>构件</th><th>年份</th><th>次数</th><th>kgCO₂e</th></tr><tr><td>Synthetic wall assembly</td><td>[20.0, 40.0]</td><td>2</td><td>459.216</td></tr></table><p>严格早于评估终点；初次安装及终点处置另账。寿命和排放因子均为声明情景。</p><h2>输入、逐项复算与来源快照</h2><pre>{
+  &quot;lifecycle_id&quot;: &quot;lifecycle_53238c350c4c4e9089660ab66cb83c57&quot;,
+  &quot;project_id&quot;: &quot;project_bfe07ac5c9e34e6584a4f81b6a0be8a7&quot;,
+  &quot;project_revision&quot;: 1,
+  &quot;input&quot;: {
+    &quot;name&quot;: &quot;Independent audit inventory&quot;,
+    &quot;area_m2&quot;: 927.2,
+    &quot;study_years&quot;: 60,
+    &quot;region&quot;: &quot;US-CO&quot;,
+    &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+    &quot;functional_unit&quot;: &quot;Same hypothetical office over twenty years&quot;,
+    &quot;import_file_id&quot;: null,
+    &quot;boundaries&quot;: [
+      {
+        &quot;stage&quot;: &quot;construction&quot;,
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;
+      },
+      {
+        &quot;stage&quot;: &quot;end_of_life&quot;,
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;
+      },
+      {
+        &quot;stage&quot;: &quot;operation&quot;,
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;
+      },
+      {
+        &quot;stage&quot;: &quot;production&quot;,
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;
+      },
+      {
+        &quot;stage&quot;: &quot;transport&quot;,
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;
+      }
+    ],
+    &quot;activities&quot;: [
+      {
+        &quot;activity_id&quot;: &quot;production&quot;,
+        &quot;name&quot;: &quot;production&quot;,
+        &quot;stage&quot;: &quot;production&quot;,
+        &quot;quantity&quot;: 2.0,
+        &quot;unit&quot;: &quot;t&quot;,
+        &quot;period&quot;: &quot;whole_period&quot;,
+        &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+        &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+        &quot;factor&quot;: {
+          &quot;factor_id&quot;: &quot;production-test&quot;,
+          &quot;value&quot;: 0.5,
+          &quot;denominator&quot;: &quot;kg&quot;,
+          &quot;numerator&quot;: &quot;kgCO2e&quot;,
+          &quot;stage&quot;: &quot;production&quot;,
+          &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+          &quot;publisher&quot;: &quot;Test author&quot;,
+          &quot;version&quot;: &quot;1&quot;,
+          &quot;year&quot;: 2025,
+          &quot;region&quot;: &quot;*&quot;,
+          &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+          &quot;evidence_id&quot;: null
+        }
+      },
+      {
+        &quot;activity_id&quot;: &quot;transport&quot;,
+        &quot;name&quot;: &quot;transport&quot;,
+        &quot;stage&quot;: &quot;transport&quot;,
+        &quot;quantity&quot;: 200.0,
+        &quot;unit&quot;: &quot;tkm&quot;,
+        &quot;period&quot;: &quot;whole_period&quot;,
+        &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+        &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+        &quot;factor&quot;: {
+          &quot;factor_id&quot;: &quot;transport-test&quot;,
+          &quot;value&quot;: 0.1,
+          &quot;denominator&quot;: &quot;tkm&quot;,
+          &quot;numerator&quot;: &quot;kgCO2e&quot;,
+          &quot;stage&quot;: &quot;transport&quot;,
+          &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+          &quot;publisher&quot;: &quot;Test author&quot;,
+          &quot;version&quot;: &quot;1&quot;,
+          &quot;year&quot;: 2025,
+          &quot;region&quot;: &quot;*&quot;,
+          &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+          &quot;evidence_id&quot;: null
+        }
+      },
+      {
+        &quot;activity_id&quot;: &quot;construction&quot;,
+        &quot;name&quot;: &quot;construction&quot;,
+        &quot;stage&quot;: &quot;construction&quot;,
+        &quot;quantity&quot;: 100.0,
+        &quot;unit&quot;: &quot;kWh&quot;,
+        &quot;period&quot;: &quot;whole_period&quot;,
+        &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+        &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+        &quot;factor&quot;: {
+          &quot;factor_id&quot;: &quot;construction-test&quot;,
+          &quot;value&quot;: 0.5,
+          &quot;denominator&quot;: &quot;kWh&quot;,
+          &quot;numerator&quot;: &quot;kgCO2e&quot;,
+          &quot;stage&quot;: &quot;construction&quot;,
+          &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+          &quot;publisher&quot;: &quot;Test author&quot;,
+          &quot;version&quot;: &quot;1&quot;,
+          &quot;year&quot;: 2025,
+          &quot;region&quot;: &quot;*&quot;,
+          &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+          &quot;evidence_id&quot;: null
+        }
+      },
+      {
+        &quot;activity_id&quot;: &quot;operation&quot;,
+        &quot;name&quot;: &quot;operation&quot;,
+        &quot;stage&quot;: &quot;operation&quot;,
+        &quot;quantity&quot;: 1000.0,
+        &quot;unit&quot;: &quot;kWh&quot;,
+        &quot;period&quot;: &quot;annual&quot;,
+        &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+        &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+        &quot;factor&quot;: {
+          &quot;factor_id&quot;: &quot;operation-test&quot;,
+          &quot;value&quot;: 0.5,
+          &quot;denominator&quot;: &quot;kWh&quot;,
+          &quot;numerator&quot;: &quot;kgCO2e&quot;,
+          &quot;stage&quot;: &quot;operation&quot;,
+          &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+          &quot;publisher&quot;: &quot;Test author&quot;,
+          &quot;version&quot;: &quot;1&quot;,
+          &quot;year&quot;: 2025,
+          &quot;region&quot;: &quot;*&quot;,
+          &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+          &quot;evidence_id&quot;: null
+        }
+      },
+      {
+        &quot;activity_id&quot;: &quot;end_of_life&quot;,
+        &quot;name&quot;: &quot;end_of_life&quot;,
+        &quot;stage&quot;: &quot;end_of_life&quot;,
+        &quot;quantity&quot;: 10.0,
+        &quot;unit&quot;: &quot;t&quot;,
+        &quot;period&quot;: &quot;whole_period&quot;,
+        &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+        &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+        &quot;factor&quot;: {
+          &quot;factor_id&quot;: &quot;end_of_life-test&quot;,
+          &quot;value&quot;: 2.0,
+          &quot;denominator&quot;: &quot;t&quot;,
+          &quot;numerator&quot;: &quot;kgCO2e&quot;,
+          &quot;stage&quot;: &quot;end_of_life&quot;,
+          &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+          &quot;publisher&quot;: &quot;Test author&quot;,
+          &quot;version&quot;: &quot;1&quot;,
+          &quot;year&quot;: 2025,
+          &quot;region&quot;: &quot;*&quot;,
+          &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+          &quot;evidence_id&quot;: null
+        }
+      }
+    ],
+    &quot;replacement_scope&quot;: &quot;separate_ledger&quot;,
+    &quot;replacements&quot;: [
+      {
+        &quot;component_id&quot;: &quot;wall-1&quot;,
+        &quot;name&quot;: &quot;Synthetic wall assembly&quot;,
+        &quot;condition&quot;: &quot;new&quot;,
+        &quot;service_life_years&quot;: 20.0,
+        &quot;remaining_life_years&quot;: null,
+        &quot;life_source&quot;: &quot;Synthetic independent schedule, not a recommended lifetime&quot;,
+        &quot;life_evidence_id&quot;: &quot;evidence_f3bd867f37c9485abeae8828d23a7b66&quot;,
+        &quot;endpoint&quot;: &quot;strictly_before_horizon&quot;,
+        &quot;scope&quot;: &quot;same_function_replacements_only&quot;,
+        &quot;overlap_review&quot;: &quot;Reviewed synthetic base inputs exclude every replacement event; initial and final disposal stay separate.&quot;,
+        &quot;processes&quot;: [
+          {
+            &quot;process&quot;: &quot;production&quot;,
+            &quot;included&quot;: true,
+            &quot;reason&quot;: &quot;Synthetic replacement process only&quot;,
+            &quot;activity&quot;: {
+              &quot;activity_id&quot;: &quot;replacement-production&quot;,
+              &quot;name&quot;: &quot;production&quot;,
+              &quot;stage&quot;: &quot;production&quot;,
+              &quot;quantity&quot;: 0.12,
+              &quot;unit&quot;: &quot;t&quot;,
+              &quot;period&quot;: &quot;whole_period&quot;,
+              &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+              &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+              &quot;factor&quot;: {
+                &quot;factor_id&quot;: &quot;replacement-production&quot;,
+                &quot;value&quot;: 1.8,
+                &quot;denominator&quot;: &quot;kg&quot;,
+                &quot;numerator&quot;: &quot;kgCO2e&quot;,
+                &quot;stage&quot;: &quot;production&quot;,
+                &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+                &quot;publisher&quot;: &quot;Test author&quot;,
+                &quot;version&quot;: &quot;1&quot;,
+                &quot;year&quot;: 2025,
+                &quot;region&quot;: &quot;*&quot;,
+                &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+                &quot;evidence_id&quot;: null
+              }
+            }
+          },
+          {
+            &quot;process&quot;: &quot;transport&quot;,
+            &quot;included&quot;: true,
+            &quot;reason&quot;: &quot;Synthetic replacement process only&quot;,
+            &quot;activity&quot;: {
+              &quot;activity_id&quot;: &quot;replacement-transport&quot;,
+              &quot;name&quot;: &quot;transport&quot;,
+              &quot;stage&quot;: &quot;transport&quot;,
+              &quot;quantity&quot;: 7.2,
+              &quot;unit&quot;: &quot;tkm&quot;,
+              &quot;period&quot;: &quot;whole_period&quot;,
+              &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+              &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+              &quot;factor&quot;: {
+                &quot;factor_id&quot;: &quot;replacement-transport&quot;,
+                &quot;value&quot;: 0.09,
+                &quot;denominator&quot;: &quot;tkm&quot;,
+                &quot;numerator&quot;: &quot;kgCO2e&quot;,
+                &quot;stage&quot;: &quot;transport&quot;,
+                &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+                &quot;publisher&quot;: &quot;Test author&quot;,
+                &quot;version&quot;: &quot;1&quot;,
+                &quot;year&quot;: 2025,
+                &quot;region&quot;: &quot;*&quot;,
+                &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+                &quot;evidence_id&quot;: null
+              }
+            }
+          },
+          {
+            &quot;process&quot;: &quot;installation&quot;,
+            &quot;included&quot;: true,
+            &quot;reason&quot;: &quot;Synthetic replacement process only&quot;,
+            &quot;activity&quot;: {
+              &quot;activity_id&quot;: &quot;replacement-installation&quot;,
+              &quot;name&quot;: &quot;installation&quot;,
+              &quot;stage&quot;: &quot;construction&quot;,
+              &quot;quantity&quot;: 8.0,
+              &quot;unit&quot;: &quot;kWh&quot;,
+              &quot;period&quot;: &quot;whole_period&quot;,
+              &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+              &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+              &quot;factor&quot;: {
+                &quot;factor_id&quot;: &quot;replacement-installation&quot;,
+                &quot;value&quot;: 0.42,
+                &quot;denominator&quot;: &quot;kWh&quot;,
+                &quot;numerator&quot;: &quot;kgCO2e&quot;,
+                &quot;stage&quot;: &quot;construction&quot;,
+                &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+                &quot;publisher&quot;: &quot;Test author&quot;,
+                &quot;version&quot;: &quot;1&quot;,
+                &quot;year&quot;: 2025,
+                &quot;region&quot;: &quot;*&quot;,
+                &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+                &quot;evidence_id&quot;: null
+              }
+            }
+          },
+          {
+            &quot;process&quot;: &quot;removal&quot;,
+            &quot;included&quot;: true,
+            &quot;reason&quot;: &quot;Synthetic replacement process only&quot;,
+            &quot;activity&quot;: {
+              &quot;activity_id&quot;: &quot;replacement-removal&quot;,
+              &quot;name&quot;: &quot;removal&quot;,
+              &quot;stage&quot;: &quot;end_of_life&quot;,
+              &quot;quantity&quot;: 120.0,
+              &quot;unit&quot;: &quot;kg&quot;,
+              &quot;period&quot;: &quot;whole_period&quot;,
+              &quot;replacement_overlap&quot;: &quot;excluded&quot;,
+              &quot;source&quot;: &quot;Independent arithmetic input&quot;,
+              &quot;factor&quot;: {
+                &quot;factor_id&quot;: &quot;replacement-removal&quot;,
+                &quot;value&quot;: 0.08,
+                &quot;denominator&quot;: &quot;kg&quot;,
+                &quot;numerator&quot;: &quot;kgCO2e&quot;,
+                &quot;stage&quot;: &quot;end_of_life&quot;,
+                &quot;source&quot;: &quot;Synthetic test factor; not official&quot;,
+                &quot;publisher&quot;: &quot;Test author&quot;,
+                &quot;version&quot;: &quot;1&quot;,
+                &quot;year&quot;: 2025,
+                &quot;region&quot;: &quot;*&quot;,
+                &quot;method&quot;: &quot;Synthetic GWP test&quot;,
+                &quot;evidence_id&quot;: null
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  &quot;result&quot;: {
+    &quot;status&quot;: &quot;calculated&quot;,
+    &quot;replacement&quot;: {
+      &quot;scope&quot;: &quot;separate_ledger&quot;,
+      &quot;components&quot;: [
+        {
+          &quot;component_id&quot;: &quot;wall-1&quot;,
+          &quot;name&quot;: &quot;Synthetic wall assembly&quot;,
+          &quot;status&quot;: &quot;calculated&quot;,
+          &quot;years&quot;: [
+            20.0,
+            40.0
+          ],
+          &quot;count&quot;: 2,
+          &quot;processes&quot;: [
+            {
+              &quot;process&quot;: &quot;production&quot;,
+              &quot;included&quot;: true,
+              &quot;reason&quot;: &quot;Synthetic replacement process only&quot;,
+              &quot;quantity_in_factor_unit&quot;: 120.0,
+              &quot;kgco2e_per_event&quot;: 216.0,
+              &quot;status&quot;: &quot;calculated&quot;
+            },
+            {
+              &quot;process&quot;: &quot;transport&quot;,
+              &quot;included&quot;: true,
+              &quot;reason&quot;: &quot;Synthetic replacement process only&quot;,
+              &quot;quantity_in_factor_unit&quot;: 7.2,
+              &quot;kgco2e_per_event&quot;: 0.648,
+              &quot;status&quot;: &quot;calculated&quot;
+            },
+            {
+              &quot;process&quot;: &quot;installation&quot;,
+              &quot;included&quot;: true,
+              &quot;reason&quot;: &quot;Synthetic replacement process only&quot;,
+              &quot;quantity_in_factor_unit&quot;: 8.0,
+              &quot;kgco2e_per_event&quot;: 3.36,
+              &quot;status&quot;: &quot;calculated&quot;
+            },
+            {
+              &quot;process&quot;: &quot;removal&quot;,
+              &quot;included&quot;: true,
+              &quot;reason&quot;: &quot;Synthetic replacement process only&quot;,
+              &quot;quantity_in_factor_unit&quot;: 120.0,
+              &quot;kgco2e_per_event&quot;: 9.6,
+              &quot;status&quot;: &quot;calculated&quot;
+            }
+          ],
+          &quot;kgco2e_per_event&quot;: 229.608,
+          &quot;kgco2e&quot;: 459.216,
+          &quot;events&quot;: [
+            {
+              &quot;year&quot;: 20.0,
+              &quot;kgco2e&quot;: 229.608
+            },
+            {
+              &quot;year&quot;: 40.0,
+              &quot;kgco2e&quot;: 229.608
+            }
+          ],
+          &quot;all_four_processes_included&quot;: true
+        }
+      ],
+      &quot;missing&quot;: [],
+      &quot;total_kgco2e&quot;: 459.216,
+      &quot;status&quot;: &quot;calculated&quot;,
+      &quot;aggregation&quot;: &quot;Replacement ledger is added to operation stage; initial installation and horizon disposal remain in base activities.&quot;
+    },
+    &quot;rows&quot;: [
+      {
+        &quot;activity_id&quot;: &quot;production&quot;,
+        &quot;stage&quot;: &quot;production&quot;,
+        &quot;quantity_in_factor_unit&quot;: 2000.0,
+        &quot;factor_unit&quot;: &quot;kgCO2e/kg&quot;,
+        &quot;period_multiplier&quot;: 1,
+        &quot;kgco2e&quot;: 1000.0,
+        &quot;formula&quot;: &quot;quantity * unit_conversion * period_multiplier * factor&quot;
+      },
+      {
+        &quot;activity_id&quot;: &quot;transport&quot;,
+        &quot;stage&quot;: &quot;transport&quot;,
+        &quot;quantity_in_factor_unit&quot;: 200.0,
+        &quot;factor_unit&quot;: &quot;kgCO2e/tkm&quot;,
+        &quot;period_multiplier&quot;: 1,
+        &quot;kgco2e&quot;: 20.0,
+        &quot;formula&quot;: &quot;quantity * unit_conversion * period_multiplier * factor&quot;
+      },
+      {
+        &quot;activity_id&quot;: &quot;construction&quot;,
+        &quot;stage&quot;: &quot;construction&quot;,
+        &quot;quantity_in_factor_unit&quot;: 100.0,
+        &quot;factor_unit&quot;: &quot;kgCO2e/kWh&quot;,
+        &quot;period_multiplier&quot;: 1,
+        &quot;kgco2e&quot;: 50.0,
+        &quot;formula&quot;: &quot;quantity * unit_conversion * period_multiplier * factor&quot;
+      },
+      {
+        &quot;activity_id&quot;: &quot;operation&quot;,
+        &quot;stage&quot;: &quot;operation&quot;,
+        &quot;quantity_in_factor_unit&quot;: 60000.0,
+        &quot;factor_unit&quot;: &quot;kgCO2e/kWh&quot;,
+        &quot;period_multiplier&quot;: 60,
+        &quot;kgco2e&quot;: 30000.0,
+        &quot;formula&quot;: &quot;quantity * unit_conversion * period_multiplier * factor&quot;
+      },
+      {
+        &quot;activity_id&quot;: &quot;end_of_life&quot;,
+        &quot;stage&quot;: &quot;end_of_life&quot;,
+        &quot;quantity_in_factor_unit&quot;: 10.0,
+        &quot;factor_unit&quot;: &quot;kgCO2e/t&quot;,
+        &quot;period_multiplier&quot;: 1,
+        &quot;kgco2e&quot;: 20.0,
+        &quot;formula&quot;: &quot;quantity * unit_conversion * period_multiplier * factor&quot;
+      }
+    ],
+    &quot;stages&quot;: {
+      &quot;construction&quot;: {
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;,
+        &quot;base_activity_kgco2e&quot;: 50.0,
+        &quot;replacement_kgco2e&quot;: null,
+        &quot;status&quot;: &quot;calculated&quot;,
+        &quot;kgco2e&quot;: 50.0
+      },
+      &quot;end_of_life&quot;: {
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;,
+        &quot;base_activity_kgco2e&quot;: 20.0,
+        &quot;replacement_kgco2e&quot;: null,
+        &quot;status&quot;: &quot;calculated&quot;,
+        &quot;kgco2e&quot;: 20.0
+      },
+      &quot;operation&quot;: {
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;,
+        &quot;base_activity_kgco2e&quot;: 30000.0,
+        &quot;replacement_kgco2e&quot;: 459.216,
+        &quot;status&quot;: &quot;calculated&quot;,
+        &quot;kgco2e&quot;: 30459.216
+      },
+      &quot;production&quot;: {
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;,
+        &quot;base_activity_kgco2e&quot;: 1000.0,
+        &quot;replacement_kgco2e&quot;: null,
+        &quot;status&quot;: &quot;calculated&quot;,
+        &quot;kgco2e&quot;: 1000.0
+      },
+      &quot;transport&quot;: {
+        &quot;included&quot;: true,
+        &quot;reason&quot;: &quot;Independent arithmetic fixture&quot;,
+        &quot;base_activity_kgco2e&quot;: 20.0,
+        &quot;replacement_kgco2e&quot;: null,
+        &quot;status&quot;: &quot;calculated&quot;,
+        &quot;kgco2e&quot;: 20.0
+      }
+    },
+    &quot;missing&quot;: [],
+    &quot;boundary_total_kgco2e&quot;: 31549.216,
+    &quot;kgco2e_m2_over_study_period&quot;: 34.026333045729075,
+    &quot;all_five_stages_entered&quot;: true,
+    &quot;source_status&quot;: &quot;USER_DECLARED&quot;,
+    &quot;certification&quot;: &quot;NOT_ASSESSED&quot;,
+    &quot;issued_credits_t&quot;: null,
+    &quot;limitations&quot;: [
+      &quot;五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。&quot;,
+      &quot;CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。&quot;,
+      &quot;年运行量线性累计；替换仅按声明寿命离散发生，因子按当前版本固定，不预测电网、衰减或未来技术。&quot;,
+      &quot;替换账列入使用阶段，逐项排除初次安装和评估终点处置；声明不重叠不等于独立证明没有重复计数。&quot;,
+      &quot;replacement_scope=not_assessed 表示未评估替换；即使五阶段有值也不代表完整生命周期。&quot;,
+      &quot;不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。&quot;
+    ]
+  },
+  &quot;source_snapshot&quot;: [
+    {
+      &quot;type&quot;: &quot;literature&quot;,
+      &quot;name&quot;: &quot;Synthetic lifetime source&quot;,
+      &quot;source_file&quot;: &quot;file_96f8a074d9c649399ff362ada934af43&quot;,
+      &quot;source_locator&quot;: &quot;synthetic_life&quot;,
+      &quot;value&quot;: null,
+      &quot;unit&quot;: null,
+      &quot;authority&quot;: &quot;Test only&quot;,
+      &quot;permission&quot;: &quot;synthetic test&quot;,
+      &quot;uncertainty&quot;: null,
+      &quot;confidence&quot;: null,
+      &quot;acquisition_method&quot;: &quot;invented arithmetic fixture&quot;,
+      &quot;responsible_person&quot;: &quot;test runner&quot;,
+      &quot;status&quot;: &quot;ASSUMED&quot;,
+      &quot;scheme_id&quot;: null,
+      &quot;evidence_id&quot;: &quot;evidence_f3bd867f37c9485abeae8828d23a7b66&quot;,
+      &quot;project_id&quot;: &quot;project_bfe07ac5c9e34e6584a4f81b6a0be8a7&quot;,
+      &quot;revision&quot;: 1,
+      &quot;timestamp&quot;: &quot;2026-11-08T10:42:40.709550+00:00&quot;,
+      &quot;hash&quot;: &quot;595610c1359b3de13b2bcd7e5950047c7a76634ce8716e51450207b47ff2bbc7&quot;,
+      &quot;review_state&quot;: &quot;pending&quot;,
+      &quot;review_note&quot;: null
+    }
+  ],
+  &quot;import_source&quot;: null,
+  &quot;calculator_hash&quot;: &quot;1f69ebebea410f4bf558f8d2b8852af40bc188eb12c084aee6140a41d8294b96&quot;,
+  &quot;created_at&quot;: &quot;2026-11-08T10:42:40.732350+00:00&quot;,
+  &quot;hash&quot;: &quot;5d75292bb1280a44ce82c36c8d70a2ed9af993433af081439e7af5d3fe94481d&quot;,
+  &quot;revision&quot;: 1,
+  &quot;stale_reasons&quot;: [],
+  &quot;stale_details&quot;: [],
+  &quot;status&quot;: &quot;calculated&quot;
+}</pre></html>

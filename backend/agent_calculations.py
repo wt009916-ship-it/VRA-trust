@@ -6,7 +6,7 @@ from pydantic import Field, StrictBool
 from . import core
 from .schema import Contract
 from .thermal import Assembly
-from .lifecycle import Inventory
+from .lifecycle import Inventory, evidence_ids
 from .material_cost import Estimate
 from .engineering import BeamInput
 from .construction import ScheduleInput
@@ -65,7 +65,7 @@ def bindings(domain, pid, plan):
     if plan.kind == 'thermal':
         ids = {row.evidence_id for row in body.layers if row.evidence_id}
     elif plan.kind == 'lifecycle':
-        ids = {row.factor.evidence_id for row in body.activities if row.factor.evidence_id}
+        ids = evidence_ids(body)
     elif plan.kind == 'cost':
         ids = {eid for row in body.lines for eid in row.evidence_ids}
     else:
