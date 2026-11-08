@@ -81,6 +81,8 @@ def register(app,cad):
     service=LayerTakeoffs(cad);app.state.layer_takeoffs=service
     from .material_scenarios import register as register_scenarios
     register_scenarios(app, service)
+    from .material_collection_service import register as register_collections
+    register_collections(app, cad)
 
     @app.post('/api/projects/{project_id}/ifc-layer-takeoffs',status_code=201)
     def create(project_id:str,body:LayerRequest):return service.create(project_id,body)

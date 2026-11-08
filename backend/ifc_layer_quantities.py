@@ -12,7 +12,7 @@ except ImportError:
     from ifc_geometry import inspect_shapes, mesh_measurements
 
 
-def measure_layers(path, product_id):
+def measure_layers(path, product_id, *, mesh_sink=None, _document=None):
     import ifcopenshell
     import manifold3d as manifold
 
@@ -21,7 +21,7 @@ def measure_layers(path, product_id):
     path=Path(path)
     if path.suffix.lower()!='.ifc' or not 0 < path.stat().st_size <= 10*1024**2:
         raise ValueError('IFC source must be 1 byte..10 MiB')
-    doc=ifcopenshell.open(str(path));projects=doc.by_type('IfcProject');products=doc.by_type('IfcProduct')
+    doc=_document if _document is not None else ifcopenshell.open(str(path));projects=doc.by_type('IfcProject');products=doc.by_type('IfcProduct')
     if len(projects)!=1 or len(products)>10000:
         raise ValueError('Exactly one project and at most 10000 products required')
     gids=[p.GlobalId for p in products]
@@ -88,7 +88,7 @@ def measure_layers(path, product_id):
     if solid.status()!=manifold.Error.NoError or not math.isfinite(solid.volume()) or abs(solid.volume()-host['volume_m3'])>tolerance_m3:
         return refuse('boolean_operand_not_verified')
     result['source_relation_id']=binding['relation_id'];result['layer_set_id']=usage['layer_set']['id']
-    rows=[];triangles=0
+    rows=[];triangles=0;clipped_meshes=[]
     try:
         for layer,(lo,hi) in zip(layers,planes):
             cut=solid.trim_by_plane((0.,1.,0.),lo).trim_by_plane((0.,-1.,0.),-hi)
@@ -100,6 +100,7 @@ def measure_layers(path, product_id):
             value=check['volume_m3']
             if value is None or not math.isfinite(cut.volume()) or abs(value-cut.volume())>tolerance_m3:
                 return refuse('layer_mesh_not_verified')
+            clipped_meshes.append({'vertices':np.array(clipped.vert_properties[:,:3],copy=True),'faces':np.array(clipped.tri_verts,copy=True)})
             rows.append({'layer_id':layer['id'],'material_id':layer['material']['id'],'material_name':layer['material']['name'],
                 'thickness_m':layer['thickness']['value_m'],'bounds_local_y_m':[lo,hi],
                 'envelope_volume_m3':value,'mesh_check':check})
@@ -107,6 +108,7 @@ def measure_layers(path, product_id):
         return refuse('layer_boolean_failed')
     total=math.fsum(r['envelope_volume_m3'] for r in rows)
     if abs(total-host['volume_m3'])>tolerance_m3:return refuse('layer_volume_conservation_failed')
+    if mesh_sink is not None:mesh_sink.extend(clipped_meshes)
     result.update(status='measured',layers=rows,total_layer_envelope_m3=total,host_volume_m3=host['volume_m3'],
                   numeric_consistency_tolerance_m3=tolerance_m3)
     return result

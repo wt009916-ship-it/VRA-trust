@@ -22,19 +22,21 @@ export function unionRecordMarkup(record,base){
  <p><a target="_blank" rel="noopener" href="/api${esc(url)}">完整 JSON</a> · <a target="_blank" rel="noopener" href="/api${esc(url)}/report.html">核验报告</a></p></article>`;
 }
 
-export function unionWorkspaceMarkup(records){
- const options=records.filter(r=>r.status==='parsed'&&r.result?.format==='IFC');
- return `<section aria-label="选定构件几何并集"><h2>选定构件几何并集</h2>
- <p>选择同一 IFC 中的 2–64 个实体，比较体积之和与去除重叠后的几何并集。洞口不单独计入。</p>
- <form data-union-form><label>来源 IFC 读取记录<select name="cad" required><option value="">请选择已读取 IFC</option>${options.map(r=>`<option value="${esc(r.cad_id)}">${esc(r.source.name)} · ${esc(r.cad_id.slice(-8))}</option>`).join('')}</select></label>
- <label>参与并集的构件（可多选）<select name="products" multiple size="7" required aria-describedby="union-selection-help"></select></label>
- <p id="union-selection-help">Windows 可按 Ctrl 或 Shift 多选；只计算明确选中的构件。</p>
- <p data-union-selection>尚未选择构件。</p><button class="primary" disabled>核算几何并集</button></form>
+export function unionWorkspaceMarkup(records,options={}){
+ const sources=records.filter(r=>r.status==='parsed'&&r.result?.format==='IFC');
+ return `<section aria-label="${esc(options.heading||'选定构件几何并集')}"><h2>${esc(options.heading||'选定构件几何并集')}</h2>
+ <p>${esc(options.description||'选择同一 IFC 中的 2–64 个实体，比较体积之和与去除重叠后的几何并集。洞口不单独计入。')}</p>
+ <form data-union-form><label>来源 IFC 读取记录<select name="cad" required><option value="">请选择已读取 IFC</option>${sources.map(r=>`<option value="${esc(r.cad_id)}">${esc(r.source.name)} · ${esc(r.cad_id.slice(-8))}</option>`).join('')}</select></label>
+ <label>参与计量的构件（可多选）<select name="products" multiple size="7" required aria-describedby="${esc(options.helpId||'union-selection-help')}"></select></label>
+ <p id="${esc(options.helpId||'union-selection-help')}">Windows 可按 Ctrl 或 Shift 多选；只计算明确选中的构件。</p>
+ <p data-union-selection>尚未选择构件。</p><button class="primary" disabled>${esc(options.buttonLabel||'核算几何并集')}</button></form>
  <p data-union-status role="status"></p><div data-union-history aria-live="polite"></div></section>`;
 }
 
-export function mountUnionWorkspace(records,host,base,action){
- host.innerHTML=unionWorkspaceMarkup(records);
+export function mountUnionWorkspace(records,host,base,action,options={}){
+ const endpoint=options.endpoint||'/ifc-unions',maxSelection=options.maxSelection||64;
+ const renderRecord=options.recordMarkup||unionRecordMarkup,productFilter=options.productFilter||(p=>p.eligible_for_union);
+ host.innerHTML=unionWorkspaceMarkup(records,options);
  const form=host.querySelector('[data-union-form]'),source=form.elements.cad,products=form.elements.products;
  const status=host.querySelector('[data-union-status]'),history=host.querySelector('[data-union-history]');
  let closed=false,epoch=0,busy=false,sourceCurrent=false,active=null;
@@ -43,13 +45,13 @@ export function mountUnionWorkspace(records,host,base,action){
  function selection(){
   const ids=[...products.selectedOptions].map(o=>Number(o.value));
   host.querySelector('[data-union-selection]').textContent=ids.length?'已选 '+ids.length+' 个构件：'+ids.map(x=>'#'+x).join('、'):'尚未选择构件。';
-  form.querySelector('button').disabled=busy||!sourceCurrent||ids.length<2||ids.length>64;
+  form.querySelector('button').disabled=busy||!sourceCurrent||ids.length<2||ids.length>maxSelection;
   return ids;
  }
  source.onchange=()=>{
   epoch++;sourceCurrent=false;status.textContent='正在核验所选来源…';
   const record=records.find(r=>r.cad_id===source.value);
-  products.innerHTML=(record?.result?.objects||[]).filter(p=>p.eligible_for_union).map(p=>`<option value="${p.id}">#${p.id} · ${esc(p.name||p.type)} · ${esc(p.type)}</option>`).join('');
+  products.innerHTML=(record?.result?.objects||[]).filter(productFilter).map(p=>`<option value="${p.id}">#${p.id} · ${esc(p.name||p.type)} · ${esc(p.type)}</option>`).join('');
   selection();void refresh();
  };
  products.onchange=()=>{selection();};
@@ -59,11 +61,11 @@ export function mountUnionWorkspace(records,host,base,action){
   const controller=new AbortController();active=controller;
   const timeout=setTimeout(()=>controller.abort(),4000);
   try{
-   const [saved,current]=await Promise.all([request(base+'/ifc-unions',{signal:controller.signal}),cadId?request(base+'/cad-inspections/'+cadId,{signal:controller.signal}):Promise.resolve(null)]);
+   const [saved,current]=await Promise.all([request(base+endpoint,{signal:controller.signal}),cadId?request(base+'/cad-inspections/'+cadId,{signal:controller.signal}):Promise.resolve(null)]);
    if(!visible()||ticket!==epoch)return;
    sourceCurrent=!current||current.status==='parsed';selection();
    status.textContent=sourceCurrent?'':'所选来源已失效，请重新读取原文件后计算。';
-   history.innerHTML=saved.map(r=>unionRecordMarkup(r,base)).join('')||'<p>尚无已保存的并集核验。</p>';
+   history.innerHTML=saved.map(r=>renderRecord(r,base)).join('')||'<p>'+esc(options.emptyMessage||'尚无已保存的并集核验。')+'</p>';
   }catch(error){
    if(!visible()||ticket!==epoch)return;
    sourceCurrent=false;selection();history.innerHTML='<p>当前状态无法核验，历史数量暂不展示。</p>';status.textContent=controller.signal.aborted?'状态核验超时，请重试。':error.message;
@@ -71,13 +73,13 @@ export function mountUnionWorkspace(records,host,base,action){
  }
  form.onsubmit=event=>{
   event.preventDefault();const ids=selection(),cadId=source.value;
-  if(busy||!sourceCurrent||ids.length<2||ids.length>64)return;
-  busy=true;epoch++;selection();status.textContent='正在核验所选构件及并集网格…';
+  if(busy||!sourceCurrent||ids.length<2||ids.length>maxSelection)return;
+  busy=true;epoch++;selection();status.textContent='正在核验所选构件与计量网格…';
   action(async()=>{
    try{
-    const saved=await post(base+'/ifc-unions',{cad_id:cadId,product_ids:ids});
+    const saved=await post(base+endpoint,{cad_id:cadId,product_ids:ids});
     if(!visible())return;
-    status.textContent=saved.status==='measured'?'核验已保存。下方记录列明本次实际参与的构件。':'核验已保存，但未取得可交付的并集量，请查看原因。';
+    status.textContent=saved.status==='measured'?'核验已保存。下方记录列明本次实际参与的构件。':'核验已保存，但未取得可交付的计量结果，请查看原因。';
     await refresh();
    }catch(error){
     if(visible()){status.textContent='本次计算失败：'+error.message;await refresh();}

@@ -1,3 +1,5 @@
+2026-11-08多墙材料候选：真实分层几何按材料去重、跨材冲突拒绝、API/报告/界面已实现。38原生+50相关后端、156前端、公开4墙3组及浏览器提交/失效通过；完整CI待精确提交检查，原型与75分不变。见MATERIAL_COLLECTION_DELIVERY.md及CURRENT_WORK_PLAN.md。
+
 2026-11-08符号检测验收：真实几何检测新14参考图及2公开原图已完成；清晰/退化门窗门槛和新增原图局部正例均未通过。未接入应用、未加分，75保持。见DRAWING_SYMBOL_SCREEN.md，调度仅以CURRENT_WORK_PLAN.md为准。
 
 2026-11-08构件识别基线：父提交f9fa47a三项CI已收口。新增14公开/生成参考输入和42次固定Florence-2推理，门窗定位与墙分割未过门槛，未接入应用、未加分，D08仍开放。见DRAWING_COMPONENT_SCREEN.md；调度仅以CURRENT_WORK_PLAN.md为准。
