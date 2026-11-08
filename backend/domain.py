@@ -108,6 +108,8 @@ class Domain:
                     if not re.search(r"Output:SQLite\s*,\s*SimpleAndTabular\s*;", text, re.IGNORECASE):
                         raise core.ValidationError("IDF 需要 Output:SQLite,SimpleAndTabular; 和年度汇总输出")
                     validate_idf(path)
+                    from .retrofit_models import Retrofits
+                    Retrofits(self).require_file_current(project_id,ev['source_file'])
                 else:
                     weather_quality = validate_epw(path)
                     if weather_quality['source_sha256'] != ev['hash']:

@@ -1,0 +1,135 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>材料方案派生模型</title><style>body{font-family:system-ui;max-width:1000px;margin:32px auto;padding:20px}td,th{border:1px solid #bbb;padding:8px}table{border-collapse:collapse}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>Four occupied-zone walls with 40 mm exterior insulation</h1><p>状态：generated；用户声明改造情景，未经工程适用性认证。</p><table><tr><th>表面</th><th>原构造</th><th>派生构造</th></tr><tr><td>FRONT-1</td><td>WALL-1</td><td>VRA_1043584b1712e7321315_C1</td></tr><tr><td>RIGHT-1</td><td>WALL-1</td><td>VRA_1043584b1712e7321315_C1</td></tr><tr><td>BACK-1</td><td>WALL-1</td><td>VRA_1043584b1712e7321315_C1</td></tr><tr><td>LEFT-1</td><td>WALL-1</td><td>VRA_1043584b1712e7321315_C1</td></tr></table><ul><li>仅明确选择的室外围护表面和普通材料构造；窗、地接触、可动保温、特殊材性与动态构造控制未自动改模。</li><li>密度、比热、吸收率及层序为用户明确声明；不自动证明结构、耐火、含湿或耐久功能等效。</li><li>仅写入材料厚度及修正后导热系数；Rsi/Rse不作为材料层，EnergyPlus自行计算表面对流和辐射。</li><li>生成IDF不等于引擎运行成功；薄层、高导热等参数仍可能被原生引擎拒绝。</li><li>全年节能率只能来自相同天气、引擎、项目和有效基准的实际运行比较；不能用U下降比例替代。</li></ul><p>原模型SHA256：8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577</p><p>派生模型SHA256：d47b3abd495884423f707106c68c117b283d29bc4943bea8e41c7c462a8b6c86</p><details><summary>声明材性、层序、来源与复核信息</summary><pre>{
+  &quot;input&quot;: {
+    &quot;name&quot;: &quot;Four occupied-zone walls with 40 mm exterior insulation&quot;,
+    &quot;source_evidence_id&quot;: &quot;evidence_86057bfe0e834d4e941d8aa790429fdd&quot;,
+    &quot;scheme_id&quot;: &quot;R1&quot;,
+    &quot;assignments&quot;: [
+      {
+        &quot;thermal_id&quot;: &quot;thermal_606240d38f2f432cad8abf7a988b41cc&quot;,
+        &quot;surface_names&quot;: [
+          &quot;FRONT-1&quot;,
+          &quot;RIGHT-1&quot;,
+          &quot;BACK-1&quot;,
+          &quot;LEFT-1&quot;
+        ],
+        &quot;layer_order&quot;: &quot;outside_to_inside&quot;,
+        &quot;properties&quot;: [
+          {
+            &quot;density_kg_m3&quot;: 35.0,
+            &quot;specific_heat_j_kg_k&quot;: 840.0,
+            &quot;roughness&quot;: &quot;MediumRough&quot;,
+            &quot;thermal_absorptance&quot;: 0.9,
+            &quot;solar_absorptance&quot;: 0.6,
+            &quot;visible_absorptance&quot;: 0.6,
+            &quot;property_source&quot;: &quot;Independent hypothetical insulation scenario; no product certification&quot;
+          },
+          {
+            &quot;density_kg_m3&quot;: 513.0,
+            &quot;specific_heat_j_kg_k&quot;: 1381.0,
+            &quot;roughness&quot;: &quot;MediumSmooth&quot;,
+            &quot;thermal_absorptance&quot;: 0.9,
+            &quot;solar_absorptance&quot;: 0.78,
+            &quot;visible_absorptance&quot;: 0.78,
+            &quot;property_source&quot;: &quot;EnergyPlus 9.0.1 5ZoneAirCooled reference Material WD01&quot;
+          },
+          {
+            &quot;density_kg_m3&quot;: 545.0,
+            &quot;specific_heat_j_kg_k&quot;: 1213.0,
+            &quot;roughness&quot;: &quot;MediumSmooth&quot;,
+            &quot;thermal_absorptance&quot;: 0.9,
+            &quot;solar_absorptance&quot;: 0.78,
+            &quot;visible_absorptance&quot;: 0.78,
+            &quot;property_source&quot;: &quot;EnergyPlus 9.0.1 5ZoneAirCooled reference Material PW03&quot;
+          },
+          {
+            &quot;density_kg_m3&quot;: 10.0,
+            &quot;specific_heat_j_kg_k&quot;: 837.0,
+            &quot;roughness&quot;: &quot;Rough&quot;,
+            &quot;thermal_absorptance&quot;: 0.9,
+            &quot;solar_absorptance&quot;: 0.75,
+            &quot;visible_absorptance&quot;: 0.75,
+            &quot;property_source&quot;: &quot;EnergyPlus 9.0.1 5ZoneAirCooled reference Material IN02&quot;
+          },
+          {
+            &quot;density_kg_m3&quot;: 801.0,
+            &quot;specific_heat_j_kg_k&quot;: 837.0,
+            &quot;roughness&quot;: &quot;MediumSmooth&quot;,
+            &quot;thermal_absorptance&quot;: 0.9,
+            &quot;solar_absorptance&quot;: 0.75,
+            &quot;visible_absorptance&quot;: 0.75,
+            &quot;property_source&quot;: &quot;EnergyPlus 9.0.1 5ZoneAirCooled reference Material GP01&quot;
+          }
+        ]
+      }
+    ],
+    &quot;responsible_person&quot;: &quot;Acceptance test&quot;,
+    &quot;basis&quot;: &quot;Explicit four occupied-zone wall references; original plenum walls, roof, geometry, schedules and HVAC preserved&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;project_revision&quot;: 1,
+    &quot;source_evidence&quot;: {
+      &quot;type&quot;: &quot;idf&quot;,
+      &quot;name&quot;: &quot;Public reference idf&quot;,
+      &quot;source_file&quot;: &quot;file_83efd31a151e426db9f61c2867694ea2&quot;,
+      &quot;source_locator&quot;: &quot;EnergyPlus 9.0.1 distributed reference input&quot;,
+      &quot;value&quot;: null,
+      &quot;unit&quot;: null,
+      &quot;authority&quot;: &quot;EnergyPlus public example&quot;,
+      &quot;permission&quot;: &quot;Public reference validation only&quot;,
+      &quot;uncertainty&quot;: null,
+      &quot;confidence&quot;: null,
+      &quot;acquisition_method&quot;: &quot;Existing repository public reference input&quot;,
+      &quot;responsible_person&quot;: &quot;Acceptance test&quot;,
+      &quot;status&quot;: &quot;IMPORTED&quot;,
+      &quot;scheme_id&quot;: &quot;baseline&quot;,
+      &quot;evidence_id&quot;: &quot;evidence_86057bfe0e834d4e941d8aa790429fdd&quot;,
+      &quot;project_id&quot;: &quot;project_75220d2ae14348c68800c0297d1bd199&quot;,
+      &quot;revision&quot;: 2,
+      &quot;timestamp&quot;: &quot;2026-11-08T07:56:00.208748+00:00&quot;,
+      &quot;hash&quot;: &quot;8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577&quot;,
+      &quot;review_state&quot;: &quot;confirmed&quot;,
+      &quot;review_note&quot;: &quot;Reference input inspected; not an as-built or calibrated building&quot;
+    },
+    &quot;source_file&quot;: {
+      &quot;file_id&quot;: &quot;file_83efd31a151e426db9f61c2867694ea2&quot;,
+      &quot;project_id&quot;: &quot;project_75220d2ae14348c68800c0297d1bd199&quot;,
+      &quot;name&quot;: &quot;original.idf&quot;,
+      &quot;path&quot;: &quot;files/file_83efd31a151e426db9f61c2867694ea2.idf&quot;,
+      &quot;hash&quot;: &quot;8fca062ef01da7ccfcef2a02466c2b5325a1a9dd63d3d4def9655827ac87b577&quot;,
+      &quot;size&quot;: 51819,
+      &quot;timestamp&quot;: &quot;2026-11-08T07:56:00.150851+00:00&quot;,
+      &quot;revision&quot;: 1
+    },
+    &quot;thermal_bindings&quot;: [
+      {
+        &quot;thermal_id&quot;: &quot;thermal_606240d38f2f432cad8abf7a988b41cc&quot;,
+        &quot;hash&quot;: &quot;5ff62cbad15d9a9d4ab60c58a7b7739244dc20c69330ef7caa23e4536720aae6&quot;,
+        &quot;source_status&quot;: &quot;USER_DECLARED&quot;
+      }
+    ],
+    &quot;builder_version&quot;: &quot;3121ccc9e6c61f4eca651e791a001c0e974d93a7951573ac246306bf49a010ce&quot;
+  },
+  &quot;evidence_review&quot;: {
+    &quot;type&quot;: &quot;idf&quot;,
+    &quot;name&quot;: &quot;Four occupied-zone walls with 40 mm exterior insulation&quot;,
+    &quot;source_file&quot;: &quot;file_c65ab85ce2f64309957f163dccff5987&quot;,
+    &quot;source_locator&quot;: &quot;Derived IDF; exact reference edits in model derivation record&quot;,
+    &quot;value&quot;: null,
+    &quot;unit&quot;: null,
+    &quot;authority&quot;: &quot;User-declared material retrofit scenario&quot;,
+    &quot;permission&quot;: &quot;Public reference validation only&quot;,
+    &quot;uncertainty&quot;: &quot;Not measured construction; thermal films are not material layers; generated model requires review and native simulation&quot;,
+    &quot;confidence&quot;: null,
+    &quot;acquisition_method&quot;: &quot;Explicit surface mapping and immutable IDF derivation&quot;,
+    &quot;responsible_person&quot;: &quot;Acceptance test&quot;,
+    &quot;status&quot;: &quot;ASSUMED&quot;,
+    &quot;scheme_id&quot;: &quot;R1&quot;,
+    &quot;evidence_id&quot;: &quot;evidence_c0fa3f7ff2d449b397e19867976dc88e&quot;,
+    &quot;project_id&quot;: &quot;project_75220d2ae14348c68800c0297d1bd199&quot;,
+    &quot;revision&quot;: 2,
+    &quot;timestamp&quot;: &quot;2026-11-08T07:56:00.857241+00:00&quot;,
+    &quot;hash&quot;: &quot;d47b3abd495884423f707106c68c117b283d29bc4943bea8e41c7c462a8b6c86&quot;,
+    &quot;review_state&quot;: &quot;confirmed&quot;,
+    &quot;review_note&quot;: &quot;Derived references and declared material properties independently inspected; scenario only&quot;
+  }
+}</pre></details></html>

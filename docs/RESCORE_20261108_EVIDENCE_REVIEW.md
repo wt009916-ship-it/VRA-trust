@@ -94,3 +94,9 @@
 |合计|76|76.5|发布44与未发布76fa598/本候选区分|
 
 依据：LOCAL_SOAK_DELIVERY、MIXED_WORKLOAD_EVIDENCE、AGENT_READ_RECOVERY_DELIVERY、AGENT_READ_RECOVERY_EVIDENCE。PR60的三个精确提交CI已成功，后端1501通过/22跳过/6子测试通过；不再重复触发。DWG增量详CAD_BIM_DELIVERY、DWG_EVIDENCE，其完整CI单独按最终提交核验。95+仍未达到；训练扩展与整体视觉改版仍按原顺序后置。
+
+## 材料方案接入能耗模型增量（2026-11-08，未发布）
+
+A05/B04不再停留于U值比较；普通室外围护明确映射、不可变派生IDF、原生年度运行和绑定源文件的比较已完成新公开参考任务，23项实际HTTP核验及134相关后端、12前端通过。节能1.6097184929%与U降幅27.6148084304%分别呈现。浏览器按用户选择暂不验，实楼/功能等效仍缺。详MATERIAL_MODEL_BRIDGE_DELIVERY及MATERIAL_MODEL_BRIDGE_EVIDENCE。
+
+本批不重复计已满的显式热工4/4及计算闭环3/3，不把单一参考任务当广泛专业适用性，**正式仍76，未发布累计候选仍76.5**。PR60/61既有精确CI已成功，本批仅执行自己的精确CI；UI未验不加UX分。95+未达，训练扩展与整体视觉仍后置。
