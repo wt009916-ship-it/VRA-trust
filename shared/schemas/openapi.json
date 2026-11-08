@@ -3002,6 +3002,295 @@
         ]
       }
     },
+    "/api/projects/{project_id}/maintenance-orders": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__maintenance_orders_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenOrder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__maintenance_orders_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/maintenance-orders/{maintenance_id}": {
+      "get": {
+        "summary": "View",
+        "operationId": "view_api_projects__project_id__maintenance_orders__maintenance_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "maintenance_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Maintenance Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/maintenance-orders/{maintenance_id}/actions": {
+      "post": {
+        "summary": "Action",
+        "operationId": "action_api_projects__project_id__maintenance_orders__maintenance_id__actions_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "maintenance_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Maintenance Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/maintenance-orders/{maintenance_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__maintenance_orders__maintenance_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "maintenance_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Maintenance Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/drawing-associations": {
       "post": {
         "summary": "Create",
@@ -12134,6 +12423,63 @@
         ],
         "title": "Observation"
       },
+      "OpenOrder": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "operation_id": {
+            "type": "string",
+            "pattern": "^operation_[a-f0-9]{32}$",
+            "title": "Operation Id"
+          },
+          "rule_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "event_index": {
+            "type": "integer",
+            "maximum": 199.0,
+            "minimum": 0.0,
+            "title": "Event Index"
+          },
+          "minimum_observation_seconds": {
+            "type": "number",
+            "maximum": 604800.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Minimum Observation Seconds"
+          },
+          "observation_basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 20,
+            "title": "Observation Basis"
+          },
+          "responsible_person": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Responsible Person"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "operation_id",
+          "rule_id",
+          "event_index",
+          "minimum_observation_seconds",
+          "observation_basis",
+          "responsible_person"
+        ],
+        "title": "OpenOrder"
+      },
       "OperationPlan": {
         "properties": {
           "execution_authorized": {
@@ -12164,6 +12510,84 @@
           "input"
         ],
         "title": "OperationPlan"
+      },
+      "OrderAction": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "triage",
+              "record_work",
+              "recheck",
+              "close",
+              "reopen"
+            ],
+            "title": "Action"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 20,
+            "title": "Note"
+          },
+          "responsible_person": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Responsible Person"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Evidence Ids"
+          },
+          "work_completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Completed At"
+          },
+          "after_operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^operation_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Operation Id"
+          },
+          "same_equipment_and_conditions": {
+            "type": "boolean",
+            "title": "Same Equipment And Conditions",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "action",
+          "note",
+          "responsible_person"
+        ],
+        "title": "OrderAction"
       },
       "PageOCR": {
         "properties": {

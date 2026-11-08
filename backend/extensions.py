@@ -42,6 +42,8 @@ def register_extensions(app, domain, auth):
     costs = Costs(domain)
     schedules = Schedules(domain)
     operations = Operations(domain)
+    from .maintenance import register as register_maintenance
+    register_maintenance(app, domain)
     drawings = Drawings(domain)
     drawing_scales = DrawingScales(drawings)
     from .drawing_associations import register as register_drawing_associations
