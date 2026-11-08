@@ -1,3 +1,4 @@
+import {utilityWorkspace} from './utility-ui.js';
 import {endUseWorkspace} from './end-use-ui.js';
 import {timestepWorkspace} from './timestep-ui.js';
 import {idealLoadsMarkup} from './ideal-loads.js';
@@ -168,6 +169,8 @@ function renderProject() {
   timestepDetails.ontoggle=()=>{if(timestepDetails.open&&!timestepDetails.dataset.loaded){timestepDetails.dataset.loaded='true';timestepWorkspace(state,timestepDetails.querySelector('[data-timestep-workspace]'));}};
   const endUseDetails=document.createElement('details');endUseDetails.innerHTML='<summary>年度设备与用途能耗账</summary><div data-enduse-workspace></div>';document.querySelector('#simulation').append(endUseDetails);
   endUseDetails.ontoggle=()=>{if(endUseDetails.open&&!endUseDetails.dataset.loaded){endUseDetails.dataset.loaded='true';endUseWorkspace(state,endUseDetails.querySelector('[data-enduse-workspace]'));}};
+  const utilityDetails=document.createElement('details');utilityDetails.innerHTML='<summary>账单与模拟能耗比较</summary><div data-utility-workspace></div>';document.querySelector('#simulation').append(utilityDetails);
+  utilityDetails.ontoggle=()=>{if(utilityDetails.open&&!utilityDetails.dataset.loaded){utilityDetails.dataset.loaded='true';utilityWorkspace(state,utilityDetails.querySelector('[data-utility-workspace]'));}};
   renderEvidence(); renderRuns(); switchView(state.view);
   refreshAgentMode();
 }

@@ -2079,6 +2079,359 @@
         ]
       }
     },
+    "/api/projects/{project_id}/utility-meters/{run_id}": {
+      "get": {
+        "summary": "Catalog",
+        "operationId": "catalog_api_projects__project_id__utility_meters__run_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-comparisons": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__utility_comparisons_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComparisonInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__utility_comparisons_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 9007199254740991,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-comparisons/{utility_id}": {
+      "get": {
+        "summary": "View",
+        "operationId": "view_api_projects__project_id__utility_comparisons__utility_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "utility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Utility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-comparisons/{utility_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__utility_comparisons__utility_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "utility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Utility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-comparisons/{utility_id}/comparison.csv": {
+      "get": {
+        "summary": "Download",
+        "operationId": "download_api_projects__project_id__utility_comparisons__utility_id__comparison_csv_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "utility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Utility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/retrofit-models": {
       "get": {
         "summary": "Sources",
@@ -11290,6 +11643,112 @@
           "alternatives"
         ],
         "title": "CollectionScenarioRequest"
+      },
+      "ComparisonInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "purpose": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 15,
+            "title": "Purpose"
+          },
+          "run_id": {
+            "type": "string",
+            "pattern": "^run_[a-f0-9]{32}$",
+            "title": "Run Id"
+          },
+          "bill_evidence_id": {
+            "type": "string",
+            "pattern": "^evidence_[a-f0-9]{32}$",
+            "title": "Bill Evidence Id"
+          },
+          "meter": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Meter"
+          },
+          "bill_nature": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "published_reference",
+              "synthetic"
+            ],
+            "title": "Bill Nature"
+          },
+          "alignment": {
+            "type": "string",
+            "enum": [
+              "exact_calendar",
+              "calendar_pattern"
+            ],
+            "title": "Alignment"
+          },
+          "period_kind": {
+            "type": "string",
+            "enum": [
+              "calendar_month",
+              "hour",
+              "custom"
+            ],
+            "title": "Period Kind"
+          },
+          "clock_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Clock Source"
+          },
+          "boundary_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 15,
+            "title": "Boundary Note"
+          },
+          "max_abs_mbe_percent": {
+            "type": "number",
+            "maximum": 1000000.0,
+            "minimum": 0.0,
+            "title": "Max Abs Mbe Percent"
+          },
+          "max_cvrmse_percent": {
+            "type": "number",
+            "maximum": 1000000.0,
+            "minimum": 0.0,
+            "title": "Max Cvrmse Percent"
+          },
+          "threshold_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Threshold Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "purpose",
+          "run_id",
+          "bill_evidence_id",
+          "meter",
+          "bill_nature",
+          "alignment",
+          "period_kind",
+          "clock_source",
+          "boundary_note",
+          "max_abs_mbe_percent",
+          "max_cvrmse_percent",
+          "threshold_source"
+        ],
+        "title": "ComparisonInput"
       },
       "ComparisonRequest": {
         "properties": {
