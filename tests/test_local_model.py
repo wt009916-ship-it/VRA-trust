@@ -126,9 +126,9 @@ def test_local_agent_uses_real_registry_and_preserves_authorization(client, monk
 def test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs(client):
     source = ToolArgs.model_json_schema(); agent = client.app.state.agent
     tools = agent.tools(); before = copy.deepcopy(tools)
-    scoped = agent.tools({'requested_output_plan', 'requested_availability'})
-    assert {t['function']['name'] for t in scoped} == {'requested_output_plan', 'requested_availability'}
-    assert not {t['function']['name'] for t in tools} & {'requested_output_plan', 'requested_availability'}
+    scoped = agent.tools({'requested_output_plan', 'requested_availability', 'professional_review'})
+    assert {t['function']['name'] for t in scoped} == {'requested_output_plan', 'requested_availability', 'professional_review'}
+    assert not {t['function']['name'] for t in tools} & {'requested_output_plan', 'requested_availability', 'professional_review'}
     for tool in tools + scoped:
         name = tool['function']['name']; schema = tool['function']['parameters']
         assert schema['additionalProperties'] is False

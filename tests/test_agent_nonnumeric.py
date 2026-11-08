@@ -118,3 +118,13 @@ def test_foreign_review_is_rejected_and_model_mode_can_submit_only_current_revie
     t=a.start(pid,Chat(message='Only status.',mode='provider',read_requests=[scope('thermal',r)],read_execution='model'),background=False)
     assert t['status']=='succeeded',t.get('error')
     assert t['answer']['checked_reviews'] and not t['answer'].get('checked_statements')
+
+
+def test_projection_derives_review_identity_from_current_record_not_cached_hint(client):
+    from backend.agent_semantics import readable, model_projection
+    pid=create_project(client)['project_id'];r=create_record(client,pid,'thermal')
+    current=readable(r,'thermal')
+    expected=agent_reviews.reference(r,'thermal')
+    current['nonnumeric_review_reference']={'record_id':'fabricated'}
+    assert model_projection(current,'thermal')['nonnumeric_review_reference']==expected
+    assert current['nonnumeric_review_reference']=={'record_id':'fabricated'}

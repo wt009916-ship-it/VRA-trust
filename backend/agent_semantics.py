@@ -167,12 +167,13 @@ def readable(record, kind):
 
 def model_projection(record, kind):
     """Explicit fact projection for delivery, with full source retained in the tool audit."""
+    from .agent_reviews import reference
     spec = inspection(kind)
     artifact = spec.artifact(record)
     return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record_name(record),
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
-            'nonnumeric_review_reference': record['nonnumeric_review_reference'],
+            'nonnumeric_review_reference': reference(record, kind),
             'limitation_delivery': None if artifact['verified'] else {
                 'limitation_status':record['status'], 'statements':[],
                 'stale_details':record.get('stale_details', []) if record['status']=='stale' else [],
