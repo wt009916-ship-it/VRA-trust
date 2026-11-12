@@ -1,0 +1,60 @@
+..............F..FF                                                      [100%]
+================================== FAILURES ===================================
+____ test_selected_energy_projection_is_bounded_and_catalog_has_no_values _____
+
+client = <starlette.testclient.TestClient object at 0x0000024A3050EC00>
+native = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-agent-energy-tests-first/test_selected_energy_projectio0/native')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024A2FEB3770>
+
+    def test_selected_energy_projection_is_bounded_and_catalog_has_no_values(client,native,monkeypatch):
+        pid,r,_=create_utility(client,native,monkeypatch);agent=client.app.state.agent
+>       value=agent._call(pid,'utility_comparison_read',ToolArgs(utility_id=r['utility_id']),False)
+              ^^^^^^^^^^^
+E       AttributeError: 'Agent' object has no attribute '_call'. Did you mean: 'call'?
+
+tests\test_agent_energy.py:47: AttributeError
+___ test_withdrawal_between_read_and_delivery_never_revives_numeric_result ____
+
+client = <starlette.testclient.TestClient object at 0x0000024A30BFE180>
+native = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-agent-energy-tests-first/test_withdrawal_between_read_a0/native')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024A3107B770>
+
+    def test_withdrawal_between_read_and_delivery_never_revives_numeric_result(client,native,monkeypatch):
+        pid,r,snapshot=create_utility(client,native,monkeypatch);agent=client.app.state.agent
+        def withdraw(*args):snapshot['sql_sha256']='changed';return tool('professional_deliver',{'delivery':{**claim(r,'utility',['mbe_percent']),'finish':True}})
+        scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['mbe_percent']}),withdraw])
+        task=agent.start(pid,Chat(message='Read '+r['utility_id'],mode='provider',infer_outputs=False,read_requests=[{'request_key':'bill','kind':'utility','purpose':'results','record_id':r['utility_id']}]),background=False)
+>       assert not task['answer'].get('checked_statements') and not task.get('professional_deliveries')
+                   ^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'get'
+
+tests\test_agent_energy.py:83: AttributeError
+_ test_application_read_execution_copies_context_but_is_not_model_tool_selection _
+
+client = <starlette.testclient.TestClient object at 0x0000024A2FB985C0>
+native = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-agent-energy-tests-first/test_application_read_executio0/native')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024A31209250>
+
+    def test_application_read_execution_copies_context_but_is_not_model_tool_selection(client,native,monkeypatch):
+        pid,r,_=create_utility(client,native,monkeypatch);agent=client.app.state.agent
+        scripted(agent,monkeypatch,[tool('requested_output_plan',{'output_plan':[{'request_key':'r','question_fragment_ids':['q1'],'fact_keys':['bill_total_kwh','mbe_percent'],'explanation_topics':['period']} ]})])
+        t=agent.start(pid,Chat(message='��ȡ�˵�������ƽ��ƫ�˵���ڼ䡣',mode='provider',read_requests=[{'request_key':'r','kind':'utility','purpose':'results','record_id':r['utility_id']}]),background=False)
+        assert t['status']=='succeeded',t.get('error')
+>       assert t['answer']['output_contract_coverage']=='all_requested_outputs_delivered'
+E       AssertionError: assert 'fulfilled' == 'all_requeste...uts_delivered'
+E         
+E         - all_requested_outputs_delivered
+E         + fulfilled
+
+tests\test_agent_energy.py:91: AssertionError
+============================== warnings summary ===============================
+D:\ϡ��agent-ϡ����ůȫ����\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\ϡ��agent-ϡ����ůȫ����\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_energy.py::test_selected_energy_projection_is_bounded_and_catalog_has_no_values
+FAILED tests/test_agent_energy.py::test_withdrawal_between_read_and_delivery_never_revives_numeric_result
+FAILED tests/test_agent_energy.py::test_application_read_execution_copies_context_but_is_not_model_tool_selection
+3 failed, 16 passed, 1 warning in 31.55s
