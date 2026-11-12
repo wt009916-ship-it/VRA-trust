@@ -93,11 +93,12 @@ def driver(a,monkeypatch,plans):
         records=[a.store.list(p['kind'])[0] for p in plans]
         if len(turns)==2:return batch([(inspection(p['kind']).read_tool,{inspection(p['kind']).argument:r[inspection(p['kind']).record_key]}) for p,r in zip(plans,records)])
         numeric=next(t['function']['parameters'] for t in tools if t['function']['name']=='professional_deliver')
-        keys=numeric['$defs']['Statement']['properties']['fact']['enum']
+        variants=numeric['properties']['delivery']['oneOf']
+        keys={key for variant in variants for key in variant['properties']['fact_keys']['items']['enum']}
         assert '左支反力' not in keys
         assert all(key in keys for p in plans for key,*_ in EXPECTED[p['kind']])
         return batch([('professional_deliver',{'delivery':{'kind':p['kind'],'record_id':r[inspection(p['kind']).record_key],'record_hash':r['hash'],
-            'statements':[dict(fact=k,value=v,unit=u,period=period,study_years=None,area_m2=None) for k,v,u,period in EXPECTED[p['kind']]],'finish':True}}) for p,r in zip(plans,records)])
+            'fact_keys':[k for k,*_ in EXPECTED[p['kind']]],'finish':True}}) for p,r in zip(plans,records)])
     monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
     monkeypatch.setattr(a.gateway,'complete',complete);return turns
 
