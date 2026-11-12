@@ -11168,7 +11168,9 @@
               "inspect_engineering",
               "inspect_schedule",
               "inspect_operations",
-              "inspect_material_scenarios"
+              "inspect_material_scenarios",
+              "inspect_enduse",
+              "inspect_utility"
             ],
             "title": "Objective",
             "default": "open_ended"
@@ -11267,6 +11269,30 @@
               }
             ],
             "title": "Target Scenario Id"
+          },
+          "target_enduse_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^enduse_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Enduse Id"
+          },
+          "target_utility_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^utility_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Utility Id"
           },
           "previous_agent_id": {
             "anyOf": [
@@ -14791,7 +14817,9 @@
               "engineering",
               "schedule",
               "operation",
-              "scenario"
+              "scenario",
+              "enduse",
+              "utility"
             ],
             "title": "Kind"
           },
@@ -14807,7 +14835,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$"
+                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$"
               },
               {
                 "type": "null"

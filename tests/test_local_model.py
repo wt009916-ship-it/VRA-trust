@@ -129,7 +129,10 @@ def test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs(
     scoped = agent.tools({'requested_output_plan', 'requested_availability', 'professional_review'})
     assert {t['function']['name'] for t in scoped} == {'requested_output_plan', 'requested_availability', 'professional_review'}
     assert not {t['function']['name'] for t in tools} & {'requested_output_plan', 'requested_availability', 'professional_review'}
-    for tool in tools + scoped:
+    from backend.agent import TOOLS
+    explicit = agent.tools(set(TOOLS))
+    assert {t['function']['name'] for t in explicit} == set(TOOLS)
+    for tool in explicit:
         name = tool['function']['name']; schema = tool['function']['parameters']
         assert schema['additionalProperties'] is False
         # Only display titles are omitted; every non-title property, default and validation constraint is unchanged.
@@ -170,3 +173,16 @@ def test_date_tool_arguments_are_canonical_json_and_missing_runs_not_invented(cl
     assert agent.call(pid, 'simulation_list', {}, False) == []
     with pytest.raises(ValueError):
         ToolArgs(run_id=pid)
+
+
+def test_unscoped_probe_is_read_only_but_explicit_task_catalog_keeps_all_tools(client):
+    from backend.agent import TOOLS, WRITE_TOOLS
+    agent=client.app.state.agent
+    default={t['function']['name'] for t in agent.tools()}
+    assert not default & WRITE_TOOLS
+    assert {'end_use_read','utility_comparison_read','professional_deliver'} <= default
+    explicit={t['function']['name'] for t in agent.tools(set(TOOLS))}
+    assert explicit==set(TOOLS) and WRITE_TOOLS <= explicit
+    status=client.get('/api/agent/status').json()
+    assert status['tool_catalog_scope']=='default_read_only'
+    assert set(status['installed_tool_names'])==set(TOOLS)

@@ -118,7 +118,7 @@ def test_history_is_project_scoped_bounded_and_available_via_api(client, monkeyp
 
 def test_tool_contracts_and_malformed_provider_messages_fail_closed(client, monkeypatch):
     pid = create_project(client)['project_id']; agent = client.app.state.agent
-    tools = {t['function']['name']: t['function']['parameters'] for t in agent.tools()}
+    tools = {t['function']['name']: t['function']['parameters'] for t in agent.tools({'project_get','simulation_create'})}
     assert tools['project_get']['properties'] == {}
     assert set(tools['simulation_create']['properties']) == {'scheme_id', 'factor_profile_id'}
     with pytest.raises(core.ValidationError, match='Unexpected'):

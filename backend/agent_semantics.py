@@ -7,23 +7,24 @@ from pydantic import Field, model_validator
 
 from .schema import Contract
 from .agent_inspections import INSPECTIONS, record_name
-from . import agent_scenarios
+from . import agent_scenarios, agent_energy
 from . import core
 
 
 class Statement(Contract):
+    energy_context: agent_energy.EnergyContext | None = Field(default=None, description="Energy facts require the exact source energy_context, including year, periods, carrier, boundary, data nature and basis. Old nonenergy facts use null.")
     fact: str = Field(min_length=1, max_length=100, description='Copy explanation_facts.fact exactly; do not translate or use its label.')
     value: str | None = Field(max_length=80, pattern=r'^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]{1,4})?$',
                              description='Copy source numeric string. Null requires source_undefined with unavailable_reason. Never invent values. Incomplete/stale record: professional_limit.')
     unit: str = Field(min_length=1, max_length=40)
-    period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window']
+    period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window', 'native_annual', 'utility_periods']
     study_years: int | None = Field(ge=1, le=200, description='Required: copy the fact study_years; null for a non-period calculation.')
     area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='Required: copy fact area_m2. Null means no explicit area denominator; see area_basis. R/U are intrinsic area-normalized properties, not totals.')
 
 
 class Delivery(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(default_factory=list, max_length=12)
     limitation_status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale'] | None = Field(default=None,
@@ -43,8 +44,8 @@ class Delivery(Contract):
 
 class NumericDelivery(Contract):
     """The model-facing numeric contract matches server validation exactly."""
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(min_length=1, max_length=12)
     finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
@@ -59,8 +60,8 @@ class NumericDelivery(Contract):
 
 
 class Limitation(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale']
     finish: bool = False
@@ -82,7 +83,7 @@ def facts(record, kind):
     body = record['input']
     rows = []
 
-    def add(key, label, value, unit, period, *, years=None, area=None, path=None, unavailable_reason=None):
+    def add(key, label, value, unit, period, *, years=None, area=None, path=None, unavailable_reason=None, energy_context=None):
         if value is None and not unavailable_reason:
             return  # Only explicitly explained source-null fields may be acknowledged.
         # Match the established 12-significant-digit engineering display, not binary float tails.
@@ -94,11 +95,13 @@ def facts(record, kind):
                      'area_basis': 'intrinsic_area_normalized_property' if kind == 'thermal' else (
                          'explicit_area_denominator' if area is not None else 'no_area_normalization'),
                      'time_basis': 'whole_study_period_not_annual' if period == 'study_period' else 'not_a_study_duration',
-                     'source_path': path or '/result/' + key})
+                     'source_path': path or '/result/' + key, 'energy_context': energy_context})
         if value is None:
             rows[-1]['unavailable_reason'] = unavailable_reason
 
-    if kind == 'scenario':
+    if kind in agent_energy.KINDS:
+        agent_energy.append_facts(record,kind,add)
+    elif kind == 'scenario':
         agent_scenarios.append_facts(record,add)
     elif kind == 'thermal':
         for key, label, unit in [('total_resistance_m2k_w', '总热阻 R', 'm2 K/W'),
@@ -170,7 +173,7 @@ def model_projection(record, kind):
     from .agent_reviews import reference
     spec = inspection(kind)
     artifact = spec.artifact(record)
-    return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record_name(record),
+    projected = {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record_name(record),
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
             'nonnumeric_review_reference': reference(record, kind),
@@ -182,10 +185,18 @@ def model_projection(record, kind):
             'calculation_context': calculation_context(record, kind),
             'explanation_instruction': record['explanation_instruction'],
             'projection_notice': '这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。'}
+    if kind in agent_energy.KINDS:
+        selected=record.get('selected_energy_fact_keys') or []
+        projected['available_fact_catalog']=[{'fact':f['fact'],'label':f['label'],'unit':f['unit']} for f in projected['explanation_facts']]
+        projected['explanation_facts']=[f for f in projected['explanation_facts'] if f['fact'] in selected]
+        projected['selected_fact_keys']=selected
+        projected['selection_notice']='Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit.'
+    return projected
 
 
 def calculation_context(record, kind):
     result = record.get('result') or {}
+    if kind in agent_energy.KINDS:return agent_energy.context(record,kind)
     if kind == 'scenario':return agent_scenarios.context(record)
     if kind == 'thermal':
         return {'method': 'one_dimensional_steady_state_opaque_assembly',
@@ -247,7 +258,8 @@ def check(record, delivery):
         value_matches = (claim.value is None and fact['value'] is None) or (
             claim.value is not None and fact['value'] is not None and
             Decimal(claim.value) in {Decimal(fact['value']), Decimal(fact['source_value'])})
-        if not value_matches or any(getattr(claim, k) != fact[k] for k in ('unit', 'period', 'study_years', 'area_m2')):
+        supplied_context=claim.energy_context.model_dump(mode='json') if claim.energy_context else None
+        if not value_matches or supplied_context!=fact.get('energy_context') or any(getattr(claim, k) != fact[k] for k in ('unit', 'period', 'study_years', 'area_m2')):
             corrections.append({'fact': claim.fact, 'expected': fact})
         else:
             accepted.append(fact)

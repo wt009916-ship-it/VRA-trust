@@ -28,7 +28,7 @@ from . import agent_requests as requested_scopes
 from . import agent_simulation
 from . import agent_outputs
 from . import agent_read_execution, agent_standards
-from . import agent_intent_catalog, agent_reviews
+from . import agent_intent_catalog, agent_reviews, agent_energy
 
 
 class Chat(Contract):
@@ -41,7 +41,7 @@ class Chat(Contract):
     read_execution: Literal['application', 'model'] = 'application'
     search_plan: Search | None = None
     cost_plan: Actions | None = None
-    objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle', 'inspect_engineering', 'inspect_schedule', 'inspect_operations', 'inspect_material_scenarios'] = 'open_ended'
+    objective: Literal['open_ended', 'inspect_evidence', 'inspect_results', 'inspect_material_cost', 'inspect_thermal', 'inspect_lifecycle', 'inspect_engineering', 'inspect_schedule', 'inspect_operations', 'inspect_material_scenarios', 'inspect_enduse', 'inspect_utility'] = 'open_ended'
     target_run_id: str | None = None
     target_cost_id: str | None = Field(default=None, pattern=r'^cost_[a-f0-9]{32}$')
     target_thermal_id: str | None = Field(default=None, pattern=r'^thermal_[a-f0-9]{32}$')
@@ -50,6 +50,8 @@ class Chat(Contract):
     target_schedule_id: str | None = Field(default=None, pattern=r'^schedule_[a-f0-9]{32}$')
     target_operation_id: str | None = Field(default=None, pattern=r'^operation_[a-f0-9]{32}$')
     target_scenario_id: str | None = Field(default=None, pattern=r"^scenario_[a-f0-9]{32}$")
+    target_enduse_id: str | None = Field(default=None,pattern=r'^enduse_[a-f0-9]{32}$')
+    target_utility_id: str | None = Field(default=None,pattern=r'^utility_[a-f0-9]{32}$')
     previous_agent_id: str | None = None
 
     @model_validator(mode='after')
@@ -75,11 +77,15 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    enduse_id: str | None = Field(default=None,pattern=r'^enduse_[a-f0-9]{32}$')
+    utility_id: str | None = Field(default=None,pattern=r'^utility_[a-f0-9]{32}$')
+    fact_keys: list[str] | None = Field(default=None,min_length=1,max_length=12,description='Energy reads: select exact needed keys from the output-plan catalog or available_fact_catalog. Omitting returns context/catalog only, no numeric model projection.')
+    before: StrictInt | None = Field(default=None,ge=1,le=2**53-1)
     review: agent_reviews.SourceReview | None = None
     output_plan: list[agent_outputs.OutputItem] | None = Field(default=None, min_length=1, max_length=6)
     request_keys: list[str] | None = Field(default=None,min_length=1,max_length=6)
     finish: StrictBool = False
-    kinds: list[Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario']] | None = Field(default=None,min_length=1,max_length=6)
+    kinds: list[Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario', 'enduse', 'utility']] | None = Field(default=None,min_length=1,max_length=6)
     missing: missing_records.Missing | None = None
     plan_keys: list[str] | None = Field(default=None, min_length=1, max_length=2)
     record_ids: list[str] | None = Field(default=None, min_length=1, max_length=3)
@@ -108,6 +114,7 @@ class ToolArgs(Contract):
 
     @model_validator(mode='after')
     def batch_identifiers(self):
+        if self.fact_keys is not None and (len(set(self.fact_keys))!=len(self.fact_keys) or any(len(k)>100 for k in self.fact_keys)):raise ValueError('Choose distinct bounded fact keys')
         if self.zone_offset is not None or self.zone_hash is not None:
             if not self.run_id or self.zone_offset is None or self.zone_hash is None:
                 raise ValueError('Sizing pages require run_id, zone_offset and current zone_hash together')
@@ -115,13 +122,17 @@ class ToolArgs(Contract):
             raise ValueError('Select distinct professional kinds')
         for values, pattern in [(self.plan_keys, r'[A-Za-z0-9_-]{1,40}'),
                                 (self.request_keys, r'[A-Za-z0-9_-]{1,40}'),
-                                (self.record_ids, r'(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}')]:
+                                (self.record_ids, r'(thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}')]:
             if values is not None and (len(set(values))!=len(values) or any(not re.fullmatch(pattern,v) for v in values)):
                 raise ValueError('Batch identifiers must be unique and valid; no arbitrary parameters or paths')
         return self
 
 
 TOOLS = {
+    'end_use_list':'列出设备用途账名称和编号；before使用next_before翻页，不读取或认证数值。',
+    'end_use_read':'按enduse_id实际读取原生用途账，fact_keys最多12个；省略只返回事实目录及期间口径。年量不是实测，热量不是电量。',
+    'utility_comparison_list':'列出账单比较名称和编号；before使用next_before翻页，不认证校准。',
+    'utility_comparison_read':'按utility_id实际读取账单比较，fact_keys最多12个；省略只返回事实目录。MBE会抵消；CV反映逐期误差；null不是0，声明阈值不等于认证。',
     'professional_review': '实际读取后，提交review中的kind、record_id、record_hash与view_hash核验当前状态/范围；不交付任何数值，不认证整体工程有效性。仅用于已冻结的纯解释输出计划。',
     'requested_output_plan': '先根据原用户问题为每个request_key选择所问fact_keys和explanation_topics，并选择应用提供的原问题片段编号question_fragment_ids。只能用本轮计划目录；计划提交后冻结，不得根据资料名称或内容改写。此为模型解析，不是原问题已被完整理解的认证。',
     'requested_availability':'按用户本轮声明的request_keys（1到6个）核验记录存在或缺失，同一目录快照逐项返回；只核查可用性，不读取工程数值，不替换编号。全部声明目标交付后可finish=true。',
@@ -170,6 +181,8 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'end_use_list':('before',),'end_use_read':('enduse_id','fact_keys'),
+    'utility_comparison_list':('before',),'utility_comparison_read':('utility_id','fact_keys'),
     'requested_output_plan': ('output_plan',),
     'requested_availability': ('request_keys','finish'),
     'professional_inventory': ('kinds',),
@@ -264,7 +277,9 @@ class Agent:
         schema = ToolArgs.model_json_schema()
         tools = []
         for name, desc in TOOLS.items():
-            if allowed is None and name in {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability', 'professional_review'}:continue
+            # Unscoped probes/catalogs never advertise compute tools. Task execution
+            # always supplies its explicit authorized set below.
+            if allowed is None and name in WRITE_TOOLS | {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability', 'professional_review'}:continue
             if allowed is not None and name not in allowed:
                 continue
             # The same root display title adds no constraint and repeats for every tool.
@@ -410,13 +425,18 @@ class Agent:
                      'execution_status': r['status']} for r in self.store.jobs(project_id)[:6]]
         for spec in INSPECTIONS.values():
             if name == spec.list_tool:
-                return missing_records.catalog(d,project_id,spec)
+                return missing_records.catalog(d,project_id,spec,args.before if spec.kind in agent_energy.KINDS else None)
             if name == spec.read_tool:
                 ident = getattr(args, spec.argument)
                 if not ident:raise core.ValidationError('Provide ' + spec.argument)
                 if self.store.get(spec.kind,ident)['project_id'] != project_id:
                     raise ToolRefusal('Cross-project ' + spec.kind + ' read rejected')
-                return readable(spec.service(d).view(project_id,ident), spec.kind)
+                current=readable(spec.service(d).view(project_id,ident), spec.kind)
+                if spec.kind in agent_energy.KINDS:
+                    known=agent_energy.END_FACTS if spec.kind=='enduse' else agent_energy.UTILITY_FACTS
+                    if args.fact_keys and not set(args.fact_keys)<=set(known):raise core.ValidationError('Unknown energy fact key')
+                    current['selected_energy_fact_keys']=args.fact_keys or []
+                return current
         if name == 'standards_search':
             if not args.standards_query:
                 raise core.ValidationError('Provide standards_query including as_of date')
@@ -512,7 +532,7 @@ class Agent:
         offered = {'project_get', spec.list_tool, spec.read_tool} if spec else (set(TOOLS) if body.allow_compute else set(TOOLS) - WRITE_TOOLS)
         if body.objective == 'inspect_results':offered &= agent_simulation.INSPECTION_TOOLS
         offered -= {'requested_availability', 'requested_output_plan', 'professional_review'}
-        if not spec:offered -= {s.list_tool for s in INSPECTIONS.values()}
+        if not spec:offered -= {s.list_tool for s in INSPECTIONS.values() if s.kind not in agent_energy.KINDS}
         if body.calculation_plans:
             offered = {'project_get', 'calculation_execute', 'calculation_prepare', 'professional_read_many', 'professional_deliver','professional_limit'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
         if body.read_requests:
@@ -528,7 +548,7 @@ class Agent:
             return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + len(record.get('professional_reviews', [])) + int(bool(record.get('missing_deliveries'))) + capabilities.read_count(record.get('capability_delivery')) + int(bool(record.get('availability_deliveries')))
         def missing_targets():
             if body.read_requests:return requested_scopes.result_ids(record['read_requests'])
-            ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}\b',body.message))
+            ids=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}\b',body.message))
             ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('professional_references',[]))
             ids.update(r['record_id'] for h in record['context_snapshot'] for r in h.get('missing_references',[]) if r.get('record_id'))
             return ids
@@ -562,7 +582,11 @@ class Agent:
                         if e['tool'] == 'calculation_execute' and e['result']['kind'] == ds.kind:ids.add(e['result']['record_id'])
                         if e['tool'] == ds.read_tool:
                             ids.add(e['result'][ds.record_key]);read_any = True
-                            read_records.append((ds, e['result']))
+                            observed = e['result']
+                            if ds.kind in agent_energy.KINDS:
+                                observed = {**observed, 'explanation_facts': [f for f in observed.get('explanation_facts', [])
+                                    if f['fact'] in (observed.get('selected_energy_fact_keys') or [])]}
+                            read_records.append((ds, observed))
                     if body.read_requests:
                         absent = {r['request'].get('record_id') for r in record.get('missing_deliveries', [])}
                         ids = {r.record_id for r in body.read_requests
@@ -812,7 +836,7 @@ class Agent:
                     if body.read_requests and any(r.record_id not in requested_scopes.result_ids(record['read_requests']) for r in selected):
                         raise ToolRefusal('Missing delivery is outside this task user-declared result scopes')
                     scopes={missing_records.key(x) for x in record.get('missing_deliveries',[])}
-                    explicit=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}\b',body.message))
+                    explicit=set(re.findall(r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}\b',body.message))
                     for request in selected:
                         if request.record_id is None and any(ident.startswith(request.kind+'_') and (request.kind,ident) not in scopes for ident in explicit):
                             raise core.ValidationError('Check the explicitly requested record ID first; entire-kind absence cannot substitute for its requested scope')
@@ -852,7 +876,7 @@ class Agent:
                 # Validation/read failures can be corrected, but side effects and security refusals cannot.
                 if recoverable and name not in WRITE_TOOLS and not isinstance(exc, ToolRefusal) and isinstance(exc, (ValueError, KeyError)) and record['recovery_attempts'] < 2:
                     record['recovery_attempts'] += 1
-                    lookup = {'material_cost_read': 'material_cost_list', 'beam_analysis_read': 'beam_analysis_list',
+                    lookup = {'end_use_read':'end_use_list','utility_comparison_read':'utility_comparison_list','material_cost_read': 'material_cost_list', 'beam_analysis_read': 'beam_analysis_list',
                               'thermal_read': 'thermal_list', 'lifecycle_read': 'lifecycle_list',
                               'operations_read': 'operations_list', 'schedule_read': 'schedule_list',
                               'simulation_result': 'simulation_list', 'simulation_status': 'simulation_list',

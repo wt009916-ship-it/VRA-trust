@@ -15,9 +15,9 @@ from .agent_inspections import record_name
 class Missing(Contract):
     # Legacy single-kind receipts remain readable; the model sees one array selector only.
     model_config = ConfigDict(json_schema_extra={'required':['kinds']})
-    kind: SkipJsonSchema[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario'] | None] = None
-    kinds: Annotated[list[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']], Field(min_length=1,max_length=6)] | SkipJsonSchema[None] = None
-    record_id: str | None = Field(default=None, pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    kind: SkipJsonSchema[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility'] | None] = None
+    kinds: Annotated[list[Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']], Field(min_length=1,max_length=6)] | SkipJsonSchema[None] = None
+    record_id: str | None = Field(default=None, pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     finish: StrictBool = False
 
     @model_validator(mode='after')
@@ -49,7 +49,7 @@ def snapshot_many(domain, pid, kinds):
         con.execute('BEGIN')
         project = con.execute("SELECT revision FROM records WHERE kind='project' AND id=? ORDER BY revision DESC LIMIT 1", (pid,)).fetchone()
         if project is None: raise KeyError(pid)
-        rows = con.execute('SELECT kind,body FROM records r WHERE kind IN ('+','.join('?' for _ in kinds)+') AND project_id=? '
+        rows = con.execute("SELECT kind, CASE WHEN kind IN ('enduse','utility') THEN json_object(kind||'_id',id,'project_id',project_id,'revision',revision,'hash',json_extract(body,'$.hash'),'input',json_object('name',json_extract(body,'$.input.name')),'catalog_rowid',rowid) ELSE body END FROM records r WHERE kind IN ("+','.join('?' for _ in kinds)+') AND project_id=? '
                            'AND revision=(SELECT MAX(revision) FROM records x WHERE x.kind=r.kind AND x.id=r.id) '
                            'ORDER BY rowid DESC', (*kinds,pid)).fetchall()
     version=core.sha(Path(__file__));result={}
@@ -65,12 +65,16 @@ def snapshot(domain, pid, kind):
     return snapshot_many(domain,pid,[kind])[kind]
 
 
-def catalog(domain, pid, spec):
+def catalog(domain, pid, spec, before=None):
     records, digest = snapshot(domain, pid, spec.kind)
-    return catalog_rows(domain,pid,spec,records,digest)
+    return catalog_rows(domain,pid,spec,records,digest,before)
 
 
-def catalog_rows(domain,pid,spec,records,digest):
+def catalog_rows(domain,pid,spec,records,digest,before=None):
+    if spec.kind in {'enduse','utility'}:
+        eligible=[r for r in records if before is None or r['catalog_rowid']<before]
+        recent=[{spec.record_key:r[spec.record_key],'name':record_name(r),'status':'not_checked'} for r in eligible[:6]]
+        return {'kind':spec.kind,'records':recent,'total_count':len(records),'returned_count':len(recent),'truncated':len(eligible)>6,'catalog_hash':digest,'next_before':eligible[5]['catalog_rowid'] if len(eligible)>6 else None,'notice':'Only names and IDs; status and numeric values require a selected current read. Use next_before with the corresponding list tool for older records; no automatic latest selection.'}
     recent = [{spec.record_key:r[spec.record_key], 'name':record_name(r),
                'status':spec.service(domain).view(pid,r[spec.record_key])['status']} for r in records[:6]]
     return {'kind':spec.kind, 'records':recent, 'total_count':len(records), 'returned_count':len(recent),
@@ -172,7 +176,7 @@ def pending_empty(record):
         if event['tool']=='professional_inventory':
             for catalog in result['catalogs']:last[catalog['kind']]=catalog['total_count']
         else:
-            for kind in ['thermal','lifecycle','cost','engineering','schedule','operation','scenario']:
+            for kind in ['thermal','lifecycle','cost','engineering','schedule','operation','scenario','enduse','utility']:
                 spec=inspection(kind)
                 if event['tool']==spec.list_tool and isinstance(result,dict):last[kind]=result['total_count']
                 if event['tool']==spec.read_tool:read.add(kind)

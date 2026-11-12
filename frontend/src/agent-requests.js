@@ -1,9 +1,14 @@
 import {escape as esc, request} from './api.js';
 
-export const readKinds={thermal:'热工构造',lifecycle:'阶段碳清单',cost:'材料成本',engineering:'梁分析',schedule:'施工进度',operation:'设备运行',scenario:'材料两方案对照'};
-const routes={thermal:'thermal',lifecycle:'lifecycle',cost:'material-costs',engineering:'beam-analyses',schedule:'schedules',operation:'operations',scenario:'material-scenarios'};
+export const readKinds={thermal:'热工构造',lifecycle:'阶段碳清单',cost:'材料成本',engineering:'梁分析',schedule:'施工进度',operation:'设备运行',scenario:'材料两方案对照',enduse:'设备用途能耗账',utility:'账单模拟比较'};
+const routes={thermal:'thermal',lifecycle:'lifecycle',cost:'material-costs',engineering:'beam-analyses',schedule:'schedules',operation:'operations',scenario:'material-scenarios',enduse:'end-use-ledgers',utility:'utility-comparisons'};
 export function readRecordLabel(record,kind){
+ if(['enduse','utility'].includes(kind))return record.name+' · 选中后核验，目录不认证数值';
  return kind==='scenario'?(record.names||[]).join(' / ')+' · 状态将在执行时核验':record.input.name+' · '+record.status;
+}
+export function readRecordPage(value,kind){
+ if(['enduse','utility'].includes(kind)){if(!Array.isArray(value?.records)||!(value.next_before===null||Number.isSafeInteger(value.next_before)&&value.next_before>0))throw Error('记录目录响应无效');return {records:value.records,next:value.next_before};}
+ if(!Array.isArray(value))throw Error('记录目录响应无效');return {records:value,next:null};
 }
 export function readRequestMarkup() {
   return `<details class="agent-read-input"><summary>明确读取范围 · 可选</summary><p>逐项选择本轮要检查的记录，模型不能换成其他编号。检查可用性仅说明记录是否存在；读取结果需指定编号，仍要核验当前来源。最多6项，其中结果读取最多3项。</p><div data-read-rows></div><button type="button" data-add-read>＋ 添加读取目标</button><p>选择AI模式与自由提问，并关闭“允许计算”。这份清单不授权计算，也不证明清单外的问题已处理。</p></details>`;
@@ -37,25 +42,27 @@ export function bindReadRequests(host,pid,action) {
   add.onclick=()=>{
     if(rows.children.length>=6)return;
     sequence++;
-    rows.insertAdjacentHTML('beforeend',`<fieldset data-read-scope="read_${sequence}"><legend>读取目标 ${sequence}</legend><div class="read-scope-grid"><label>专业<select data-read-kind>${Object.entries(readKinds).map(([k,label])=>`<option value="${k}">${label}</option>`).join('')}</select></label><label>目的<select data-read-purpose><option value="availability">检查记录是否存在</option><option value="results">读取指定记录的结果</option></select></label></div><label>指定编号<input data-read-id maxlength="50" spellcheck="false" placeholder="留空表示该专业完整项目目录"></label><div class="read-scope-grid"><button type="button" data-load-records>加载已有记录</button><label>从已有记录选填<select data-existing-record><option value="">先加载记录，或手动输入编号</option></select></label></div><p data-read-note role="status">检查可用性可以留空编号；读取结果必须指定编号。</p><button type="button" data-remove-read>移除此目标</button></fieldset>`);
+    rows.insertAdjacentHTML('beforeend',`<fieldset data-read-scope="read_${sequence}"><legend>读取目标 ${sequence}</legend><div class="read-scope-grid"><label>专业<select data-read-kind>${Object.entries(readKinds).map(([k,label])=>`<option value="${k}">${label}</option>`).join('')}</select></label><label>目的<select data-read-purpose><option value="availability">检查记录是否存在</option><option value="results">读取指定记录的结果</option></select></label></div><label>指定编号<input data-read-id maxlength="50" spellcheck="false" placeholder="留空表示该专业完整项目目录"></label><div class="read-scope-grid"><button type="button" data-load-records>加载已有记录</button><label>从已有记录选填<select data-existing-record><option value="">先加载记录，或手动输入编号</option></select></label></div><button type="button" data-read-more hidden>更早记录</button><p data-read-note role="status">检查可用性可以留空编号；读取结果必须指定编号。</p><button type="button" data-remove-read>移除此目标</button></fieldset>`);
     const row=rows.lastElementChild,kind=row.querySelector('[data-read-kind]'),purpose=row.querySelector('[data-read-purpose]'),id=row.querySelector('[data-read-id]'),existing=row.querySelector('[data-existing-record]'),note=row.querySelector('[data-read-note]');
-    let generation=0;
-    kind.onchange=()=>{generation++;id.value='';existing.innerHTML='<option value="">专业已改变，请重新加载或输入编号</option>';};
+    let generation=0,cursor=null;const more=row.querySelector('[data-read-more]');
+    kind.onchange=()=>{generation++;cursor=null;more.hidden=true;id.value='';existing.innerHTML='<option value="">专业已改变，请重新加载或输入编号</option>';};
     purpose.onchange=()=>{id.required=purpose.value==='results';id.placeholder=id.required?'必须指定记录编号':'留空表示该专业完整项目目录';};
     existing.onchange=()=>{if(existing.value)id.value=existing.value;};
-    row.querySelector('[data-load-records]').onclick=e=>action(async()=>{
+    const loadPage=(before,e)=>action(async()=>{
       const selected=kind.value,stamp=++generation;
       note.textContent='正在加载当前项目记录…';
       let records;
-      try {records=await request('/projects/'+encodeURIComponent(pid)+'/'+routes[selected]);}
+      try {records=await request('/projects/'+encodeURIComponent(pid)+'/'+routes[selected]+(before===null?'':'?before='+before));}
       catch(error) {
         if(row.isConnected&&generation===stamp&&kind.value===selected)note.textContent='记录加载失败，请重试或核对原编号后手动填写。';
         throw error;
       }
       if(!row.isConnected||generation!==stamp||kind.value!==selected)return;
+      const page=readRecordPage(records,selected);records=page.records;cursor=page.next;more.hidden=cursor===null;
       existing.innerHTML='<option value="">请选择；不会自动选择最新记录</option>'+records.map(r=>`<option value="${esc(r[selected+'_id'])}">${esc(readRecordLabel(r,selected))} · ${esc(r[selected+'_id'])}</option>`).join('');
-      note.textContent=records.length?'选择记录只填写编号，最终仍按任务执行时的当前来源核验。':'当前列表没有记录；可以按原编号核验缺失，不会新建计算。';
+      note.textContent=records.length?'仅本页名称，选择只填写编号，执行时核验来源；可翻到更早记录。':'本页没有记录，不能推断整个项目从未计算；可手动核对原编号。';
     },e.currentTarget);
+    row.querySelector('[data-load-records]').onclick=e=>loadPage(null,e);more.onclick=e=>{if(cursor!==null)loadPage(cursor,e);};
     row.querySelector('[data-remove-read]').onclick=()=>{generation++;row.remove();add.disabled=false;};
     add.disabled=rows.children.length>=6;kind.focus();
   };

@@ -1,5 +1,5 @@
 """Execute a frozen, user-scoped read plan. No model-generated numeric delivery."""
-from . import core, agent_outputs, agent_reviews
+from . import core, agent_outputs, agent_reviews, agent_energy
 from .agent_semantics import Statement, inspection, can_deliver_requested_facts
 from .agent_recovery import RecordsUnavailable
 
@@ -28,7 +28,9 @@ def execute(record, invoke, *, cancelled):
         row = {'request_key': key, 'record_id': ident, 'state': 'failed'}
         try:
             try:
-                source = invoke(spec.read_tool, {spec.argument: ident})
+                arguments={spec.argument:ident}
+                if kind in agent_energy.KINDS and wanted['fact_keys']:arguments['fact_keys']=wanted['fact_keys']
+                source = invoke(spec.read_tool, arguments)
             except RecordsUnavailable:
                 invoke('professional_missing', {'missing': {'kinds': [kind], 'record_id': ident}})
                 row['state'] = 'absence_submitted'

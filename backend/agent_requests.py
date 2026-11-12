@@ -5,16 +5,16 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from . import core, agent_missing, agent_outputs
+from . import core, agent_missing, agent_outputs, agent_energy
 from .schema import Contract
 from .agent_semantics import inspection, can_deliver_requested_facts
 
 
 class ReadRequest(Contract):
     request_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
-    kind: Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario']
+    kind: Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario', 'enduse', 'utility']
     purpose: Literal['availability','results']
-    record_id: str | None = Field(default=None,pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    record_id: str | None = Field(default=None,pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
 
     @model_validator(mode='after')
     def scope(self):
@@ -177,16 +177,26 @@ def next_actions(record):
                     'kind': kind, 'record_id': ident, 'record_hash': current['hash'],
                     'status': current['status'], 'finish': False}})
             else:
-                action.update(tool='professional_deliver', arguments={'delivery': {
-                    'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
-                    required_fields=['delivery.statements'],
-                    available_facts=current.get('explanation_facts', []),
-                    output_requirement=agent_outputs.requirement(record, request['request_key']))
+                facts = current.get('explanation_facts', [])
+                if kind in agent_energy.KINDS:
+                    facts = [f for f in facts if f['fact'] in (current.get('selected_energy_fact_keys') or [])]
+                if kind in agent_energy.KINDS and not facts:
+                    arguments = {spec.argument:ident}
+                    if wanted.get('fact_keys'):arguments['fact_keys'] = wanted['fact_keys']
+                    action.update(tool=spec.read_tool, arguments=arguments, required_fields=['fact_keys'],
+                                  notice='Select needed keys from the read result available_fact_catalog; no numeric facts were selected yet.')
+                else:
+                    action.update(tool='professional_deliver', arguments={'delivery': {
+                        'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
+                        required_fields=['delivery.statements'], available_facts=facts,
+                        output_requirement=agent_outputs.requirement(record, request['request_key']))
         elif ident in unavailable:
             action.update(tool='professional_missing', arguments={'missing': {
                 'kinds': [kind], 'record_id': ident, 'finish': False}})
         else:
-            action.update(tool=spec.read_tool, arguments={spec.argument: ident})
+            arguments={spec.argument:ident};wanted=agent_outputs.requirement(record,request['request_key']) or {}
+            if kind in agent_energy.KINDS and wanted.get('fact_keys'):arguments['fact_keys']=wanted['fact_keys']
+            action.update(tool=spec.read_tool, arguments=arguments)
         actions.append(action)
     if availability_keys:
         actions.append({'tool': 'requested_availability',
@@ -198,7 +208,7 @@ def commentary_review(record, text):
     """Exact identifier membership only, not validation of numerical or semantic prose."""
     allowed = {r['record_id'] for r in record.get('read_requests', []) if r.get('record_id')}
     mentioned = set(re.findall(
-        r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[A-Za-z0-9_-]+\b', text or ''))
+        r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[A-Za-z0-9_-]+\b', text or ''))
     unknown = sorted(mentioned - allowed)
     return {'status': 'reference_mismatch' if unknown else 'references_match',
             'unknown_record_ids': unknown, 'allowed_record_ids': sorted(allowed),

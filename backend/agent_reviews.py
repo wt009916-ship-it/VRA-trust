@@ -3,14 +3,14 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from . import core
+from . import core, agent_energy
 from .schema import Contract
 from .agent_semantics import inspection, facts
 
 
 class SourceReview(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     view_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     finish: bool = False
@@ -46,6 +46,7 @@ def check(record, review):
 
 def explanation(topic, record, kind):
     artifact = inspection(kind).artifact(record)
+    if kind in agent_energy.KINDS and topic in {'period','scope','status'}:return agent_energy.explanation(topic,artifact)
     if topic == 'history':
         return '这里只复核指定记录当前的状态与声明范围，不是完整历史执行审计；存在记录不证明已获工程认证。'
     if topic == 'status':
