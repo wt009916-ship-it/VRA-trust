@@ -3,7 +3,7 @@ import json
 import zipfile
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi import HTTPException, Request, Query
-from .agent import Agent, Chat
+from .agent import Agent, Chat, TOOLS
 from .gateway import Gateway, ProviderSettings
 from .local_model import LocalModelSettings
 from .trust import FactorUpdate, FactorReview, Trust
@@ -351,7 +351,8 @@ def register_extensions(app, domain, auth):
         local = agent.local_model.public()
         return {'provider_ready': config['enabled'] and config['key_configured'], 'model': config['model'],
                 'local_model_ready': local['enabled'] and local['key_configured'], 'local_model': local['model'],
-                'readiness_notice': '配置就绪不等于服务连通或能力验收通过', 'tools': agent.tools()}
+                'readiness_notice': '配置就绪不等于服务连通或能力验收通过', 'tools': agent.tools(),
+                'tool_catalog_scope':'default_read_only', 'installed_tool_names':sorted(TOOLS)}
 
     @app.get('/api/developer/local-model')
     def local_model_settings(request: Request):
