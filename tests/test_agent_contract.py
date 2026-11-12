@@ -13,7 +13,7 @@ def scripted(agent, monkeypatch, messages):
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
     responses = iter(messages)
     captured = []
-    def complete(history, tools):
+    def complete(history, tools, **response_options):
         captured.append(copy.deepcopy(history))
         return next(responses)
     monkeypatch.setattr(agent.gateway, 'complete', complete)

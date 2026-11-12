@@ -21,7 +21,7 @@ def claim(r,kind='thermal',finish=True):
 def test_prepare_two_real_calculations_then_sequential_model_deliveries_fit_budget(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent
     plans=[plan('thermal','wall'),plan('lifecycle','carbon')];history=[];definitions=[]
-    def complete(messages,tools):
+    def complete(messages,tools, **response_options):
         history.append(copy.deepcopy(messages));definitions.append(copy.deepcopy(tools))
         if len(history)==1:return tool('calculation_prepare',{'plan_keys':['wall','carbon']})
         kind='thermal' if len(history)==2 else 'lifecycle'
@@ -49,7 +49,7 @@ def test_prepare_two_real_calculations_then_sequential_model_deliveries_fit_budg
 
 def test_batch_selection_does_not_execute_other_conditional_plan(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent;n=0
-    def complete(*args):
+    def complete(*args, **response_options):
         nonlocal n;n+=1
         if n==1:return tool('calculation_prepare',{'plan_keys':['wall']})
         if n==2:return claim(a.store.list('thermal',pid)[0])
@@ -107,7 +107,7 @@ def test_source_revision_is_rechecked_for_every_batch_write(client,monkeypatch,w
         if when=='between_writes' and name=='calculation_execute' and args['plan_key']=='wall':revise()
         return result
     monkeypatch.setattr(a,'call',call)
-    def complete(*args):
+    def complete(*args, **response_options):
         if when=='before_batch':revise()
         return tool('calculation_prepare',{'plan_keys':['wall','carbon']})
     monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
@@ -176,7 +176,7 @@ def test_plan_read_batch_cannot_use_older_same_project_records(client,monkeypatc
 
 def test_repeat_prepare_after_revision_change_never_reuses_stale_write(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent;n=0
-    def complete(*args):
+    def complete(*args, **response_options):
         nonlocal n;n+=1
         if n==2:
             p=a.store.get('project',pid);p['building']['area_m2']+=10;a.store.put('project',p,p['revision'])
@@ -212,7 +212,7 @@ def test_explicitly_deferred_plan_cannot_be_executed_by_model(client,monkeypatch
 def test_deferred_plan_is_excluded_from_schema_and_finish_reminder(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent;calls=[]
     plans=[plan('thermal','wall'),{**plan('lifecycle','deferred'),'execution_authorized':False}]
-    def complete(messages,tools):
+    def complete(messages,tools, **response_options):
         calls.append(copy.deepcopy(tools))
         if len(calls)==1:return tool('calculation_prepare',{'plan_keys':['wall']})
         return claim(a.store.list('thermal',pid)[0])

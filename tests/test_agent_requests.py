@@ -122,7 +122,7 @@ def test_invalid_scope_contract_rejected_before_execution(overrides):
 def test_model_schema_exposes_only_declared_availability_keys(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent;definitions=[]
     monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
-    def complete(messages,tools):
+    def complete(messages,tools, **response_options):
         definitions.extend(tools)
         return tool('requested_availability',{'request_keys':['chosen'],'finish':True})
     monkeypatch.setattr(a.gateway,'complete',complete)
@@ -185,7 +185,7 @@ def test_stale_result_scope_can_only_deliver_current_limitation(client,monkeypat
 def test_current_catalog_change_before_final_check_invalidates_delivery(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent;calls=0
     monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
-    def complete(*_):
+    def complete(*_, **response_options):
         nonlocal calls;calls+=1
         if calls==1:return tool('requested_availability',{'request_keys':['scope'],'finish':False})
         create_record(client,pid,'thermal')

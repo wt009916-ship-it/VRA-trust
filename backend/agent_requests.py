@@ -75,7 +75,7 @@ def pending(record):
     available={r['request']['request_key'] for r in record.get('availability_deliveries',[])}
     results={r['record_id'] for r in record.get('professional_deliveries',[])}
     reviewed={r['record_id'] for r in record.get('professional_reviews',[])}
-    unresolved={i['request_key'] for i in (record.get('output_plan') or {}).get('items',[]) if i.get('clarification_question')}
+    unresolved=set(record.get('read_deferrals',[])) | {i['request_key'] for i in (record.get('output_plan') or {}).get('items',[]) if i.get('clarification_question')}
     absent={r['request'].get('record_id') for r in record.get('missing_deliveries',[])}
     return [r['request_key'] for r in record.get('read_requests',[]) if r['request_key'] not in unresolved and
             (r['request_key'] not in available if r['purpose']=='availability' else
@@ -99,7 +99,7 @@ def progress(record,answer):
             state=('result_verified' if r['record_id'] in values else 'limitation_verified' if r['record_id'] in limited
                    else 'record_unavailable' if r['record_id'] in absent else state)
         wanted = agent_outputs.requirement(record, r['request_key']) or {}
-        if wanted.get('clarification_question'):
+        if wanted.get('clarification_question') or r['request_key'] in record.get('read_deferrals',[]):
             state='needs_clarification'
         elif r['record_id'] in reviewed and not wanted.get('fact_keys'):
             state='source_review_verified'
@@ -118,6 +118,9 @@ def progress(record,answer):
 
 
 def attach(answer,domain,pid,record,reader=None):
+    if record.get('question_deferral'):
+        answer={**answer,'task_completion':'partial' if answer.get('checked_statements') else 'incomplete',
+                'question_deferral':record['question_deferral'],'summary':'模型仍需明确问题中的目标或指标；未将不确定性当成资料缺失、能力结论或任务完成。'}
     if not record.get('read_requests'):return answer
     answer={**answer,'verification':list(answer.get('verification',[])),'gaps':list(answer.get('gaps',[]))}
     answer['read_execution'] = record.get('read_execution', 'model')
@@ -148,7 +151,12 @@ def attach(answer,domain,pid,record,reader=None):
             answer['gaps'].append({'request_key':row['request_key'],'message':'声明读取目标尚未形成当前有效交付：'+row['request_key'],
                                   'action':'按本次声明范围查询并交付，不替换编号或新增计算。'})
     answer['task_notice']='只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。'
-    return agent_outputs.attach(answer, record)
+    answer=agent_outputs.attach(answer, record)
+    if record.get('read_deferrals'):
+        answer['task_completion']='partial' if answer.get('checked_statements') else 'incomplete'
+        answer['read_deferrals']=[{'request_key':key,'state':'needs_clarification','notice':'模型尚不能确定所需指标，请明确指标。不是资料缺失、应用不支持或任务完成的证明。'} for key in record['read_deferrals']]
+        answer['summary']='仍有读取目标需要明确指标；已交付部分单独核验，未明确项未作数值交付。'
+    return answer
 
 def next_actions(record):
     """Suggestions from declared scopes and observed reads; never execute or infer scope."""
@@ -196,7 +204,7 @@ def next_actions(record):
                 else:
                     action.update(tool='professional_deliver', arguments={'delivery': {
                         'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
-                        required_fields=['delivery.statements'], available_facts=facts,
+                        required_fields=['delivery.fact_keys'], available_fact_keys=[f['fact'] for f in facts],
                         output_requirement=agent_outputs.requirement(record, request['request_key']))
         elif ident in unavailable:
             action.update(tool='professional_missing', arguments={'missing': {

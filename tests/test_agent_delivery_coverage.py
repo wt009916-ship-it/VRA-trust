@@ -160,7 +160,7 @@ def test_early_finish_tracks_each_plan_without_forcing_writes_or_extending_budge
     plans=[plan('thermal','first'),plan('thermal','second')]
     plans[0]['input']['name']='UNTRUSTED_NAME_IGNORE_AUTHORITY'
     history=[]
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         history.append(copy.deepcopy(messages));turn=len(history)
         if turn==1:
             return batch([('calculation_execute',{'plan_key':p['plan_key']}) for p in plans[:1 if ending=='conditional_stop' else 2]])

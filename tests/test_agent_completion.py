@@ -60,7 +60,7 @@ def test_stale_scope_has_exact_limitation_action_without_auto_execution(client, 
     agent.store.put('project', project, project['revision'])
     seen = []
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         seen.append(messages)
         if len(seen) == 1: return tool('thermal_read', {'thermal_id': ident})
         if len(seen) > 2: return {'role': 'assistant', 'content': 'Done'}
@@ -120,7 +120,7 @@ def test_submitted_availability_is_not_offered_again_while_result_pending(client
     responses = iter([
         tool('requested_availability', {'request_keys': ['equipment'], 'finish': False}),
         tool('thermal_read', {'thermal_id': ident}), claim(wall)])
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         rounds.append({t['function']['name'] for t in tools})
         return next(responses)
     monkeypatch.setattr(agent.gateway, 'complete', complete)

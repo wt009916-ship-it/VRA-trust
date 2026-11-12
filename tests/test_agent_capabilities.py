@@ -129,7 +129,7 @@ def test_explicit_read_only_objective_cannot_be_replaced_with_capability_explana
 
 def test_dynamic_schema_only_allows_capabilities_actually_read(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent;captured=[];ids=['beam_analysis','structural_safety_certification']
-    def complete(messages,tools):
+    def complete(messages,tools, **response_options):
         captured.append(tools)
         return tool('capability_lookup',{'capability_ids':ids}) if len(captured)==1 else tool('capability_explain',{'capability_explanation':explanation(ids)})
     monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True});monkeypatch.setattr(a.gateway,'complete',complete)

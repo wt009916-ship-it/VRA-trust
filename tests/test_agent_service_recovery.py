@@ -48,7 +48,7 @@ def workflow(client, monkeypatch, *, mode='local_model', failures=(2,), status=5
         return httpx.Response(200, json={'model': gateway.public()['model'],
             'choices': [{'finish_reason': 'tool_calls', 'message': response}]})
     original = gateway.complete
-    monkeypatch.setattr(gateway, 'complete', lambda messages, tools: original(messages, tools, transport=httpx.MockTransport(serve)))
+    monkeypatch.setattr(gateway, 'complete', lambda messages, tools, **response_options: original(messages, tools, transport=httpx.MockTransport(serve), **response_options))
     def wait(seconds):
         waits.append(seconds)
         return bool(on_wait(agent, gateway, pid)) if on_wait else False

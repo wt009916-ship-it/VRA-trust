@@ -87,7 +87,7 @@ EXPECTED={'engineering':[('left_reaction_n','15000','N','static_load_case'),('ma
 
 def driver(a,monkeypatch,plans):
     turns=[]
-    def complete(messages,tools):
+    def complete(messages,tools, **response_options):
         turns.append(copy.deepcopy(tools))
         if len(turns)==1:return batch([('calculation_execute',{'plan_key':p['plan_key']}) for p in plans])
         records=[a.store.list(p['kind'])[0] for p in plans]
@@ -220,7 +220,7 @@ def test_two_different_new_plans_remain_within_existing_event_budget(client,monk
 def test_model_can_deliver_current_limit_without_inventing_numeric_fact(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent;p=make_plan(client,pid,'engineering');p['input']['depth']=1000.
     turn=0
-    def complete(messages,tools):
+    def complete(messages,tools, **response_options):
         nonlocal turn;turn+=1
         names={t['function']['name'] for t in tools}
         if turn==1:

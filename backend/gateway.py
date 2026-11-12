@@ -7,6 +7,7 @@ import threading
 import httpx
 from pydantic import Field, SecretStr
 
+from . import agent_actions
 from . import core
 from .model_recovery import ModelServiceUnavailable, TRANSIENT_STATUS, TRANSIENT_TRANSPORT
 from .schema import Contract
@@ -77,7 +78,7 @@ class Gateway:
             core.write_json(self.path, config)
         return self.public()
 
-    def complete(self, messages, tools, *, transport=None):
+    def complete(self, messages, tools, *, transport=None, response_mode="tools"):
         settings = self.settings()
         if not settings['enabled']:
             raise core.ValidationError('AI Provider 尚未启用，请在开发者设置中配置')
@@ -88,6 +89,10 @@ class Gateway:
             with httpx.Client(timeout=60, follow_redirects=False, transport=transport, trust_env=False) as client:
                 payload = {'model': settings['model'], 'messages': messages, 'max_tokens': 1400,
                            'thinking': {'type': 'disabled'}, 'tools': tools, 'tool_choice': 'auto'}
+                if response_mode not in {'tools','actions'}:raise core.ValidationError('Unknown model response mode')
+                if response_mode=='actions':
+                    payload.pop('tools');payload.pop('tool_choice')
+                    payload.update(agent_actions.payload(messages,tools,strict=False))
                 with client.stream('POST', self.endpoint, headers={'Authorization': 'Bearer ' + key}, json=payload) as response:
                     if response.status_code in TRANSIENT_STATUS:
                         raise ModelServiceUnavailable('http_' + str(response.status_code), response.headers.get('Retry-After'))
@@ -102,7 +107,10 @@ class Gateway:
                     data = json.loads(raw)
             message = data['choices'][0]['message']
             # Never store/display the provider's hidden reasoning_content.
+            if response_mode=='actions':return agent_actions.decode(message,tools)
             return {k: message[k] for k in ('role', 'content', 'tool_calls') if k in message}
+        except agent_actions.ActionProtocolError:
+            raise
         except ModelServiceUnavailable:
             raise
         except TRANSIENT_TRANSPORT as exc:
