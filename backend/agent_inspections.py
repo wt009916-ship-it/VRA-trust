@@ -1,7 +1,7 @@
 """Declared read-only professional tasks; completed calculation is not certification."""
 from dataclasses import dataclass
 
-from . import core
+from . import core, agent_energy
 from .agent_artifacts import material_cost_review, cost_answer
 from .material_cost import Costs
 from .thermal import Thermal
@@ -105,6 +105,8 @@ class Inspection:
 
 
 INSPECTIONS = {
+    'inspect_enduse': Inspection('enduse','enduse_id','target_enduse_id','enduse_id','end_use_list','end_use_read','enduse_selection_basis','原生设备用途账',agent_energy.EndUseReads,lambda r:agent_energy.review(r,'enduse')),
+    'inspect_utility': Inspection('utility','utility_id','target_utility_id','utility_id','utility_comparison_list','utility_comparison_read','utility_selection_basis','账单模拟比较',agent_energy.UtilityReads,lambda r:agent_energy.review(r,'utility')),
     'inspect_material_scenarios': Inspection('scenario', 'scenario_id', 'target_scenario_id', 'scenario_id',
         'material_scenarios_list', 'material_scenarios_read', 'scenario_selection_basis', '材料两方案对照', ScenarioReads, scenario_review),
     'inspect_material_cost': Inspection('cost', 'cost_id', 'target_cost_id', 'material_cost_id',

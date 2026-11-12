@@ -9,9 +9,10 @@ from pydantic.json_schema import SkipJsonSchema
 from . import core, agent_intent_catalog as intent_catalog
 from .schema import Contract
 from .agent_scenarios import FACTS as SCENARIO_FACTS
-from . import agent_scenarios, agent_reviews
+from . import agent_scenarios, agent_reviews, agent_energy
 
 FACTS = {
+    'enduse':list(agent_energy.END_FACTS),'utility':list(agent_energy.UTILITY_FACTS),
     'scenario': SCENARIO_FACTS,
     'thermal': ['total_resistance_m2k_w', 'layer_resistance_m2k_w', 'u_w_m2k'],
     'lifecycle': ['boundary_total_kgco2e', 'kgco2e_m2_over_study_period'] +
@@ -33,7 +34,7 @@ class OutputItem(Contract):
         description='Select IDs from the application-provided original question fragments. Do not copy, rewrite or invent text.')
     clarification_reason: Literal['metric_not_available', 'ambiguous_request', 'conflicting_request'] | None = None
     clarification_question: str | None = Field(default=None, min_length=1, max_length=400,
-        description='Ask the user to resolve an unavailable, ambiguous or conflicting output request. Use empty facts and topics; this is an unresolved model interpretation, not a capability certification.')
+        description='指标不可用、含义不明或冲突时向用户澄清；facts和topics置空。疑问不证明能力缺失。')
     fact_keys: list[str] = Field(max_length=12,
         description='Exact numeric fact keys requested by the user. Availability requests use []. Total R is total_resistance_m2k_w, not layer resistance.')
     explanation_topics: list[Topic] = Field(max_length=6,
@@ -54,14 +55,14 @@ class OutputItem(Contract):
 
 
 def version():
-    return core.hash_json([core.sha(Path(__file__)), core.sha(Path(__file__).with_name('agent_semantics.py')), core.sha(Path(intent_catalog.__file__)), core.sha(Path(agent_scenarios.__file__)), core.sha(Path(agent_reviews.__file__))])
+    return core.hash_json([core.sha(Path(__file__)), core.sha(Path(__file__).with_name('agent_semantics.py')), core.sha(Path(intent_catalog.__file__)), core.sha(Path(agent_scenarios.__file__)), core.sha(Path(agent_reviews.__file__)), core.sha(Path(agent_energy.__file__))])
 
 
 def catalog(requests):
     return [{'request_key': r['request_key'], 'kind': r['kind'], 'purpose': r['purpose'],
              'available_fact_keys': FACTS[r['kind']] if r['purpose'] == 'results' else [],
              'available_explanation_topics': ['history', 'status'] if r['purpose'] == 'availability' else
-                 ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle', 'scenario'} else [])}
+                 ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle', 'scenario'} else ['period'] if r['kind'] in agent_energy.KINDS else [])}
             for r in requests]
 
 
@@ -76,7 +77,7 @@ def constrain_tool(tool, requests, question):
         props['request_key'] = {'type': 'string', 'const': entry['request_key']}
         props['question_fragment_ids'] = {'type':'array','minItems':1,'maxItems':16,'uniqueItems':True,
             'items':{'type':'string','enum':[f['fragment_id'] for f in intent_catalog.fragments(question)]},
-            'description':'Select original question fragment IDs supporting this request. The application retains their exact text.'}
+            'description':'引用支撑此请求的原问题片段编号；原文由应用保留。'}
         item['required'] = ['request_key','question_fragment_ids','fact_keys','explanation_topics']
         props['fact_keys'] = ({'type': 'array', 'minItems': 0, 'maxItems': 12, 'uniqueItems': True,
                                'items': {'type': 'string', 'enum': entry['available_fact_keys']},
@@ -84,7 +85,7 @@ def constrain_tool(tool, requests, question):
                               if entry['purpose'] == 'results' else {'type': 'array', 'maxItems': 0})
         props['explanation_topics'] = {'type': 'array', 'maxItems': 6, 'uniqueItems': True,
                                        'items': {'type': 'string', 'enum': entry['available_explanation_topics']},
-                                       'description': 'Select only explanations requested by the user; allowed options are not requirements.'}
+                                       'description': '仅选用户要求的解释；可选项并非必选项。'}
         variants.append(item)
     parameters.pop('$defs')
     parameters['properties']['output_plan'] = {'type': 'array', 'minItems': len(requests),
@@ -191,6 +192,7 @@ def explain(topic, request, facts, state, artifact):
         if area_facts:
             return '碳总量不以面积作分母；单位面积指标使用声明面积' + str(area_facts[0]['area_m2']) + ' m²作分母。总量字段的area_m2为空不表示建筑面积未知。'
         return '本次交付的是未按面积归一化的碳总量，area_m2为空不表示建筑面积未知；单位面积结果需另行交付相应事实。'
+    if topic == 'period' and request['kind'] in agent_energy.KINDS:return agent_energy.explanation(topic,artifact)
     if topic == 'period':
         if request['kind']=='scenario':
             return '材料金额对应声明报价日期；碳量与碳比例覆盖声明的'+str(artifact.get('input',{}).get('study_years','未知'))+'年评估期，不是年量。排除阶段不记零；功能等效及清单完整性未核证。'

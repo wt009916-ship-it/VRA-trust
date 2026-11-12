@@ -1,8 +1,10 @@
 """Domain meanings and exact user-question anchors, never inferred numeric data."""
 import re
 from .agent_scenarios import MEANINGS as SCENARIO_MEANINGS
+from . import agent_energy
 
 MEANINGS = {
+ 'enduse':agent_energy.END_FACTS,'utility':agent_energy.UTILITY_FACTS,
  'scenario': SCENARIO_MEANINGS,
  'thermal': {
   'total_resistance_m2k_w': '总热阻 R；含内外表面热阻和全部材料层；m² K/W；一维稳态，不是层热阻或全年节能率',
@@ -59,4 +61,16 @@ def fragments(question):
 
 
 def meaning_description(kind):
+    if kind == 'enduse':
+        # Factor the Cartesian catalogue instead of repeating its shared scope
+        # for every use/carrier pair. The schema still enumerates every key.
+        uses = '；'.join(value+'='+agent_energy.end_use.USES[key] for key,value in agent_energy.USES.items())
+        carriers = '；'.join(value+'='+key for key,value in agent_energy.CARRIERS.items())
+        return ('仅选用户要求字段。end_use.<用途>.<载体>为原生年度分项能量kWh；'
+                '用途：'+uses+'。载体：'+carriers+'。'
+                'carrier_total.<载体>为年度载体总量kWh，原表舍入。'
+                'site_total_kwh为混合载体场地总能量kWh，不是外购电；'
+                'native_hours为原生年度小时数，不是设备运行小时数。'
+                '逐时积分或原表舍入由energy_context.basis区分；期间和年份取原生时钟，'
+                '不是气象参考年、实测或校准；区域冷热量不是耗电，禁止猜测COP换算。')
     return '选择用户实际要求的字段；键名含义：'+'；'.join(k+' = '+v for k,v in MEANINGS[kind].items())
