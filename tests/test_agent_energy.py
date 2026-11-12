@@ -115,3 +115,34 @@ def test_enduse_adapter_binds_native_calendar_and_distinguishes_rounding(client,
     claim_data['statements'][0]['energy_context']['native_year']=2001
     with pytest.raises(SemanticMismatch):check(record,Delivery.model_validate(claim_data))
     source['sql_sha256']='changed';assert agent_energy.EndUseReads(client.app.state.domain).view(pid,ledger['enduse_id'])['result'] is None
+
+
+def test_native_catalog_selection_does_not_leak_all_facts_into_pending_context(client,native_template,monkeypatch):
+    import json
+    from backend import agent_requests
+    pid=create_project(client)['project_id'];rid='run_'+'4'*32
+    source={'run_id':rid,'sql_sha256':core.sha(native_template/'output/eplusout.sql'),'mtd_sha256':core.sha(native_template/'output/eplusout.mtd')}
+    monkeypatch.setattr(end_use_records.Ledgers,'source',lambda self,p,r:(source.copy(),native_template))
+    ledger=end_use_records.Ledgers(client.app.state.domain).create(pid,end_use_records.LedgerInput(name='Selection regression',purpose='Exercise catalog then selective delivery with full native ledger',run_id=rid),'test')
+    current=agent_energy.EndUseReads(client.app.state.domain).view(pid,ledger['enduse_id']);agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('end_use_read',{'enduse_id':ledger['enduse_id']}),
+        tool('end_use_read',{'enduse_id':ledger['enduse_id'],'fact_keys':['native_hours']}),
+        tool('professional_deliver',{'delivery':{**claim(current,'enduse',['native_hours']),'finish':True}})])
+    original=agent.gateway.complete;seen=[]
+    def capture(messages,tools):
+        seen.append((copy.deepcopy(messages),copy.deepcopy(tools)));return original(messages,tools)
+    monkeypatch.setattr(agent.gateway,'complete',capture)
+    task=agent.start(pid,Chat(message='Read native hours',mode='provider',infer_outputs=False,read_execution='model',read_requests=[{'request_key':'hours','kind':'enduse','purpose':'results','record_id':ledger['enduse_id']}]),background=False)
+    assert task['status']=='succeeded',task.get('error')
+    assert len(seen)==3 and all(len(json.dumps(m,ensure_ascii=False))<64000 for m,_ in seen)
+    assert 'professional_deliver' not in [t['function']['name'] for t in seen[1][1]]
+    assert 'professional_deliver' in [t['function']['name'] for t in seen[2][1]]
+    request=task['read_requests'][0]
+    reads=[e for e in task['events'] if e['tool']=='end_use_read' and e['status']=='succeeded']
+    record={'read_requests':[request],'events':[reads[0]],'professional_deliveries':[]}
+    first=agent_requests.next_actions(record)[0]
+    assert first['tool']=='end_use_read' and 'available_facts' not in first
+    record['events']=[reads[1]];second=agent_requests.next_actions(record)[0]
+    assert [f['fact'] for f in second['available_facts']]==['native_hours']
+    # Audit retains all native facts; only model-facing messages are selected.
+    assert len(reads[0]['result']['explanation_facts'])==77

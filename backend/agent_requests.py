@@ -177,11 +177,19 @@ def next_actions(record):
                     'kind': kind, 'record_id': ident, 'record_hash': current['hash'],
                     'status': current['status'], 'finish': False}})
             else:
-                action.update(tool='professional_deliver', arguments={'delivery': {
-                    'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
-                    required_fields=['delivery.statements'],
-                    available_facts=current.get('explanation_facts', []),
-                    output_requirement=agent_outputs.requirement(record, request['request_key']))
+                facts = current.get('explanation_facts', [])
+                if kind in agent_energy.KINDS:
+                    facts = [f for f in facts if f['fact'] in (current.get('selected_energy_fact_keys') or [])]
+                if kind in agent_energy.KINDS and not facts:
+                    arguments = {spec.argument:ident}
+                    if wanted.get('fact_keys'):arguments['fact_keys'] = wanted['fact_keys']
+                    action.update(tool=spec.read_tool, arguments=arguments, required_fields=['fact_keys'],
+                                  notice='Select needed keys from the read result available_fact_catalog; no numeric facts were selected yet.')
+                else:
+                    action.update(tool='professional_deliver', arguments={'delivery': {
+                        'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
+                        required_fields=['delivery.statements'], available_facts=facts,
+                        output_requirement=agent_outputs.requirement(record, request['request_key']))
         elif ident in unavailable:
             action.update(tool='professional_missing', arguments={'missing': {
                 'kinds': [kind], 'record_id': ident, 'finish': False}})

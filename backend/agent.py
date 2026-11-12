@@ -580,7 +580,11 @@ class Agent:
                         if e['tool'] == 'calculation_execute' and e['result']['kind'] == ds.kind:ids.add(e['result']['record_id'])
                         if e['tool'] == ds.read_tool:
                             ids.add(e['result'][ds.record_key]);read_any = True
-                            read_records.append((ds, e['result']))
+                            observed = e['result']
+                            if ds.kind in agent_energy.KINDS:
+                                observed = {**observed, 'explanation_facts': [f for f in observed.get('explanation_facts', [])
+                                    if f['fact'] in (observed.get('selected_energy_fact_keys') or [])]}
+                            read_records.append((ds, observed))
                     if body.read_requests:
                         absent = {r['request'].get('record_id') for r in record.get('missing_deliveries', [])}
                         ids = {r.record_id for r in body.read_requests
