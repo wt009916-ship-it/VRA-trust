@@ -1,0 +1,3193 @@
+{
+  "agent_id": "agent_3eccff04349047d7b5d10d868822b3d3",
+  "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+  "question": "请实际读取该条记录的CV(RMSE)百分比，只交付这个相对误差指标；不需要平均偏差或能量总和。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:14.553686+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Agent energy synthetic screen",
+        "building": {
+          "use": "reference",
+          "location": "Synthetic public reference, no surveyed building",
+          "region": "TEST",
+          "area_m2": 25.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+        "revision": 1,
+        "created_at": "2026-11-12T19:29:15.752795+00:00",
+        "updated_at": "2026-11-12T19:29:15.752795+00:00"
+      },
+      "result_hash": "f2e9c98008f151de17d8d4dfccb9f7611942254775d210c4db0e27d4cb0721ea",
+      "duration_ms": 0,
+      "finished_at": "2026-11-12T19:30:14.566971+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:14.570979+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"utility_comparison_read\", \"arguments\": {\"utility_id\": \"utility_2474d50be0e34622aa8eceed22717866\", \"fact_keys\": [\"cv\"]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 2562,
+      "finished_at": "2026-11-12T19:30:17.144063+00:00"
+    },
+    {
+      "tool": "utility_comparison_read",
+      "arguments": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+        "fact_keys": [
+          "cv"
+        ]
+      },
+      "status": "failed",
+      "started_at": "2026-11-12T19:30:17.148061+00:00",
+      "origin": "model",
+      "error": "Unknown energy fact key",
+      "duration_ms": 375,
+      "finished_at": "2026-11-12T19:30:17.538737+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:17.545519+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_read_many\", \"arguments\": {\"record_ids\": [\"utility_2474d50be0e34622aa8eceed22717866\"]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 2375,
+      "finished_at": "2026-11-12T19:30:19.928901+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "record_ids": [
+          "utility_2474d50be0e34622aa8eceed22717866"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:19.935899+00:00",
+      "origin": "model",
+      "result": {
+        "status": "records_read",
+        "records": [
+          {
+            "kind": "utility",
+            "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+            "current": {
+              "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+              "hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+              "name": "Energy bias",
+              "status": "compared_reference",
+              "source_status": "synthetic",
+              "scope": "账单与模拟按声明期间/载体比较；MBE会正负抵消，CV(RMSE)反映逐期误差；零分母无定义，满足声明阈值不是实楼校准或认证。",
+              "explanation_facts": [],
+              "nonnumeric_review_reference": {
+                "kind": "utility",
+                "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+                "record_hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+                "view_hash": "8a9f2ce6784431e03c1e7ea8064f232bb29a4c2939657bb7479d2030c0b32956",
+                "finish": false
+              },
+              "limitation_delivery": null,
+              "calculation_context": {
+                "native_year": 2020,
+                "original_bill_start": "2020-01-01T00:00",
+                "original_bill_end": "2021-01-01T00:00",
+                "mapped_native_start": "2020-01-01T00:00",
+                "mapped_native_end": "2021-01-01T00:00",
+                "alignment": "exact_calendar",
+                "meter": "Electricity:Facility",
+                "carrier": "Electricity",
+                "bill_nature": "synthetic",
+                "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+                "denominator": 12,
+                "within_declared_tolerances": false,
+                "threshold_source": "Test declaration only, no certification",
+                "context_reasons": [
+                  "bill_is_reference_or_synthetic"
+                ],
+                "calibration_status": "not_certified_or_automatically_calibrated",
+                "coverage": {
+                  "compared_hours": 8784,
+                  "native_year_hours": 8784,
+                  "complete_year": true,
+                  "period_kind": "calendar_month"
+                },
+                "not_evaluable_reason": null
+              },
+              "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+              "projection_notice": "这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。",
+              "available_fact_catalog": [
+                {
+                  "fact": "bill_total_kwh",
+                  "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "native_total_kwh",
+                  "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "mbe_percent",
+                  "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+                  "unit": "%"
+                },
+                {
+                  "fact": "rmse_kwh",
+                  "label": "等权账期能量差的均方根kWh；分母n",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "cvrmse_percent",
+                  "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+                  "unit": "%"
+                },
+                {
+                  "fact": "interval_count",
+                  "label": "比较账期数，不是月数或独立建筑数",
+                  "unit": "count"
+                },
+                {
+                  "fact": "compared_hours",
+                  "label": "实际覆盖模拟小时数，不是全年小时数",
+                  "unit": "hour"
+                },
+                {
+                  "fact": "native_year_hours",
+                  "label": "完整原生年度小时数，不是比较覆盖小时数",
+                  "unit": "hour"
+                }
+              ],
+              "selected_fact_keys": [],
+              "selection_notice": "Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit."
+            }
+          }
+        ],
+        "notice": "模型选择批次，控制流程逐项执行/读取并审计；尚未正式交付，不证明完整性或工程认证。未选计划未执行。"
+      },
+      "result_hash": "58fb9795b08d652b318b98b1ad640ba47856e5a1c7e95f3d0dc67dd0fe65d34e",
+      "duration_ms": 344,
+      "finished_at": "2026-11-12T19:30:20.286761+00:00"
+    },
+    {
+      "tool": "utility_comparison_read",
+      "arguments": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:19.948439+00:00",
+      "origin": "controller",
+      "parent_event": 4,
+      "result": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+        "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+        "project_revision": 1,
+        "input": {
+          "name": "Energy bias",
+          "purpose": "Independent synthetic Agent reading acceptance, never calibration",
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "bill_evidence_id": "evidence_092cedf9ed95435b95e36ba3e283da30",
+          "meter": "Electricity:Facility",
+          "bill_nature": "synthetic",
+          "alignment": "exact_calendar",
+          "period_kind": "calendar_month",
+          "clock_source": "Frozen local standard time, no DST",
+          "boundary_note": "Whole facility electricity, excluding gas; synthetic source",
+          "max_abs_mbe_percent": 5.0,
+          "max_cvrmse_percent": 5.0,
+          "threshold_source": "Test declaration only, no certification"
+        },
+        "actor_user_id": "user_2239faabca5c454597875693d0dec786",
+        "created_at": "2026-11-12T19:29:22.538313+00:00",
+        "calculator_version": "a78fe021f5c989333496c85decf797ad485fb562b1fd0e5a9ed59b276c5e28d6",
+        "source_run": {
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "scheme_id": "baseline",
+          "model_sha256": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+          "weather_sha256": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+          "engine_sha256": "9d2d3c621381c310260be195cec2a43ef29c73aefcf76f85e57e7cecee823015",
+          "idd_sha256": "fb46468aa8ec9136dc9372c9289ffbb2a5b5a952c6ed3c16234cb44ff05e2355",
+          "code_sha256": "cc6f9c8c1ec3f9208b92aa4deff262f38820ebbe59b6785c93ebd732394cadcf",
+          "sql_sha256": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+          "mtd_sha256": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+        },
+        "file_snapshot": {
+          "file_id": "file_bb5d8c0b77504383bc57f7ae475cf5ee",
+          "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+          "name": "bias.csv",
+          "path": "files/file_bb5d8c0b77504383bc57f7ae475cf5ee.csv",
+          "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+          "size": 838,
+          "timestamp": "2026-11-12T19:29:16.021082+00:00",
+          "revision": 1
+        },
+        "evidence_snapshot": [
+          {
+            "type": "bill",
+            "name": "bias.csv",
+            "source_file": "file_bb5d8c0b77504383bc57f7ae475cf5ee",
+            "source_locator": "Existing frozen independent synthetic input, new actual run",
+            "value": null,
+            "unit": null,
+            "authority": "Reference author",
+            "permission": "Public reference local verification",
+            "uncertainty": null,
+            "confidence": null,
+            "acquisition_method": "Declared synthetic schedules, not measurements",
+            "responsible_person": "Independent acceptance",
+            "status": "ASSUMED",
+            "scheme_id": null,
+            "evidence_id": "evidence_092cedf9ed95435b95e36ba3e283da30",
+            "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+            "revision": 2,
+            "timestamp": "2026-11-12T19:29:16.055344+00:00",
+            "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+            "review_state": "confirmed",
+            "review_note": "Synthetic arithmetic context, no real building certification"
+          }
+        ],
+        "result": {
+          "status": "compared_reference",
+          "calibration_status": "not_certified_or_automatically_calibrated",
+          "rows": [
+            {
+              "source_line": 2,
+              "original": {
+                "start": "2020-01-01T00:00",
+                "end": "2020-02-01T00:00",
+                "energy": "608.7272727272727",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-01-01T00:00",
+              "mapped_end": "2020-02-01T00:00",
+              "native_hour_start_index": 0,
+              "native_hour_end_exclusive_index": 744,
+              "hours": 744,
+              "bill_kwh": 608.7272727272727,
+              "native_kwh": 669.6,
+              "difference_kwh": 60.8727272727273
+            },
+            {
+              "source_line": 3,
+              "original": {
+                "start": "2020-02-01T00:00",
+                "end": "2020-03-01T00:00",
+                "energy": "696.0",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-02-01T00:00",
+              "mapped_end": "2020-03-01T00:00",
+              "native_hour_start_index": 744,
+              "native_hour_end_exclusive_index": 1440,
+              "hours": 696,
+              "bill_kwh": 696.0,
+              "native_kwh": 765.6,
+              "difference_kwh": 69.6
+            },
+            {
+              "source_line": 4,
+              "original": {
+                "start": "2020-03-01T00:00",
+                "end": "2020-04-01T00:00",
+                "energy": "676.3636363636364",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-03-01T00:00",
+              "mapped_end": "2020-04-01T00:00",
+              "native_hour_start_index": 1440,
+              "native_hour_end_exclusive_index": 2184,
+              "hours": 744,
+              "bill_kwh": 676.3636363636364,
+              "native_kwh": 744.0,
+              "difference_kwh": 67.6363636363636
+            },
+            {
+              "source_line": 5,
+              "original": {
+                "start": "2020-04-01T00:00",
+                "end": "2020-05-01T00:00",
+                "energy": "850.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-04-01T00:00",
+              "mapped_end": "2020-05-01T00:00",
+              "native_hour_start_index": 2184,
+              "native_hour_end_exclusive_index": 2904,
+              "hours": 720,
+              "bill_kwh": 850.9090909090909,
+              "native_kwh": 936.0,
+              "difference_kwh": 85.0909090909091
+            },
+            {
+              "source_line": 6,
+              "original": {
+                "start": "2020-05-01T00:00",
+                "end": "2020-06-01T00:00",
+                "energy": "1082.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-05-01T00:00",
+              "mapped_end": "2020-06-01T00:00",
+              "native_hour_start_index": 2904,
+              "native_hour_end_exclusive_index": 3648,
+              "hours": 744,
+              "bill_kwh": 1082.1818181818182,
+              "native_kwh": 1190.4,
+              "difference_kwh": 108.2181818181818
+            },
+            {
+              "source_line": 7,
+              "original": {
+                "start": "2020-06-01T00:00",
+                "end": "2020-07-01T00:00",
+                "energy": "1178.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-06-01T00:00",
+              "mapped_end": "2020-07-01T00:00",
+              "native_hour_start_index": 3648,
+              "native_hour_end_exclusive_index": 4368,
+              "hours": 720,
+              "bill_kwh": 1178.1818181818182,
+              "native_kwh": 1296.0,
+              "difference_kwh": 117.8181818181818
+            },
+            {
+              "source_line": 8,
+              "original": {
+                "start": "2020-07-01T00:00",
+                "end": "2020-08-01T00:00",
+                "energy": "1420.3636363636363",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-07-01T00:00",
+              "mapped_end": "2020-08-01T00:00",
+              "native_hour_start_index": 4368,
+              "native_hour_end_exclusive_index": 5112,
+              "hours": 744,
+              "bill_kwh": 1420.3636363636363,
+              "native_kwh": 1562.4,
+              "difference_kwh": 142.0363636363637
+            },
+            {
+              "source_line": 9,
+              "original": {
+                "start": "2020-08-01T00:00",
+                "end": "2020-09-01T00:00",
+                "energy": "1149.8181818181818",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-08-01T00:00",
+              "mapped_end": "2020-09-01T00:00",
+              "native_hour_start_index": 5112,
+              "native_hour_end_exclusive_index": 5856,
+              "hours": 744,
+              "bill_kwh": 1149.8181818181818,
+              "native_kwh": 1264.8000000000002,
+              "difference_kwh": 114.98181818181841
+            },
+            {
+              "source_line": 10,
+              "original": {
+                "start": "2020-09-01T00:00",
+                "end": "2020-10-01T00:00",
+                "energy": "949.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-09-01T00:00",
+              "mapped_end": "2020-10-01T00:00",
+              "native_hour_start_index": 5856,
+              "native_hour_end_exclusive_index": 6576,
+              "hours": 720,
+              "bill_kwh": 949.0909090909091,
+              "native_kwh": 1044.0,
+              "difference_kwh": 94.9090909090909
+            },
+            {
+              "source_line": 11,
+              "original": {
+                "start": "2020-10-01T00:00",
+                "end": "2020-11-01T00:00",
+                "energy": "811.6363636363636",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-10-01T00:00",
+              "mapped_end": "2020-11-01T00:00",
+              "native_hour_start_index": 6576,
+              "native_hour_end_exclusive_index": 7320,
+              "hours": 744,
+              "bill_kwh": 811.6363636363636,
+              "native_kwh": 892.8,
+              "difference_kwh": 81.1636363636364
+            },
+            {
+              "source_line": 12,
+              "original": {
+                "start": "2020-11-01T00:00",
+                "end": "2020-12-01T00:00",
+                "energy": "589.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-11-01T00:00",
+              "mapped_end": "2020-12-01T00:00",
+              "native_hour_start_index": 7320,
+              "native_hour_end_exclusive_index": 8040,
+              "hours": 720,
+              "bill_kwh": 589.0909090909091,
+              "native_kwh": 648.0,
+              "difference_kwh": 58.9090909090909
+            },
+            {
+              "source_line": 13,
+              "original": {
+                "start": "2020-12-01T00:00",
+                "end": "2021-01-01T00:00",
+                "energy": "574.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-12-01T00:00",
+              "mapped_end": "2021-01-01T00:00",
+              "native_hour_start_index": 8040,
+              "native_hour_end_exclusive_index": 8784,
+              "hours": 744,
+              "bill_kwh": 574.9090909090909,
+              "native_kwh": 632.4000000000001,
+              "difference_kwh": 57.490909090909206
+            }
+          ],
+          "statistics": {
+            "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+            "interval_count": 12,
+            "denominator": 12,
+            "bill_total_kwh": 10587.272727272728,
+            "native_total_kwh": 11646.0,
+            "mbe_percent": 10.000000000000004,
+            "rmse_kwh": 92.07016907260385,
+            "cvrmse_percent": 10.435567849548091,
+            "not_evaluable_reason": null
+          },
+          "within_declared_tolerances": false,
+          "context_reasons": [
+            "bill_is_reference_or_synthetic"
+          ],
+          "native": {
+            "version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.13 03:29",
+            "year": 2020,
+            "hours": 8784,
+            "clock_basis": "local_standard_time",
+            "weather_years": [
+              2020
+            ],
+            "weather_calendar_matches_native": true,
+            "ideal_systems": [],
+            "selected_meter": {
+              "name": "Electricity:Facility",
+              "resource": "Electricity",
+              "dictionary_index": 9,
+              "native_unit": "J",
+              "reporting_frequency": "Hourly",
+              "component_sources": [
+                {
+                  "native_variable_index": 7,
+                  "variable": "METERED ELECTRIC:Electric Equipment Electric Energy",
+                  "unit": "J",
+                  "line": 2
+                }
+              ]
+            },
+            "source_hashes": {
+              "sql": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+              "model": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+              "weather": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+              "mtd": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+            }
+          },
+          "coverage": {
+            "compared_hours": 8784,
+            "native_year_hours": 8784,
+            "complete_year": true,
+            "period_kind": "calendar_month"
+          },
+          "limitations": [
+            "仅比较声明账期与原生模拟能量，不自动校准模型，不证明实楼预测准确性或节能合规。",
+            "数据性质、计量边界、来源与时间基准须人工复核；来源确认不使参考数据变成实测。",
+            "误差按账期数等权计算，分母为n；不是按天加权，不采用n−p，不把月数据按小时阈值评价。",
+            "仅支持本地标准时整点、完整单年度原生计量；夏令时、净负能量及跨多年度不支持。",
+            "参考日历映射只对齐月日小时，不证明同年天气、运行条件或建筑一致。",
+            "阈值是使用者声明的比较目标，满足阈值不等于获得任何认证。"
+          ]
+        },
+        "hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "compared_reference",
+        "nonnumeric_review_reference": {
+          "kind": "utility",
+          "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+          "record_hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+          "view_hash": "8a9f2ce6784431e03c1e7ea8064f232bb29a4c2939657bb7479d2030c0b32956",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "bill_total_kwh",
+            "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+            "value": "10587.2727273",
+            "source_value": "10587.272727272728",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/bill_total_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_total_kwh",
+            "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+            "value": "11646",
+            "source_value": "11646.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/native_total_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "mbe_percent",
+            "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+            "value": "10",
+            "source_value": "10.000000000000004",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/mbe_percent",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "rmse_kwh",
+            "label": "等权账期能量差的均方根kWh；分母n",
+            "value": "92.0701690726",
+            "source_value": "92.07016907260385",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/rmse_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "cvrmse_percent",
+            "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+            "value": "10.4355678495",
+            "source_value": "10.435567849548091",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/cvrmse_percent",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "interval_count",
+            "label": "比较账期数，不是月数或独立建筑数",
+            "value": "12",
+            "source_value": "12",
+            "value_policy": "exact_decimal",
+            "unit": "count",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/interval_count",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "compared_hours",
+            "label": "实际覆盖模拟小时数，不是全年小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/compared_hours",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_year_hours",
+            "label": "完整原生年度小时数，不是比较覆盖小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/native_year_hours",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_energy_fact_keys": []
+      },
+      "result_hash": "a90289fa274ff607b619b590081c424a6156054bf843cbf0a2ce1893567509cd",
+      "duration_ms": 328,
+      "finished_at": "2026-11-12T19:30:20.282756+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:20.298754+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_read_many\", \"arguments\": {\"record_ids\": [\"utility_2474d50be0e34622aa8eceed22717866\"]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 3032,
+      "finished_at": "2026-11-12T19:30:23.336479+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "record_ids": [
+          "utility_2474d50be0e34622aa8eceed22717866"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:23.343480+00:00",
+      "origin": "model",
+      "result": {
+        "status": "records_read",
+        "records": [
+          {
+            "kind": "utility",
+            "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+            "current": {
+              "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+              "hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+              "name": "Energy bias",
+              "status": "compared_reference",
+              "source_status": "synthetic",
+              "scope": "账单与模拟按声明期间/载体比较；MBE会正负抵消，CV(RMSE)反映逐期误差；零分母无定义，满足声明阈值不是实楼校准或认证。",
+              "explanation_facts": [],
+              "nonnumeric_review_reference": {
+                "kind": "utility",
+                "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+                "record_hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+                "view_hash": "8a9f2ce6784431e03c1e7ea8064f232bb29a4c2939657bb7479d2030c0b32956",
+                "finish": false
+              },
+              "limitation_delivery": null,
+              "calculation_context": {
+                "native_year": 2020,
+                "original_bill_start": "2020-01-01T00:00",
+                "original_bill_end": "2021-01-01T00:00",
+                "mapped_native_start": "2020-01-01T00:00",
+                "mapped_native_end": "2021-01-01T00:00",
+                "alignment": "exact_calendar",
+                "meter": "Electricity:Facility",
+                "carrier": "Electricity",
+                "bill_nature": "synthetic",
+                "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+                "denominator": 12,
+                "within_declared_tolerances": false,
+                "threshold_source": "Test declaration only, no certification",
+                "context_reasons": [
+                  "bill_is_reference_or_synthetic"
+                ],
+                "calibration_status": "not_certified_or_automatically_calibrated",
+                "coverage": {
+                  "compared_hours": 8784,
+                  "native_year_hours": 8784,
+                  "complete_year": true,
+                  "period_kind": "calendar_month"
+                },
+                "not_evaluable_reason": null
+              },
+              "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+              "projection_notice": "这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。",
+              "available_fact_catalog": [
+                {
+                  "fact": "bill_total_kwh",
+                  "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "native_total_kwh",
+                  "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "mbe_percent",
+                  "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+                  "unit": "%"
+                },
+                {
+                  "fact": "rmse_kwh",
+                  "label": "等权账期能量差的均方根kWh；分母n",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "cvrmse_percent",
+                  "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+                  "unit": "%"
+                },
+                {
+                  "fact": "interval_count",
+                  "label": "比较账期数，不是月数或独立建筑数",
+                  "unit": "count"
+                },
+                {
+                  "fact": "compared_hours",
+                  "label": "实际覆盖模拟小时数，不是全年小时数",
+                  "unit": "hour"
+                },
+                {
+                  "fact": "native_year_hours",
+                  "label": "完整原生年度小时数，不是比较覆盖小时数",
+                  "unit": "hour"
+                }
+              ],
+              "selected_fact_keys": [],
+              "selection_notice": "Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit."
+            }
+          }
+        ],
+        "notice": "模型选择批次，控制流程逐项执行/读取并审计；尚未正式交付，不证明完整性或工程认证。未选计划未执行。"
+      },
+      "result_hash": "58fb9795b08d652b318b98b1ad640ba47856e5a1c7e95f3d0dc67dd0fe65d34e",
+      "duration_ms": 422,
+      "finished_at": "2026-11-12T19:30:23.767581+00:00"
+    },
+    {
+      "tool": "utility_comparison_read",
+      "arguments": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:23.366038+00:00",
+      "origin": "controller",
+      "parent_event": 7,
+      "result": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+        "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+        "project_revision": 1,
+        "input": {
+          "name": "Energy bias",
+          "purpose": "Independent synthetic Agent reading acceptance, never calibration",
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "bill_evidence_id": "evidence_092cedf9ed95435b95e36ba3e283da30",
+          "meter": "Electricity:Facility",
+          "bill_nature": "synthetic",
+          "alignment": "exact_calendar",
+          "period_kind": "calendar_month",
+          "clock_source": "Frozen local standard time, no DST",
+          "boundary_note": "Whole facility electricity, excluding gas; synthetic source",
+          "max_abs_mbe_percent": 5.0,
+          "max_cvrmse_percent": 5.0,
+          "threshold_source": "Test declaration only, no certification"
+        },
+        "actor_user_id": "user_2239faabca5c454597875693d0dec786",
+        "created_at": "2026-11-12T19:29:22.538313+00:00",
+        "calculator_version": "a78fe021f5c989333496c85decf797ad485fb562b1fd0e5a9ed59b276c5e28d6",
+        "source_run": {
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "scheme_id": "baseline",
+          "model_sha256": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+          "weather_sha256": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+          "engine_sha256": "9d2d3c621381c310260be195cec2a43ef29c73aefcf76f85e57e7cecee823015",
+          "idd_sha256": "fb46468aa8ec9136dc9372c9289ffbb2a5b5a952c6ed3c16234cb44ff05e2355",
+          "code_sha256": "cc6f9c8c1ec3f9208b92aa4deff262f38820ebbe59b6785c93ebd732394cadcf",
+          "sql_sha256": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+          "mtd_sha256": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+        },
+        "file_snapshot": {
+          "file_id": "file_bb5d8c0b77504383bc57f7ae475cf5ee",
+          "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+          "name": "bias.csv",
+          "path": "files/file_bb5d8c0b77504383bc57f7ae475cf5ee.csv",
+          "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+          "size": 838,
+          "timestamp": "2026-11-12T19:29:16.021082+00:00",
+          "revision": 1
+        },
+        "evidence_snapshot": [
+          {
+            "type": "bill",
+            "name": "bias.csv",
+            "source_file": "file_bb5d8c0b77504383bc57f7ae475cf5ee",
+            "source_locator": "Existing frozen independent synthetic input, new actual run",
+            "value": null,
+            "unit": null,
+            "authority": "Reference author",
+            "permission": "Public reference local verification",
+            "uncertainty": null,
+            "confidence": null,
+            "acquisition_method": "Declared synthetic schedules, not measurements",
+            "responsible_person": "Independent acceptance",
+            "status": "ASSUMED",
+            "scheme_id": null,
+            "evidence_id": "evidence_092cedf9ed95435b95e36ba3e283da30",
+            "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+            "revision": 2,
+            "timestamp": "2026-11-12T19:29:16.055344+00:00",
+            "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+            "review_state": "confirmed",
+            "review_note": "Synthetic arithmetic context, no real building certification"
+          }
+        ],
+        "result": {
+          "status": "compared_reference",
+          "calibration_status": "not_certified_or_automatically_calibrated",
+          "rows": [
+            {
+              "source_line": 2,
+              "original": {
+                "start": "2020-01-01T00:00",
+                "end": "2020-02-01T00:00",
+                "energy": "608.7272727272727",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-01-01T00:00",
+              "mapped_end": "2020-02-01T00:00",
+              "native_hour_start_index": 0,
+              "native_hour_end_exclusive_index": 744,
+              "hours": 744,
+              "bill_kwh": 608.7272727272727,
+              "native_kwh": 669.6,
+              "difference_kwh": 60.8727272727273
+            },
+            {
+              "source_line": 3,
+              "original": {
+                "start": "2020-02-01T00:00",
+                "end": "2020-03-01T00:00",
+                "energy": "696.0",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-02-01T00:00",
+              "mapped_end": "2020-03-01T00:00",
+              "native_hour_start_index": 744,
+              "native_hour_end_exclusive_index": 1440,
+              "hours": 696,
+              "bill_kwh": 696.0,
+              "native_kwh": 765.6,
+              "difference_kwh": 69.6
+            },
+            {
+              "source_line": 4,
+              "original": {
+                "start": "2020-03-01T00:00",
+                "end": "2020-04-01T00:00",
+                "energy": "676.3636363636364",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-03-01T00:00",
+              "mapped_end": "2020-04-01T00:00",
+              "native_hour_start_index": 1440,
+              "native_hour_end_exclusive_index": 2184,
+              "hours": 744,
+              "bill_kwh": 676.3636363636364,
+              "native_kwh": 744.0,
+              "difference_kwh": 67.6363636363636
+            },
+            {
+              "source_line": 5,
+              "original": {
+                "start": "2020-04-01T00:00",
+                "end": "2020-05-01T00:00",
+                "energy": "850.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-04-01T00:00",
+              "mapped_end": "2020-05-01T00:00",
+              "native_hour_start_index": 2184,
+              "native_hour_end_exclusive_index": 2904,
+              "hours": 720,
+              "bill_kwh": 850.9090909090909,
+              "native_kwh": 936.0,
+              "difference_kwh": 85.0909090909091
+            },
+            {
+              "source_line": 6,
+              "original": {
+                "start": "2020-05-01T00:00",
+                "end": "2020-06-01T00:00",
+                "energy": "1082.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-05-01T00:00",
+              "mapped_end": "2020-06-01T00:00",
+              "native_hour_start_index": 2904,
+              "native_hour_end_exclusive_index": 3648,
+              "hours": 744,
+              "bill_kwh": 1082.1818181818182,
+              "native_kwh": 1190.4,
+              "difference_kwh": 108.2181818181818
+            },
+            {
+              "source_line": 7,
+              "original": {
+                "start": "2020-06-01T00:00",
+                "end": "2020-07-01T00:00",
+                "energy": "1178.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-06-01T00:00",
+              "mapped_end": "2020-07-01T00:00",
+              "native_hour_start_index": 3648,
+              "native_hour_end_exclusive_index": 4368,
+              "hours": 720,
+              "bill_kwh": 1178.1818181818182,
+              "native_kwh": 1296.0,
+              "difference_kwh": 117.8181818181818
+            },
+            {
+              "source_line": 8,
+              "original": {
+                "start": "2020-07-01T00:00",
+                "end": "2020-08-01T00:00",
+                "energy": "1420.3636363636363",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-07-01T00:00",
+              "mapped_end": "2020-08-01T00:00",
+              "native_hour_start_index": 4368,
+              "native_hour_end_exclusive_index": 5112,
+              "hours": 744,
+              "bill_kwh": 1420.3636363636363,
+              "native_kwh": 1562.4,
+              "difference_kwh": 142.0363636363637
+            },
+            {
+              "source_line": 9,
+              "original": {
+                "start": "2020-08-01T00:00",
+                "end": "2020-09-01T00:00",
+                "energy": "1149.8181818181818",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-08-01T00:00",
+              "mapped_end": "2020-09-01T00:00",
+              "native_hour_start_index": 5112,
+              "native_hour_end_exclusive_index": 5856,
+              "hours": 744,
+              "bill_kwh": 1149.8181818181818,
+              "native_kwh": 1264.8000000000002,
+              "difference_kwh": 114.98181818181841
+            },
+            {
+              "source_line": 10,
+              "original": {
+                "start": "2020-09-01T00:00",
+                "end": "2020-10-01T00:00",
+                "energy": "949.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-09-01T00:00",
+              "mapped_end": "2020-10-01T00:00",
+              "native_hour_start_index": 5856,
+              "native_hour_end_exclusive_index": 6576,
+              "hours": 720,
+              "bill_kwh": 949.0909090909091,
+              "native_kwh": 1044.0,
+              "difference_kwh": 94.9090909090909
+            },
+            {
+              "source_line": 11,
+              "original": {
+                "start": "2020-10-01T00:00",
+                "end": "2020-11-01T00:00",
+                "energy": "811.6363636363636",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-10-01T00:00",
+              "mapped_end": "2020-11-01T00:00",
+              "native_hour_start_index": 6576,
+              "native_hour_end_exclusive_index": 7320,
+              "hours": 744,
+              "bill_kwh": 811.6363636363636,
+              "native_kwh": 892.8,
+              "difference_kwh": 81.1636363636364
+            },
+            {
+              "source_line": 12,
+              "original": {
+                "start": "2020-11-01T00:00",
+                "end": "2020-12-01T00:00",
+                "energy": "589.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-11-01T00:00",
+              "mapped_end": "2020-12-01T00:00",
+              "native_hour_start_index": 7320,
+              "native_hour_end_exclusive_index": 8040,
+              "hours": 720,
+              "bill_kwh": 589.0909090909091,
+              "native_kwh": 648.0,
+              "difference_kwh": 58.9090909090909
+            },
+            {
+              "source_line": 13,
+              "original": {
+                "start": "2020-12-01T00:00",
+                "end": "2021-01-01T00:00",
+                "energy": "574.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-12-01T00:00",
+              "mapped_end": "2021-01-01T00:00",
+              "native_hour_start_index": 8040,
+              "native_hour_end_exclusive_index": 8784,
+              "hours": 744,
+              "bill_kwh": 574.9090909090909,
+              "native_kwh": 632.4000000000001,
+              "difference_kwh": 57.490909090909206
+            }
+          ],
+          "statistics": {
+            "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+            "interval_count": 12,
+            "denominator": 12,
+            "bill_total_kwh": 10587.272727272728,
+            "native_total_kwh": 11646.0,
+            "mbe_percent": 10.000000000000004,
+            "rmse_kwh": 92.07016907260385,
+            "cvrmse_percent": 10.435567849548091,
+            "not_evaluable_reason": null
+          },
+          "within_declared_tolerances": false,
+          "context_reasons": [
+            "bill_is_reference_or_synthetic"
+          ],
+          "native": {
+            "version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.13 03:29",
+            "year": 2020,
+            "hours": 8784,
+            "clock_basis": "local_standard_time",
+            "weather_years": [
+              2020
+            ],
+            "weather_calendar_matches_native": true,
+            "ideal_systems": [],
+            "selected_meter": {
+              "name": "Electricity:Facility",
+              "resource": "Electricity",
+              "dictionary_index": 9,
+              "native_unit": "J",
+              "reporting_frequency": "Hourly",
+              "component_sources": [
+                {
+                  "native_variable_index": 7,
+                  "variable": "METERED ELECTRIC:Electric Equipment Electric Energy",
+                  "unit": "J",
+                  "line": 2
+                }
+              ]
+            },
+            "source_hashes": {
+              "sql": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+              "model": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+              "weather": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+              "mtd": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+            }
+          },
+          "coverage": {
+            "compared_hours": 8784,
+            "native_year_hours": 8784,
+            "complete_year": true,
+            "period_kind": "calendar_month"
+          },
+          "limitations": [
+            "仅比较声明账期与原生模拟能量，不自动校准模型，不证明实楼预测准确性或节能合规。",
+            "数据性质、计量边界、来源与时间基准须人工复核；来源确认不使参考数据变成实测。",
+            "误差按账期数等权计算，分母为n；不是按天加权，不采用n−p，不把月数据按小时阈值评价。",
+            "仅支持本地标准时整点、完整单年度原生计量；夏令时、净负能量及跨多年度不支持。",
+            "参考日历映射只对齐月日小时，不证明同年天气、运行条件或建筑一致。",
+            "阈值是使用者声明的比较目标，满足阈值不等于获得任何认证。"
+          ]
+        },
+        "hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "compared_reference",
+        "nonnumeric_review_reference": {
+          "kind": "utility",
+          "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+          "record_hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+          "view_hash": "8a9f2ce6784431e03c1e7ea8064f232bb29a4c2939657bb7479d2030c0b32956",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "bill_total_kwh",
+            "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+            "value": "10587.2727273",
+            "source_value": "10587.272727272728",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/bill_total_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_total_kwh",
+            "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+            "value": "11646",
+            "source_value": "11646.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/native_total_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "mbe_percent",
+            "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+            "value": "10",
+            "source_value": "10.000000000000004",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/mbe_percent",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "rmse_kwh",
+            "label": "等权账期能量差的均方根kWh；分母n",
+            "value": "92.0701690726",
+            "source_value": "92.07016907260385",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/rmse_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "cvrmse_percent",
+            "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+            "value": "10.4355678495",
+            "source_value": "10.435567849548091",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/cvrmse_percent",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "interval_count",
+            "label": "比较账期数，不是月数或独立建筑数",
+            "value": "12",
+            "source_value": "12",
+            "value_policy": "exact_decimal",
+            "unit": "count",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/interval_count",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "compared_hours",
+            "label": "实际覆盖模拟小时数，不是全年小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/compared_hours",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_year_hours",
+            "label": "完整原生年度小时数，不是比较覆盖小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/native_year_hours",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_energy_fact_keys": []
+      },
+      "result_hash": "a90289fa274ff607b619b590081c424a6156054bf843cbf0a2ce1893567509cd",
+      "duration_ms": 390,
+      "finished_at": "2026-11-12T19:30:23.760584+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:23.781795+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_read_many\", \"arguments\": {\"record_ids\": [\"utility_2474d50be0e34622aa8eceed22717866\"]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 3640,
+      "finished_at": "2026-11-12T19:30:27.432153+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "record_ids": [
+          "utility_2474d50be0e34622aa8eceed22717866"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:27.445220+00:00",
+      "origin": "model",
+      "result": {
+        "status": "records_read",
+        "records": [
+          {
+            "kind": "utility",
+            "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+            "current": {
+              "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+              "hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+              "name": "Energy bias",
+              "status": "compared_reference",
+              "source_status": "synthetic",
+              "scope": "账单与模拟按声明期间/载体比较；MBE会正负抵消，CV(RMSE)反映逐期误差；零分母无定义，满足声明阈值不是实楼校准或认证。",
+              "explanation_facts": [],
+              "nonnumeric_review_reference": {
+                "kind": "utility",
+                "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+                "record_hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+                "view_hash": "8a9f2ce6784431e03c1e7ea8064f232bb29a4c2939657bb7479d2030c0b32956",
+                "finish": false
+              },
+              "limitation_delivery": null,
+              "calculation_context": {
+                "native_year": 2020,
+                "original_bill_start": "2020-01-01T00:00",
+                "original_bill_end": "2021-01-01T00:00",
+                "mapped_native_start": "2020-01-01T00:00",
+                "mapped_native_end": "2021-01-01T00:00",
+                "alignment": "exact_calendar",
+                "meter": "Electricity:Facility",
+                "carrier": "Electricity",
+                "bill_nature": "synthetic",
+                "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+                "denominator": 12,
+                "within_declared_tolerances": false,
+                "threshold_source": "Test declaration only, no certification",
+                "context_reasons": [
+                  "bill_is_reference_or_synthetic"
+                ],
+                "calibration_status": "not_certified_or_automatically_calibrated",
+                "coverage": {
+                  "compared_hours": 8784,
+                  "native_year_hours": 8784,
+                  "complete_year": true,
+                  "period_kind": "calendar_month"
+                },
+                "not_evaluable_reason": null
+              },
+              "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+              "projection_notice": "这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。",
+              "available_fact_catalog": [
+                {
+                  "fact": "bill_total_kwh",
+                  "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "native_total_kwh",
+                  "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "mbe_percent",
+                  "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+                  "unit": "%"
+                },
+                {
+                  "fact": "rmse_kwh",
+                  "label": "等权账期能量差的均方根kWh；分母n",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "cvrmse_percent",
+                  "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+                  "unit": "%"
+                },
+                {
+                  "fact": "interval_count",
+                  "label": "比较账期数，不是月数或独立建筑数",
+                  "unit": "count"
+                },
+                {
+                  "fact": "compared_hours",
+                  "label": "实际覆盖模拟小时数，不是全年小时数",
+                  "unit": "hour"
+                },
+                {
+                  "fact": "native_year_hours",
+                  "label": "完整原生年度小时数，不是比较覆盖小时数",
+                  "unit": "hour"
+                }
+              ],
+              "selected_fact_keys": [],
+              "selection_notice": "Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit."
+            }
+          }
+        ],
+        "notice": "模型选择批次，控制流程逐项执行/读取并审计；尚未正式交付，不证明完整性或工程认证。未选计划未执行。"
+      },
+      "result_hash": "58fb9795b08d652b318b98b1ad640ba47856e5a1c7e95f3d0dc67dd0fe65d34e",
+      "duration_ms": 390,
+      "finished_at": "2026-11-12T19:30:27.846878+00:00"
+    },
+    {
+      "tool": "utility_comparison_read",
+      "arguments": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:27.462730+00:00",
+      "origin": "controller",
+      "parent_event": 10,
+      "result": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+        "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+        "project_revision": 1,
+        "input": {
+          "name": "Energy bias",
+          "purpose": "Independent synthetic Agent reading acceptance, never calibration",
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "bill_evidence_id": "evidence_092cedf9ed95435b95e36ba3e283da30",
+          "meter": "Electricity:Facility",
+          "bill_nature": "synthetic",
+          "alignment": "exact_calendar",
+          "period_kind": "calendar_month",
+          "clock_source": "Frozen local standard time, no DST",
+          "boundary_note": "Whole facility electricity, excluding gas; synthetic source",
+          "max_abs_mbe_percent": 5.0,
+          "max_cvrmse_percent": 5.0,
+          "threshold_source": "Test declaration only, no certification"
+        },
+        "actor_user_id": "user_2239faabca5c454597875693d0dec786",
+        "created_at": "2026-11-12T19:29:22.538313+00:00",
+        "calculator_version": "a78fe021f5c989333496c85decf797ad485fb562b1fd0e5a9ed59b276c5e28d6",
+        "source_run": {
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "scheme_id": "baseline",
+          "model_sha256": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+          "weather_sha256": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+          "engine_sha256": "9d2d3c621381c310260be195cec2a43ef29c73aefcf76f85e57e7cecee823015",
+          "idd_sha256": "fb46468aa8ec9136dc9372c9289ffbb2a5b5a952c6ed3c16234cb44ff05e2355",
+          "code_sha256": "cc6f9c8c1ec3f9208b92aa4deff262f38820ebbe59b6785c93ebd732394cadcf",
+          "sql_sha256": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+          "mtd_sha256": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+        },
+        "file_snapshot": {
+          "file_id": "file_bb5d8c0b77504383bc57f7ae475cf5ee",
+          "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+          "name": "bias.csv",
+          "path": "files/file_bb5d8c0b77504383bc57f7ae475cf5ee.csv",
+          "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+          "size": 838,
+          "timestamp": "2026-11-12T19:29:16.021082+00:00",
+          "revision": 1
+        },
+        "evidence_snapshot": [
+          {
+            "type": "bill",
+            "name": "bias.csv",
+            "source_file": "file_bb5d8c0b77504383bc57f7ae475cf5ee",
+            "source_locator": "Existing frozen independent synthetic input, new actual run",
+            "value": null,
+            "unit": null,
+            "authority": "Reference author",
+            "permission": "Public reference local verification",
+            "uncertainty": null,
+            "confidence": null,
+            "acquisition_method": "Declared synthetic schedules, not measurements",
+            "responsible_person": "Independent acceptance",
+            "status": "ASSUMED",
+            "scheme_id": null,
+            "evidence_id": "evidence_092cedf9ed95435b95e36ba3e283da30",
+            "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+            "revision": 2,
+            "timestamp": "2026-11-12T19:29:16.055344+00:00",
+            "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+            "review_state": "confirmed",
+            "review_note": "Synthetic arithmetic context, no real building certification"
+          }
+        ],
+        "result": {
+          "status": "compared_reference",
+          "calibration_status": "not_certified_or_automatically_calibrated",
+          "rows": [
+            {
+              "source_line": 2,
+              "original": {
+                "start": "2020-01-01T00:00",
+                "end": "2020-02-01T00:00",
+                "energy": "608.7272727272727",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-01-01T00:00",
+              "mapped_end": "2020-02-01T00:00",
+              "native_hour_start_index": 0,
+              "native_hour_end_exclusive_index": 744,
+              "hours": 744,
+              "bill_kwh": 608.7272727272727,
+              "native_kwh": 669.6,
+              "difference_kwh": 60.8727272727273
+            },
+            {
+              "source_line": 3,
+              "original": {
+                "start": "2020-02-01T00:00",
+                "end": "2020-03-01T00:00",
+                "energy": "696.0",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-02-01T00:00",
+              "mapped_end": "2020-03-01T00:00",
+              "native_hour_start_index": 744,
+              "native_hour_end_exclusive_index": 1440,
+              "hours": 696,
+              "bill_kwh": 696.0,
+              "native_kwh": 765.6,
+              "difference_kwh": 69.6
+            },
+            {
+              "source_line": 4,
+              "original": {
+                "start": "2020-03-01T00:00",
+                "end": "2020-04-01T00:00",
+                "energy": "676.3636363636364",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-03-01T00:00",
+              "mapped_end": "2020-04-01T00:00",
+              "native_hour_start_index": 1440,
+              "native_hour_end_exclusive_index": 2184,
+              "hours": 744,
+              "bill_kwh": 676.3636363636364,
+              "native_kwh": 744.0,
+              "difference_kwh": 67.6363636363636
+            },
+            {
+              "source_line": 5,
+              "original": {
+                "start": "2020-04-01T00:00",
+                "end": "2020-05-01T00:00",
+                "energy": "850.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-04-01T00:00",
+              "mapped_end": "2020-05-01T00:00",
+              "native_hour_start_index": 2184,
+              "native_hour_end_exclusive_index": 2904,
+              "hours": 720,
+              "bill_kwh": 850.9090909090909,
+              "native_kwh": 936.0,
+              "difference_kwh": 85.0909090909091
+            },
+            {
+              "source_line": 6,
+              "original": {
+                "start": "2020-05-01T00:00",
+                "end": "2020-06-01T00:00",
+                "energy": "1082.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-05-01T00:00",
+              "mapped_end": "2020-06-01T00:00",
+              "native_hour_start_index": 2904,
+              "native_hour_end_exclusive_index": 3648,
+              "hours": 744,
+              "bill_kwh": 1082.1818181818182,
+              "native_kwh": 1190.4,
+              "difference_kwh": 108.2181818181818
+            },
+            {
+              "source_line": 7,
+              "original": {
+                "start": "2020-06-01T00:00",
+                "end": "2020-07-01T00:00",
+                "energy": "1178.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-06-01T00:00",
+              "mapped_end": "2020-07-01T00:00",
+              "native_hour_start_index": 3648,
+              "native_hour_end_exclusive_index": 4368,
+              "hours": 720,
+              "bill_kwh": 1178.1818181818182,
+              "native_kwh": 1296.0,
+              "difference_kwh": 117.8181818181818
+            },
+            {
+              "source_line": 8,
+              "original": {
+                "start": "2020-07-01T00:00",
+                "end": "2020-08-01T00:00",
+                "energy": "1420.3636363636363",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-07-01T00:00",
+              "mapped_end": "2020-08-01T00:00",
+              "native_hour_start_index": 4368,
+              "native_hour_end_exclusive_index": 5112,
+              "hours": 744,
+              "bill_kwh": 1420.3636363636363,
+              "native_kwh": 1562.4,
+              "difference_kwh": 142.0363636363637
+            },
+            {
+              "source_line": 9,
+              "original": {
+                "start": "2020-08-01T00:00",
+                "end": "2020-09-01T00:00",
+                "energy": "1149.8181818181818",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-08-01T00:00",
+              "mapped_end": "2020-09-01T00:00",
+              "native_hour_start_index": 5112,
+              "native_hour_end_exclusive_index": 5856,
+              "hours": 744,
+              "bill_kwh": 1149.8181818181818,
+              "native_kwh": 1264.8000000000002,
+              "difference_kwh": 114.98181818181841
+            },
+            {
+              "source_line": 10,
+              "original": {
+                "start": "2020-09-01T00:00",
+                "end": "2020-10-01T00:00",
+                "energy": "949.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-09-01T00:00",
+              "mapped_end": "2020-10-01T00:00",
+              "native_hour_start_index": 5856,
+              "native_hour_end_exclusive_index": 6576,
+              "hours": 720,
+              "bill_kwh": 949.0909090909091,
+              "native_kwh": 1044.0,
+              "difference_kwh": 94.9090909090909
+            },
+            {
+              "source_line": 11,
+              "original": {
+                "start": "2020-10-01T00:00",
+                "end": "2020-11-01T00:00",
+                "energy": "811.6363636363636",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-10-01T00:00",
+              "mapped_end": "2020-11-01T00:00",
+              "native_hour_start_index": 6576,
+              "native_hour_end_exclusive_index": 7320,
+              "hours": 744,
+              "bill_kwh": 811.6363636363636,
+              "native_kwh": 892.8,
+              "difference_kwh": 81.1636363636364
+            },
+            {
+              "source_line": 12,
+              "original": {
+                "start": "2020-11-01T00:00",
+                "end": "2020-12-01T00:00",
+                "energy": "589.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-11-01T00:00",
+              "mapped_end": "2020-12-01T00:00",
+              "native_hour_start_index": 7320,
+              "native_hour_end_exclusive_index": 8040,
+              "hours": 720,
+              "bill_kwh": 589.0909090909091,
+              "native_kwh": 648.0,
+              "difference_kwh": 58.9090909090909
+            },
+            {
+              "source_line": 13,
+              "original": {
+                "start": "2020-12-01T00:00",
+                "end": "2021-01-01T00:00",
+                "energy": "574.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-12-01T00:00",
+              "mapped_end": "2021-01-01T00:00",
+              "native_hour_start_index": 8040,
+              "native_hour_end_exclusive_index": 8784,
+              "hours": 744,
+              "bill_kwh": 574.9090909090909,
+              "native_kwh": 632.4000000000001,
+              "difference_kwh": 57.490909090909206
+            }
+          ],
+          "statistics": {
+            "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+            "interval_count": 12,
+            "denominator": 12,
+            "bill_total_kwh": 10587.272727272728,
+            "native_total_kwh": 11646.0,
+            "mbe_percent": 10.000000000000004,
+            "rmse_kwh": 92.07016907260385,
+            "cvrmse_percent": 10.435567849548091,
+            "not_evaluable_reason": null
+          },
+          "within_declared_tolerances": false,
+          "context_reasons": [
+            "bill_is_reference_or_synthetic"
+          ],
+          "native": {
+            "version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.13 03:29",
+            "year": 2020,
+            "hours": 8784,
+            "clock_basis": "local_standard_time",
+            "weather_years": [
+              2020
+            ],
+            "weather_calendar_matches_native": true,
+            "ideal_systems": [],
+            "selected_meter": {
+              "name": "Electricity:Facility",
+              "resource": "Electricity",
+              "dictionary_index": 9,
+              "native_unit": "J",
+              "reporting_frequency": "Hourly",
+              "component_sources": [
+                {
+                  "native_variable_index": 7,
+                  "variable": "METERED ELECTRIC:Electric Equipment Electric Energy",
+                  "unit": "J",
+                  "line": 2
+                }
+              ]
+            },
+            "source_hashes": {
+              "sql": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+              "model": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+              "weather": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+              "mtd": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+            }
+          },
+          "coverage": {
+            "compared_hours": 8784,
+            "native_year_hours": 8784,
+            "complete_year": true,
+            "period_kind": "calendar_month"
+          },
+          "limitations": [
+            "仅比较声明账期与原生模拟能量，不自动校准模型，不证明实楼预测准确性或节能合规。",
+            "数据性质、计量边界、来源与时间基准须人工复核；来源确认不使参考数据变成实测。",
+            "误差按账期数等权计算，分母为n；不是按天加权，不采用n−p，不把月数据按小时阈值评价。",
+            "仅支持本地标准时整点、完整单年度原生计量；夏令时、净负能量及跨多年度不支持。",
+            "参考日历映射只对齐月日小时，不证明同年天气、运行条件或建筑一致。",
+            "阈值是使用者声明的比较目标，满足阈值不等于获得任何认证。"
+          ]
+        },
+        "hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "compared_reference",
+        "nonnumeric_review_reference": {
+          "kind": "utility",
+          "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+          "record_hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+          "view_hash": "8a9f2ce6784431e03c1e7ea8064f232bb29a4c2939657bb7479d2030c0b32956",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "bill_total_kwh",
+            "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+            "value": "10587.2727273",
+            "source_value": "10587.272727272728",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/bill_total_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_total_kwh",
+            "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+            "value": "11646",
+            "source_value": "11646.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/native_total_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "mbe_percent",
+            "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+            "value": "10",
+            "source_value": "10.000000000000004",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/mbe_percent",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "rmse_kwh",
+            "label": "等权账期能量差的均方根kWh；分母n",
+            "value": "92.0701690726",
+            "source_value": "92.07016907260385",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/rmse_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "cvrmse_percent",
+            "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+            "value": "10.4355678495",
+            "source_value": "10.435567849548091",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/cvrmse_percent",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "interval_count",
+            "label": "比较账期数，不是月数或独立建筑数",
+            "value": "12",
+            "source_value": "12",
+            "value_policy": "exact_decimal",
+            "unit": "count",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/interval_count",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "compared_hours",
+            "label": "实际覆盖模拟小时数，不是全年小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/compared_hours",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_year_hours",
+            "label": "完整原生年度小时数，不是比较覆盖小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/native_year_hours",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_energy_fact_keys": []
+      },
+      "result_hash": "a90289fa274ff607b619b590081c424a6156054bf843cbf0a2ce1893567509cd",
+      "duration_ms": 375,
+      "finished_at": "2026-11-12T19:30:27.840871+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:27.859622+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_read_many\", \"arguments\": {\"record_ids\": [\"utility_2474d50be0e34622aa8eceed22717866\"]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 4156,
+      "finished_at": "2026-11-12T19:30:32.025736+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "record_ids": [
+          "utility_2474d50be0e34622aa8eceed22717866"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:32.033927+00:00",
+      "origin": "model",
+      "result": {
+        "status": "records_read",
+        "records": [
+          {
+            "kind": "utility",
+            "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+            "current": {
+              "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+              "hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+              "name": "Energy bias",
+              "status": "compared_reference",
+              "source_status": "synthetic",
+              "scope": "账单与模拟按声明期间/载体比较；MBE会正负抵消，CV(RMSE)反映逐期误差；零分母无定义，满足声明阈值不是实楼校准或认证。",
+              "explanation_facts": [],
+              "nonnumeric_review_reference": {
+                "kind": "utility",
+                "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+                "record_hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+                "view_hash": "8a9f2ce6784431e03c1e7ea8064f232bb29a4c2939657bb7479d2030c0b32956",
+                "finish": false
+              },
+              "limitation_delivery": null,
+              "calculation_context": {
+                "native_year": 2020,
+                "original_bill_start": "2020-01-01T00:00",
+                "original_bill_end": "2021-01-01T00:00",
+                "mapped_native_start": "2020-01-01T00:00",
+                "mapped_native_end": "2021-01-01T00:00",
+                "alignment": "exact_calendar",
+                "meter": "Electricity:Facility",
+                "carrier": "Electricity",
+                "bill_nature": "synthetic",
+                "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+                "denominator": 12,
+                "within_declared_tolerances": false,
+                "threshold_source": "Test declaration only, no certification",
+                "context_reasons": [
+                  "bill_is_reference_or_synthetic"
+                ],
+                "calibration_status": "not_certified_or_automatically_calibrated",
+                "coverage": {
+                  "compared_hours": 8784,
+                  "native_year_hours": 8784,
+                  "complete_year": true,
+                  "period_kind": "calendar_month"
+                },
+                "not_evaluable_reason": null
+              },
+              "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+              "projection_notice": "这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。",
+              "available_fact_catalog": [
+                {
+                  "fact": "bill_total_kwh",
+                  "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "native_total_kwh",
+                  "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "mbe_percent",
+                  "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+                  "unit": "%"
+                },
+                {
+                  "fact": "rmse_kwh",
+                  "label": "等权账期能量差的均方根kWh；分母n",
+                  "unit": "kWh"
+                },
+                {
+                  "fact": "cvrmse_percent",
+                  "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+                  "unit": "%"
+                },
+                {
+                  "fact": "interval_count",
+                  "label": "比较账期数，不是月数或独立建筑数",
+                  "unit": "count"
+                },
+                {
+                  "fact": "compared_hours",
+                  "label": "实际覆盖模拟小时数，不是全年小时数",
+                  "unit": "hour"
+                },
+                {
+                  "fact": "native_year_hours",
+                  "label": "完整原生年度小时数，不是比较覆盖小时数",
+                  "unit": "hour"
+                }
+              ],
+              "selected_fact_keys": [],
+              "selection_notice": "Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit."
+            }
+          }
+        ],
+        "notice": "模型选择批次，控制流程逐项执行/读取并审计；尚未正式交付，不证明完整性或工程认证。未选计划未执行。"
+      },
+      "result_hash": "58fb9795b08d652b318b98b1ad640ba47856e5a1c7e95f3d0dc67dd0fe65d34e",
+      "duration_ms": 344,
+      "finished_at": "2026-11-12T19:30:32.399766+00:00"
+    },
+    {
+      "tool": "utility_comparison_read",
+      "arguments": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:30:32.052823+00:00",
+      "origin": "controller",
+      "parent_event": 13,
+      "result": {
+        "utility_id": "utility_2474d50be0e34622aa8eceed22717866",
+        "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+        "project_revision": 1,
+        "input": {
+          "name": "Energy bias",
+          "purpose": "Independent synthetic Agent reading acceptance, never calibration",
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "bill_evidence_id": "evidence_092cedf9ed95435b95e36ba3e283da30",
+          "meter": "Electricity:Facility",
+          "bill_nature": "synthetic",
+          "alignment": "exact_calendar",
+          "period_kind": "calendar_month",
+          "clock_source": "Frozen local standard time, no DST",
+          "boundary_note": "Whole facility electricity, excluding gas; synthetic source",
+          "max_abs_mbe_percent": 5.0,
+          "max_cvrmse_percent": 5.0,
+          "threshold_source": "Test declaration only, no certification"
+        },
+        "actor_user_id": "user_2239faabca5c454597875693d0dec786",
+        "created_at": "2026-11-12T19:29:22.538313+00:00",
+        "calculator_version": "a78fe021f5c989333496c85decf797ad485fb562b1fd0e5a9ed59b276c5e28d6",
+        "source_run": {
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "scheme_id": "baseline",
+          "model_sha256": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+          "weather_sha256": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+          "engine_sha256": "9d2d3c621381c310260be195cec2a43ef29c73aefcf76f85e57e7cecee823015",
+          "idd_sha256": "fb46468aa8ec9136dc9372c9289ffbb2a5b5a952c6ed3c16234cb44ff05e2355",
+          "code_sha256": "cc6f9c8c1ec3f9208b92aa4deff262f38820ebbe59b6785c93ebd732394cadcf",
+          "sql_sha256": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+          "mtd_sha256": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+        },
+        "file_snapshot": {
+          "file_id": "file_bb5d8c0b77504383bc57f7ae475cf5ee",
+          "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+          "name": "bias.csv",
+          "path": "files/file_bb5d8c0b77504383bc57f7ae475cf5ee.csv",
+          "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+          "size": 838,
+          "timestamp": "2026-11-12T19:29:16.021082+00:00",
+          "revision": 1
+        },
+        "evidence_snapshot": [
+          {
+            "type": "bill",
+            "name": "bias.csv",
+            "source_file": "file_bb5d8c0b77504383bc57f7ae475cf5ee",
+            "source_locator": "Existing frozen independent synthetic input, new actual run",
+            "value": null,
+            "unit": null,
+            "authority": "Reference author",
+            "permission": "Public reference local verification",
+            "uncertainty": null,
+            "confidence": null,
+            "acquisition_method": "Declared synthetic schedules, not measurements",
+            "responsible_person": "Independent acceptance",
+            "status": "ASSUMED",
+            "scheme_id": null,
+            "evidence_id": "evidence_092cedf9ed95435b95e36ba3e283da30",
+            "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+            "revision": 2,
+            "timestamp": "2026-11-12T19:29:16.055344+00:00",
+            "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+            "review_state": "confirmed",
+            "review_note": "Synthetic arithmetic context, no real building certification"
+          }
+        ],
+        "result": {
+          "status": "compared_reference",
+          "calibration_status": "not_certified_or_automatically_calibrated",
+          "rows": [
+            {
+              "source_line": 2,
+              "original": {
+                "start": "2020-01-01T00:00",
+                "end": "2020-02-01T00:00",
+                "energy": "608.7272727272727",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-01-01T00:00",
+              "mapped_end": "2020-02-01T00:00",
+              "native_hour_start_index": 0,
+              "native_hour_end_exclusive_index": 744,
+              "hours": 744,
+              "bill_kwh": 608.7272727272727,
+              "native_kwh": 669.6,
+              "difference_kwh": 60.8727272727273
+            },
+            {
+              "source_line": 3,
+              "original": {
+                "start": "2020-02-01T00:00",
+                "end": "2020-03-01T00:00",
+                "energy": "696.0",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-02-01T00:00",
+              "mapped_end": "2020-03-01T00:00",
+              "native_hour_start_index": 744,
+              "native_hour_end_exclusive_index": 1440,
+              "hours": 696,
+              "bill_kwh": 696.0,
+              "native_kwh": 765.6,
+              "difference_kwh": 69.6
+            },
+            {
+              "source_line": 4,
+              "original": {
+                "start": "2020-03-01T00:00",
+                "end": "2020-04-01T00:00",
+                "energy": "676.3636363636364",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-03-01T00:00",
+              "mapped_end": "2020-04-01T00:00",
+              "native_hour_start_index": 1440,
+              "native_hour_end_exclusive_index": 2184,
+              "hours": 744,
+              "bill_kwh": 676.3636363636364,
+              "native_kwh": 744.0,
+              "difference_kwh": 67.6363636363636
+            },
+            {
+              "source_line": 5,
+              "original": {
+                "start": "2020-04-01T00:00",
+                "end": "2020-05-01T00:00",
+                "energy": "850.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-04-01T00:00",
+              "mapped_end": "2020-05-01T00:00",
+              "native_hour_start_index": 2184,
+              "native_hour_end_exclusive_index": 2904,
+              "hours": 720,
+              "bill_kwh": 850.9090909090909,
+              "native_kwh": 936.0,
+              "difference_kwh": 85.0909090909091
+            },
+            {
+              "source_line": 6,
+              "original": {
+                "start": "2020-05-01T00:00",
+                "end": "2020-06-01T00:00",
+                "energy": "1082.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-05-01T00:00",
+              "mapped_end": "2020-06-01T00:00",
+              "native_hour_start_index": 2904,
+              "native_hour_end_exclusive_index": 3648,
+              "hours": 744,
+              "bill_kwh": 1082.1818181818182,
+              "native_kwh": 1190.4,
+              "difference_kwh": 108.2181818181818
+            },
+            {
+              "source_line": 7,
+              "original": {
+                "start": "2020-06-01T00:00",
+                "end": "2020-07-01T00:00",
+                "energy": "1178.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-06-01T00:00",
+              "mapped_end": "2020-07-01T00:00",
+              "native_hour_start_index": 3648,
+              "native_hour_end_exclusive_index": 4368,
+              "hours": 720,
+              "bill_kwh": 1178.1818181818182,
+              "native_kwh": 1296.0,
+              "difference_kwh": 117.8181818181818
+            },
+            {
+              "source_line": 8,
+              "original": {
+                "start": "2020-07-01T00:00",
+                "end": "2020-08-01T00:00",
+                "energy": "1420.3636363636363",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-07-01T00:00",
+              "mapped_end": "2020-08-01T00:00",
+              "native_hour_start_index": 4368,
+              "native_hour_end_exclusive_index": 5112,
+              "hours": 744,
+              "bill_kwh": 1420.3636363636363,
+              "native_kwh": 1562.4,
+              "difference_kwh": 142.0363636363637
+            },
+            {
+              "source_line": 9,
+              "original": {
+                "start": "2020-08-01T00:00",
+                "end": "2020-09-01T00:00",
+                "energy": "1149.8181818181818",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-08-01T00:00",
+              "mapped_end": "2020-09-01T00:00",
+              "native_hour_start_index": 5112,
+              "native_hour_end_exclusive_index": 5856,
+              "hours": 744,
+              "bill_kwh": 1149.8181818181818,
+              "native_kwh": 1264.8000000000002,
+              "difference_kwh": 114.98181818181841
+            },
+            {
+              "source_line": 10,
+              "original": {
+                "start": "2020-09-01T00:00",
+                "end": "2020-10-01T00:00",
+                "energy": "949.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-09-01T00:00",
+              "mapped_end": "2020-10-01T00:00",
+              "native_hour_start_index": 5856,
+              "native_hour_end_exclusive_index": 6576,
+              "hours": 720,
+              "bill_kwh": 949.0909090909091,
+              "native_kwh": 1044.0,
+              "difference_kwh": 94.9090909090909
+            },
+            {
+              "source_line": 11,
+              "original": {
+                "start": "2020-10-01T00:00",
+                "end": "2020-11-01T00:00",
+                "energy": "811.6363636363636",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-10-01T00:00",
+              "mapped_end": "2020-11-01T00:00",
+              "native_hour_start_index": 6576,
+              "native_hour_end_exclusive_index": 7320,
+              "hours": 744,
+              "bill_kwh": 811.6363636363636,
+              "native_kwh": 892.8,
+              "difference_kwh": 81.1636363636364
+            },
+            {
+              "source_line": 12,
+              "original": {
+                "start": "2020-11-01T00:00",
+                "end": "2020-12-01T00:00",
+                "energy": "589.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-11-01T00:00",
+              "mapped_end": "2020-12-01T00:00",
+              "native_hour_start_index": 7320,
+              "native_hour_end_exclusive_index": 8040,
+              "hours": 720,
+              "bill_kwh": 589.0909090909091,
+              "native_kwh": 648.0,
+              "difference_kwh": 58.9090909090909
+            },
+            {
+              "source_line": 13,
+              "original": {
+                "start": "2020-12-01T00:00",
+                "end": "2021-01-01T00:00",
+                "energy": "574.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-12-01T00:00",
+              "mapped_end": "2021-01-01T00:00",
+              "native_hour_start_index": 8040,
+              "native_hour_end_exclusive_index": 8784,
+              "hours": 744,
+              "bill_kwh": 574.9090909090909,
+              "native_kwh": 632.4000000000001,
+              "difference_kwh": 57.490909090909206
+            }
+          ],
+          "statistics": {
+            "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+            "interval_count": 12,
+            "denominator": 12,
+            "bill_total_kwh": 10587.272727272728,
+            "native_total_kwh": 11646.0,
+            "mbe_percent": 10.000000000000004,
+            "rmse_kwh": 92.07016907260385,
+            "cvrmse_percent": 10.435567849548091,
+            "not_evaluable_reason": null
+          },
+          "within_declared_tolerances": false,
+          "context_reasons": [
+            "bill_is_reference_or_synthetic"
+          ],
+          "native": {
+            "version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.13 03:29",
+            "year": 2020,
+            "hours": 8784,
+            "clock_basis": "local_standard_time",
+            "weather_years": [
+              2020
+            ],
+            "weather_calendar_matches_native": true,
+            "ideal_systems": [],
+            "selected_meter": {
+              "name": "Electricity:Facility",
+              "resource": "Electricity",
+              "dictionary_index": 9,
+              "native_unit": "J",
+              "reporting_frequency": "Hourly",
+              "component_sources": [
+                {
+                  "native_variable_index": 7,
+                  "variable": "METERED ELECTRIC:Electric Equipment Electric Energy",
+                  "unit": "J",
+                  "line": 2
+                }
+              ]
+            },
+            "source_hashes": {
+              "sql": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+              "model": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+              "weather": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+              "mtd": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+            }
+          },
+          "coverage": {
+            "compared_hours": 8784,
+            "native_year_hours": 8784,
+            "complete_year": true,
+            "period_kind": "calendar_month"
+          },
+          "limitations": [
+            "仅比较声明账期与原生模拟能量，不自动校准模型，不证明实楼预测准确性或节能合规。",
+            "数据性质、计量边界、来源与时间基准须人工复核；来源确认不使参考数据变成实测。",
+            "误差按账期数等权计算，分母为n；不是按天加权，不采用n−p，不把月数据按小时阈值评价。",
+            "仅支持本地标准时整点、完整单年度原生计量；夏令时、净负能量及跨多年度不支持。",
+            "参考日历映射只对齐月日小时，不证明同年天气、运行条件或建筑一致。",
+            "阈值是使用者声明的比较目标，满足阈值不等于获得任何认证。"
+          ]
+        },
+        "hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "compared_reference",
+        "nonnumeric_review_reference": {
+          "kind": "utility",
+          "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+          "record_hash": "1133148cd60b700c9b4bff4736bc328a361e83adcaa2ac92daac8a8930c4a7c9",
+          "view_hash": "8a9f2ce6784431e03c1e7ea8064f232bb29a4c2939657bb7479d2030c0b32956",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "bill_total_kwh",
+            "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+            "value": "10587.2727273",
+            "source_value": "10587.272727272728",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/bill_total_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_total_kwh",
+            "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+            "value": "11646",
+            "source_value": "11646.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/native_total_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "mbe_percent",
+            "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+            "value": "10",
+            "source_value": "10.000000000000004",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/mbe_percent",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "rmse_kwh",
+            "label": "等权账期能量差的均方根kWh；分母n",
+            "value": "92.0701690726",
+            "source_value": "92.07016907260385",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/rmse_kwh",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "cvrmse_percent",
+            "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+            "value": "10.4355678495",
+            "source_value": "10.435567849548091",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/cvrmse_percent",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "interval_count",
+            "label": "比较账期数，不是月数或独立建筑数",
+            "value": "12",
+            "source_value": "12",
+            "value_policy": "exact_decimal",
+            "unit": "count",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/interval_count",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "compared_hours",
+            "label": "实际覆盖模拟小时数，不是全年小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/compared_hours",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_year_hours",
+            "label": "完整原生年度小时数，不是比较覆盖小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/native_year_hours",
+            "energy_context": {
+              "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_energy_fact_keys": []
+      },
+      "result_hash": "a90289fa274ff607b619b590081c424a6156054bf843cbf0a2ce1893567509cd",
+      "duration_ms": 344,
+      "finished_at": "2026-11-12T19:30:32.394992+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "incomplete",
+    "execution_scope": "checked_professional_deliveries",
+    "artifacts": [],
+    "checked_statements": [],
+    "checked_limitations": [],
+    "verification": [],
+    "summary": "先前交付已失效或来源不可用，不能复用历史数值。",
+    "task_notice": "只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。",
+    "gaps": [
+      {
+        "request_key": "cv",
+        "message": "声明读取目标尚未形成当前有效交付：cv",
+        "action": "按本次声明范围查询并交付，不替换编号或新增计算。"
+      }
+    ],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-12T19:30:32.880111+00:00",
+    "checked_reviews": [],
+    "review_failures": [],
+    "read_execution": "model",
+    "read_execution_receipt": null,
+    "termination": {
+      "reason": "response_budget_exhausted",
+      "model_declared_finished": false,
+      "pending_request_keys": [
+        "cv"
+      ]
+    },
+    "checked_availability": [],
+    "read_request_progress": [
+      {
+        "request_key": "cv",
+        "kind": "utility",
+        "purpose": "results",
+        "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+        "output_contract": null,
+        "state": "unfulfilled"
+      }
+    ],
+    "read_request_coverage": "incomplete",
+    "basis": [
+      "project_get",
+      "professional_read_many",
+      "utility_comparison_read",
+      "professional_read_many",
+      "utility_comparison_read",
+      "professional_read_many",
+      "utility_comparison_read",
+      "professional_read_many",
+      "utility_comparison_read"
+    ]
+  },
+  "created_at": "2026-11-12T19:30:14.541734+00:00",
+  "llm_commentary": null,
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 1,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "read_requests": [
+    {
+      "request_key": "cv",
+      "kind": "utility",
+      "purpose": "results",
+      "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+      "output_contract": null
+    }
+  ],
+  "availability_deliveries": [],
+  "infer_outputs": false,
+  "read_execution": "model",
+  "revision": 32,
+  "termination": {
+    "reason": "response_budget_exhausted",
+    "model_declared_finished": false,
+    "pending_request_keys": [
+      "cv"
+    ]
+  },
+  "read_request_progress": [
+    {
+      "request_key": "cv",
+      "kind": "utility",
+      "purpose": "results",
+      "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+      "output_contract": null,
+      "state": "unfulfilled"
+    }
+  ],
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-12T19:30:32.423005+00:00",
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-12T19:30:32.880111+00:00",
+  "historical_task_completion": "not_assessed",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}

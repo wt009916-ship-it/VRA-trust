@@ -1,0 +1,61 @@
+F.....................F.                                                 [100%]
+================================== FAILURES ===================================
+______ test_status_only_plan_never_offers_numeric_limitation_substitute _______
+
+client = <starlette.testclient.TestClient object at 0x0000018488B6C050>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000184AF29EF00>
+
+    def test_status_only_plan_never_offers_numeric_limitation_substitute(client,monkeypatch):
+        from backend import agent_reviews
+        from test_agent_professional import thermal_input
+        pid=create_project(client)['project_id'];a=client.app.state.agent
+        body=thermal_input();body['rsi_m2k_w']=None;r=create_record(client,pid,'thermal',body)
+        ref=agent_reviews.reference(r,'thermal')
+        scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[plan(excerpt='Explain current source status.',facts=[],topics=['status'])]}),
+            tool('thermal_read',{'thermal_id':r['thermal_id']}),tool('professional_review',{'review':{**ref,'finish':True}})])
+        original=a.gateway.complete;offered=[]
+        def capture(messages,tools,**options):
+            offered.append({t['function']['name'] for t in tools});return original(messages,tools,**options)
+        monkeypatch.setattr(a.gateway,'complete',capture)
+        t=a.start(pid,Chat(message='Explain current source status.',mode='provider',read_execution='model',read_requests=[scope(r)]),background=False)
+>       assert t['status']=='succeeded',t.get('error')
+E       AssertionError: Cannot offer fact selection without a selected numeric read
+E       assert 'failed' == 'succeeded'
+E         
+E         - succeeded
+E         + failed
+
+tests\test_agent_actions.py:207: AssertionError
+_ test_foreign_review_is_rejected_and_model_mode_can_submit_only_current_review _
+
+client = <starlette.testclient.TestClient object at 0x00000184B347EDB0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000184B36387D0>
+
+    def test_foreign_review_is_rejected_and_model_mode_can_submit_only_current_review(client,monkeypatch):
+        pid=create_project(client)['project_id'];foreign=create_project(client)['project_id']
+        r=create_record(client,foreign,'thermal');a=client.app.state.agent
+        with pytest.raises(ValueError,match='Cross-project'):
+            a.call(pid,'professional_review',{'review':agent_reviews.reference(r,'thermal')},False)
+        r=create_record(client,pid,'thermal');ref=agent_reviews.reference(r,'thermal')
+        scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[item('thermal')]}),
+            tool('thermal_read',{'thermal_id':r['thermal_id']}),
+            tool('professional_review',{'review':{**ref,'finish':True}})])
+        t=a.start(pid,Chat(message='Only status.',mode='provider',read_requests=[scope('thermal',r)],read_execution='model'),background=False)
+>       assert t['status']=='succeeded',t.get('error')
+E       AssertionError: Cannot offer fact selection without a selected numeric read
+E       assert 'failed' == 'succeeded'
+E         
+E         - succeeded
+E         + failed
+
+tests\test_agent_nonnumeric.py:119: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_actions.py::test_status_only_plan_never_offers_numeric_limitation_substitute
+FAILED tests/test_agent_nonnumeric.py::test_foreign_review_is_rejected_and_model_mode_can_submit_only_current_review
+2 failed, 22 passed, 1 warning in 29.80s

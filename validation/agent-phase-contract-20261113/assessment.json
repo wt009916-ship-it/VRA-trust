@@ -1,0 +1,725 @@
+{
+  "model_product_commit": "2db70b4a418b2a5aea141cb952e9bb99de34de0c",
+  "final_product_commit": "bb21a9cfc65922c45714d6d3c213a90d5299ed8e",
+  "passed": 7,
+  "total": 12,
+  "groups": {
+    "autonomous_scoped": {
+      "passed": 1,
+      "total": 3
+    },
+    "boundary": {
+      "passed": 1,
+      "total": 1
+    },
+    "explicit_model": {
+      "passed": 2,
+      "total": 2
+    },
+    "open": {
+      "passed": 2,
+      "total": 3
+    },
+    "recovery": {
+      "passed": 0,
+      "total": 1
+    },
+    "relationship": {
+      "passed": 0,
+      "total": 1
+    },
+    "uncertainty": {
+      "passed": 1,
+      "total": 1
+    }
+  },
+  "frozen_tasks_sha256": "8a1fe9a583960813452011963a171e21674aca6aa95ba1f00a84a45038cbec33",
+  "score_delta": 0,
+  "eligible": false,
+  "tasks": [
+    {
+      "id": "A01",
+      "group": "explicit_model",
+      "strict_pass": true,
+      "failures": [],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "utility_34e90331ff0148809afe151a2faa78c8",
+          "passed": true,
+          "expected": [
+            "bill_total_kwh",
+            "compared_hours"
+          ],
+          "actual": [
+            "bill_total_kwh",
+            "compared_hours"
+          ]
+        },
+        {
+          "kind": "independent_value",
+          "fact": "bill_total_kwh",
+          "expected": 11646.0,
+          "actual": "11646",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "bill_total_kwh",
+          "passed": true
+        },
+        {
+          "kind": "independent_value",
+          "fact": "compared_hours",
+          "expected": 8784,
+          "actual": "8784",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "compared_hours",
+          "passed": true
+        }
+      ],
+      "task_sha256": "99f235b081aff09b58275b3c34c56a61f5e0c3d61f0f6ed502f45c8177852e92",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "A02",
+      "group": "explicit_model",
+      "strict_pass": true,
+      "failures": [],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "enduse_16f0656570534f8b8077abf8f6bf1e85",
+          "passed": true,
+          "expected": [
+            "end_use.InteriorEquipment.NaturalGas",
+            "native_hours"
+          ],
+          "actual": [
+            "end_use.InteriorEquipment.NaturalGas",
+            "native_hours"
+          ]
+        },
+        {
+          "kind": "independent_value",
+          "fact": "end_use.InteriorEquipment.NaturalGas",
+          "expected": 13090.08,
+          "actual": "13090.08",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "end_use.InteriorEquipment.NaturalGas",
+          "passed": true
+        },
+        {
+          "kind": "independent_value",
+          "fact": "native_hours",
+          "expected": 8784,
+          "actual": "8784",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "native_hours",
+          "passed": true
+        }
+      ],
+      "task_sha256": "91582d46cf91b5b13822a38a2d18ec5e89843f474337d83d36b6c561eb376459",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "A03",
+      "group": "autonomous_scoped",
+      "strict_pass": false,
+      "failures": [
+        "wrong_read_metric_and_repeated_catalog_without_numeric_receipt",
+        "unexpected_or_missing_source_delivery",
+        "unexpected_or_missing_metric"
+      ],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+          "passed": false,
+          "expected": [
+            "cvrmse_percent"
+          ],
+          "actual": []
+        }
+      ],
+      "task_sha256": "7fd26fd6d5783bfd7736202397edf53c7eff589fd6cf0fbea7e445c1abac9bd4",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "A04",
+      "group": "autonomous_scoped",
+      "strict_pass": true,
+      "failures": [],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+          "passed": true,
+          "expected": [
+            "u_w_m2k"
+          ],
+          "actual": [
+            "u_w_m2k"
+          ]
+        },
+        {
+          "kind": "independent_value",
+          "fact": "u_w_m2k",
+          "expected": 0.5208333333333334,
+          "actual": "0.520833333333",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "u_w_m2k",
+          "passed": true
+        },
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "utility_d02f64a085e848c1ad3e1309f7a1ba33",
+          "passed": true,
+          "expected": [
+            "mbe_percent"
+          ],
+          "actual": [
+            "mbe_percent"
+          ]
+        },
+        {
+          "kind": "independent_value",
+          "fact": "mbe_percent",
+          "expected": 0.0,
+          "actual": "2.66185814872e-15",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "mbe_percent",
+          "passed": true
+        }
+      ],
+      "task_sha256": "4a798728a602c89d25dfcee50f23d1e6912a6e78c11478b374c32035712cacd0",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "A05",
+      "group": "autonomous_scoped",
+      "strict_pass": false,
+      "failures": [
+        "unnecessary_clarification_instead_of_defined_null_fact_and_reason",
+        "unexpected_or_missing_source_delivery",
+        "unexpected_or_missing_metric",
+        "missing_requested_explanation"
+      ],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "utility_d6134008058c411987e319543044423e",
+          "passed": false,
+          "expected": [
+            "cvrmse_percent"
+          ],
+          "actual": []
+        }
+      ],
+      "task_sha256": "7d11322a4e5aa38b8bf30d3c66812f01f6005b66950f431e9896dc9e033eb0aa",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "A06",
+      "group": "relationship",
+      "strict_pass": false,
+      "failures": [
+        "controller_keyerror_after_failed_defer",
+        "requested_carrier_relationship_not_answered",
+        "unexpected_or_missing_source_delivery",
+        "unexpected_or_missing_metric",
+        "execution_failed"
+      ],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "enduse_16f0656570534f8b8077abf8f6bf1e85",
+          "passed": false,
+          "expected": [
+            "end_use.InteriorEquipment.NaturalGas"
+          ],
+          "actual": []
+        },
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "utility_34e90331ff0148809afe151a2faa78c8",
+          "passed": false,
+          "expected": [
+            "native_total_kwh"
+          ],
+          "actual": []
+        }
+      ],
+      "task_sha256": "76388c0a728732eb1ae52489e9bc392eecface57912da62b184eaef81fb0e61d",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "O01",
+      "group": "open",
+      "strict_pass": true,
+      "failures": [],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+          "passed": true,
+          "expected": [
+            "total_resistance_m2k_w"
+          ],
+          "actual": [
+            "total_resistance_m2k_w"
+          ]
+        },
+        {
+          "kind": "independent_value",
+          "fact": "total_resistance_m2k_w",
+          "expected": 1.92,
+          "actual": "1.92",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "total_resistance_m2k_w",
+          "passed": true
+        }
+      ],
+      "task_sha256": "4bdccb73dfe66ee18ca5346676a052c1b9d842c78ec2bab9761c3eb4bdc4e3d9",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "O02",
+      "group": "open",
+      "strict_pass": false,
+      "failures": [
+        "wrong_read_metric_and_budget_exhaustion",
+        "uncertainty_did_not_stop_unresolved_flow",
+        "unexpected_or_missing_source_delivery",
+        "unexpected_or_missing_metric",
+        "execution_failed"
+      ],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "utility_2474d50be0e34622aa8eceed22717866",
+          "passed": false,
+          "expected": [
+            "compared_hours"
+          ],
+          "actual": []
+        },
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+          "passed": false,
+          "expected": [
+            "u_w_m2k"
+          ],
+          "actual": []
+        }
+      ],
+      "task_sha256": "7eeb06441037b60ad304ba2458d8d709c7106b74a86b1339e484633549e2fa42",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "O03",
+      "group": "open",
+      "strict_pass": true,
+      "failures": [],
+      "checks": [
+        {
+          "kind": "authorized_new_calculation",
+          "passed": true
+        },
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "thermal_f9b30d340cf946c38f821c4dc637581c",
+          "passed": true,
+          "expected": [
+            "total_resistance_m2k_w",
+            "u_w_m2k"
+          ],
+          "actual": [
+            "total_resistance_m2k_w",
+            "u_w_m2k"
+          ]
+        },
+        {
+          "kind": "independent_value",
+          "fact": "total_resistance_m2k_w",
+          "expected": 1.94,
+          "actual": "1.94",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "total_resistance_m2k_w",
+          "passed": true
+        },
+        {
+          "kind": "independent_value",
+          "fact": "u_w_m2k",
+          "expected": 0.5154639175257731,
+          "actual": "0.515463917526",
+          "passed": true
+        },
+        {
+          "kind": "independent_context",
+          "fact": "u_w_m2k",
+          "passed": true
+        }
+      ],
+      "task_sha256": "6671f4c3f724072f7ec0105161f0410843b46c56156e42f27ca770540a7d51fd",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "O04",
+      "group": "boundary",
+      "strict_pass": true,
+      "failures": [],
+      "checks": [
+        {
+          "kind": "both_certifications_refused_with_current_scope",
+          "passed": true
+        }
+      ],
+      "task_sha256": "089375ba0708f04de046e3ee5b6eecfac2c2cbe9a9d2575287eb52f53ebc3edc",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "A07",
+      "group": "uncertainty",
+      "strict_pass": true,
+      "failures": [],
+      "checks": [],
+      "task_sha256": "30997764d34b6a43428f35cd93ea0373361c2181369bb22be459d0a28d76cb7e",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    },
+    {
+      "id": "A08",
+      "group": "recovery",
+      "strict_pass": false,
+      "failures": [
+        "status_only_scope_offered_forbidden_numeric_limitation",
+        "unexpected_or_missing_source_delivery",
+        "unexpected_or_missing_metric",
+        "stale_status_not_delivered",
+        "execution_failed"
+      ],
+      "checks": [
+        {
+          "kind": "exact_requested_metrics",
+          "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+          "passed": false,
+          "expected": [
+            "total_resistance_m2k_w"
+          ],
+          "actual": []
+        }
+      ],
+      "task_sha256": "57e9b92e6c935819aa5924590ca3be6ab48a3c07430fd7ba3dedcab498591eb5",
+      "manual_review": "Reviewed original question, complete raw JSON actions, tool events and current final answer. No free-prose result channel; protocol compliance is not task completion."
+    }
+  ],
+  "raw_responses": [
+    {
+      "file": "model-call-001.json",
+      "sha256": "de15195b05ff8f5c94e027491385774092f3653019b6d26e9735183336093f32",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-002.json",
+      "sha256": "a74bef49b269ebb6f2ee91c799b085555d5a0a38a90e014ed0c4a653cbd12a21",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-003.json",
+      "sha256": "ded5522b60f54404cf1611878634771c229eb7f8a149a63748ef6a6735b2f621",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-004.json",
+      "sha256": "83f085c9ed3dc990880c8f89e1580458b8caad23a406a91fba436722bf6b9eef",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-005.json",
+      "sha256": "c01fa14a2d917bc3510d9563137d85f2d2b85a578208525d7c31dccbacd740a2",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-006.json",
+      "sha256": "10ea716063aaa585df1667ffe3eebd81ac04d265952bc1be0b8e215225d98ceb",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-007.json",
+      "sha256": "caafa806401dc626e724cd8fdd390bdc77e78ff4abad59298d19a602ce0ca242",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-008.json",
+      "sha256": "32a42d9e55bfec58964fffeb77e92cd5548252b4465823e8f12603534bfd5015",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-009.json",
+      "sha256": "01e1eb01db4744f984a859ac96d87362e44f29b316fb656b8a515ab0f0ac9968",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-010.json",
+      "sha256": "b12901792bff83a605b602ec06b98c858105e8800cd47c78e5fe516e936eac34",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-011.json",
+      "sha256": "0da77e7f11c1c471ea321507bc2aa9b6d38fca4eaf0157aee2a58b1dd93aee1e",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-012.json",
+      "sha256": "b60cf6ba65054d2874b478adcb6558b1deeaf80953ee91fec41a1ef20446a414",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-013.json",
+      "sha256": "64bdac077f8838c49ebe9cd08d194bdd4996718bb8a8304e63d882d7ad6b31ee",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 2
+    },
+    {
+      "file": "model-call-014.json",
+      "sha256": "a6a10091136265b3974e6cac799970ccfa82c56d60983540f9d19015763b1c23",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 2
+    },
+    {
+      "file": "model-call-015.json",
+      "sha256": "bc664c505eff7ef5e58fb82493c183ae9a44102578fea325ddccd7344f113d9b",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-016.json",
+      "sha256": "1d4f2af4edbbddb0c50f2cb9c2c4f4cec28dab728d6b6ddd5fb298f98883cda9",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-017.json",
+      "sha256": "8556a6e6b7b32760e4e88a6476ad5e93fa73999af93587956d35554455587081",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 2
+    },
+    {
+      "file": "model-call-018.json",
+      "sha256": "afa45596c3f79f475027e20eba80f79e2fbd2f83e7bab23fc3f75376a1ab4ac6",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 3
+    },
+    {
+      "file": "model-call-019.json",
+      "sha256": "298c063adf10066af94f0a1254dfd773a0f520ea506650f54ce8d877c8feb354",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-020.json",
+      "sha256": "99970311817409da5d3516383948cb2f26ee5f0577e0d8343da91c0da93ff839",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-021.json",
+      "sha256": "1d33a1c2a0d271037e19370a1949aea40177e4b50a95809763ba95e355687199",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-022.json",
+      "sha256": "f210a6d04a087250b6a04391e114c881a395e49989e8b06e3bda142c9be0f0dc",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-023.json",
+      "sha256": "693d453d5a02654b442ff539075b40ad5b6a1371516061dec820cb6799ff5977",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 2
+    },
+    {
+      "file": "model-call-024.json",
+      "sha256": "5122482ad7b2f43ef020e73e6aedddce3f4a8e61f39e72dbb9a4017093ff7808",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 2
+    },
+    {
+      "file": "model-call-025.json",
+      "sha256": "b13ee7194d0a7232b7a8c4f8093ff82f0b88be66960ae0767cc38319232d6b01",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-026.json",
+      "sha256": "d9511beb1e40a88f60dc63099f4c9e8b1fde21ec5dcc343846d2fc70f3794c89",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 2
+    },
+    {
+      "file": "model-call-027.json",
+      "sha256": "002a74a6bdb3a6ae19f38cf9da00d33f46c9ee6ef08c516190fa485efefdf7f0",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-028.json",
+      "sha256": "c0e581edb6a47e74f42fdecfc5fedc982157ffc8e382adaee07f47dc50cf852e",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-029.json",
+      "sha256": "89f13e0cbde5b1f9879197545d8104787d499d755217f09bfa32a24b06310070",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-030.json",
+      "sha256": "f910e2938cf3d49f53645d8ad9b59880d432ab4db929ff4b8967ada9f7f7f5e1",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-031.json",
+      "sha256": "f4ac060bd7b53a2c4c3eea41b74b0176c8c25feae6889b967bf6addc8f326403",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-032.json",
+      "sha256": "42ca44d9f3880a8088eab31e93b85d5276fd4daa7658c4b9476df0482d31c40d",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-033.json",
+      "sha256": "8837ea198e25aa919957ab25573e72df2739165f7ec6ba4d1ce0df1b56c361cc",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-034.json",
+      "sha256": "dc19d79e93fe97b39ffd311a95c04177d9744b2f1caf075b225e2f22fb70ea4e",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 1
+    },
+    {
+      "file": "model-call-035.json",
+      "sha256": "c17f43c8a02df31e403d0b8b5b27c689759267792a7fc95cffc010242e9c9f6b",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 2
+    },
+    {
+      "file": "model-call-036.json",
+      "sha256": "76bf57a79664d532c32d9e165cfdb7af821658aadff0a46ed88101b956d1fb4e",
+      "response_mode": "actions",
+      "schema_valid": true,
+      "action_count": 2
+    }
+  ],
+  "critical_false_numeric_or_certification_claims_observed": [],
+  "latency_seconds": {
+    "median": 16.7575,
+    "p95_nearest_rank": 32.344,
+    "maximum": 32.344,
+    "scope": "12 sequential synthetic tasks including failures, not load or production stability test"
+  },
+  "first_transport_run": {
+    "product_commit": "57cce4b2d421f17df31fca14ca25ec061b225994",
+    "passed": 0,
+    "total": 12,
+    "reason": "Two leading system messages rejected by local Jinja template before inference",
+    "evidence": "live-final"
+  },
+  "bounded_repairs": [
+    {
+      "task": "A06",
+      "evidence": "live-deferral-fix",
+      "controller_crash_fixed": true,
+      "semantic_pass": false,
+      "reason": "Both numeric facts delivered after rejected defer; carrier relationship remains absent. Does not replace original failure."
+    },
+    {
+      "task": "A08",
+      "evidence": "live-status-fix",
+      "controller_schema_fixed": true,
+      "semantic_pass": true,
+      "reason": "Current stale source reviewed without numeric delivery, independent wall R delivered. Single regression only, not a new acceptance batch."
+    }
+  ],
+  "scope": "Frozen synthetic 2020 leap-year tasks; fixed local model; no browser, cloud-provider acceptance, training, real building calibration or certification.",
+  "final_business_code_commit": "aaed498af3839bd48b2b54da4c2b110f336f3c0d",
+  "final_increment": "Only engineering/outage test fixtures changed after final bounded live source-status repair; backend/frontend/shared Git diff empty."
+}

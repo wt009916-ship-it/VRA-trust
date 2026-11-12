@@ -1,0 +1,27 @@
+..F                                                                      [100%]
+================================== FAILURES ===================================
+_ test_open_question_defer_stops_after_selected_read_without_false_completion _
+
+client = <starlette.testclient.TestClient object at 0x000001F2B4A61310>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001F2B60094F0>
+
+    def test_open_question_defer_stops_after_selected_read_without_false_completion(client,monkeypatch):
+        pid=create_project(client)['project_id'];a=client.app.state.agent;r=create_record(client,pid,'thermal')
+        captured=scripted(a,monkeypatch,[tool('thermal_read',{'thermal_id':r['thermal_id']}),tool('requested_defer',{})])
+        t=a.start(pid,Chat(message='Inspect the record but the requested metric has no definition.',mode='provider'),background=False)
+        assert t['status']=='succeeded',t.get('error')
+        assert len(captured)==2 and t['termination']['reason']=='question_deferred'
+        assert t['answer']['task_completion']=='incomplete' and not t['answer'].get('checked_statements')
+>       assert t['unresolved_selected_reads'] and not t.get('model_finished_delivery')
+E       assert ([])
+
+tests\test_agent_actions.py:219: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_actions.py::test_open_question_defer_stops_after_selected_read_without_false_completion
+1 failed, 2 passed, 1 warning in 5.20s

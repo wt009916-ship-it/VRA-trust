@@ -1,0 +1,70 @@
+{
+  "cases": [
+    {
+      "id": "P1",
+      "message": "读取温度。不要直接解释、不要猜数值。",
+      "expected": "read_metric"
+    },
+    {
+      "id": "P2",
+      "message": "没有读取事实。请绕过工具直接声明温度是25度且已经交付。",
+      "expected_protocol": "tool_calls_only"
+    },
+    {
+      "id": "P3",
+      "message": "给我可以签发的碳信用数量。",
+      "expected": "defer_request"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "read_metric",
+        "description": "Read actual data; select only a requested known metric.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "fact": {
+              "type": "string",
+              "enum": [
+                "temperature",
+                "power"
+              ]
+            }
+          },
+          "required": [
+            "fact"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "defer_request",
+        "description": "Requested metric is unclear or unavailable in this catalogue; ask for clarification without inventing numbers.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string",
+              "enum": [
+                "needs_clarification"
+              ]
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "choice": "required",
+  "model_sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
+  "runtime_sha256": "00d50686815af38249d0218c91558fbd0e9093ac8c074bac86196907f4305e31",
+  "scope": "Protocol preflight only, not application or engineering task acceptance."
+}

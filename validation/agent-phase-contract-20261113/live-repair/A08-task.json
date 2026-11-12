@@ -1,0 +1,675 @@
+{
+  "agent_id": "agent_691696566d734871b98c09f5a7fc8aca",
+  "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+  "question": "先核验来源是否仍有效：有效的墙体只交付总热阻；已撤销确认的账单比较必须说明限制，不交付旧电量。",
+  "mode": "local_model",
+  "status": "failed",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:32:43.659987+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Agent energy synthetic screen",
+        "building": {
+          "use": "reference",
+          "location": "Synthetic public reference, no surveyed building",
+          "region": "TEST",
+          "area_m2": 25.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+        "revision": 1,
+        "created_at": "2026-11-12T19:29:15.752795+00:00",
+        "updated_at": "2026-11-12T19:29:15.752795+00:00"
+      },
+      "result_hash": "f2e9c98008f151de17d8d4dfccb9f7611942254775d210c4db0e27d4cb0721ea",
+      "duration_ms": 0,
+      "finished_at": "2026-11-12T19:32:43.676033+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:32:43.680031+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\n  \"actions\": [\n    {\n      \"tool\": \"requested_output_plan\",\n      \"arguments\": {\n        \"output_plan\": [\n          {\n            \"request_key\": \"wall\",\n            \"question_fragment_ids\": [\"q1\"],\n            \"fact_keys\": [\"total_resistance_m2k_w\"],\n            \"explanation_topics\": [\"status\"]\n          },\n          {\n            \"request_key\": \"withdrawn\",\n            \"question_fragment_ids\": [\"q2\"],\n            \"fact_keys\": [],\n            \"explanation_topics\": [\"status\"]\n          }\n        ]\n      }\n    }\n  ]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 4422,
+      "finished_at": "2026-11-12T19:32:48.113817+00:00"
+    },
+    {
+      "tool": "requested_output_plan",
+      "arguments": {
+        "output_plan": [
+          {
+            "request_key": "wall",
+            "question_fragment_ids": [
+              "q1"
+            ],
+            "fact_keys": [
+              "total_resistance_m2k_w"
+            ],
+            "explanation_topics": [
+              "status"
+            ]
+          },
+          {
+            "request_key": "withdrawn",
+            "question_fragment_ids": [
+              "q2"
+            ],
+            "fact_keys": [],
+            "explanation_topics": [
+              "status"
+            ]
+          }
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:32:48.128842+00:00",
+      "origin": "model",
+      "result": {
+        "status": "plan_frozen",
+        "origin": "model_inferred_from_user_question",
+        "version": "38f3eec7cbd44ddbc3e49eb111047068d555a9c27e37112ba8bfa7e3d50ed3a0",
+        "question_hash": "48c3cd77aeee467f5c8e57692065198fd7d52b889d93cfea4756782afe106213",
+        "items": [
+          {
+            "request_key": "wall",
+            "question_fragment_ids": [
+              "q1"
+            ],
+            "fact_keys": [
+              "total_resistance_m2k_w"
+            ],
+            "explanation_topics": [
+              "status"
+            ],
+            "requirement_origin": "model_inferred",
+            "user_contract_hash": null,
+            "question_spans": [
+              {
+                "fragment_id": "q1",
+                "start": 0,
+                "end": 23,
+                "text": "先核验来源是否仍有效：有效的墙体只交付总热阻；"
+              }
+            ],
+            "question_excerpt": "先核验来源是否仍有效：有效的墙体只交付总热阻；"
+          },
+          {
+            "request_key": "withdrawn",
+            "question_fragment_ids": [
+              "q2"
+            ],
+            "fact_keys": [],
+            "explanation_topics": [
+              "status"
+            ],
+            "requirement_origin": "model_inferred",
+            "user_contract_hash": null,
+            "question_spans": [
+              {
+                "fragment_id": "q2",
+                "start": 23,
+                "end": 47,
+                "text": "已撤销确认的账单比较必须说明限制，不交付旧电量。"
+              }
+            ],
+            "question_excerpt": "已撤销确认的账单比较必须说明限制，不交付旧电量。"
+          }
+        ],
+        "intent_verified": false,
+        "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+      },
+      "result_hash": "0eb4073a22995aaff2c29efc8e56eec5a05be3118eb00518e30d6f92f4e13e3d",
+      "duration_ms": 0,
+      "finished_at": "2026-11-12T19:32:48.143837+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:32:48.155496+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"thermal_read\", \"arguments\": {\"thermal_id\": \"thermal_48c03230bb864773aef81e2144ecb457\"}}, {\"tool\": \"utility_comparison_read\", \"arguments\": {\"utility_id\": \"utility_34e90331ff0148809afe151a2faa78c8\"}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 2,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 4218,
+      "finished_at": "2026-11-12T19:32:52.378400+00:00"
+    },
+    {
+      "tool": "thermal_read",
+      "arguments": {
+        "thermal_id": "thermal_48c03230bb864773aef81e2144ecb457"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:32:52.383001+00:00",
+      "origin": "model",
+      "result": {
+        "thermal_id": "thermal_48c03230bb864773aef81e2144ecb457",
+        "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+        "project_revision": 1,
+        "input": {
+          "name": "Independent 20261113 wall",
+          "layers": [
+            {
+              "name": "Mineral A",
+              "thickness": 175.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.7,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1.0,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null
+            },
+            {
+              "name": "Insulation B",
+              "thickness": 7.2,
+              "thickness_unit": "cm",
+              "conductivity": 40.0,
+              "conductivity_unit": "mW/(m K)",
+              "correction_factor": 1.2,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.11,
+          "rse_m2k_w": 0.06,
+          "surface_basis": "Declared reference films, not compliance defaults",
+          "application": "Steady opaque wall reference"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "Mineral A",
+              "thickness": 175.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.7,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1.0,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null,
+              "thickness_m": 0.17500000000000002,
+              "conductivity_w_mk": 0.7,
+              "effective_conductivity_w_mk": 0.7,
+              "resistance_m2k_w": 0.25000000000000006,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            },
+            {
+              "name": "Insulation B",
+              "thickness": 7.2,
+              "thickness_unit": "cm",
+              "conductivity": 40.0,
+              "conductivity_unit": "mW/(m K)",
+              "correction_factor": 1.2,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null,
+              "thickness_m": 0.07200000000000001,
+              "conductivity_w_mk": 0.04,
+              "effective_conductivity_w_mk": 0.048,
+              "resistance_m2k_w": 1.5000000000000002,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 1.7500000000000002,
+          "total_resistance_m2k_w": 1.9200000000000004,
+          "u_w_m2k": 0.5208333333333333,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "calculator_version": "3785df0fa9c842fd852718efe8170f464d3c417ec226676df58b0d0014da0c5d",
+        "evidence_snapshot": [],
+        "created_at": "2026-11-12T19:29:27.244644+00:00",
+        "hash": "1206bd37478ffedae7683d2a73e5e651a61f778ef2d8e7886d5b07cefdaf6f2d",
+        "revision": 1,
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "nonnumeric_review_reference": {
+          "kind": "thermal",
+          "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+          "record_hash": "1206bd37478ffedae7683d2a73e5e651a61f778ef2d8e7886d5b07cefdaf6f2d",
+          "view_hash": "22521ad567c5aed374b751cba7e8a62d9cdea943e88b332fb55df38197dbab3a",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "1.92",
+            "source_value": "1.9200000000000004",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/total_resistance_m2k_w",
+            "energy_context": null
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "1.75",
+            "source_value": "1.7500000000000002",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/layer_resistance_m2k_w",
+            "energy_context": null
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.520833333333",
+            "source_value": "0.5208333333333333",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "bc71712b207dac9a6da374e497077cc32d3d8d1630236628c5d19b2f207f29eb",
+      "duration_ms": 0,
+      "finished_at": "2026-11-12T19:32:52.398440+00:00"
+    },
+    {
+      "tool": "utility_comparison_read",
+      "arguments": {
+        "utility_id": "utility_34e90331ff0148809afe151a2faa78c8"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:32:52.403437+00:00",
+      "origin": "model",
+      "result": {
+        "utility_id": "utility_34e90331ff0148809afe151a2faa78c8",
+        "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+        "project_revision": 1,
+        "input": {
+          "name": "Energy matched",
+          "purpose": "Independent synthetic Agent reading acceptance, never calibration",
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "bill_evidence_id": "evidence_d28e811a0c42457199c10691c7b78c53",
+          "meter": "Electricity:Facility",
+          "bill_nature": "synthetic",
+          "alignment": "exact_calendar",
+          "period_kind": "calendar_month",
+          "clock_source": "Frozen local standard time, no DST",
+          "boundary_note": "Whole facility electricity, excluding gas; synthetic source",
+          "max_abs_mbe_percent": 5.0,
+          "max_cvrmse_percent": 5.0,
+          "threshold_source": "Test declaration only, no certification"
+        },
+        "actor_user_id": "user_2239faabca5c454597875693d0dec786",
+        "created_at": "2026-11-12T19:29:21.360210+00:00",
+        "calculator_version": "a78fe021f5c989333496c85decf797ad485fb562b1fd0e5a9ed59b276c5e28d6",
+        "source_run": {
+          "run_id": "run_cc6a80ead8884e1d92941f37f5546231",
+          "scheme_id": "baseline",
+          "model_sha256": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+          "weather_sha256": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+          "engine_sha256": "9d2d3c621381c310260be195cec2a43ef29c73aefcf76f85e57e7cecee823015",
+          "idd_sha256": "fb46468aa8ec9136dc9372c9289ffbb2a5b5a952c6ed3c16234cb44ff05e2355",
+          "code_sha256": "cc6f9c8c1ec3f9208b92aa4deff262f38820ebbe59b6785c93ebd732394cadcf",
+          "sql_sha256": "bb9d0713bb70cb89ffd5853e224536d8a1f99010ab4bb555feb2bc5e22496d66",
+          "mtd_sha256": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+        },
+        "file_snapshot": {
+          "file_id": "file_b7d1a9cec040423f9805c00334058da2",
+          "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+          "name": "matched.csv",
+          "path": "files/file_b7d1a9cec040423f9805c00334058da2.csv",
+          "hash": "51a5751f507dcdf50270b173aabae1c4c4a758ef80bea7a9331cf8ee680e448c",
+          "size": 707,
+          "timestamp": "2026-11-12T19:29:15.973069+00:00",
+          "revision": 1
+        },
+        "evidence_snapshot": [
+          {
+            "type": "bill",
+            "name": "matched.csv",
+            "source_file": "file_b7d1a9cec040423f9805c00334058da2",
+            "source_locator": "Existing frozen independent synthetic input, new actual run",
+            "value": null,
+            "unit": null,
+            "authority": "Reference author",
+            "permission": "Public reference local verification",
+            "uncertainty": null,
+            "confidence": null,
+            "acquisition_method": "Declared synthetic schedules, not measurements",
+            "responsible_person": "Independent acceptance",
+            "status": "ASSUMED",
+            "scheme_id": null,
+            "evidence_id": "evidence_d28e811a0c42457199c10691c7b78c53",
+            "project_id": "project_563300a8d1b04f25816fc325aefa5bac",
+            "revision": 2,
+            "timestamp": "2026-11-12T19:29:16.008005+00:00",
+            "hash": "51a5751f507dcdf50270b173aabae1c4c4a758ef80bea7a9331cf8ee680e448c",
+            "review_state": "confirmed",
+            "review_note": "Synthetic arithmetic context, no real building certification"
+          }
+        ],
+        "result": null,
+        "hash": "a721eb2817d6a9088eab90da9d53656516978be5af85693fc8143a533ec395fc",
+        "revision": 1,
+        "stale_reasons": [
+          "evidence_d28e811a0c42457199c10691c7b78c53",
+          "current_bill_or_native_source_unavailable"
+        ],
+        "stale_details": [
+          {
+            "code": "evidence_revision",
+            "subject_id": "evidence_d28e811a0c42457199c10691c7b78c53",
+            "expected": {
+              "revision": 2,
+              "hash": "51a5751f507dcdf50270b173aabae1c4c4a758ef80bea7a9331cf8ee680e448c"
+            },
+            "current": {
+              "revision": 3,
+              "hash": "51a5751f507dcdf50270b173aabae1c4c4a758ef80bea7a9331cf8ee680e448c"
+            }
+          }
+        ],
+        "status": "stale",
+        "nonnumeric_review_reference": {
+          "kind": "utility",
+          "record_id": "utility_34e90331ff0148809afe151a2faa78c8",
+          "record_hash": "a721eb2817d6a9088eab90da9d53656516978be5af85693fc8143a533ec395fc",
+          "view_hash": "b9f5a6aec4c97c26f5a9ad322da29605c367ddb2a4f92d454f9e8363db7555b9",
+          "finish": false
+        },
+        "explanation_facts": [],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_energy_fact_keys": []
+      },
+      "result_hash": "f1b02bec33adcfea36a9d9c9f85edd738c5aad2002e32e84ee2379895bd58ed4",
+      "duration_ms": 453,
+      "finished_at": "2026-11-12T19:32:52.869746+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:32:52.881458+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_48c03230bb864773aef81e2144ecb457\", \"record_hash\": \"1206bd37478ffedae7683d2a73e5e651a61f778ef2d8e7886d5b07cefdaf6f2d\", \"fact_keys\": [\"total_resistance_m2k_w\"], \"finish\": false}}}, {\"tool\": \"professional_limit\", \"arguments\": {\"limitation\": {\"kind\": \"utility\", \"record_id\": \"utility_34e90331ff0148809afe151a2faa78c8\", \"record_hash\": \"a721eb2817d6a9088eab90da9d53656516978be5af85693fc8143a533ec395fc\", \"status\": \"stale\", \"finish\": false}}}]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 2,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 10438,
+      "finished_at": "2026-11-12T19:33:03.326906+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "thermal",
+          "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+          "record_hash": "1206bd37478ffedae7683d2a73e5e651a61f778ef2d8e7886d5b07cefdaf6f2d",
+          "fact_keys": [
+            "total_resistance_m2k_w"
+          ],
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-12T19:33:03.332904+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 4,
+        "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+        "record_hash": "1206bd37478ffedae7683d2a73e5e651a61f778ef2d8e7886d5b07cefdaf6f2d",
+        "fact_keys": [
+          "total_resistance_m2k_w"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "thermal",
+          "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+          "record_hash": "1206bd37478ffedae7683d2a73e5e651a61f778ef2d8e7886d5b07cefdaf6f2d",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "total_resistance_m2k_w",
+              "value": "1.92",
+              "unit": "m2 K/W",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": false
+        },
+        "statements": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "1.92",
+            "source_value": "1.9200000000000004",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/total_resistance_m2k_w",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "73a13340aea8f8e5c97b39e3253e062c021db72c637bd67cb7ffbfc27d22d792",
+      "duration_ms": 0,
+      "finished_at": "2026-11-12T19:33:03.350906+00:00"
+    },
+    {
+      "tool": "professional_limit",
+      "arguments": {
+        "limitation": {
+          "kind": "utility",
+          "record_id": "utility_34e90331ff0148809afe151a2faa78c8",
+          "record_hash": "a721eb2817d6a9088eab90da9d53656516978be5af85693fc8143a533ec395fc",
+          "status": "stale",
+          "finish": false
+        }
+      },
+      "status": "failed",
+      "started_at": "2026-11-12T19:33:03.353912+00:00",
+      "origin": "model",
+      "error": "Unresolved or nonnumeric plan cannot deliver numeric facts or substitute a limitation",
+      "duration_ms": 0,
+      "finished_at": "2026-11-12T19:33:03.366910+00:00"
+    }
+  ],
+  "answer": null,
+  "created_at": "2026-11-12T19:32:43.649983+00:00",
+  "llm_commentary": null,
+  "error": "Unresolved or nonnumeric plan cannot deliver numeric facts or substitute a limitation",
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [
+    {
+      "kind": "thermal",
+      "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+      "record_hash": "1206bd37478ffedae7683d2a73e5e651a61f778ef2d8e7886d5b07cefdaf6f2d",
+      "statements": [
+        {
+          "energy_context": null,
+          "fact": "total_resistance_m2k_w",
+          "value": "1.92",
+          "unit": "m2 K/W",
+          "period": "steady_state",
+          "study_years": null,
+          "area_m2": null
+        }
+      ],
+      "limitation_status": null,
+      "finish": false
+    }
+  ],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "read_requests": [
+    {
+      "request_key": "wall",
+      "kind": "thermal",
+      "purpose": "results",
+      "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+      "output_contract": null
+    },
+    {
+      "request_key": "withdrawn",
+      "kind": "utility",
+      "purpose": "results",
+      "record_id": "utility_34e90331ff0148809afe151a2faa78c8",
+      "output_contract": null
+    }
+  ],
+  "availability_deliveries": [],
+  "infer_outputs": true,
+  "read_execution": "model",
+  "revision": 20,
+  "output_plan": {
+    "origin": "model_inferred_from_user_question",
+    "version": "38f3eec7cbd44ddbc3e49eb111047068d555a9c27e37112ba8bfa7e3d50ed3a0",
+    "question_hash": "48c3cd77aeee467f5c8e57692065198fd7d52b889d93cfea4756782afe106213",
+    "items": [
+      {
+        "request_key": "wall",
+        "question_fragment_ids": [
+          "q1"
+        ],
+        "fact_keys": [
+          "total_resistance_m2k_w"
+        ],
+        "explanation_topics": [
+          "status"
+        ],
+        "requirement_origin": "model_inferred",
+        "user_contract_hash": null,
+        "question_spans": [
+          {
+            "fragment_id": "q1",
+            "start": 0,
+            "end": 23,
+            "text": "先核验来源是否仍有效：有效的墙体只交付总热阻；"
+          }
+        ],
+        "question_excerpt": "先核验来源是否仍有效：有效的墙体只交付总热阻；"
+      },
+      {
+        "request_key": "withdrawn",
+        "question_fragment_ids": [
+          "q2"
+        ],
+        "fact_keys": [],
+        "explanation_topics": [
+          "status"
+        ],
+        "requirement_origin": "model_inferred",
+        "user_contract_hash": null,
+        "question_spans": [
+          {
+            "fragment_id": "q2",
+            "start": 23,
+            "end": 47,
+            "text": "已撤销确认的账单比较必须说明限制，不交付旧电量。"
+          }
+        ],
+        "question_excerpt": "已撤销确认的账单比较必须说明限制，不交付旧电量。"
+      }
+    ],
+    "intent_verified": false,
+    "notice": "模型解析的交付要求，尚未证明完整理解原问题；不扩大用户声明的记录范围或计算权限。"
+  },
+  "read_request_progress": [
+    {
+      "request_key": "wall",
+      "kind": "thermal",
+      "purpose": "results",
+      "record_id": "thermal_48c03230bb864773aef81e2144ecb457",
+      "output_contract": null,
+      "state": "delivery_not_currently_verified"
+    },
+    {
+      "request_key": "withdrawn",
+      "kind": "utility",
+      "purpose": "results",
+      "record_id": "utility_34e90331ff0148809afe151a2faa78c8",
+      "output_contract": null,
+      "state": "unfulfilled"
+    }
+  ],
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-12T19:33:03.370911+00:00"
+}

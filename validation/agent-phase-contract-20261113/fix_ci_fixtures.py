@@ -1,0 +1,11 @@
+from pathlib import Path
+root=Path('C:/Users/18483/AppData/Local/Temp/vra-timestep-reliability-20261108')
+p=root/'tests/test_agent_engineering.py';s=p.read_text(encoding='utf-8')
+s=s.replace("keys=numeric['$defs']['Statement']['properties']['fact']['enum']", "variants=numeric['properties']['delivery']['oneOf']\n        keys={key for variant in variants for key in variant['properties']['fact_keys']['items']['enum']}")
+s=s.replace("'statements':[dict(fact=k,value=v,unit=u,period=period,study_years=None,area_m2=None) for k,v,u,period in EXPECTED[p['kind']]],'finish':True", "'fact_keys':[k for k,*_ in EXPECTED[p['kind']]],'finish':True")
+p.write_text(s,encoding='utf-8')
+p=root/'tests/test_agent_service_recovery.py';s=p.read_text(encoding='utf-8')
+s=s.replace("        successes.append(copy.deepcopy(response))\n        return httpx.Response", "        # Fault-injected mock responses follow the active action wire protocol.\n        # This fixture is not actual model inference; all recovery assertions remain.\n        actions=[]\n        for call in response['tool_calls']:\n            arguments=json.loads(call['function']['arguments'])\n            if call['function']['name']=='professional_deliver':\n                delivery=arguments['delivery'];delivery['fact_keys']=[s['fact'] for s in delivery.pop('statements')]\n            actions.append({'tool':call['function']['name'],'arguments':arguments})\n        response={'role':'assistant','content':json.dumps({'actions':actions})}\n        successes.append(copy.deepcopy(response))\n        return httpx.Response")
+s=s.replace("'finish_reason': 'tool_calls'", "'finish_reason': 'stop'")
+p.write_text(s,encoding='utf-8')
+print('Updated two explicit mock fixtures to current fact-selection/action protocol; preserved independent arithmetic, retry counts, side-effect and source checks.')

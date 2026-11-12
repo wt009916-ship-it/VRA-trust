@@ -1,0 +1,18 @@
+Fresh native source succeeded
+Traceback (most recent call last):
+  File "C:\Users\18483\AppData\Local\Temp\vra-timestep-reliability-20261108\validation\agent-phase-contract-20261113\live_acceptance.py", line 169, in <module>
+    else:run()
+         ^^^^^
+  File "C:\Users\18483\AppData\Local\Temp\vra-timestep-reliability-20261108\validation\agent-phase-contract-20261113\live_acceptance.py", line 82, in run
+    for variant in ('matched','bias','cancellation','zero','wrong_year'):records[variant]=compare(variant)
+                                                                                          ^^^^^^^^^^^^^^^^
+  File "C:\Users\18483\AppData\Local\Temp\vra-timestep-reliability-20261108\validation\agent-phase-contract-20261113\live_acceptance.py", line 80, in compare
+    item=request('POST',base+'/utility-comparisons',{'name':name or 'Energy '+variant,'purpose':'Independent synthetic Agent reading acceptance, never calibration','run_id':rid,'bill_evidence_id':ev[variant+'.csv']['evidence_id'],'meter':'Electricity:Facility','bill_nature':'synthetic','alignment':'calendar_pattern' if variant=='wrong_year' else 'exact_calendar','period_kind':'calendar_month','clock_source':'Frozen local standard time, no DST','boundary_note':'Whole facility electricity, excluding gas; synthetic source','max_abs_mbe_percent':5.0,'max_cvrmse_percent':5.0,'threshold_source':'Test declaration only, no certification'})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\18483\AppData\Local\Temp\vra-timestep-reliability-20261108\validation\agent-phase-contract-20261113\live_acceptance.py", line 62, in request
+    if x.status_code>=400:save(out/'setup-error.json',{'method':method,'path':url,'status':x.status_code,'response':x.text});x.raise_for_status()
+                                                                                                                             ^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '409 Conflict' for url 'http://127.0.0.1:59340/api/projects/project_72d32090270547eead285405d5efa6af/utility-comparisons'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409
