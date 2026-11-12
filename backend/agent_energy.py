@@ -93,6 +93,12 @@ def append_facts(record,kind,add):
 def explanation(topic,artifact):
     c=artifact.get('energy_context') or {}
     if not artifact.get('verified'):return '当前来源无法核验；不使用历史数值解释期间或误差，不推测失效原因。'
-    if topic=='period':return '原生及账单期间、时间映射均保留在energy_context；开始包含、结束不包含，原生年度不一定等于账单年份或覆盖期间。'+str(c)
+    if topic=='period':
+        text = '原生年度：' + str(c.get('native_year', '未知')) + '。'
+        if c.get('original_bill_start'):
+            text += '原始账期：' + c['original_bill_start'] + ' 至 ' + c['original_bill_end'] + '；映射模拟期间：' + c['mapped_native_start'] + ' 至 ' + c['mapped_native_end'] + '；映射方式：' + c['alignment'] + '。'
+        elif c.get('native_start'):
+            text += '模拟期间：' + c['native_start'] + ' 至 ' + c['native_end'] + '。'
+        return text + '开始包含、结束不包含；原生年度、账单年份和实际覆盖期间分别核验，参考数据不是实楼校准。'
     if topic=='status':return '所读模型结果或差异指标当前有效；不是实楼校准、认证、原始数据真实性或任务全面完成的证明。'
     return artifact['scope']

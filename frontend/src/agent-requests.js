@@ -26,27 +26,59 @@ export function validateReadRequests(rows,{mode,allowCompute,objective,calculati
     if(r.purpose==='results'&&!r.record_id)throw Error('读取结果必须指定记录编号，不会自动替换为最新记录。');
     const scope=JSON.stringify([r.kind,r.purpose,r.record_id]);
     if(keys.has(r.request_key)||scopes.has(scope))throw Error('读取目标重复，请合并相同目的与范围。');
+    if(row.output_contract){
+      const c=row.output_contract;
+      if(!Array.isArray(c.fact_keys)||!Array.isArray(c.explanation_topics)||c.fact_keys.length>12||c.explanation_topics.length>6||!c.fact_keys.length&&!c.explanation_topics.length||new Set(c.fact_keys).size!==c.fact_keys.length||new Set(c.explanation_topics).size!==c.explanation_topics.length)throw Error('请至少选择一项指标或解释，指标最多12项且不能重复。');
+      if(r.purpose==='availability'&&(c.fact_keys.length||c.explanation_topics.some(t=>!['history','status'].includes(t))))throw Error('可用性检查不能要求数值。');
+      r.output_contract={fact_keys:[...c.fact_keys],explanation_topics:[...c.explanation_topics]};
+    }
     keys.add(r.request_key);scopes.add(scope);return r;
   });
+}
+
+const topicLabels={meaning:'指标含义',area:'面积分母',period:'期间与年份',scope:'适用范围',status:'来源状态',history:'记录历史边界'};
+export function explicitOutputMarkup(entry,purpose) {
+ const topics=purpose==='availability'?['history','status']:entry.topics;
+ return `<p>只锁定勾选的指标与解释主题；自由问题中的其他要求仍需核对。最多12项指标。</p>${purpose==='results'?`<label>数值指标<select data-output-facts multiple size="6">${entry.facts.map(f=>`<option value="${esc(f.key)}">${esc(f.label)}</option>`).join('')}</select></label>`:''}<fieldset><legend>解释主题</legend>${topics.map(t=>`<label><input type="checkbox" data-output-topic value="${esc(t)}">${esc(topicLabels[t]||t)}</label>`).join('')}</fieldset>`;
 }
 
 export function collectReadRequests(host) {
   return [...host.querySelectorAll('[data-read-scope]')].map(row=>({request_key:row.dataset.readScope,
     kind:row.querySelector('[data-read-kind]').value,purpose:row.querySelector('[data-read-purpose]').value,
-    record_id:row.querySelector('[data-read-id]').value}));
+    record_id:row.querySelector('[data-read-id]').value,
+    ...(row.querySelector('[data-explicit-output]')?.checked?{output_contract:{
+      fact_keys:[...(row.querySelector('[data-output-facts]')?.selectedOptions||[])].map(o=>o.value),
+      explanation_topics:[...row.querySelectorAll('[data-output-topic]:checked')].map(o=>o.value)}}:{})}));
 }
 
 export function bindReadRequests(host,pid,action) {
-  let sequence=0;
+  let sequence=0,catalogPromise=null;
   const rows=host.querySelector('[data-read-rows]'),add=host.querySelector('[data-add-read]');
   add.onclick=()=>{
     if(rows.children.length>=6)return;
     sequence++;
-    rows.insertAdjacentHTML('beforeend',`<fieldset data-read-scope="read_${sequence}"><legend>读取目标 ${sequence}</legend><div class="read-scope-grid"><label>专业<select data-read-kind>${Object.entries(readKinds).map(([k,label])=>`<option value="${k}">${label}</option>`).join('')}</select></label><label>目的<select data-read-purpose><option value="availability">检查记录是否存在</option><option value="results">读取指定记录的结果</option></select></label></div><label>指定编号<input data-read-id maxlength="50" spellcheck="false" placeholder="留空表示该专业完整项目目录"></label><div class="read-scope-grid"><button type="button" data-load-records>加载已有记录</button><label>从已有记录选填<select data-existing-record><option value="">先加载记录，或手动输入编号</option></select></label></div><button type="button" data-read-more hidden>更早记录</button><p data-read-note role="status">检查可用性可以留空编号；读取结果必须指定编号。</p><button type="button" data-remove-read>移除此目标</button></fieldset>`);
+    rows.insertAdjacentHTML('beforeend',`<fieldset data-read-scope="read_${sequence}"><legend>读取目标 ${sequence}</legend><div class="read-scope-grid"><label>专业<select data-read-kind>${Object.entries(readKinds).map(([k,label])=>`<option value="${k}">${label}</option>`).join('')}</select></label><label>目的<select data-read-purpose><option value="availability">检查记录是否存在</option><option value="results">读取指定记录的结果</option></select></label></div><label>指定编号<input data-read-id maxlength="50" spellcheck="false" placeholder="留空表示该专业完整项目目录"></label><div class="read-scope-grid"><button type="button" data-load-records>加载已有记录</button><label>从已有记录选填<select data-existing-record><option value="">先加载记录，或手动输入编号</option></select></label></div><button type="button" data-read-more hidden>更早记录</button><p data-read-note role="status">检查可用性可以留空编号；读取结果必须指定编号。</p><label><input type="checkbox" data-explicit-output>锁定本项指标与解释</label><div data-output-controls hidden></div><button type="button" data-remove-read>移除此目标</button></fieldset>`);
     const row=rows.lastElementChild,kind=row.querySelector('[data-read-kind]'),purpose=row.querySelector('[data-read-purpose]'),id=row.querySelector('[data-read-id]'),existing=row.querySelector('[data-existing-record]'),note=row.querySelector('[data-read-note]');
+    const explicit=row.querySelector('[data-explicit-output]'),controls=row.querySelector('[data-output-controls]');
+    let outputGeneration=0;
+    const resetOutput=()=>{outputGeneration++;explicit.checked=false;controls.hidden=true;controls.innerHTML='';};
+    explicit.onchange=e=>{
+      const stamp=++outputGeneration,selected=kind.value,selectedPurpose=purpose.value;
+      controls.innerHTML='';controls.hidden=!explicit.checked;
+      if(!explicit.checked)return;
+      controls.textContent='正在加载可选指标…';
+      action(async()=>{
+        catalogPromise ||= request('/agent/status').then(r=>r.output_catalog).catch(error=>{catalogPromise=null;throw error;});
+        let catalog;
+        try{catalog=await catalogPromise;}
+        catch(error){if(row.isConnected&&stamp===outputGeneration){explicit.checked=false;controls.textContent='指标目录加载失败，未启用锁定；请重新勾选。';}throw error;}
+        if(!row.isConnected||stamp!==outputGeneration||!explicit.checked)return;
+        controls.innerHTML=explicitOutputMarkup(catalog[selected],selectedPurpose);
+      },e.currentTarget);
+    };
     let generation=0,cursor=null;const more=row.querySelector('[data-read-more]');
-    kind.onchange=()=>{generation++;cursor=null;more.hidden=true;id.value='';existing.innerHTML='<option value="">专业已改变，请重新加载或输入编号</option>';};
-    purpose.onchange=()=>{id.required=purpose.value==='results';id.placeholder=id.required?'必须指定记录编号':'留空表示该专业完整项目目录';};
+    kind.onchange=()=>{resetOutput();generation++;cursor=null;more.hidden=true;id.value='';existing.innerHTML='<option value="">专业已改变，请重新加载或输入编号</option>';};
+    purpose.onchange=()=>{resetOutput();id.required=purpose.value==='results';id.placeholder=id.required?'必须指定记录编号':'留空表示该专业完整项目目录';};
     existing.onchange=()=>{if(existing.value)id.value=existing.value;};
     const loadPage=(before,e)=>action(async()=>{
       const selected=kind.value,stamp=++generation;
@@ -63,7 +95,7 @@ export function bindReadRequests(host,pid,action) {
       note.textContent=records.length?'仅本页名称，选择只填写编号，执行时核验来源；可翻到更早记录。':'本页没有记录，不能推断整个项目从未计算；可手动核对原编号。';
     },e.currentTarget);
     row.querySelector('[data-load-records]').onclick=e=>loadPage(null,e);more.onclick=e=>{if(cursor!==null)loadPage(cursor,e);};
-    row.querySelector('[data-remove-read]').onclick=()=>{generation++;row.remove();add.disabled=false;};
+    row.querySelector('[data-remove-read]').onclick=()=>{outputGeneration++;generation++;row.remove();add.disabled=false;};
     add.disabled=rows.children.length>=6;kind.focus();
   };
 }
@@ -89,13 +121,13 @@ export function outputContractMarkup(task) {
   const states={needs_clarification:'等待澄清 · 任务未完成',fulfilled:'计划内产物已交付',source_limited:'已说明来源限制，数值未完成',incomplete:'仍有产物未交付'};
   const invalid=answer.output_contract_coverage==='contract_changed';
   const outputs=invalid?[]:(answer.requested_outputs||[]);
-  return `<section aria-label="任务产物核验"><h3>指标与解释</h3><p>以下要求由模型从原问题解析，请核对是否准确。计划完成不等于已证明完整理解问题；解释由应用依据当前核验来源生成。</p>${invalid?'<p role="status">解释契约已变化，历史解释已撤下，请重新核验。</p>':''}${plan.items.map(item=>{
+  return `<section aria-label="任务产物核验"><h3>指标与解释</h3><p>每项注明要求来自用户勾选或模型解析。交付所选指标不等于完整回答自由问题；解释由应用依据当前核验来源生成。</p>${invalid?'<p role="status">解释契约已变化，历史解释已撤下，请重新核验。</p>':''}${plan.items.map(item=>{
     const out=outputs.find(o=>o.request_key===item.request_key);
     const clarification=invalid?null:(answer.clarification_requests||[]).find(q=>q.request_key===item.request_key);
     const review=invalid?null:(answer.checked_reviews||[]).find(r=>r.record_id===out?.record_id);
     const withdrawn=(answer.review_failures||[]).find(r=>r.record_id===out?.record_id);
     const purpose=(task.read_requests||[]).find(r=>r.request_key===item.request_key)?.purpose;
     const emptyLabel=item.clarification_question?'等待澄清':purpose==='availability'?'记录可用性':'仅说明口径或状态，不交付数值';
-    return `<article><h4>${esc(item.request_key)} · ${esc(states[out?.state]||'待交付')}</h4><blockquote>${esc(item.question_excerpt)}</blockquote><p>所选指标：${esc(item.fact_keys.map(k=>factLabels[k]||k).join('、')||emptyLabel)}</p>${out?.missing_fact_keys?.length?`<p role="status">尚缺指标：${esc(out.missing_fact_keys.map(k=>factLabels[k]||k).join('、'))}</p>`:''}${clarification?`<p role="status"><strong>请补充确认：</strong>${esc(clarification.question)}</p><p>${esc(clarification.notice)}</p><p>在输入框补充说明后重新提交；本次未执行替代计算。</p>`:''}${withdrawn?`<p role="status">${esc(withdrawn.notice)}</p>`:''}${(out?.explanations||[]).map(e=>`<p>${esc(e.text)}</p>`).join('')}${review?`<p class="subtle">非数值来源复核 · ${esc(review.checked_at)}</p><small class="mono">${esc(review.record_id)} · ${esc(review.record_hash)}</small>`:''}</article>`;
+    return `<article><h4>${esc(item.request_key)} · ${esc(states[out?.state]||'待交付')}</h4><p>${item.requirement_origin==='user_selected'?'要求来自用户勾选，模型不能改换；自由问题的其他要求尚未核验。':'要求由模型从原问题解析，需核对是否符合原问题。'}</p><blockquote>${esc(item.question_excerpt)}</blockquote><p>所选指标：${esc(item.fact_keys.map(k=>factLabels[k]||k).join('、')||emptyLabel)}</p>${out?.missing_fact_keys?.length?`<p role="status">尚缺指标：${esc(out.missing_fact_keys.map(k=>factLabels[k]||k).join('、'))}</p>`:''}${clarification?`<p role="status"><strong>请补充确认：</strong>${esc(clarification.question)}</p><p>${esc(clarification.notice)}</p><p>在输入框补充说明后重新提交；本次未执行替代计算。</p>`:''}${withdrawn?`<p role="status">${esc(withdrawn.notice)}</p>`:''}${(out?.explanations||[]).map(e=>`<p>${esc(e.text)}</p>`).join('')}${review?`<p class="subtle">非数值来源复核 · ${esc(review.checked_at)}</p><small class="mono">${esc(review.record_id)} · ${esc(review.record_hash)}</small>`:''}</article>`;
   }).join('')}</section>`;
 }
