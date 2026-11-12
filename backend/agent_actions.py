@@ -42,7 +42,11 @@ def payload(messages, tools, *, strict):
                    'No prose, invented results, or completion claims. Read a selected fact before delivering it. '
                    'Use the offered clarification action when the requested metric is unresolved. '
                    'JSON action contract: ' + json.dumps(contract, ensure_ascii=False))
-    result={'messages':[{'role':'system','content':instruction},*messages],
+    leading=[];remaining=list(messages)
+    while remaining and remaining[0].get('role')=='system':leading.append(remaining.pop(0).get('content') or '')
+    # The supported local chat template accepts exactly one leading system message.
+    wire_messages=[{'role':'system','content':'\n\n'.join([instruction,*leading])},*remaining]
+    result={'messages':wire_messages,
             'response_format':{'type':'json_schema','json_schema':{'name':'vra_actions','strict':True,'schema':contract}} if strict else {'type':'json_object'}}
     return result
 

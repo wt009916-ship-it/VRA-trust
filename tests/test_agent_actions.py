@@ -165,3 +165,12 @@ def test_provider_json_mode_is_locally_schema_checked(client,monkeypatch):
         return httpx.Response(200,json=r)
     with pytest.raises(agent_actions.ActionProtocolError):gateway.complete([],simple_tools(),response_mode='actions',transport=httpx.MockTransport(serve))
     assert len(seen)==1 and seen[0]['response_format']=={'type':'json_object'} and 'tools' not in seen[0]
+
+
+def test_action_payload_consolidates_existing_system_context_for_local_template():
+    messages=[{'role':'system','content':'Scope and permissions'},{'role':'system','content':'Current task state'},{'role':'user','content':'Read R'}]
+    before=copy.deepcopy(messages);wire=agent_actions.payload(messages,simple_tools(),strict=True)
+    assert messages==before
+    assert [m['role'] for m in wire['messages']]==['system','user']
+    assert 'Scope and permissions' in wire['messages'][0]['content'] and 'Current task state' in wire['messages'][0]['content']
+    assert wire['messages'][1]==messages[-1]
