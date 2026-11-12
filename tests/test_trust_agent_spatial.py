@@ -103,7 +103,7 @@ def test_provider_agent_calls_actual_registry_under_protocol_fixture(client, mon
     agent = client.app.state.agent
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
     responses = iter([{'role': 'assistant', 'content': None, 'tool_calls': [{'id': 'call1', 'type': 'function', 'function': {'name': 'evidence_validate', 'arguments': '{}'}}]}, {'role': 'assistant', 'content': '需要补证，见工具结果'}])
-    monkeypatch.setattr(agent.gateway, 'complete', lambda messages, tools: next(responses))
+    monkeypatch.setattr(agent.gateway, 'complete', lambda messages, tools, **response_options: next(responses))
     result = agent.start(pid, Chat(message='检查资料', mode='provider'), background=False)
     assert result['status'] == 'succeeded'
     assert len(result['events']) == 4

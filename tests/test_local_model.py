@@ -109,7 +109,7 @@ def test_local_agent_uses_real_registry_and_preserves_authorization(client, monk
         {'role': 'assistant', 'content': '虚构已认证，不得进入正式指标'},
         {'role': 'assistant', 'tool_calls': [{'id': 't2', 'type': 'function', 'function': {'name': 'simulation_create', 'arguments': '{}'}}]},
     ])
-    monkeypatch.setattr(gateway, 'complete', lambda messages, tools: next(calls))
+    monkeypatch.setattr(gateway, 'complete', lambda messages, tools, **response_options: next(calls))
     def no_cloud(*args, **kwargs):
         pytest.fail('Local model must never fall back to cloud')
     monkeypatch.setattr(agent.gateway, 'complete', no_cloud)
@@ -165,7 +165,7 @@ def test_date_tool_arguments_are_canonical_json_and_missing_runs_not_invented(cl
         {'role': 'assistant', 'tool_calls': [{'id': 'q1', 'type': 'function', 'function': {
             'name': 'standards_search', 'arguments': json.dumps({'standards_query': {'text': 'NONEXIST', 'as_of': '2026-01-01'}})}}]},
         {'role': 'assistant', 'content': 'No matching source'}])
-    monkeypatch.setattr(gateway, 'complete', lambda messages, tools: next(replies))
+    monkeypatch.setattr(gateway, 'complete', lambda messages, tools, **response_options: next(replies))
     result = agent.start(pid, Chat(message='Query missing standard', mode='local_model'), background=False)
     assert result['status'] == 'succeeded'
     event = next(e for e in result['events'] if e['tool'] == 'standards_search')

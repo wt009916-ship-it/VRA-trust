@@ -72,8 +72,8 @@ def test_real_service_reads_after_fragment_plan_and_no_free_text_copy(client,mon
         {'request_key':'site','question_fragment_ids':['q2'],'fact_keys':[],'explanation_topics':[]}]
     calls=scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':plan})])
     definitions=[];original=a.gateway.complete
-    def capture(messages,tools):
-        definitions.extend(copy.deepcopy(tools));return original(messages,tools)
+    def capture(messages,tools, **response_options):
+        definitions.extend(copy.deepcopy(tools));return original(messages,tools, **response_options)
     monkeypatch.setattr(a.gateway,'complete',capture)
     task=a.start(pid,Chat(message=question,mode='provider',read_requests=[
         {'request_key':'wall','kind':'thermal','purpose':'results','record_id':r['thermal_id']},

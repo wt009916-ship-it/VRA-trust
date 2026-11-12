@@ -8,6 +8,7 @@ import time
 import httpx
 from pydantic import Field
 
+from . import agent_actions
 from . import core
 from .model_recovery import ModelServiceUnavailable, TRANSIENT_STATUS, TRANSIENT_TRANSPORT
 from .schema import Contract
@@ -46,7 +47,7 @@ class LocalModelGateway:
             core.write_json(self.path, body.model_dump())
         return self.public()
 
-    def complete(self, messages, tools, *, transport=None):
+    def complete(self, messages, tools, *, transport=None, response_mode="tools"):
         config = self.settings()
         token = self.token()
         if not config.enabled or not token:
@@ -54,6 +55,10 @@ class LocalModelGateway:
         payload = {'model': config.model, 'messages': messages, 'tools': tools,
                    'tool_choice': 'auto', 'max_tokens': 1400, 'temperature': 0,
                    'chat_template_kwargs': {'enable_thinking': False}, 'stream': False}
+        if response_mode not in {'tools','actions'}:raise core.ValidationError('Unknown model response mode')
+        if response_mode=='actions':
+            payload.pop('tools');payload.pop('tool_choice')
+            payload.update(agent_actions.payload(messages,tools,strict=True))
         try:
             raw = json.dumps(payload, ensure_ascii=False, allow_nan=False).encode('utf-8')
             if len(raw) > 192 * 1024:
@@ -82,7 +87,10 @@ class LocalModelGateway:
             message = choices[0]['message']
             if not isinstance(message, dict):
                 raise ValueError('Invalid message')
+            if response_mode=='actions':return agent_actions.decode(message,tools)
             return {k: message[k] for k in ('role', 'content', 'tool_calls') if k in message}
+        except agent_actions.ActionProtocolError:
+            raise
         except ModelServiceUnavailable:
             raise
         except TRANSIENT_TRANSPORT as exc:

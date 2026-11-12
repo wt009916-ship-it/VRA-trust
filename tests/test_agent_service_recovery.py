@@ -44,11 +44,20 @@ def workflow(client, monkeypatch, *, mode='local_model', failures=(2,), status=5
             response = tool('calculation_prepare', {'plan_keys': ['wall']})
         else:
             response = claim(agent.store.list('thermal', pid)[0])
+        # Fault-injected mock responses follow the active action wire protocol.
+        # This fixture is not actual model inference; all recovery assertions remain.
+        actions=[]
+        for call in response['tool_calls']:
+            arguments=json.loads(call['function']['arguments'])
+            if call['function']['name']=='professional_deliver':
+                delivery=arguments['delivery'];delivery['fact_keys']=[s['fact'] for s in delivery.pop('statements')]
+            actions.append({'tool':call['function']['name'],'arguments':arguments})
+        response={'role':'assistant','content':json.dumps({'actions':actions})}
         successes.append(copy.deepcopy(response))
         return httpx.Response(200, json={'model': gateway.public()['model'],
-            'choices': [{'finish_reason': 'tool_calls', 'message': response}]})
+            'choices': [{'finish_reason': 'stop', 'message': response}]})
     original = gateway.complete
-    monkeypatch.setattr(gateway, 'complete', lambda messages, tools: original(messages, tools, transport=httpx.MockTransport(serve)))
+    monkeypatch.setattr(gateway, 'complete', lambda messages, tools, **response_options: original(messages, tools, transport=httpx.MockTransport(serve), **response_options))
     def wait(seconds):
         waits.append(seconds)
         return bool(on_wait(agent, gateway, pid)) if on_wait else False

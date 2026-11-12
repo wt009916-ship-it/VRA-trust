@@ -87,17 +87,18 @@ EXPECTED={'engineering':[('left_reaction_n','15000','N','static_load_case'),('ma
 
 def driver(a,monkeypatch,plans):
     turns=[]
-    def complete(messages,tools):
+    def complete(messages,tools, **response_options):
         turns.append(copy.deepcopy(tools))
         if len(turns)==1:return batch([('calculation_execute',{'plan_key':p['plan_key']}) for p in plans])
         records=[a.store.list(p['kind'])[0] for p in plans]
         if len(turns)==2:return batch([(inspection(p['kind']).read_tool,{inspection(p['kind']).argument:r[inspection(p['kind']).record_key]}) for p,r in zip(plans,records)])
         numeric=next(t['function']['parameters'] for t in tools if t['function']['name']=='professional_deliver')
-        keys=numeric['$defs']['Statement']['properties']['fact']['enum']
+        variants=numeric['properties']['delivery']['oneOf']
+        keys={key for variant in variants for key in variant['properties']['fact_keys']['items']['enum']}
         assert '左支反力' not in keys
         assert all(key in keys for p in plans for key,*_ in EXPECTED[p['kind']])
         return batch([('professional_deliver',{'delivery':{'kind':p['kind'],'record_id':r[inspection(p['kind']).record_key],'record_hash':r['hash'],
-            'statements':[dict(fact=k,value=v,unit=u,period=period,study_years=None,area_m2=None) for k,v,u,period in EXPECTED[p['kind']]],'finish':True}}) for p,r in zip(plans,records)])
+            'fact_keys':[k for k,*_ in EXPECTED[p['kind']]],'finish':True}}) for p,r in zip(plans,records)])
     monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
     monkeypatch.setattr(a.gateway,'complete',complete);return turns
 
@@ -220,7 +221,7 @@ def test_two_different_new_plans_remain_within_existing_event_budget(client,monk
 def test_model_can_deliver_current_limit_without_inventing_numeric_fact(client,monkeypatch):
     pid=create_project(client)['project_id'];a=client.app.state.agent;p=make_plan(client,pid,'engineering');p['input']['depth']=1000.
     turn=0
-    def complete(messages,tools):
+    def complete(messages,tools, **response_options):
         nonlocal turn;turn+=1
         names={t['function']['name'] for t in tools}
         if turn==1:

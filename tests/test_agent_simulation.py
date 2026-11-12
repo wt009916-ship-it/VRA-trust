@@ -136,7 +136,7 @@ def test_scripted_list_then_three_pages_stays_in_budget_and_keeps_full_audit(cli
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
     steps = iter([{}, *[{'run_id': views[0]['run_id'], 'zone_offset': offset, 'zone_hash': digest} for offset in (0, 5, 10)], None])
     payloads = []
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         payloads.append(deepcopy(messages))
         assert len(json.dumps(messages, ensure_ascii=False)) < 64000
         args = next(steps)
@@ -163,7 +163,7 @@ def test_initial_inspection_is_projected_and_current_result_rechecked(client, mo
     monkeypatch.setattr(agent.store, 'job', lambda _: {'project_id': pid})
     monkeypatch.setattr(agent.domain, 'view', lambda _: deepcopy(view))
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         assert all(t['function']['name'] != 'professional_read_many' for t in tools)
         initial = json.loads(messages[4]['content'].split('：', 1)[1])
         run = next(v for v in initial if isinstance(v, dict) and v.get('run_id'))
@@ -218,7 +218,7 @@ def test_partial_page_prose_cannot_finish_as_verified_and_reminder_has_exact_mis
     monkeypatch.setattr(agent.domain, 'view', lambda _: deepcopy(view))
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
     seen = []
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         seen.append(deepcopy(messages))
         if len(seen) == 1:
             return {'role': 'assistant', 'tool_calls': [{'id': 'one', 'type': 'function', 'function': {
@@ -241,7 +241,7 @@ def test_explicit_finish_is_refused_for_missing_pages_and_accepted_only_after_ac
     monkeypatch.setattr(agent.domain, 'view', lambda _: deepcopy(view))
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
     offsets = iter((0, 10, 5)); requests = []
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         requests.append(deepcopy(messages)); offset = next(offsets)
         return {'role': 'assistant', 'tool_calls': [{'id': str(offset), 'type': 'function', 'function': {
             'name': 'simulation_result', 'arguments': json.dumps({'run_id': view['run_id'], 'zone_offset': offset,
@@ -271,7 +271,7 @@ def test_initial_projection_preserves_limits_and_has_explicit_full_read_entry():
 def test_inspect_results_is_read_only_even_when_generic_compute_checkbox_is_true(client, monkeypatch):
     agent = client.app.state.agent; pid = create_project(client)['project_id']
     monkeypatch.setattr(agent.gateway, 'public', lambda: {'enabled': True, 'key_configured': True})
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         names = {t['function']['name'] for t in tools}
         assert names == sizing.INSPECTION_TOOLS
         assert '专业list/read' not in messages[0]['content']
@@ -294,7 +294,7 @@ def test_every_offered_schema_has_nonempty_enums_in_inspection_modes(client, mon
             for value in node.values(): inspect(value)
         elif isinstance(node, list):
             for value in node: inspect(value)
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         inspect(tools)
         return {'role': 'assistant', 'content': 'Schema protocol fixture, no native or model claim'}
     monkeypatch.setattr(agent.gateway, 'complete', complete)
