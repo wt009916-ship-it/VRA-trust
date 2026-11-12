@@ -174,3 +174,47 @@ def test_action_payload_consolidates_existing_system_context_for_local_template(
     assert [m['role'] for m in wire['messages']]==['system','user']
     assert 'Scope and permissions' in wire['messages'][0]['content'] and 'Current task state' in wire['messages'][0]['content']
     assert wire['messages'][1]==messages[-1]
+
+
+def test_failed_defer_after_delivery_in_same_batch_is_recoverable(client,monkeypatch):
+    pid=create_project(client)['project_id'];a=client.app.state.agent;r=create_record(client,pid,'thermal')
+    delivery=tool('professional_deliver',{'delivery':{**selected(r),'finish':False}})
+    defer=tool('requested_defer',{'request_keys':['wall']})
+    mixed={'role':'assistant','tool_calls':delivery['tool_calls']+defer['tool_calls']}
+    mixed['tool_calls'][1]['id']='defer_after_delivery'
+    scripted(a,monkeypatch,[tool('thermal_read',{'thermal_id':r['thermal_id']}),mixed,tool('professional_deliver',{'delivery':selected(r)})])
+    t=a.start(pid,Chat(message='Read R',mode='provider',infer_outputs=False,read_requests=[scope(r)]),background=False)
+    assert t['status']=='succeeded',t.get('error')
+    failed=next(e for e in t['events'] if e['tool']=='requested_defer')
+    assert failed['status']=='failed' and 'pending' in failed['error']
+    assert t['answer']['checked_statements'][0]['facts'][0]['value']=='1.97'
+    assert not t.get('read_deferrals')
+
+
+def test_status_only_plan_never_offers_numeric_limitation_substitute(client,monkeypatch):
+    from backend import agent_reviews
+    from test_agent_professional import thermal_input
+    pid=create_project(client)['project_id'];a=client.app.state.agent
+    body=thermal_input();body['rsi_m2k_w']=None;r=create_record(client,pid,'thermal',body)
+    ref=agent_reviews.reference(r,'thermal')
+    scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[plan(excerpt='Explain current source status.',facts=[],topics=['status'])]}),
+        tool('thermal_read',{'thermal_id':r['thermal_id']}),tool('professional_review',{'review':{**ref,'finish':True}})])
+    original=a.gateway.complete;offered=[]
+    def capture(messages,tools,**options):
+        offered.append({t['function']['name'] for t in tools});return original(messages,tools,**options)
+    monkeypatch.setattr(a.gateway,'complete',capture)
+    t=a.start(pid,Chat(message='Explain current source status.',mode='provider',read_execution='model',read_requests=[scope(r)]),background=False)
+    assert t['status']=='succeeded',t.get('error')
+    assert 'professional_review' in offered[2] and 'professional_limit' not in offered[2]
+    assert not t['answer'].get('checked_statements') and t['answer']['output_contract_coverage']=='fulfilled'
+
+
+def test_open_question_defer_stops_after_selected_read_without_false_completion(client,monkeypatch):
+    pid=create_project(client)['project_id'];a=client.app.state.agent;r=create_record(client,pid,'thermal')
+    missing='cost_'+'9'*32
+    captured=scripted(a,monkeypatch,[tool('professional_read_many',{'record_ids':[r['thermal_id'],missing]}),tool('requested_defer',{})])
+    t=a.start(pid,Chat(message='Inspect '+r['thermal_id']+' and '+missing+' but the metric has no definition.',mode='provider'),background=False)
+    assert t['status']=='succeeded',t.get('error')
+    assert len(captured)==2 and t['termination']['reason']=='question_deferred'
+    assert t['answer']['task_completion']=='incomplete' and not t['answer'].get('checked_statements')
+    assert t['unresolved_selected_reads'] and not t.get('model_finished_delivery')

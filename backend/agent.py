@@ -605,8 +605,8 @@ class Agent:
                 if body.read_requests and body.infer_outputs:
                     pending_ids = {r.record_id for r in body.read_requests if r.request_key in requested_scopes.pending(record)}
                     read_records = [(ds, r) for ds, r in read_records if r[ds.record_key] in pending_ids]
-                if not read_any or not any(r.get('explanation_facts') for _,r in read_records):available.discard('professional_deliver')
-                if not any(not ds.artifact(r)['verified'] for ds,r in read_records):available.discard('professional_limit')
+                if not read_any or not any(r.get('explanation_facts') and r[ds.record_key] not in review_ids for ds,r in read_records):available.discard('professional_deliver')
+                if not any(not ds.artifact(r)['verified'] and r[ds.record_key] not in review_ids for ds,r in read_records):available.discard('professional_limit')
                 if not any(r[ds.record_key] in review_ids for ds,r in read_records):available.discard('professional_review')
             if not choices:available.discard('professional_read_many')
             declared_missing = []
@@ -679,8 +679,8 @@ class Agent:
                     parameters['$defs']['Claim']['properties']['capability_id'] = {'type':'string','enum':sorted({c['capability_id'] for r in capability_reads for c in r['capabilities']})}
                 if name in {'professional_deliver','professional_limit'} and read_records:
                     limited = name == 'professional_limit';definition = 'Limitation' if limited else 'NumericDelivery'
-                    candidates = ([(ds,r) for ds,r in read_records if not ds.artifact(r)['verified']]
-                                  if limited else [(ds,r) for ds,r in read_records if r.get('explanation_facts')])
+                    candidates = ([(ds,r) for ds,r in read_records if not ds.artifact(r)['verified'] and r[ds.record_key] not in review_ids]
+                                  if limited else [(ds,r) for ds,r in read_records if r.get('explanation_facts') and r[ds.record_key] not in review_ids])
                     properties = parameters['$defs'][definition]['properties']
                     properties['record_id'] = {'type':'string','enum':sorted({r[ds.record_key] for ds,r in candidates})}
                     properties['record_hash'] = {'type':'string','enum':sorted({r['hash'] for _,r in candidates})}
@@ -1148,7 +1148,7 @@ class Agent:
                             finish_requested |= result['reference']['finish']
                         if call['function']['name']=='professional_missing' and result.get('status')=='verified':
                             finish_requested |= any(r['request']['finish'] for r in missing_records.references(result))
-                        if call['function']['name']=='requested_defer':finish_requested |= result['finish']
+                        if call['function']['name']=='requested_defer' and result.get('status')=='needs_clarification':finish_requested |= result['finish']
                         if call['function']['name']=='requested_availability' and result.get('status')=='verified':
                             finish_requested |= result['finish']
                         if (body.objective == 'inspect_results' and call['function']['name'] == 'simulation_result'
@@ -1186,6 +1186,9 @@ class Agent:
                             'model_declared_finished':False, 'pending_request_keys':requested_scopes.pending(record)}
                         save()
                         break  # Source revalidation below remains mandatory, including partial execution.
+                    if record.get('question_deferral') and not batch_failed:
+                        record['termination']={'reason':'question_deferred','model_declared_finished':False}
+                        break  # Explicit uncertainty stops execution without resolving selected reads.
                     if record.get('read_deferrals') and not batch_failed and not requested_scopes.pending(record):
                         record['termination']={'reason':'read_scopes_deferred','model_declared_finished':False,'pending_request_keys':[]}
                         break
