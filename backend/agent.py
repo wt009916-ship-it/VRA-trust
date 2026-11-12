@@ -19,7 +19,7 @@ from .standards import Standards, Query as StandardQuery
 from .local_model import LocalModelGateway
 from . import model_recovery
 from .agent_inspections import INSPECTIONS
-from .agent_semantics import NumericDelivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection, accumulate
+from .agent_semantics import statement_instruction, NumericDelivery, Limitation, SemanticMismatch, readable, inspection, check as check_explanation, current_answer, model_projection, accumulate
 from . import agent_calculations as calculations
 from . import agent_capabilities as capabilities
 from . import agent_missing as missing_records
@@ -56,6 +56,8 @@ class Chat(Contract):
 
     @model_validator(mode='after')
     def target_scope(self):
+        if any(r.output_contract for r in self.read_requests) and not self.infer_outputs:
+            raise ValueError('Explicit output contracts require output planning; cannot bypass their verification')
         if self.read_requests:
             if self.mode=='local' or self.objective!='open_ended' or self.allow_compute or self.calculation_plans or self.search_plan or self.cost_plan or self.target_run_id:
                 raise ValueError('Declared read requests require an open-ended model task without compute permission or calculation plans')
@@ -672,6 +674,10 @@ class Agent:
                     if limited:properties['status'] = {'type':'string','enum':sorted({r['status'] for _,r in candidates})}
                     else:
                         parameters['$defs']['Statement']['properties']['fact']['enum'] = sorted({f['fact'] for _,r in candidates for f in r['explanation_facts']})
+                    if not limited and candidates and all(ds.kind in agent_energy.KINDS for ds, _ in candidates):
+                        statement = parameters['$defs']['Statement']
+                        statement['required'] = list(dict.fromkeys(statement['required'] + ['energy_context']))
+                        statement['properties']['energy_context'] = {'$ref':'#/$defs/EnergyContext'}
                     parameters['$defs'][definition]['required'].append('finish')
                     parameters['required'] = ['limitation' if limited else 'delivery']
             return result
@@ -818,6 +824,9 @@ class Agent:
                         ensure_read_scope(ds,delivery.record_id)
                         request = next(r for r in record['read_requests'] if r['record_id'] == delivery.record_id)
                         wanted = agent_outputs.requirement(record, request['request_key'])
+                        explicit = request.get('output_contract')
+                        if explicit and any(s.fact not in explicit['fact_keys'] for s in delivery.statements):
+                            raise ToolRefusal('Numeric delivery is outside the user-selected metric contract')
                         if wanted and (wanted.get('clarification_question') or not wanted['fact_keys']):
                             raise ToolRefusal('Unresolved or nonnumeric plan cannot deliver numeric facts or substitute a limitation')
                     if not any(e['tool'] == ds.read_tool and e['status'] == 'succeeded'
@@ -929,7 +938,7 @@ class Agent:
                     'open_ended的热工/阶段碳/材料清单/梁分析/施工进度/设备规则任务：先自主选择对应list/read，再调用professional_deliver交付所问数值事实。'
                     '记录不完整、模型不适用或stale时，用professional_limit提交实际读取的当前status，正式说明限制；该工具不提交数值或statements。核验通过不改变原记录状态。professional_deliver仅提交当前数值，不能包含limitation_status。'
                     '多专业目录用professional_inventory一次选齐kinds；多类缺失用一次professional_missing的missing.kinds数组，不逐类发多次调用。两者都读取完整目录；无明确编号则省略record_id。已有结果和缺失记录都须按原问题逐项交付，不能仅完成其中一类就结束。每轮最多4调用，缺失说明不完成计算、不授权写重试。'
-                    'read返回explanation_facts，按该事实项的value、unit、period、study_years、area_m2提交，record_hash来自hash。'
+                    + statement_instruction() +
                     '无记录或没有对应事实就说明未完成，不伪造交付。不把总量改称单位面积，不把整个评估期改称年量。'
                     'TOOL_ERROR含corrections时先修正结构化事实，再交付；仅自由文字不能替代工具交付。最多三个不同记录。'
                     '每条事实必须带study_years与area_m2，不适用时明确null。不同专业事实必须分属对应记录。'

@@ -12681,6 +12681,38 @@
         ],
         "title": "ExactTarget"
       },
+      "ExplicitOutput": {
+        "properties": {
+          "fact_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Fact Keys"
+          },
+          "explanation_topics": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "meaning",
+                "area",
+                "period",
+                "scope",
+                "status",
+                "history"
+              ]
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Explanation Topics"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ExplicitOutput",
+        "description": "User-selected obligations; never synthesized from model or source text."
+      },
       "Factor": {
         "properties": {
           "value": {
@@ -14842,6 +14874,16 @@
               }
             ],
             "title": "Record Id"
+          },
+          "output_contract": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExplicitOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

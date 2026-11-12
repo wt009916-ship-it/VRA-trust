@@ -16,12 +16,20 @@ class ReadRequest(Contract):
     purpose: Literal['availability','results']
     record_id: str | None = Field(default=None,pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
 
+    output_contract: agent_outputs.ExplicitOutput | None = None
+
     @model_validator(mode='after')
     def scope(self):
         if self.record_id and not self.record_id.startswith(self.kind+'_'):
             raise ValueError('Record ID must match the requested professional kind')
         if self.purpose=='results' and not self.record_id:
             raise ValueError('Result inspection requires an explicit record ID; no silent latest-record substitution')
+        if self.output_contract:
+            entry = agent_outputs.catalog([self.model_dump(mode='json')])[0]
+            if not set(self.output_contract.fact_keys) <= set(entry['available_fact_keys']):
+                raise ValueError('Explicit metrics must belong to the selected kind and purpose')
+            if not set(self.output_contract.explanation_topics) <= set(entry['available_explanation_topics']):
+                raise ValueError('Explicit explanation is unsupported for this scope')
         return self
 
 

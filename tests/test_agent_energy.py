@@ -146,3 +146,26 @@ def test_native_catalog_selection_does_not_leak_all_facts_into_pending_context(c
     assert [f['fact'] for f in second['available_facts']]==['native_hours']
     # Audit retains all native facts; only model-facing messages are selected.
     assert len(reads[0]['result']['explanation_facts'])==77
+
+
+def test_energy_delivery_schema_requires_context_after_actual_read(client,native,monkeypatch):
+    pid,r,_=create_utility(client,native,monkeypatch);agent=client.app.state.agent
+    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['interval_count']}),tool('professional_deliver',{'delivery':{**claim(r,'utility',['interval_count']),'finish':True}})])
+    original=agent.gateway.complete;seen=[]
+    def captured(messages,tools):
+        seen.append(copy.deepcopy(tools));return original(messages,tools)
+    monkeypatch.setattr(agent.gateway,'complete',captured)
+    task=agent.start(pid,Chat(message='Read interval count',mode='provider',infer_outputs=False,read_requests=[{'request_key':'r','kind':'utility','purpose':'results','record_id':r['utility_id']}]),background=False)
+    assert task['status']=='succeeded',task.get('error')
+    schema=next(t['function']['parameters'] for t in seen[-1] if t['function']['name']=='professional_deliver')
+    statement=schema['$defs']['Statement']
+    assert 'energy_context' in statement['required']
+    assert statement['properties']['energy_context']=={'$ref':'#/$defs/EnergyContext'}
+
+
+def test_energy_period_explanation_is_readable_and_keeps_both_calendars(client,native,monkeypatch):
+    _,r,_=create_utility(client,native,monkeypatch)
+    artifact=agent_energy.review(r,'utility')
+    text=agent_energy.explanation('period',artifact)
+    assert '原始账期' in text and '映射模拟期间' in text and '2019' in text
+    assert '{' not in text and '参考数据不是实楼校准' in text

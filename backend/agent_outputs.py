@@ -27,6 +27,20 @@ FACTS = {
 Topic = Literal['meaning', 'area', 'period', 'scope', 'status', 'history']
 
 
+class ExplicitOutput(Contract):
+    """User-selected obligations; never synthesized from model or source text."""
+    fact_keys: list[str] = Field(default_factory=list, max_length=12)
+    explanation_topics: list[Topic] = Field(default_factory=list, max_length=6)
+
+    @model_validator(mode='after')
+    def distinct(self):
+        if not (self.fact_keys or self.explanation_topics):
+            raise ValueError('Select an explicit metric or explanation')
+        if len(set(self.fact_keys)) != len(self.fact_keys) or len(set(self.explanation_topics)) != len(self.explanation_topics):
+            raise ValueError('Explicit outputs must be distinct')
+        return self
+
+
 class OutputItem(Contract):
     request_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
     question_excerpt: SkipJsonSchema[str | None] = Field(default=None, min_length=1, max_length=500)
@@ -60,10 +74,17 @@ def version():
 
 def catalog(requests):
     return [{'request_key': r['request_key'], 'kind': r['kind'], 'purpose': r['purpose'],
+             'user_output_contract': r.get('output_contract'),
              'available_fact_keys': FACTS[r['kind']] if r['purpose'] == 'results' else [],
              'available_explanation_topics': ['history', 'status'] if r['purpose'] == 'availability' else
                  ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle', 'scenario'} else ['period'] if r['kind'] in agent_energy.KINDS else [])}
             for r in requests]
+
+
+def public_catalog():
+    return {kind: {'facts': [{'key': key, 'label': intent_catalog.MEANINGS[kind][key]} for key in keys],
+                   'topics': catalog([{'request_key':'catalog', 'kind':kind, 'purpose':'results'}])[0]['available_explanation_topics']}
+            for kind, keys in FACTS.items()}
 
 
 def constrain_tool(tool, requests, question):
@@ -86,6 +107,12 @@ def constrain_tool(tool, requests, question):
         props['explanation_topics'] = {'type': 'array', 'maxItems': 6, 'uniqueItems': True,
                                        'items': {'type': 'string', 'enum': entry['available_explanation_topics']},
                                        'description': '仅选用户要求的解释；可选项并非必选项。'}
+        explicit = entry.get('user_output_contract')
+        if explicit:
+            for field in ('fact_keys', 'explanation_topics'):
+                props[field] = {'type':'array', 'const':explicit[field]}
+            props['clarification_reason'] = {'type':'null'}
+            props['clarification_question'] = {'type':'null'}
         variants.append(item)
     parameters.pop('$defs')
     parameters['properties']['output_plan'] = {'type': 'array', 'minItems': len(requests),
@@ -109,6 +136,7 @@ def planning_instruction(record):
         '只请求状态、范围或指标口径时，fact_keys为空并选择明确所问主题；无需用数值占位。'
         '请求不在只读字段目录中的指标、含义不明确或存在矛盾时，填写clarification_reason和clarification_question，'
         'fact_keys和explanation_topics均为空；先问用户，不选择相近字段、不自行计算，不把模型疑问当作已证实的应用能力结论。'
+        'user_output_contract非空时，指标和解释是用户逐项选定的硬约束，必须原样覆盖，不增删、不以相近字段替代。原文有其他要求或冲突仍未获核验，不宣称整个问题完成。'
         '当前计划只表达模型的理解，不证明意图已验证或用户任务已完成。'
         '原问题片段：' + json.dumps(intent_catalog.fragments(record['question']), ensure_ascii=False) +
         '。本轮允许的请求与输出目录：' + json.dumps(catalog(record['read_requests']), ensure_ascii=False)
@@ -128,7 +156,14 @@ def freeze(record, items):
     normalized = []
     for item in items:
         entry = allowed[item.request_key]
+        explicit = requests[item.request_key].get('output_contract')
+        if explicit and (item.clarification_question or any(
+                set(getattr(item, field)) != set(explicit[field])
+                for field in ('fact_keys', 'explanation_topics'))):
+            raise core.ValidationError('Model plan cannot replace, omit or expand user-selected outputs')
         saved = item.model_dump(mode='json', exclude_none=True)
+        saved['requirement_origin'] = 'user_selected' if explicit else 'model_inferred'
+        saved['user_contract_hash'] = core.hash_json(explicit) if explicit else None
         if item.question_fragment_ids is not None:
             if not set(item.question_fragment_ids) <= set(anchors):
                 raise core.ValidationError('Question fragment IDs must belong to this original question')
@@ -211,7 +246,11 @@ def attach(answer, record):
     answer['output_contract_coverage'] = 'plan_missing'
     if not plan:
         return answer
-    if plan['version'] != version() or plan['question_hash'] != core.hash_json(record['question']):
+    contracts_current = all(
+        item.get('user_contract_hash') == (core.hash_json(r['output_contract']) if r.get('output_contract') else None)
+        for r in record['read_requests']
+        for item in plan['items'] if item['request_key'] == r['request_key'])
+    if not contracts_current or plan['version'] != version() or plan['question_hash'] != core.hash_json(record['question']):
         answer['output_contract_coverage'] = 'contract_changed'
         return answer
     progress = {r['request_key']: r for r in answer.get('read_request_progress', [])}
@@ -260,5 +299,7 @@ def attach(answer, record):
         answer['output_contract_coverage'] = 'needs_clarification'
         answer['summary'] = '仍有输出要求需要用户澄清；已明确部分单独列出，未明确项没有数值交付。'
         answer['task_completion'] = 'partial' if answer.get('checked_statements') or answer.get('checked_reviews') else 'incomplete'
+    answer['user_selected_output_keys'] = [r['request_key'] for r in record['read_requests'] if r.get('output_contract')]
+    answer['free_question_coverage'] = 'not_verified'
     answer['output_contract_notice'] = '仅检查模型解析计划中的指标和解释主题是否交付；计划对原始问题的理解仍需核对。解释由应用按当前来源生成，模型自由原文未获语义认证。'
     return answer

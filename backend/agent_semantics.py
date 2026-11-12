@@ -22,6 +22,10 @@ class Statement(Contract):
     area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='Required: copy fact area_m2. Null means no explicit area denominator; see area_basis. R/U are intrinsic area-normalized properties, not totals.')
 
 
+def statement_instruction():
+    return 'Copy every source fact field: ' + ', '.join(Statement.model_fields) + '. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.'
+
+
 class Delivery(Contract):
     kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']
     record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
@@ -164,7 +168,7 @@ def can_deliver_requested_facts(record, kind, required):
 def readable(record, kind):
     from .agent_reviews import reference
     return {**record, 'nonnumeric_review_reference': reference(record, kind), 'explanation_facts': facts(record, kind),
-            'explanation_instruction': '开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。'
+            'explanation_instruction': statement_instruction() +
             '只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。'}
 
 
