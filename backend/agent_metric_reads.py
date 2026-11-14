@@ -22,8 +22,6 @@ class ReadSelection(Contract):
     @model_validator(mode='after')
     def selected(self):
         if self.fact_keys is not None:
-            if self.record_id.split('_',1)[0] not in agent_energy.KINDS:
-                raise ValueError('Fact selection is currently supported only for energy reads')
             if len(set(self.fact_keys))!=len(self.fact_keys) or any(len(k)>100 for k in self.fact_keys):
                 raise ValueError('Distinct bounded fact keys required')
         return self
@@ -31,7 +29,13 @@ class ReadSelection(Contract):
 
 def state(record, ident):
     kind=ident.split('_',1)[0];spec=inspection(kind)
-    if kind not in agent_energy.KINDS:return {'stage':'whole_record','keys':None}
+    frozen = record.get('metric_read_selections', {}).get(ident)
+    if frozen is not None:
+        return {'stage': 'selected_from_question', 'keys': frozen}
+    if kind not in agent_energy.KINDS:
+        if record.get('objective') == 'open_ended' and not record.get('read_requests'):
+            return {'stage': 'select_before_read', 'keys': agent_outputs.FACTS[kind]}
+        return {'stage': 'whole_record', 'keys': None}
     request=next((r for r in record.get('read_requests',[]) if r['record_id']==ident),None)
     wanted=agent_outputs.requirement(record,request['request_key']) if request else None
     events=[e for e in record['events'] if e['tool']==spec.read_tool and e['status']=='succeeded' and e.get('result',{}).get(spec.record_key)==ident]
@@ -53,7 +57,7 @@ def key_schema(record,ident):
     if not keys:return {'type':'null','description':'Read current source/catalog only; no numeric fact selected.'}
     return {'type':'array','minItems':1,'maxItems':min(12,len(keys)),'uniqueItems':True,
             'items':{'type':'string','enum':keys},
-            'description':'Select the requested facts using the known catalog. Null is a defined source value, not a reason to skip reading. Catalog-only repetition makes no progress.'}
+            'description':'Before reading values, select ONLY fields requested in the original question and obey exclusions. The initial selection is retained for subsequent reads and deliveries. Select the requested facts using the known catalog. Null is a defined source value, not a reason to skip reading. Catalog-only repetition makes no progress.'}
 
 
 def leaf_schema(tool,record,ids,argument):
@@ -76,7 +80,9 @@ def batch_schema(tool,record,ids):
 
 
 def validate(record,selection):
-    if selection.record_id.split('_',1)[0] not in agent_energy.KINDS:return
+    kind = selection.record_id.split('_',1)[0]
+    if kind not in agent_energy.KINDS and selection.fact_keys is None:
+        return  # Legacy internal readers and inspection callers retain whole-record reads.
     current=state(record,selection.record_id);keys=current['keys']
     if keys and (not selection.fact_keys or not set(selection.fact_keys)<=set(keys)):
         raise core.ValidationError('Select requested fact_keys from the current known catalog; repeating only the catalog is not progress')
@@ -91,3 +97,13 @@ def progress(record):
             result=e['result'];ident=result.get('enduse_id') or result.get('utility_id')
             if ident not in ids:ids.append(ident)
     return [{'record_id':ident,**state(record,ident)} for ident in ids]
+
+
+def freeze_selection(record, selection):
+    if selection.fact_keys is None:
+        return
+    frozen = record.setdefault('metric_read_selections', {})
+    previous = frozen.get(selection.record_id)
+    if previous is not None and not set(selection.fact_keys) <= set(previous):
+        raise core.ValidationError('Read fields cannot expand after observing values; clarify the requested outputs')
+    frozen.setdefault(selection.record_id, list(selection.fact_keys))

@@ -31,7 +31,7 @@ def test_chinese_adjacent_id_offers_direct_read_without_inventory(client,monkeyp
     t=a.start(pid,Chat(message='读取墙体'+r['thermal_id']+'的总热阻',mode='provider'),background=False)
     assert t['status']=='succeeded',t.get('error')
     definition=next(t['function'] for t in seen[0] if t['function']['name']=='thermal_read')
-    assert definition['parameters']['properties']['thermal_id']['enum']==[r['thermal_id']]
+    assert definition['parameters']['oneOf'][0]['properties']['thermal_id']['const']==r['thermal_id']
     assert not any(e['tool']=='professional_inventory' for e in t['events'])
 
 
@@ -77,7 +77,7 @@ def test_batch_selection_rejects_duplicate_or_dual_interface():
     ident='utility_'+'a'*32;selection={'record_id':ident,'fact_keys':['interval_count']}
     with pytest.raises(ValueError):ToolArgs(selections=[selection,selection])
     with pytest.raises(ValueError):ToolArgs(selections=[selection],record_ids=[ident])
-    with pytest.raises(ValueError):reads.ReadSelection(record_id='thermal_'+'b'*32,fact_keys=['u_w_m2k'])
+    assert reads.ReadSelection(record_id='thermal_'+'b'*32,fact_keys=['u_w_m2k']).fact_keys==['u_w_m2k']
 
 
 def test_successful_catalog_read_cannot_be_dropped_on_early_finish(client,native,monkeypatch):
