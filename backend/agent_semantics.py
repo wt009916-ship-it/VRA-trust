@@ -302,7 +302,9 @@ def current_answer(domain, project_id, deliveries, reader=None):
             checked = check(record, request)
             artifacts.append({**spec.artifact(record), 'record_id': request.record_id})
             if checked['statements']:
-                statements.append({'record_id': request.record_id, 'name': record_name(record), 'facts': checked['statements']})
+                statements.append({'record_id': request.record_id, 'name': record_name(record),
+                                   'facts': checked['statements'],
+                                   'energy_relationship': agent_energy.relationship(checked['statements'])})
             if checked.get('limitation'):
                 limitations.append(checked['limitation'])
             valid = True

@@ -69,21 +69,21 @@ def test_energy_catalog_pages_names_without_reading_numeric_detail(client,native
 
 def test_model_protocol_reads_selected_fact_and_delivers_context(client,native,monkeypatch):
     pid,r,_=create_utility(client,native,monkeypatch);agent=client.app.state.agent
-    history=scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['bill_total_kwh','mbe_percent']}),tool('professional_deliver',{'delivery':{**claim(r,'utility',['bill_total_kwh','mbe_percent']),'finish':True}})])
+    history=scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id']}),tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['bill_total_kwh','mbe_percent']}),tool('professional_deliver',{'delivery':{**claim(r,'utility',['bill_total_kwh','mbe_percent']),'finish':True}})])
     task=agent.start(pid,Chat(message='Read bill and bias from '+r['utility_id'],mode='provider',infer_outputs=False,read_requests=[{'request_key':'bill','kind':'utility','purpose':'results','record_id':r['utility_id']}]),background=False)
     assert task['status']=='succeeded',task.get('error')
     assert len(task['answer']['checked_statements'][0]['facts'])==2 and task['read_request_progress'][0]['state']=='result_verified'
-    assert len(history)==2 and all(e['tool'] not in {'simulation_create','calculation_execute'} for e in task['events'])
+    assert len(history)==3 and all(e['tool'] not in {'simulation_create','calculation_execute'} for e in task['events'])
 
 
 def test_withdrawal_between_read_and_delivery_never_revives_numeric_result(client,native,monkeypatch):
     pid,r,snapshot=create_utility(client,native,monkeypatch);agent=client.app.state.agent
-    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['mbe_percent']}),tool('professional_deliver',{'delivery':{**claim(r,'utility',['mbe_percent']),'finish':True}})])
+    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id']}),tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['mbe_percent']}),tool('professional_deliver',{'delivery':{**claim(r,'utility',['mbe_percent']),'finish':True}})])
     original=agent.gateway.complete;count=0
     def withdraw(*args, **response_options):
         nonlocal count
         count+=1
-        if count>1:snapshot['sql_sha256']='changed'
+        if count>2:snapshot['sql_sha256']='changed'
         return original(*args, **response_options)
     monkeypatch.setattr(agent.gateway,'complete',withdraw)
     task=agent.start(pid,Chat(message='Read '+r['utility_id'],mode='provider',infer_outputs=False,read_requests=[{'request_key':'bill','kind':'utility','purpose':'results','record_id':r['utility_id']}]),background=False)
@@ -150,7 +150,7 @@ def test_native_catalog_selection_does_not_leak_all_facts_into_pending_context(c
 
 def test_energy_delivery_schema_selects_receipt_instead_of_copying_context(client,native,monkeypatch):
     pid,r,_=create_utility(client,native,monkeypatch);agent=client.app.state.agent
-    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['interval_count']}),tool('professional_deliver',{'delivery':{**claim(r,'utility',['interval_count']),'finish':True}})])
+    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id']}),tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['interval_count']}),tool('professional_deliver',{'delivery':{**claim(r,'utility',['interval_count']),'finish':True}})])
     original=agent.gateway.complete;seen=[]
     def captured(messages,tools, **response_options):
         seen.append(copy.deepcopy(tools));return original(messages,tools, **response_options)
@@ -180,7 +180,7 @@ def test_actual_energy_receipt_materializes_context_and_catalog_alone_cannot_del
     catalog=agent.call(pid,'utility_comparison_read',{'utility_id':r['utility_id']},False)
     with pytest.raises(core.ValidationError,match='catalog'):
         materialize({'events':[{'tool':'utility_comparison_read','status':'succeeded','result':catalog}]},selected)
-    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['mbe_percent']}),tool('professional_deliver',{'delivery':selected})])
+    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id']}),tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['mbe_percent']}),tool('professional_deliver',{'delivery':selected})])
     task=agent.start(pid,Chat(message='Read bias',mode='provider',infer_outputs=False,read_requests=[{'request_key':'r','kind':'utility','purpose':'results','record_id':r['utility_id']}]),background=False)
     assert task['status']=='succeeded',task.get('error')
     fact=task['answer']['checked_statements'][0]['facts'][0]
@@ -191,14 +191,58 @@ def test_actual_energy_receipt_materializes_context_and_catalog_alone_cannot_del
 def test_energy_receipt_never_revives_source_withdrawn_after_read(client,native,monkeypatch):
     pid,r,snapshot=create_utility(client,native,monkeypatch);agent=client.app.state.agent
     selection={'kind':'utility','record_id':r['utility_id'],'record_hash':r['hash'],'fact_keys':['mbe_percent'],'finish':True}
-    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['mbe_percent']}),tool('professional_deliver',{'delivery':selection})])
+    scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id']}),tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['mbe_percent']}),tool('professional_deliver',{'delivery':selection})])
     original=agent.gateway.complete;count=0
     def withdraw(*args,**kwargs):
         nonlocal count
         count+=1
-        if count>1:snapshot['sql_sha256']='withdrawn'
+        if count>2:snapshot['sql_sha256']='withdrawn'
         return original(*args,**kwargs)
     monkeypatch.setattr(agent.gateway,'complete',withdraw)
     task=agent.start(pid,Chat(message='Read bias',mode='provider',infer_outputs=False,read_requests=[{'request_key':'r','kind':'utility','purpose':'results','record_id':r['utility_id']}]),background=False)
     assert not (task.get('answer') or {}).get('checked_statements') and not task['professional_deliveries']
     assert any(e['tool']=='professional_deliver' and e['status']=='failed' for e in task['events'])
+
+
+def test_relationship_uses_current_context_and_withdraws_with_source(client, native, monkeypatch):
+    from backend.agent_semantics import current_answer
+    pid, record, snapshot = create_utility(client, native, monkeypatch)
+    delivery = claim(record, 'utility', ['bill_total_kwh', 'native_total_kwh'])
+    answer = current_answer(client.app.state.domain, pid, [delivery])
+    relationship = answer['checked_statements'][0]['energy_relationship']
+    assert relationship['origin'] == 'application_from_current_verified_sources'
+    assert [source['fact'] for source in relationship['sources']] == ['bill_total_kwh', 'native_total_kwh']
+    assert 'kWh表示能量' in relationship['text']
+    assert all(source['data_nature'] == 'synthetic' for source in relationship['sources'])
+    snapshot['sql_sha256'] = 'withdrawn'
+    assert not current_answer(client.app.state.domain, pid, [delivery])['checked_statements']
+
+
+def test_carrier_relationship_and_insufficient_read():
+    context = {'carrier':'Electricity', 'boundary':'Facility', 'native_start':'2020-01-01',
+               'native_end':'2021-01-01', 'bill_start':None, 'bill_end':None,
+               'basis':'native_table_rounded', 'data_nature':'model_scenario', 'run_id':'run_reference'}
+    first = {'fact':'carrier_total.Electricity', 'unit':'kWh', 'energy_context':context}
+    second = {'fact':'carrier_total.NaturalGas', 'unit':'kWh',
+              'energy_context':{**context,'carrier':'Natural Gas'}}
+    assert agent_energy.relationship([first]) is None
+    result = agent_energy.relationship([first, second])
+    assert '天然气量不能作为耗电量' in result['text']
+    assert result['sources'][1]['carrier'] == 'Natural Gas'
+    assert '来源期间一致' in result['text']
+    second['energy_context']['native_end'] = '2020-07-01'
+    assert '来源期间有差异' in agent_energy.relationship([first, second])['text']
+
+
+def test_relationship_plan_requires_two_selected_facts():
+    from backend import agent_outputs
+    record = {'question':'Explain the carrier relationship', 'read_requests':[
+        {'request_key':'energy', 'record_id':'enduse_'+'a'*32,
+         'kind':'enduse','purpose':'results'}]}
+    item = agent_outputs.OutputItem(request_key='energy',
+        question_excerpt=record['question'], fact_keys=['carrier_total.Electricity'],
+        explanation_topics=['energy_relationship'])
+    with pytest.raises(core.ValidationError, match='at least two'):
+        agent_outputs.freeze(record,[item])
+    item.fact_keys.append('carrier_total.NaturalGas')
+    assert agent_outputs.freeze(record,[item])['items'][0]['explanation_topics'] == ['energy_relationship']

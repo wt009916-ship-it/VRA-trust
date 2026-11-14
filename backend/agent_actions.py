@@ -74,12 +74,21 @@ def decode(message, tools):
     actions=obj['actions'];offered={t['function']['name']:t for t in tools}
     if not isinstance(actions,list) or not 1<=len(actions)<=4:reject('action count outside 1..4')
     calls=[]
+    prior_read = None
     for action in actions:
         if not isinstance(action,dict) or set(action)!={'tool','arguments'}:reject('invalid action fields')
         if not isinstance(action['tool'],str) or action['tool'] not in offered:reject('unoffered action')
         if not isinstance(action['arguments'],dict):reject('arguments must be an object')
         try:encoded=json.dumps(action['arguments'],ensure_ascii=False,allow_nan=False)
         except (ValueError,RecursionError):reject('invalid numeric or nested arguments')
+        # A repeated adjacent metric read in one response has no intervening
+        # observation. Keep the original message for audit and execute it once.
+        read_key = None
+        if action['tool'] in {'utility_comparison_read', 'end_use_read', 'professional_read_many'}:
+            read_key = (action['tool'], json.dumps(action['arguments'], sort_keys=True))
+        if read_key is not None and read_key == prior_read:
+            continue
+        prior_read = read_key
         calls.append({'id':'action_'+uuid.uuid4().hex,'type':'function','function':{
             'name':action['tool'],'arguments':encoded}})
     return {'role':'assistant','content':'','tool_calls':calls,'_raw_action_response':message}

@@ -1,0 +1,180 @@
+"""HTML and actual PDF render the same validated report object."""
+import html
+import io
+import json
+from pathlib import Path
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, PageBreak, KeepTogether
+
+
+def report_html(report):
+    payload = html.escape(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
+    run = report["run"]
+    return f"""<!doctype html><html lang="zh-CN"><meta charset="utf-8">
+    <title>VRA-Trust · 工程证据报告</title><style>
+    body{{max-width:1000px;margin:40px auto;font:15px/1.7 system-ui;color:#16352f;padding:0 24px}}
+    pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6f3;padding:20px;font-size:12px}}
+    .notice{{border-left:4px solid #a56828;padding:12px;background:#fff8ea}}@media print{{button{{display:none}}}}
+    </style><h1>VRA-Trust 工程证据报告</h1><p>状态：{html.escape(run['status'])} · {html.escape(run['run_id'])}</p>
+    <p class="notice">Decision Certificate 草稿 · 未签署。真实仿真不等于实测验证；当前不作确定最优推荐。</p>
+    <p>以下与 JSON / PDF 使用同一服务端核验对象。导出的文件是生成时快照，后续使用须重新核验 run_id。</p>
+    <p>浏览器菜单或 Ctrl+P 可打印；PDF 下载由服务端生成。</p><pre>{payload}</pre></html>"""
+
+
+def report_pdf(report):
+    output = io.BytesIO()
+    font = "STSong-Light"
+    for candidate in [Path("C:/Windows/Fonts/simhei.ttf"), Path("/usr/share/fonts/truetype/arphic/uming.ttc")]:
+        if candidate.is_file():
+            font = "VRA-CJK"
+            pdfmetrics.registerFont(TTFont(font, str(candidate)))
+            break
+    else:
+        pdfmetrics.registerFont(UnicodeCIDFont(font))
+    body = ParagraphStyle("body", fontName=font, fontSize=9, leading=15, wordWrap="CJK", textColor=colors.HexColor("#19372f"))
+    heading = ParagraphStyle("heading", parent=body, fontSize=18, leading=26, spaceAfter=16)
+    sub = ParagraphStyle("sub", parent=body, fontSize=12, leading=20, spaceBefore=16, spaceAfter=8)
+    story = []
+    def para(value, style=body):
+        text = html.escape(str(value) if value is not None else "未提供").replace("²", "<super>2</super>")
+        return Paragraph(text, style)
+    def section(title):
+        story.append(para(title, sub))
+    def rows(items, keep=False):
+        table = Table([[para(a), para(b)] for a, b in items], colWidths=[120, 403], hAlign="LEFT")
+        table.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LINEBELOW", (0, 0), (-1, -1), .3, colors.HexColor("#d7e0d5")), ("BOTTOMPADDING", (0, 0), (-1, -1), 7), ("TOPPADDING", (0, 0), (-1, -1), 7)]))
+        story.append(KeepTogether([table]) if keep else table)
+    run, project, cert = report["run"], report["project"], report["certificate"]
+    metrics, carbon = run["metrics"] or {}, run["carbon"] or {}
+    def numeric(value):
+        return f"{value:,.2f}" if isinstance(value, (float, int)) else "未计算 / 不可用"
+    story += [para("稀土智暖 VRA-Trust", heading), para("工程证据报告 / Decision Certificate 草稿", sub), para("未签署。当前不能给出确定最优推荐。参考仿真不等于实测验证。"), Spacer(1, 16)]
+    rows([("项目", project["name"]), ("数据性质", project["data_nature"]), ("运行", run["run_id"]), ("方案 / 状态", run["scheme_id"] + " / " + run["status"]), ("报告时间 UTC", report["generated_at"]), ("证书状态", cert["status"])])
+    section("01  计算结果与适用范围")
+    rows([("全年场地能耗 kWh", numeric(metrics.get("annual_energy_kwh"))), ("总建筑面积 m2", numeric(metrics.get("area_m2"))), ("EUI kWh/(m2·a)", numeric(metrics.get("eui_kwh_m2a"))), ("运行 CO2 kg", numeric(carbon.get("operating_carbon_kg"))), ("碳核算性质", "教学因子情景，非正式核算" if carbon.get("scenario") else carbon.get("status", "未计算")), ("引擎调用 / Warning", (str(run["engine_calls_executed"]) if run["engine_calls_executed"] is not None else "未确认") + " / " + str(run["warnings_count"])), ("生命周期 / 签发信用", "均未评估；运行 CO2 不等于 LCA 或碳信用")])
+    assurance = carbon.get('source_assurance') or {'status': 'USER_DECLARED'}
+    rows([('因子来源状态', assurance['status']), ('来源可信边界', assurance.get('notice', '来源未独立核证'))])
+    if run["error"] or run["stale_reasons"]:
+        story.append(para("拒绝原因：" + str(run["error"] or "；".join(run["stale_reasons"]))))
+    story.append(PageBreak())
+    story.append(para("判断边界与补证动作", heading))
+    section("02  决策状态")
+    rows([("当前建议", "不发布确定推荐"), ("候选方案", ", ".join(cert["candidate_schemes"])), ("目标", cert["objective"]), ("约束", "；".join(cert["constraints"])), ("稳定性", cert['stability_status']), ("成立条件", "；".join(cert["conditions"])), ("失效条件", "；".join(cert["invalidation_conditions"])), ("反例", "未搜索，不能解读为无反例" if cert['counterexamples'] is None else str(len(cert['counterexamples'])) + ' 个已记录；仅限本次搜索域和预算'), ("未排除的不确定性", "；".join(cert["unresolved_uncertainties"])), ("建议补证", "；".join(cert["suggested_evidence_actions"])), ("工程师签署", cert["engineer_review"])])
+    if report.get('robustness'):
+        study = report['robustness']
+        section('02.1  反例搜索范围与预算')
+        rows([('搜索 ID', study['search_id']), ('状态 / 目标', study['status'] + ' / ' + study['objective']),
+              ('调用数 / 预算', str(study['engine_calls']) + ' / ' + str(study['budget'])),
+              ('离散网格覆盖', str(study.get('coverage', '尚未完成'))), ('范围声明', study.get('limitation', study['domain_type']))])
+        for axis in study['axes']:
+            story.append(para(json.dumps(axis, ensure_ascii=False)))
+        for point in study['points']:
+            story.append(para(json.dumps({'parameters': point['parameters'], 'order': point['order'], 'flipped': point['flipped'], 'run_ids': [r['run_id'] for r in point['runs']]}, ensure_ascii=False)))
+    section("03  舒适性及输出限制")
+    for key, value in metrics.get("comfort_hours", {}).items():
+        story.append(para(key + ": " + numeric(value) + " h"))
+    for note in run["limitations"]:
+        story.append(para(note))
+    story.append(PageBreak())
+    story.append(para("证据索引与版本", heading))
+    for index, ev in enumerate(report["evidence"], 1):
+        section(f"04.{index}  {ev['name']}")
+        rows([("Evidence ID / 版本", ev["evidence_id"] + " / v" + str(ev["revision"])), ("性质 / 复核", ev["status"] + " / " + ev["review_state"]), ("源文件 / 定位", str(ev["source_file"]) + " / " + ev["source_locator"]), ("SHA256", ev["hash"]), ("来源 / 授权", ev["authority"] + " / " + ev["permission"]), ("责任人 / 时间", ev["responsible_person"] + " / " + ev["timestamp"]), ("方法 / 不确定性", ev["acquisition_method"] + " / " + str(ev["uncertainty"])), ("数值 / 单位 / 置信度", json.dumps([ev["value"], ev["unit"], ev["confidence"]], ensure_ascii=False)), ("复核说明", ev["review_note"])])
+    story.append(PageBreak())
+    story.append(para("计算版本与复核定位", heading))
+    section("05  Result Provenance")
+    rows(list((run["provenance"] or {"status": "无有效结果版本"}).items()))
+    if run.get('weather_quality'):
+        quality = run['weather_quality']
+        section('05.1  天气输入筛查与缺测条件')
+        rows([('状态 / 小时数', quality['status'] + ' / ' + str(quality['hours'])),
+              ('站点', quality['station']['city']), ('天气 SHA256', quality['source_sha256']),
+              ('策略 / 校验器', quality['policy_version'] + ' / ' + quality['validator_sha256']),
+              ('应用插补次数', quality['application_imputation_count']), ('适用范围', quality['scope'])])
+        for item in quality['conditions']:
+            story.append(para(item['field'] + ': ' + item['message'] + '；' + str(item['count']) +
+                              ' 小时，首/末行 ' + str(item['first_line']) + '/' + str(item['last_line'])))
+        for note in quality['limitations']:
+            story.append(para(note))
+    if carbon.get('provenance'):
+        section('05.2  独立碳派生版本（不改写原仿真）')
+        for key in ['carbon_id', 'run_id', 'factor_hash', 'source_result_hash', 'calculator_version', 'timestamp', 'energyplus_calls']:
+            story.append(para(key + ': ' + str(carbon['provenance'].get(key))))
+    sizing = metrics.get('zone_design_loads')
+    if sizing:
+        section('05.3  分区设计显热负荷（模型情景）')
+        rows([('状态', sizing['status']), ('项目适用性', '待专业复核，不是当地规范设计或设备选型结论'),
+              ('模型 / SQL SHA256', sizing['model_sha256'] + ' / ' + sizing['sql_sha256']),
+              ('方法 / 解析器', sizing['policy_version'] + ' / ' + sizing['parser_sha256'])])
+        if sizing['status'] == 'calculated_model_scenario':
+            if len(sizing['rows']) > 100:
+                story.append(para('PDF展示前100行，共' + str(len(sizing['rows'])) + '行；完整结果见同源JSON报告。'))
+            for item in sizing['rows'][:100]:
+                peak = item['peak']
+                rows([('分区 / 工况', item['zone_name'] + ' / ' + ('采暖' if item['load_type'] == 'Heating' else '制冷')),
+                      ('计算显热 / 用户调整后 kW', numeric(item['calculated_sensible_load_W'] / 1000) + ' / ' + numeric(item['user_adjusted_sensible_load_W'] / 1000)),
+                      ('峰值设计日 / 时刻', (peak['design_day'] + ' / ' + peak['date_time']) if peak else '无正负荷峰值'),
+                      ('分区倍率 / 分组倍率', str(item['zone_multiplier']) + ' / ' + str(item['zone_list_multiplier']) + '；已包含于原生负荷'),
+                      ('SQL 行 / 单位', str(item['locator']['row_id']) + ' / W')])
+        else:
+            story.append(para('未取得可核验的分区负荷：' + sizing.get('reason', '缺少依据')))
+        if sizing['site_comparison'] == 'declared_site_differs_from_weather':
+            story.append(para('IDF 声明位置与 EPW 站点不同；须核对设计日来源及原生引擎采用的位置，不能按天气站名称重标设计负荷。'))
+        for day in (sizing.get('basis') or {}).get('design_days', []):
+            story.append(para(day['name'] + '：最高干球 ' + str(day['maximum_dry_bulb_C']) + ' °C，日温差 ' + str(day['daily_dry_bulb_range_K']) + ' K；统计来源未独立核验。'))
+        for note in sizing['limitations']:
+            story.append(para(note))
+    hourly = metrics.get('hourly_thermal')
+    if hourly:
+        section('05.4  逐时热工分析（模型情景）')
+        rows([('状态', hourly['status']), ('模型 / SQL SHA256', hourly['model_sha256'] + ' / ' + hourly['sql_sha256'])])
+        summary = hourly.get('summary') if hourly['status'] == 'calculated_model_scenario' else None
+        if summary:
+            rows([('原生环境', summary['environment']['EnvironmentName']), ('完整覆盖小时数', summary['hour_count'])])
+            for mode, name in [('heating', '采暖'), ('cooling', '制冷')]:
+                peak = summary['building'][mode + '_peak']
+                clock = peak['time']
+                rows([(name + '同时峰值 kW', numeric(peak['value_W'] / 1000)),
+                      ('小时结束时刻', f"{clock['month']}/{clock['day']} {clock['hour_ending']:02d}:00"),
+                      (name + '显热交付量 kWh', numeric(summary['building'][mode + '_delivered_sensible_kWh']))])
+            story.append(para('峰值日 24 小时曲线及分区明细见同源 JSON；完整原生时序见证据 ZIP 的 SQL。'))
+        else:
+            story.append(para('当前没有可核验的逐时热工结果：' + hourly.get('reason', '缺少依据')))
+        for note in hourly['limitations']:
+            story.append(para(note))
+    ideal = metrics.get('ideal_loads')
+    if ideal:
+        section('05.5  理想空调显潜热与新风（独立边界）')
+        rows([('状态', ideal['status']), ('模型 / SQL SHA256', ideal['model_sha256']+' / '+ideal['sql_sha256'])])
+        summary = ideal.get('summary') if ideal['status']=='calculated_model_scenario' else None
+        if summary:
+            rows([('原生环境 / 小时数', summary['environment']['EnvironmentName']+' / '+str(summary['hour_count'])),
+                  ('覆盖范围', str(summary['coverage']['ideal_system_count'])+'套声明理想系统；其他设备不包含于该汇总')])
+            for group,label in [('zone','区内交付'),('supply','供风处理'),('outdoor','新风负荷'),('recovery','热回收')]:
+                for mode,direction in [('heating','加热'),('cooling','冷却')]:
+                    items=summary['aggregate'];total=items[f'{group}_total_{mode}_W'];clock=total['peak']['time']
+                    rows([('边界 / 方向',label+' / '+direction),
+                          ('期间显热 / 潜热 / 合计 kWh', ' / '.join(numeric(items[f'{group}_{part}_{mode}_W']['energy_kWh']) for part in ('sensible','latent','total'))),
+                          ('合计小时峰值 kW / 时刻',numeric(total['peak']['value']/1000)+f" / {clock['month']}/{clock['day']} {clock['hour_ending']:02d}:00")], keep=True)
+            story.append(para('四个边界不能相加为总耗电；原生数值已经包含分区/分组倍率。设备逐项绑定、未覆盖分区、其他设备和SQL字典行见同源JSON。'))
+        else:
+            story.append(para('无可交付数值：'+ideal.get('reason','未核验')))
+        for note in ideal['limitations']:story.append(para(note))
+    section("06  SQL 来源定位")
+    for key, locator in metrics.get("locators", {}).items():
+        story.append(para(key + " : " + " / ".join(str(locator.get(k, "")) for k in ["table", "row", "column", "unit", "raw_value"])))
+    section("07  重放与责任边界")
+    story.append(para("证据 ZIP 包含 IDF、EPW、运行请求、ERR、SQL、结果和文件哈希。以同版本 EnergyPlus 重放 input/model.idf 与 input/weather.epw，再运行 parser 校验。PDF 是生成时快照；使用前须查询 run_id 当前状态。"))
+    story.append(para("不替代法定设计、审图、检测或 CCER 审定核查。本地哈希不是第三方数字签名。完整机器可读字段见同源 report.json。"))
+    def footer(canvas, doc):
+        canvas.setFont(font, 8)
+        canvas.drawString(36, 22, "VRA-Trust | 生成时快照；后续需重新核验版本 | " + str(doc.page))
+    SimpleDocTemplate(output, pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36,
+                      title="VRA-Trust Evidence Report", author="VRA-Trust").build(story, onFirstPage=footer, onLaterPages=footer)
+    return output.getvalue()

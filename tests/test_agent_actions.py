@@ -218,3 +218,15 @@ def test_open_question_defer_stops_after_selected_read_without_false_completion(
     assert len(captured)==2 and t['termination']['reason']=='question_deferred'
     assert t['answer']['task_completion']=='incomplete' and not t['answer'].get('checked_statements')
     assert t['unresolved_selected_reads'] and not t.get('model_finished_delivery')
+
+
+def test_adjacent_identical_reads_run_once_with_original_response_retained():
+    definitions = simple_tools()
+    definitions[0]['function']['name'] = 'professional_read_many'
+    def action(fact):
+        return {'tool': 'professional_read_many', 'arguments': {'fact': fact}}
+    actions = [action('R'), action('R'), action('U'), action('R')]
+    raw = {'role': 'assistant', 'content': json.dumps({'actions': actions})}
+    decoded = agent_actions.decode(raw, definitions)
+    assert [json.loads(c['function']['arguments'])['fact'] for c in decoded['tool_calls']] == ['R', 'U', 'R']
+    assert decoded['_raw_action_response'] == raw
