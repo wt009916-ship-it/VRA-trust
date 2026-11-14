@@ -89,6 +89,19 @@ def decode(message, tools):
         if read_key is not None and read_key == prior_read:
             continue
         prior_read = read_key
+        if calls and action['tool'] in {'professional_deliver', 'professional_limit'}:
+            previous = calls[-1]['function']
+            if previous['name'] == action['tool']:
+                field = 'delivery' if action['tool'] == 'professional_deliver' else 'limitation'
+                previous_args = json.loads(previous['arguments'])
+                previous_body = previous_args.get(field, {})
+                current_body = action['arguments'].get(field, {})
+                previous_identity = {k: v for k, v in previous_body.items() if k != 'finish'}
+                current_identity = {k: v for k, v in current_body.items() if k != 'finish'}
+                if previous_identity == current_identity:
+                    previous_body['finish'] = bool(previous_body.get('finish') or current_body.get('finish'))
+                    previous['arguments'] = json.dumps(previous_args, ensure_ascii=False, allow_nan=False)
+                    continue
         calls.append({'id':'action_'+uuid.uuid4().hex,'type':'function','function':{
             'name':action['tool'],'arguments':encoded}})
     return {'role':'assistant','content':'','tool_calls':calls,'_raw_action_response':message}

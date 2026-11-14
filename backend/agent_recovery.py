@@ -1,6 +1,7 @@
 """Typed read failures and selected-target progress, never an inferred full task plan."""
 from . import core
 from .agent_semantics import inspection
+from .agent_inspections import INSPECTIONS
 
 
 class RecordsUnavailable(core.ValidationError):
@@ -42,8 +43,29 @@ def advice(error, approved_ids, offered):
 
 def unresolved(record):
     selected={i for e in record['events'] for i in e.get('recovery',{}).get('selected_record_ids',[])}
+    # A successful model-selected leaf read also creates an observed target.
+    # Catalog discovery is a read receipt, but has no delivered numeric facts.
+    # Frozen calculation plans already track execution and delivery stages.
+    read_specs = {} if record.get('calculation_plan_snapshot') else {
+        spec.read_tool: spec for spec in INSPECTIONS.values()
+    }
+    events = record['events']
+    for event in events:
+        spec = read_specs.get(event['tool'])
+        if record.get('objective') != 'open_ended' or spec is None or event['status'] != 'succeeded':
+            continue
+        origin = event.get('origin')
+        parent = event.get('parent_event')
+        if parent is not None and 0 <= parent < len(events):
+            origin = events[parent].get('origin')
+        if origin != 'model':
+            continue
+        ident = event.get('result', {}).get(spec.record_key)
+        if ident:
+            selected.add(ident)
     delivered={r['record_id'] for r in record.get('professional_deliveries',[])}
     delivered.update(r['request'].get('record_id') for r in record.get('missing_deliveries',[]))
+    delivered.update(r.get('record_id') for r in record.get('professional_reviews', []))
     return sorted(selected-delivered)
 
 
