@@ -1,0 +1,267 @@
+{
+  "$defs": {
+    "Boundaries": {
+      "additionalProperties": false,
+      "properties": {
+        "left": {
+          "$ref": "#/$defs/Boundary"
+        },
+        "right": {
+          "$ref": "#/$defs/Boundary"
+        },
+        "bottom": {
+          "$ref": "#/$defs/Boundary"
+        },
+        "top": {
+          "$ref": "#/$defs/Boundary"
+        }
+      },
+      "required": [
+        "left",
+        "right",
+        "bottom",
+        "top"
+      ],
+      "title": "Boundaries",
+      "type": "object"
+    },
+    "Boundary": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "adiabatic",
+            "fixed_temperature",
+            "film"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "temperature_c": {
+          "anyOf": [
+            {
+              "maximum": 200,
+              "minimum": -100,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temperature C"
+        },
+        "resistance_m2k_w": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 10,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resistance M2K W"
+        },
+        "basis": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Basis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "basis"
+      ],
+      "title": "Boundary",
+      "type": "object"
+    },
+    "Probe": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "x",
+        "y"
+      ],
+      "title": "Probe",
+      "type": "object"
+    },
+    "Region": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "x0": {
+          "minimum": 0,
+          "title": "X0",
+          "type": "number"
+        },
+        "x1": {
+          "exclusiveMinimum": 0,
+          "title": "X1",
+          "type": "number"
+        },
+        "y0": {
+          "minimum": 0,
+          "title": "Y0",
+          "type": "number"
+        },
+        "y1": {
+          "exclusiveMinimum": 0,
+          "title": "Y1",
+          "type": "number"
+        },
+        "conductivity": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Conductivity"
+        },
+        "conductivity_unit": {
+          "enum": [
+            "W/(m K)",
+            "mW/(m K)"
+          ],
+          "title": "Conductivity Unit",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "x0",
+        "x1",
+        "y0",
+        "y1",
+        "conductivity_unit",
+        "source"
+      ],
+      "title": "Region",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "width": {
+      "exclusiveMinimum": 0,
+      "title": "Width",
+      "type": "number"
+    },
+    "height": {
+      "exclusiveMinimum": 0,
+      "title": "Height",
+      "type": "number"
+    },
+    "length_unit": {
+      "enum": [
+        "m",
+        "cm",
+        "mm"
+      ],
+      "title": "Length Unit",
+      "type": "string"
+    },
+    "geometry_source": {
+      "maxLength": 2000,
+      "minLength": 3,
+      "title": "Geometry Source",
+      "type": "string"
+    },
+    "application": {
+      "maxLength": 2000,
+      "minLength": 3,
+      "title": "Application",
+      "type": "string"
+    },
+    "regions": {
+      "items": {
+        "$ref": "#/$defs/Region"
+      },
+      "maxItems": 32,
+      "minItems": 1,
+      "title": "Regions",
+      "type": "array"
+    },
+    "boundaries": {
+      "$ref": "#/$defs/Boundaries"
+    },
+    "cell_size": {
+      "exclusiveMinimum": 0,
+      "title": "Cell Size",
+      "type": "number"
+    },
+    "probes": {
+      "items": {
+        "$ref": "#/$defs/Probe"
+      },
+      "maxItems": 50,
+      "title": "Probes",
+      "type": "array"
+    },
+    "evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 32,
+      "title": "Evidence Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "width",
+    "height",
+    "length_unit",
+    "geometry_source",
+    "application",
+    "regions",
+    "boundaries",
+    "cell_size"
+  ],
+  "title": "Section",
+  "type": "object"
+}

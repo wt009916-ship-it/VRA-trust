@@ -1,3 +1,5 @@
+import {thermalBridgeWorkspace} from './thermal-bridge-ui.js';
+import './thermal-bridge.css';
 import {retrofitWorkspace} from './retrofit-ui.js';
 import {request, post, escape as esc, number as num} from './api.js';
 
@@ -5,6 +7,11 @@ export async function thermalWorkspace(state, host, action) {
   const base='/projects/'+state.project.project_id;
   const row=()=>`<fieldset class="thermal-layer"><legend>材料层</legend><div class="form-grid"><label>材料名<input name="name" required maxlength="100"></label><label>厚度<input name="thickness" type="number" min="0.000001" step="any" placeholder="未知可留空"></label><label>厚度单位<select name="thickness_unit"><option>mm</option><option>cm</option><option>m</option></select></label><label>导热系数<input name="conductivity" type="number" min="0.000001" step="any" placeholder="未知可留空"></label><label>导热单位<select name="conductivity_unit"><option>W/(m K)</option><option>mW/(m K)</option></select></label><label>修正系数<input name="correction_factor" type="number" min="1" max="10" step="any" value="1" required></label></div><label>温度／含湿／老化修正依据<input name="correction_basis" required minlength="3" placeholder="说明采用系数的依据；未修正也须说明适用条件"></label><label>材料数据来源与版本<input name="source" required minlength="3"></label><label>关联项目证据<select name="evidence_id"><option value="">仅用户声明，尚无项目证据</option>${state.evidence.map(e=>`<option value="${esc(e.evidence_id)}">${esc(e.name)} · ${esc(e.status)}</option>`).join('')}</select></label><button type="button" class="remove-layer">移除此层</button></fieldset>`;
   host.innerHTML=`<div class="view-heading"><div><h1>围护结构热工计算</h1><p>逐层 R = d / λ；U = 1 / (Rsi + ΣR + Rse)。一维稳态，不含热桥、空气层、窗框或结露校核。</p></div></div><form id="thermal-form"><label>构造方案名称<input name="assembly_name" required maxlength="160"></label><div id="thermal-layers"></div><button type="button" id="add-thermal-layer">＋ 添加材料层</button><div class="form-grid"><label>内表面热阻 Rsi [m²K/W]<input name="rsi" type="number" min="0" max="2" step="any" placeholder="未知留空"></label><label>外表面热阻 Rse [m²K/W]<input name="rse" type="number" min="0" max="2" step="any" placeholder="未知留空"></label></div><label>表面热阻依据<input name="surface_basis" required minlength="3" placeholder="规范版本、表号、热流方向和边界工况，或明确的试算假设"></label><label>计算适用条件<input name="application" required minlength="3" placeholder="材料状态、温湿度和构造适用范围"></label><button type="submit" class="primary">计算并保存新记录</button></form><p class="subtle">缺少厚度、导热系数或表面热阻时保留缺口，不补填结果。计算不自动修改仿真模型。</p><div id="thermal-result" aria-live="polite"></div><h2>历史记录与比较</h2><p>按下方顺序选择2–5条，第一条作基准；工况和表面热阻须一致。U值下降比例不等于建筑节能率。</p><div id="thermal-history"></div><button id="compare-thermal">比较所选构造</button><div id="thermal-comparison"></div>`;
+  const section2d=document.createElement('details');section2d.className='thermal-bridge-panel';
+  section2d.innerHTML='<summary>二维材料截面 · 温度场与边界热流</summary><section></section>';
+  host.insertBefore(section2d,host.querySelector('#thermal-form'));
+  let sectionLoaded=false;
+  section2d.ontoggle=()=>{if(section2d.open&&!sectionLoaded){sectionLoaded=true;action(async()=>{try{await thermalBridgeWorkspace(state,section2d.querySelector('section'),action);}catch(error){sectionLoaded=false;throw error;}});}};
   const layers=host.querySelector('#thermal-layers');
   function add(){layers.insertAdjacentHTML('beforeend',row());layers.querySelectorAll('.remove-layer').forEach(b=>b.onclick=()=>{if(layers.children.length>1)b.closest('fieldset').remove();});}
   add(); host.querySelector('#add-thermal-layer').onclick=add;

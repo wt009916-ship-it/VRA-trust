@@ -1474,6 +1474,308 @@
         ]
       }
     },
+    "/api/projects/{project_id}/thermal-bridges": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__thermal_bridges_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Section"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__thermal_bridges_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/thermal-bridges/{thermalbridge_id}": {
+      "get": {
+        "summary": "View",
+        "operationId": "view_api_projects__project_id__thermal_bridges__thermalbridge_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "thermalbridge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thermalbridge Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/thermal-bridges/{thermalbridge_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__thermal_bridges__thermalbridge_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "thermalbridge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thermalbridge Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/thermal-bridges/{thermalbridge_id}/temperatures.csv": {
+      "get": {
+        "summary": "Temperature Csv",
+        "operationId": "temperature_csv_api_projects__project_id__thermal_bridges__thermalbridge_id__temperatures_csv_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "thermalbridge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thermalbridge Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/files/{file_id}/ideal-load-output.idf": {
       "get": {
         "summary": "Download",
@@ -10819,38 +11121,30 @@
         ],
         "title": "Body_upload_api_projects__project_id__files_post"
       },
-      "Boundary": {
+      "Boundaries": {
         "properties": {
-          "stage": {
-            "type": "string",
-            "enum": [
-              "production",
-              "transport",
-              "construction",
-              "operation",
-              "end_of_life"
-            ],
-            "title": "Stage"
+          "left": {
+            "$ref": "#/components/schemas/backend__thermal_bridge__Boundary"
           },
-          "included": {
-            "type": "boolean",
-            "title": "Included"
+          "right": {
+            "$ref": "#/components/schemas/backend__thermal_bridge__Boundary"
           },
-          "reason": {
-            "type": "string",
-            "maxLength": 1000,
-            "minLength": 5,
-            "title": "Reason"
+          "bottom": {
+            "$ref": "#/components/schemas/backend__thermal_bridge__Boundary"
+          },
+          "top": {
+            "$ref": "#/components/schemas/backend__thermal_bridge__Boundary"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "stage",
-          "included",
-          "reason"
+          "left",
+          "right",
+          "bottom",
+          "top"
         ],
-        "title": "Boundary"
+        "title": "Boundaries"
       },
       "Building": {
         "properties": {
@@ -11623,7 +11917,7 @@
           },
           "boundaries": {
             "items": {
-              "$ref": "#/components/schemas/Boundary"
+              "$ref": "#/components/schemas/backend__lifecycle__Boundary"
             },
             "type": "array",
             "maxItems": 5,
@@ -13002,7 +13296,7 @@
           },
           "boundaries": {
             "items": {
-              "$ref": "#/components/schemas/Boundary"
+              "$ref": "#/components/schemas/backend__lifecycle__Boundary"
             },
             "type": "array",
             "maxItems": 5,
@@ -14282,6 +14576,34 @@
         ],
         "title": "Preview"
       },
+      "Probe": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Y"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "x",
+          "y"
+        ],
+        "title": "Probe"
+      },
       "ProfileRequest": {
         "properties": {
           "cad_id": {
@@ -14948,6 +15270,75 @@
           "walls"
         ],
         "title": "Reconstruction"
+      },
+      "Region": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "x0": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "X0"
+          },
+          "x1": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "X1"
+          },
+          "y0": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Y0"
+          },
+          "y1": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Y1"
+          },
+          "conductivity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conductivity"
+          },
+          "conductivity_unit": {
+            "type": "string",
+            "enum": [
+              "W/(m K)",
+              "mW/(m K)"
+            ],
+            "title": "Conductivity Unit"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 3,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "x0",
+          "x1",
+          "y0",
+          "y1",
+          "conductivity_unit",
+          "source"
+        ],
+        "title": "Region"
       },
       "Registration": {
         "properties": {
@@ -15811,7 +16202,7 @@
           },
           "boundaries": {
             "items": {
-              "$ref": "#/components/schemas/Boundary"
+              "$ref": "#/components/schemas/backend__lifecycle__Boundary"
             },
             "type": "array",
             "maxItems": 5,
@@ -16015,6 +16406,94 @@
           "budget"
         ],
         "title": "Search"
+      },
+      "Section": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width"
+          },
+          "height": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Height"
+          },
+          "length_unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "cm",
+              "mm"
+            ],
+            "title": "Length Unit"
+          },
+          "geometry_source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Geometry Source"
+          },
+          "application": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Application"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Regions"
+          },
+          "boundaries": {
+            "$ref": "#/components/schemas/Boundaries"
+          },
+          "cell_size": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Cell Size"
+          },
+          "probes": {
+            "items": {
+              "$ref": "#/components/schemas/Probe"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Probes"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "width",
+          "height",
+          "length_unit",
+          "geometry_source",
+          "application",
+          "regions",
+          "boundaries",
+          "cell_size"
+        ],
+        "title": "Section"
       },
       "SectionProfile": {
         "properties": {
@@ -16880,6 +17359,39 @@
         ],
         "title": "Review"
       },
+      "backend__lifecycle__Boundary": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": [
+              "production",
+              "transport",
+              "construction",
+              "operation",
+              "end_of_life"
+            ],
+            "title": "Stage"
+          },
+          "included": {
+            "type": "boolean",
+            "title": "Included"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "stage",
+          "included",
+          "reason"
+        ],
+        "title": "Boundary"
+      },
       "backend__lifecycle__Comparison": {
         "properties": {
           "lifecycle_ids": {
@@ -16948,6 +17460,58 @@
           "basis"
         ],
         "title": "Review"
+      },
+      "backend__thermal_bridge__Boundary": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "adiabatic",
+              "fixed_temperature",
+              "film"
+            ],
+            "title": "Mode"
+          },
+          "temperature_c": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 200.0,
+                "minimum": -100.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature C"
+          },
+          "resistance_m2k_w": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resistance M2K W"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 3,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "basis"
+        ],
+        "title": "Boundary"
       }
     },
     "securitySchemes": {

@@ -1,0 +1,117 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>二维导热记录</title><style>body{font:16px/1.7 system-ui;max-width:1100px;margin:32px auto;padding:20px}pre{white-space:pre-wrap;overflow-wrap:anywhere}table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:8px}</style><h1>Independent 2D slab</h1><p>状态：calculated。二维恒定物性数值计算；不是完整热桥标准验证或节能合规结论。needs_refinement 表示网格未通过，数值仅作诊断。</p><h2>边界热流（W/m 延伸长度，正值进入截面）</h2><table><tr><th>边界</th><th>热流</th></tr><tr><td>left</td><td>18.5697</td></tr><tr><td>right</td><td>-18.5697</td></tr><tr><td>bottom</td><td>-0.0</td></tr><tr><td>top</td><td>-0.0</td></tr></table><p>热平衡残差：-7.105427357601002e-15 W/m</p><h2>指定位置温度（°C）</h2><table><tr><th>位置</th><th>x / m</th><th>y / m</th><th>温度 / °C</th></tr><tr><td>Centre</td><td>0.5</td><td>0.5</td><td>10.0</td></tr></table><h2>网格与线性求解检查</h2><pre>{
+  &quot;mesh_check&quot;: {
+    &quot;coarse_cells&quot;: 400,
+    &quot;fine_cells&quot;: 1600,
+    &quot;max_temperature_difference_k&quot;: 0.007453266694945171,
+    &quot;max_edge_heat_difference_relative&quot;: 0.0013562477206772888,
+    &quot;temperature_limit_k&quot;: 0.1,
+    &quot;relative_heat_limit&quot;: 0.01,
+    &quot;passed&quot;: true,
+    &quot;fixed_temperature_corner_discontinuities&quot;: [],
+    &quot;notice&quot;: &quot;Two-grid difference is an estimate, not a rigorous continuum error bound. Corner temperature discontinuities may have singular total heat flow.&quot;
+  },
+  &quot;linear_solver&quot;: {
+    &quot;coarse_iterations&quot;: 53,
+    &quot;fine_iterations&quot;: 112,
+    &quot;coarse_residual_restarts&quot;: 0,
+    &quot;fine_residual_restarts&quot;: 0,
+    &quot;residual_l2_w_per_m&quot;: 8.363547106413713e-11,
+    &quot;rhs_l2_w_per_m&quot;: 10.522672835293129,
+    &quot;residual_is_not_discretization_error&quot;: true
+  }
+}</pre><h2>输入、来源及版本</h2><pre>{
+  &quot;thermalbridge_id&quot;: &quot;thermalbridge_fcb502fecd0e4970901bc0815cff25e5&quot;,
+  &quot;project_id&quot;: &quot;project_a9ad457072074845b624c834123599d0&quot;,
+  &quot;project_revision&quot;: 1,
+  &quot;input&quot;: {
+    &quot;name&quot;: &quot;Independent 2D slab&quot;,
+    &quot;width&quot;: 1.0,
+    &quot;height&quot;: 1.0,
+    &quot;length_unit&quot;: &quot;m&quot;,
+    &quot;geometry_source&quot;: &quot;Declared rectangular reference&quot;,
+    &quot;application&quot;: &quot;Independent steady conduction check&quot;,
+    &quot;regions&quot;: [
+      {
+        &quot;name&quot;: &quot;Homogeneous&quot;,
+        &quot;x0&quot;: 0.0,
+        &quot;x1&quot;: 1.0,
+        &quot;y0&quot;: 0.0,
+        &quot;y1&quot;: 1.0,
+        &quot;conductivity&quot;: 1.0,
+        &quot;conductivity_unit&quot;: &quot;W/(m K)&quot;,
+        &quot;source&quot;: &quot;Independent synthetic arithmetic input&quot;
+      }
+    ],
+    &quot;boundaries&quot;: {
+      &quot;left&quot;: {
+        &quot;mode&quot;: &quot;film&quot;,
+        &quot;temperature_c&quot;: 20.0,
+        &quot;resistance_m2k_w&quot;: 0.2,
+        &quot;basis&quot;: &quot;Independently declared reference boundary&quot;
+      },
+      &quot;right&quot;: {
+        &quot;mode&quot;: &quot;film&quot;,
+        &quot;temperature_c&quot;: 0.0,
+        &quot;resistance_m2k_w&quot;: 0.2,
+        &quot;basis&quot;: &quot;Independently declared reference boundary&quot;
+      },
+      &quot;bottom&quot;: {
+        &quot;mode&quot;: &quot;film&quot;,
+        &quot;temperature_c&quot;: 10.0,
+        &quot;resistance_m2k_w&quot;: 0.2,
+        &quot;basis&quot;: &quot;Independently declared reference boundary&quot;
+      },
+      &quot;top&quot;: {
+        &quot;mode&quot;: &quot;film&quot;,
+        &quot;temperature_c&quot;: 10.0,
+        &quot;resistance_m2k_w&quot;: 0.2,
+        &quot;basis&quot;: &quot;Independently declared reference boundary&quot;
+      }
+    },
+    &quot;cell_size&quot;: 0.05,
+    &quot;probes&quot;: [
+      {
+        &quot;name&quot;: &quot;Centre&quot;,
+        &quot;x&quot;: 0.5,
+        &quot;y&quot;: 0.5
+      }
+    ],
+    &quot;evidence_ids&quot;: [
+      &quot;evidence_8d8f8729f1804a6a900924b3916575e5&quot;
+    ]
+  },
+  &quot;calculator_version&quot;: &quot;547a9267e7e3510c26aac8a1126031f0b6dc09310e121e824985c35ace6906bd&quot;,
+  &quot;evidence_snapshot&quot;: [
+    {
+      &quot;type&quot;: &quot;manual_input&quot;,
+      &quot;name&quot;: &quot;Synthetic four-film reference&quot;,
+      &quot;source_file&quot;: null,
+      &quot;source_locator&quot;: &quot;Four boundary symmetry test&quot;,
+      &quot;value&quot;: null,
+      &quot;unit&quot;: null,
+      &quot;authority&quot;: &quot;Test author&quot;,
+      &quot;permission&quot;: &quot;Synthetic reference&quot;,
+      &quot;uncertainty&quot;: null,
+      &quot;confidence&quot;: null,
+      &quot;acquisition_method&quot;: &quot;Explicit declaration&quot;,
+      &quot;responsible_person&quot;: &quot;Test author&quot;,
+      &quot;status&quot;: &quot;ASSUMED&quot;,
+      &quot;scheme_id&quot;: null,
+      &quot;evidence_id&quot;: &quot;evidence_8d8f8729f1804a6a900924b3916575e5&quot;,
+      &quot;project_id&quot;: &quot;project_a9ad457072074845b624c834123599d0&quot;,
+      &quot;revision&quot;: 1,
+      &quot;timestamp&quot;: &quot;2026-11-14T05:21:35.227354+00:00&quot;,
+      &quot;hash&quot;: &quot;ec6dcb17ed008afd966c82606b77e1da2fb45a86ae4e142e978497fb96a0501c&quot;,
+      &quot;review_state&quot;: &quot;pending&quot;,
+      &quot;review_note&quot;: null
+    }
+  ],
+  &quot;created_at&quot;: &quot;2026-11-14T05:21:35.267575+00:00&quot;,
+  &quot;hash&quot;: &quot;89dba4cb57ad5041e94bc01005560fbb772489c47a19511dd5ba91615b3bf1a3&quot;,
+  &quot;revision&quot;: 1,
+  &quot;stale_reasons&quot;: [],
+  &quot;stale_details&quot;: [],
+  &quot;status&quot;: &quot;calculated&quot;,
+  &quot;source_status&quot;: &quot;USER_DECLARED&quot;,
+  &quot;source_notice&quot;: &quot;来源绑定及人工复核不自动证明截面、材料或边界工况真实；没有标准认证。&quot;
+}</pre></html>

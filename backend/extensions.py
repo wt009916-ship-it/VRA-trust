@@ -30,6 +30,8 @@ def register_extensions(app, domain, auth):
     app.state.robustness = robustness
     domain.robustness = robustness
     thermal = Thermal(domain)
+    from .thermal_bridge_routes import register as register_thermal_bridge
+    register_thermal_bridge(app, domain)
     from .ideal_loads import register_diagnostics
     register_diagnostics(app, domain)
     from .timestep_studies import register as register_timestep_studies
