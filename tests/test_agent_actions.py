@@ -230,3 +230,18 @@ def test_adjacent_identical_reads_run_once_with_original_response_retained():
     decoded = agent_actions.decode(raw, definitions)
     assert [json.loads(c['function']['arguments'])['fact'] for c in decoded['tool_calls']] == ['R', 'U', 'R']
     assert decoded['_raw_action_response'] == raw
+
+
+def test_same_response_delivery_duplicates_preserve_finish_and_distinct_facts():
+    definition = {'type':'function','function':{'name':'professional_deliver','parameters':{
+        'type':'object','properties':{'delivery':{'type':'object'}}}}}
+    def selected(key, finish):
+        return {'tool':'professional_deliver','arguments':{'delivery':{
+            'kind':'thermal','record_id':'thermal_a','record_hash':'same',
+            'fact_keys':[key],'finish':finish}}}
+    raw={'role':'assistant','content':json.dumps({'actions':[
+        selected('R',False),selected('R',True),selected('R',False),selected('U',False)]})}
+    decoded=agent_actions.decode(raw,[definition])
+    args=[json.loads(call['function']['arguments'])['delivery'] for call in decoded['tool_calls']]
+    assert [(a['fact_keys'],a['finish']) for a in args]==[(['R'],True),(['U'],False)]
+    assert decoded['_raw_action_response']==raw
