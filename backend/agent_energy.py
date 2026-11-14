@@ -102,3 +102,35 @@ def explanation(topic,artifact):
         return text + '开始包含、结束不包含；原生年度、账单年份和实际覆盖期间分别核验，参考数据不是实楼校准。'
     if topic=='status':return '所读模型结果或差异指标当前有效；不是实楼校准、认证、原始数据真实性或任务全面完成的证明。'
     return artifact['scope']
+
+
+def relationship(facts):
+    """Explain comparable source dimensions using current verified field receipts."""
+    if len(facts) < 2 or any(not fact.get('energy_context') for fact in facts):
+        return None
+    sources = []
+    for fact in facts:
+        context = fact['energy_context']
+        sources.append({
+            'fact': fact['fact'], 'unit': fact['unit'],
+            'carrier': context['carrier'], 'boundary': context['boundary'],
+            'native_start': context['native_start'], 'native_end': context['native_end'],
+            'bill_start': context['bill_start'], 'bill_end': context['bill_end'],
+            'basis': context['basis'], 'data_nature': context['data_nature'],
+            'run_id': context['run_id'],
+        })
+    units = {source['unit'] for source in sources}
+    carriers = {source['carrier'] for source in sources}
+    periods = {(source['native_start'], source['native_end'],
+                source['bill_start'], source['bill_end']) for source in sources}
+    text = '这些字段的单位为' + '、'.join(sorted(units)) + '。'
+    if len(units) == 1 and units == {'kWh'}:
+        text += 'kWh表示能量大小，能源载体由各字段的carrier确定。'
+    text += '当前字段对应的能源载体为' + '、'.join(sorted(carriers)) + '。'
+    if len(carriers) > 1:
+        text += '不同能源载体的量须分别归属。天然气量不能作为耗电量，跨载体换算需另有转换效率与系统边界依据。'
+    text += ('这些字段的来源期间一致。' if len(periods) == 1 else
+             '这些字段的来源期间有差异，比较前需对齐覆盖期间。')
+    text += '各字段保留原始统计口径与数据性质。'
+    return {'topic': 'energy_relationship', 'text': text, 'sources': sources,
+            'origin': 'application_from_current_verified_sources'}

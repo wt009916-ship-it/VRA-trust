@@ -8,3 +8,12 @@ test('stale energy artifact with retained data cannot render old values or links
 test('energy lists use bounded page envelope and defer validity',()=>{const r={utility_id:'utility_'+'a'.repeat(32),name:'Old bill'};assert.deepEqual(readRecordPage({records:[r],next_before:123},'utility'),{records:[r],next:123});assert.match(readRecordLabel(r,'utility'),/目录不认证/);assert.throws(()=>readRecordPage({records:[],next_before:-1},'enduse'));assert.throws(()=>readRecordPage([], 'utility'));});
 test('energy read scopes accept only matching IDs and preserve no-compute restriction',()=>{const r={request_key:'bill',kind:'utility',purpose:'results',record_id:'utility_'+'a'.repeat(32)};assert.equal(validateReadRequests([r],{mode:'local_model',allowCompute:false,objective:'open_ended'})[0].kind,'utility');assert.throws(()=>validateReadRequests([r],{mode:'local_model',allowCompute:true,objective:'open_ended'}));assert.throws(()=>validateReadRequests([{...r,record_id:'enduse_'+'a'.repeat(32)}],{mode:'provider',allowCompute:false,objective:'open_ended'}));});
 test('checked energy null remains undefined with visible source context',()=>{const s=checkedDeliveryMarkup({checked_statements:[{name:'Zero bill',record_id:'utility_a',facts:[{label:'MBE',value:null,unit:'%',period:'utility_periods',study_years:null,area_m2:null,unavailable_reason:'零分母',source_path:'/result/statistics/mbe_percent',energy_context:{native_year:2020,carrier:'Electricity',boundary:'Facility',basis:'bill_interval_statistics',data_nature:'synthetic',native_start:'2020-01-01',native_end:'2021-01-01'}}]}]});assert.match(s,/零分母/);assert.match(s,/2020/);assert.match(s,/账单覆盖期间/);assert.doesNotMatch(s,/>0 %/);});
+
+test('current energy relationship is escaped and follows verified field removal', () => {
+  const row = {name:'Energy',record_id:'enduse_a',facts:[],
+    energy_relationship:{text:'Electricity <Gas> kWh'}};
+  const markup = checkedDeliveryMarkup({checked_statements:[row]});
+  assert.match(markup, /Electricity &lt;Gas&gt; kWh/);
+  assert.doesNotMatch(markup, /<Gas>/);
+  assert.doesNotMatch(checkedDeliveryMarkup({checked_statements:[]}), /Electricity/);
+});

@@ -24,7 +24,7 @@ FACTS = {
     'schedule': ['planned_duration_days', 'forecast_as_of_day', 'forecast_finish_day', 'forecast_finish_variance_days'],
     'operation': ['sample_count', 'cell_issue_count', 'gap_count', 'rule_event_sum', 'rule_unknown_sample_sum'],
 }
-Topic = Literal['meaning', 'area', 'period', 'scope', 'status', 'history']
+Topic = Literal['meaning', 'area', 'period', 'scope', 'status', 'history', 'energy_relationship']
 
 
 class ExplicitOutput(Contract):
@@ -52,7 +52,7 @@ class OutputItem(Contract):
     fact_keys: list[str] = Field(max_length=12,
         description='Exact numeric fact keys requested by the user. Availability requests use []. Total R is total_resistance_m2k_w, not layer resistance.')
     explanation_topics: list[Topic] = Field(max_length=6,
-        description='Requested explanation topics: meaning, area, period, scope, status, history. Availability supports history/status only.')
+        description='Requested topics: meaning, area, period, scope, status, history, energy_relationship (compare two or more requested energy facts by unit/carrier/period). Availability supports history/status only.')
 
 
     @model_validator(mode='after')
@@ -77,7 +77,7 @@ def catalog(requests):
              'user_output_contract': r.get('output_contract'),
              'available_fact_keys': FACTS[r['kind']] if r['purpose'] == 'results' else [],
              'available_explanation_topics': ['history', 'status'] if r['purpose'] == 'availability' else
-                 ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle', 'scenario'} else ['period'] if r['kind'] in agent_energy.KINDS else [])}
+                 ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle', 'scenario'} else ['period', 'energy_relationship'] if r['kind'] in agent_energy.KINDS else [])}
             for r in requests]
 
 
@@ -172,6 +172,8 @@ def freeze(record, items):
             saved['question_excerpt'] = '\n'.join(f['text'] for f in selected)
         elif item.question_excerpt not in record['question']:
             raise core.ValidationError('Quote an exact substring of the current user question, not source data')
+        if 'energy_relationship' in item.explanation_topics and len(item.fact_keys) < 2:
+            raise core.ValidationError('Energy relationships require at least two selected energy facts')
         normalized.append(saved)
         if len(set(item.fact_keys)) != len(item.fact_keys) or not set(item.fact_keys) <= set(entry['available_fact_keys']):
             raise core.ValidationError('Unknown, duplicate or out-of-scope fact keys')
@@ -201,6 +203,9 @@ def missing_facts(record, request, deliveries):
 
 def explain(topic, request, facts, state, artifact):
     """Application text from validated current facts; no model prose or source-name instructions."""
+    if topic == 'energy_relationship':
+        relation = agent_energy.relationship(facts)
+        return relation['text'] if relation else '等待至少两个已核验的能耗字段及来源上下文。'
     if topic == 'history':
         return '这里只核验当前项目、指定范围的记录。记录缺失不能证明从未计算；记录存在也不是完整历史执行审计。'
     if state == 'fields_unavailable' and topic == 'status':
@@ -273,7 +278,9 @@ def attach(answer, record):
         facts = [f for f in values.get(r['record_id'], []) if f['fact'] in needed['fact_keys']]
         missing = sorted(set(needed['fact_keys']) - {f['fact'] for f in facts})
         blocked = state in {'record_unavailable', 'limitation_verified', 'fields_unavailable'}
-        ready = state in {'result_verified', 'availability_verified', 'source_review_verified'} and not missing
+        relationship_missing = ('energy_relationship' in needed['explanation_topics']
+                                and agent_energy.relationship(facts) is None)
+        ready = state in {'result_verified', 'availability_verified', 'source_review_verified'} and not missing and not relationship_missing
         artifact = artifacts.get(r['record_id']) or limits.get(r['record_id']) or {}
         source_hash = artifact.get('record_hash')
         if r['purpose'] == 'availability' and ready:
