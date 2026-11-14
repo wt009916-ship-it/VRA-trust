@@ -1,0 +1,77 @@
+........................................................................ [ 13%]
+........................................................................ [ 26%]
+........................................................................ [ 39%]
+.....................FF................................................. [ 52%]
+........................................................................ [ 65%]
+........................................................................ [ 78%]
+........................................................................ [ 91%]
+...............................................                          [100%]
+================================== FAILURES ===================================
+__ test_thermal_area_normalization_is_intrinsic_not_missing_floor_area[17.0] __
+
+client = <starlette.testclient.TestClient object at 0x000002EFB09FEE70>
+floor_area = 17.0
+
+    @pytest.mark.parametrize('floor_area', [17., 1700.])
+    def test_thermal_area_normalization_is_intrinsic_not_missing_floor_area(client, floor_area):
+        p = create_project(client)
+        changed = client.put(f"/api/projects/{p['project_id']}/building",
+            json={'expected_revision': p['revision'], 'building': {**p['building'], 'area_m2': floor_area}})
+        assert changed.status_code == 200
+        body = thermal_input()
+        body['layers'][0].update(thickness=150., conductivity=.6)
+        r = create_record(client, p['project_id'], 'thermal', body)
+        # .12 + .05 + .15/.6 + .06/(.03*1.25) = 2.02, independent of floor area.
+        expected = Fraction(101, 50)
+        values = {f['fact']: f for f in facts(r, 'thermal')}
+        assert float(values['total_resistance_m2k_w']['value']) == pytest.approx(float(expected))
+        assert float(values['u_w_m2k']['value']) == pytest.approx(float(1 / expected))
+        assert all(f['area_m2'] is None and f['area_basis'] == 'intrinsic_area_normalized_property' for f in values.values())
+        projected = model_projection(readable(r, 'thermal'), 'thermal')
+        assert projected['calculation_context']['area_basis'] == 'intrinsic_area_normalized_property'
+        assert projected['calculation_context']['resistance_definition'] == 'R=sum(d/lambda_effective)+Rsi+Rse; m2 K/W'
+>       assert Statement.model_json_schema()['properties']['area_m2']['description'].find('not totals') >= 0
+E       AssertionError: assert -1 >= 0
+E        +  where -1 = <built-in method find of str object at 0x000002EF82854190>('not totals')
+E        +    where <built-in method find of str object at 0x000002EF82854190> = '必填：复制事实area_m2；null表示无明确面积分母，参见area_basis。R/U为固有面密度性质，不是总量。'.find
+
+tests\test_agent_fact_context.py:30: AssertionError
+_ test_thermal_area_normalization_is_intrinsic_not_missing_floor_area[1700.0] _
+
+client = <starlette.testclient.TestClient object at 0x000002EFAFBAC620>
+floor_area = 1700.0
+
+    @pytest.mark.parametrize('floor_area', [17., 1700.])
+    def test_thermal_area_normalization_is_intrinsic_not_missing_floor_area(client, floor_area):
+        p = create_project(client)
+        changed = client.put(f"/api/projects/{p['project_id']}/building",
+            json={'expected_revision': p['revision'], 'building': {**p['building'], 'area_m2': floor_area}})
+        assert changed.status_code == 200
+        body = thermal_input()
+        body['layers'][0].update(thickness=150., conductivity=.6)
+        r = create_record(client, p['project_id'], 'thermal', body)
+        # .12 + .05 + .15/.6 + .06/(.03*1.25) = 2.02, independent of floor area.
+        expected = Fraction(101, 50)
+        values = {f['fact']: f for f in facts(r, 'thermal')}
+        assert float(values['total_resistance_m2k_w']['value']) == pytest.approx(float(expected))
+        assert float(values['u_w_m2k']['value']) == pytest.approx(float(1 / expected))
+        assert all(f['area_m2'] is None and f['area_basis'] == 'intrinsic_area_normalized_property' for f in values.values())
+        projected = model_projection(readable(r, 'thermal'), 'thermal')
+        assert projected['calculation_context']['area_basis'] == 'intrinsic_area_normalized_property'
+        assert projected['calculation_context']['resistance_definition'] == 'R=sum(d/lambda_effective)+Rsi+Rse; m2 K/W'
+>       assert Statement.model_json_schema()['properties']['area_m2']['description'].find('not totals') >= 0
+E       AssertionError: assert -1 >= 0
+E        +  where -1 = <built-in method find of str object at 0x000002EF82854190>('not totals')
+E        +    where <built-in method find of str object at 0x000002EF82854190> = '必填：复制事实area_m2；null表示无明确面积分母，参见area_basis。R/U为固有面密度性质，不是总量。'.find
+
+tests\test_agent_fact_context.py:30: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_fact_context.py::test_thermal_area_normalization_is_intrinsic_not_missing_floor_area[17.0]
+FAILED tests/test_agent_fact_context.py::test_thermal_area_normalization_is_intrinsic_not_missing_floor_area[1700.0]
+2 failed, 549 passed, 1 warning in 726.75s (0:12:06)

@@ -12,14 +12,14 @@ from . import core
 
 
 class Statement(Contract):
-    energy_context: agent_energy.EnergyContext | None = Field(default=None, description="Energy facts require the exact source energy_context, including year, periods, carrier, boundary, data nature and basis. Old nonenergy facts use null.")
-    fact: str = Field(min_length=1, max_length=100, description='Copy explanation_facts.fact exactly; do not translate or use its label.')
+    energy_context: agent_energy.EnergyContext | None = Field(default=None, description="能耗事实逐项复制来源energy_context（年份、期间、载体、边界、数据性质、口径）；非能耗用null。")
+    fact: str = Field(min_length=1, max_length=100, description='逐字复制explanation_facts.fact，不用译名或label。')
     value: str | None = Field(max_length=80, pattern=r'^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]{1,4})?$',
-                             description='Copy source numeric string. Null requires source_undefined with unavailable_reason. Never invent values. Incomplete/stale record: professional_limit.')
+                             description='复制来源数值字符串；null须source_undefined及unavailable_reason；缺证/失效用professional_limit，禁止编数。')
     unit: str = Field(min_length=1, max_length=40)
     period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window', 'native_annual', 'utility_periods']
-    study_years: int | None = Field(ge=1, le=200, description='Required: copy the fact study_years; null for a non-period calculation.')
-    area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='Required: copy fact area_m2. Null means no explicit area denominator; see area_basis. R/U are intrinsic area-normalized properties, not totals.')
+    study_years: int | None = Field(ge=1, le=200, description='必填：复制事实study_years；无期间为null。')
+    area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='必填：复制事实area_m2；null表示无明确面积分母，参见area_basis。R/U为固有面密度性质，不是总量。')
 
 
 def statement_instruction():
@@ -32,8 +32,8 @@ class Delivery(Contract):
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(default_factory=list, max_length=12)
     limitation_status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale'] | None = Field(default=None,
-        description='For a currently incomplete/inapplicable/stale record, copy its status here and use statements: []. This verifies the limitation only, never revives stale numbers or changes record status.')
-    finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
+        description='缺证、不适用或失效时复制当前status并用statements: []；仅验证局限，不恢复旧值或修改状态。')
+    finish: bool = Field(default=False, description='仅最后一份计划交付的专业记录设true；验证成功后结束模型调用，无需追加文本轮次。')
 
     @model_validator(mode='after')
     def consistent(self):
@@ -52,7 +52,7 @@ class NumericDelivery(Contract):
     record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(min_length=1, max_length=12)
-    finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
+    finish: bool = Field(default=False, description='仅最后一份计划交付的专业记录设true；验证成功后结束模型调用，无需追加文本轮次。')
 
     @model_validator(mode='after')
     def consistent(self):
@@ -189,8 +189,8 @@ def model_projection(record, kind):
             'calculation_context': calculation_context(record, kind),
             'explanation_instruction': record['explanation_instruction'],
             'projection_notice': '这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。'}
-    if kind in agent_energy.KINDS:
-        selected=record.get('selected_energy_fact_keys') or []
+    if kind in agent_energy.KINDS or 'selected_fact_keys' in record:
+        selected=record.get('selected_fact_keys', record.get('selected_energy_fact_keys')) or []
         projected['available_fact_catalog']=[{'fact':f['fact'],'label':f['label'],'unit':f['unit']} for f in projected['explanation_facts']]
         projected['explanation_facts']=[f for f in projected['explanation_facts'] if f['fact'] in selected]
         projected['selected_fact_keys']=selected

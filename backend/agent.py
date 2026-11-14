@@ -81,7 +81,7 @@ class Chat(Contract):
 class ToolArgs(Contract):
     enduse_id: str | None = Field(default=None,pattern=r'^enduse_[a-f0-9]{32}$')
     utility_id: str | None = Field(default=None,pattern=r'^utility_[a-f0-9]{32}$')
-    fact_keys: list[str] | None = Field(default=None,min_length=1,max_length=12,description='Energy reads: select exact needed keys from the output-plan catalog or available_fact_catalog. Omitting returns context/catalog only, no numeric model projection.')
+    fact_keys: list[str] | None = Field(default=None,min_length=1,max_length=12)
     before: StrictInt | None = Field(default=None,ge=1,le=2**53-1)
     review: agent_reviews.SourceReview | None = None
     output_plan: list[agent_outputs.OutputItem] | None = Field(default=None, min_length=1, max_length=6)
@@ -144,7 +144,7 @@ TOOLS = {
     'professional_inventory': '一次读取所选kinds（1到6类）的完整项目目录计数和最近记录，适合多专业可用性检查。空目录随后用professional_missing正式说明；存在记录则读取。不要逐轮分别查询六类而耗尽预算。',
     'professional_missing': '正式核验记录缺失。missing.kinds必填数组（1到6类），同一完整目录快照逐类核验。指定编号时只选1类并填写用户明确的record_id；不能用整类空目录代替指定编号检查。发现任一所选记录存在则整批拒绝，不补造结果或重试计算。全部所需交付结束才finish=true。',
     'calculation_prepare': '选择本轮已冻结的plan_keys（1到2个）并逐项真实执行、保存、读取当前结果；适合用户要求的多份独立计划。返回每条记录的kind、ID、hash和当前事实/限制，随后仍须逐条professional_deliver或professional_limit。未选计划不会执行，参数不能更改；子操作逐项审计和计预算，失败保留已执行记录。',
-    'professional_read_many': '按selections（1到3个）逐项读取，每项record_id和fact_keys。能耗首次未知目录用null，取得目录后选择所问字段；有冻结指标计划则直接选择。其他专业fact_keys=null。真实逐项预检/读取，不新建计算，之后仍须正式交付。',
+    'professional_read_many': 'selections逐项给record_id、fact_keys。未知能耗目录先用null；已有目录或计划按原问题选字段并遵守排除项。逐项预检读取，不新建计算，随后正式交付。',
     'capability_lookup': '查询当前应用能做什么及明确边界，每批1到4个capability_ids；超过4项请分批查询，批次上限不是不支持剩余能力。分别核对用户要求的有限计算、资料检索与认证/确诊，不漏支持项，也不加无关项；不检查项目资料充分性。',
     'capability_explain': '先分批capability_lookup，再按同一catalog_hash汇总全部所需claims（最多16项）：每项capability_id、assessment、reason_code必须与当前应用范围一致。不能只交付第一批，不以少量已查项代表整个需求完成。用于正式能力说明，不代表执行计算或取得认证。最后所需说明可finish=true。',
     'calculation_execute': '选择本轮用户明确提交的plan_key，按已锁定参数调用热工/阶段碳/材料成本/梁/进度/设备规则计算器并保存新记录。不能修改工程输入或CSV；随后按返回的next_tool读取并核验交付；不重复创建。',
@@ -202,13 +202,13 @@ TOOL_FIELDS = {
     'capability_explain': ('capability_explanation',),
     'calculation_execute': ('plan_key',),
     'professional_deliver': ('delivery',),
-    'material_scenarios_list': (), 'material_scenarios_read': ('scenario_id',),
-    'thermal_list': (), 'thermal_read': ('thermal_id',),
-    'lifecycle_list': (), 'lifecycle_read': ('lifecycle_id',),
-    'operations_list': (), 'operations_read': ('operation_id',),
-    'schedule_list': (), 'schedule_read': ('schedule_id',),
-    'material_cost_list': (), 'material_cost_read': ('material_cost_id',),
-    'beam_analysis_list': (), 'beam_analysis_read': ('engineering_id',),
+    'material_scenarios_list': (), 'material_scenarios_read': ('scenario_id', 'fact_keys',),
+    'thermal_list': (), 'thermal_read': ('thermal_id', 'fact_keys',),
+    'lifecycle_list': (), 'lifecycle_read': ('lifecycle_id', 'fact_keys',),
+    'operations_list': (), 'operations_read': ('operation_id', 'fact_keys',),
+    'schedule_list': (), 'schedule_read': ('schedule_id', 'fact_keys',),
+    'material_cost_list': (), 'material_cost_read': ('material_cost_id', 'fact_keys',),
+    'beam_analysis_list': (), 'beam_analysis_read': ('engineering_id', 'fact_keys',),
     'standards_search': ('standards_query',),
     'project_get': (), 'evidence_list': (), 'building_get': (),
     'evidence_validate': ('scheme_id',), 'evidence_gap_rank': ('scheme_id',),
@@ -439,6 +439,10 @@ class Agent:
                 if self.store.get(spec.kind,ident)['project_id'] != project_id:
                     raise ToolRefusal('Cross-project ' + spec.kind + ' read rejected')
                 current=readable(spec.service(d).view(project_id,ident), spec.kind)
+                if args.fact_keys is not None:
+                    if not set(args.fact_keys) <= set(agent_outputs.FACTS[spec.kind]):
+                        raise core.ValidationError('Unknown professional fact key')
+                    current['selected_fact_keys'] = args.fact_keys
                 if spec.kind in agent_energy.KINDS:
                     known=agent_energy.END_FACTS if spec.kind=='enduse' else agent_energy.UTILITY_FACTS
                     if args.fact_keys and not set(args.fact_keys)<=set(known):raise core.ValidationError('Unknown energy fact key')
@@ -659,7 +663,7 @@ class Agent:
                     parameters['properties']['plan_keys'] = {'type':'array','minItems':1,'maxItems':2,'uniqueItems':True,
                         'items':{'type':'string','enum':[p.plan_key for p in body.calculation_plans if p.execution_authorized]}}
                     parameters['required'] = ['plan_keys']
-                if name in {'end_use_read','utility_comparison_read'} and name in choices:
+                if name in choices and (name in {'end_use_read','utility_comparison_read'} or not body.read_requests):
                     argument,ids=choices[name]
                     replacement=agent_metric_reads.leaf_schema(tool,record,ids,argument)
                     tool.clear();tool.update(replacement)
@@ -825,7 +829,11 @@ class Agent:
                             else:present.append(ident)
                         if unavailable:raise read_recovery.RecordsUnavailable(unavailable,present)
                         if origin=='model':
-                            for selected in read_selections:agent_metric_reads.validate(record,selected)
+                            for selected in read_selections:
+                                agent_metric_reads.validate(record,selected)
+                            if not body.read_requests and not body.calculation_plans:
+                                for selected in read_selections:
+                                    agent_metric_reads.freeze_selection(record,selected)
                     rows=[]
                     for selection in selections:
                         execution=None
@@ -836,7 +844,7 @@ class Agent:
                             ident=selection;ds=inspection(ident.split('_',1)[0])
                         read_args={ds.argument:ident}
                         selected=next((r for r in read_selections if r.record_id==ident),None)
-                        if selected and ds.kind in agent_energy.KINDS:read_args['fact_keys']=selected.fact_keys
+                        if selected and selected.fact_keys is not None:read_args['fact_keys']=selected.fact_keys
                         current=invoke(ds.read_tool,read_args,parent_event=event_index)
                         row={'kind':ds.kind,'record_id':ident,'current':model_projection(current,ds.kind)}
                         if execution:row['plan_key']=execution['plan_key']
@@ -854,8 +862,11 @@ class Agent:
                 ds = next((s for s in INSPECTIONS.values() if s.read_tool == name), None)
                 if ds:
                     ensure_read_scope(ds,args.get(ds.argument))
-                    if origin=='model' and ds.kind in agent_energy.KINDS:
-                        agent_metric_reads.validate(record,agent_metric_reads.ReadSelection(record_id=args[ds.argument],fact_keys=args.get('fact_keys')))
+                    if origin == 'model':
+                        selection = agent_metric_reads.ReadSelection(record_id=args[ds.argument], fact_keys=args.get('fact_keys'))
+                        agent_metric_reads.validate(record, selection)
+                        if not body.read_requests and not body.calculation_plans:
+                            agent_metric_reads.freeze_selection(record, selection)
                 if name == 'professional_review':
                     review = agent_reviews.SourceReview.model_validate(args.get('review'))
                     ds = inspection(review.kind); ensure_read_scope(ds, review.record_id)
