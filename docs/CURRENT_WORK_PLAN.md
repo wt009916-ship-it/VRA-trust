@@ -4,7 +4,7 @@
 
 ## 当前批次
 
-feature/ifc-composite-materials-20261115：复合梁柱逐材空间计量已接入原材料集合与两方案流程。22新增核心、16整材回归、60相关后端、248前端及构建通过；15实际HTTP检查及圆环/圆芯原生隔离对照通过。详IFC_COMPOSITE_MATERIALS_DELIVERY和PLAN。当前推送草稿及核验精确CI，不预加分、不合并默认分支、不更新正式数据。
+feature/ifc-composite-materials-20261115：复合梁柱逐材空间计量已接入原材料集合与两方案流程。22新增核心、16整材回归、60相关后端、248前端及构建通过；初轮15实际HTTP及圆环/圆芯原生隔离对照通过；收尾发现非法CURVE原轮廓仍可输出24m³，已保留失败并修复，12相关回归和最终新18实际HTTP检查通过。详IFC_COMPOSITE_MATERIALS_DELIVERY和PLAN。当前推送草稿及核验精确CI，不预加分、不合并默认分支、不更新正式数据。
 
 ## 去重及停止条件
 

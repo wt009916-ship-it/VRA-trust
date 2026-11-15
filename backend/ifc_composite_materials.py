@@ -32,6 +32,8 @@ def partition_reference(element, group):
     if item.is_a() != 'IfcExtrudedAreaSolid' or not item.SweptArea.is_a('IfcCompositeProfileDef'):
         raise ValueError('composite_constant_extrusion_required')
     composite = item.SweptArea
+    if composite.ProfileType != 'AREA' or not math.isfinite(item.Depth) or item.Depth <= 0:
+        raise ValueError('composite_source_sweep_invalid')
     profiles = list(composite.Profiles)
     declared = group['profiles']
     if not 2 <= len(profiles) <= MAX_PARTS or len(declared) != len(profiles):

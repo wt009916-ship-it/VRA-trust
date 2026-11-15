@@ -156,3 +156,14 @@ def test_existing_homogeneous_multiple_sweeps_remain_supported(tmp_path):
     doc.write(str(path));r=measure_layers(path,element.id())
     assert r['status']=='measured' and len(r['layers'])==1,r
     assert r['total_layer_envelope_m3']==pytest.approx(24,abs=1e-8)
+
+
+
+@pytest.mark.parametrize('problem',['curve_profile','zero_depth','negative_depth'])
+def test_invalid_original_sweep_is_not_silently_repaired_by_partition(tmp_path,problem):
+    doc,element,_,_,_,solid,path=composite(tmp_path,case='adjacent')
+    if problem=='curve_profile':solid.SweptArea.ProfileType='CURVE'
+    else:solid.Depth=0. if problem=='zero_depth' else -4.
+    doc.write(str(path));sink=[];r=measure_layers(path,element.id(),mesh_sink=sink)
+    assert r['status']=='unavailable' and r['reason']=='composite_source_sweep_invalid',r
+    assert r['layers']==[] and r['host_volume_m3'] is r['total_layer_envelope_m3'] is None and not sink
