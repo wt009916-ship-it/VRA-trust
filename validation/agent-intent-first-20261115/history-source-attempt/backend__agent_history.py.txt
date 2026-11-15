@@ -1,0 +1,36 @@
+"""Value-free reference metadata from a currently rechecked task view.
+
+Call only with Agent.view output, never with an unchecked stored task or model
+message. This metadata helps resolve references, but cannot authorize writes or
+replace the next tool read's source checks.
+"""
+import re
+
+
+def references(current):
+    answer = current.get('answer') or {}
+    references = {r['record_id'] for key in ('professional_deliveries', 'professional_reviews')
+                  for r in current.get(key, [])}
+    checks = answer.get('verification', [])
+    rows = []
+    for ident in sorted(references):
+        if not re.fullmatch(r'[a-z]+_[a-f0-9]{32}', ident):
+            continue
+        decisions = [c.get('passed') for c in checks if c.get('record_id') == ident]
+        verified = (current.get('status') == 'succeeded' and bool(current.get('answer_checked_at'))
+                    and bool(decisions) and all(v is True for v in decisions))
+        facts = sorted({f['fact'] for s in answer.get('checked_statements', [])
+                        if s['record_id'] == ident for f in s['facts']}) if verified else []
+        limitation = next((s for s in answer.get('checked_limitations', []) if s['record_id'] == ident), None)
+        review = next((s for s in answer.get('checked_reviews', []) if s['record_id'] == ident), None)
+        row = {'record_id': ident, 'kind': ident.split('_', 1)[0],
+               'reference_state': 'unavailable_or_unverified', 'checked_fact_keys': facts,
+               'source_state': None}
+        if verified and limitation:
+            row.update(reference_state='checked_limitation', source_state=limitation['state'])
+        elif verified and facts:
+            row.update(reference_state='checked_facts')
+        elif verified and review:
+            row.update(reference_state='checked_nonnumeric_review', source_state=review['status'])
+        rows.append(row)
+    return rows

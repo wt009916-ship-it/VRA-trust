@@ -5175,6 +5175,129 @@
         ]
       }
     },
+    "/api/projects/{project_id}/drawings/{drawing_id}/line-review": {
+      "post": {
+        "summary": "Line Review",
+        "operationId": "line_review_api_projects__project_id__drawings__drawing_id__line_review_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LineReview"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawings/{drawing_id}/line-overlay.svg": {
+      "get": {
+        "summary": "Line Overlay",
+        "operationId": "line_overlay_api_projects__project_id__drawings__drawing_id__line_overlay_svg_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/svg+xml": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/design-sources": {
       "post": {
         "summary": "Source Create",
@@ -12333,6 +12456,11 @@
             "type": "boolean",
             "title": "Median Filter",
             "default": false
+          },
+          "line_analysis": {
+            "type": "boolean",
+            "title": "Line Analysis",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -13790,6 +13918,44 @@
           "input"
         ],
         "title": "LifecyclePlan"
+      },
+      "LineReview": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^gap_[1-9][0-9]{0,2}$",
+            "title": "Candidate Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "keep_unknown",
+              "reject_hypothesis",
+              "retain_hypothesis"
+            ],
+            "title": "Decision"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "candidate_id",
+          "decision",
+          "basis"
+        ],
+        "title": "LineReview"
       },
       "LocalModelSettings": {
         "properties": {

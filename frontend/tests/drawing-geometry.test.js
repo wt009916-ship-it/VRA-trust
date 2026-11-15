@@ -17,8 +17,9 @@ test('conflicting or stale scale never emits a current scale number',()=>{
 
 test('nonmanual UI resets unused angle while explicit API contract remains strict',()=>{
   const form=new FormData();form.set('deskew_mode','auto');form.set('angle_degrees','7');
-  assert.deepEqual(processingInput(form),{deskew_mode:'auto',angle_degrees:0,median_filter:false});
+  assert.deepEqual(processingInput(form),{deskew_mode:'auto',angle_degrees:0,median_filter:false,line_analysis:false});
   form.set('deskew_mode','manual');form.set('median_filter','on');
-  assert.deepEqual(processingInput(form),{deskew_mode:'manual',angle_degrees:7,median_filter:true});
+  form.set('line_analysis','on');
+  assert.deepEqual(processingInput(form),{deskew_mode:'manual',angle_degrees:7,median_filter:true,line_analysis:true});
   form.set('angle_degrees','');assert.throws(()=>processingInput(form),/旋转角度/);
 });

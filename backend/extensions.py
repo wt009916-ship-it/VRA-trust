@@ -62,6 +62,8 @@ def register_extensions(app, domain, auth):
     drawing_scales = DrawingScales(drawings)
     from .drawing_associations import register as register_drawing_associations
     register_drawing_associations(app, drawings)
+    from .drawing_line_reviews import register as register_line_reviews
+    register_line_reviews(app, drawings)
     from .design_conditions import register as register_design_conditions
     register_design_conditions(app, domain)
 

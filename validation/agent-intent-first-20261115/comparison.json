@@ -1,0 +1,49 @@
+{
+  "scope": "Paired exploratory planning-only comparison; no tool execution or application acceptance",
+  "same_frozen_cases": true,
+  "cases": "Six known H regressions and two new planner-only probes",
+  "runs": [
+    {
+      "name": "probe-v1",
+      "planner_only_passed": 3,
+      "total": 8,
+      "structure_valid": 7,
+      "sequential_request_seconds": 55.282,
+      "median_request_seconds": 6.452999999999999,
+      "model_sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
+      "runtime_sha256": "00d50686815af38249d0218c91558fbd0e9093ac8c074bac86196907f4305e31",
+      "planner_sha256": "3d3a1da552c1bd5128fd14ee97d9f8ca96e587ea152a4c2d352f69a5c12c732b",
+      "frozen_sha256": "ef4e4dcd592626e1e1f4cb54247f402571417ae00f6cb8a711d1d42c9dfb5cc4",
+      "reasoning": false,
+      "output_token_cap": 1400,
+      "reasoning_budget": 0
+    },
+    {
+      "name": "probe-thinking-v1",
+      "planner_only_passed": 3,
+      "total": 8,
+      "structure_valid": 7,
+      "sequential_request_seconds": 150.937,
+      "median_request_seconds": 18.8985,
+      "model_sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
+      "runtime_sha256": "00d50686815af38249d0218c91558fbd0e9093ac8c074bac86196907f4305e31",
+      "planner_sha256": "3d3a1da552c1bd5128fd14ee97d9f8ca96e587ea152a4c2d352f69a5c12c732b",
+      "frozen_sha256": "ef4e4dcd592626e1e1f4cb54247f402571417ae00f6cb8a711d1d42c9dfb5cc4",
+      "reasoning": true,
+      "output_token_cap": 2200,
+      "reasoning_budget": 768
+    }
+  ],
+  "source_snapshot": {
+    "backend/agent_task_plan.py": "3d3a1da552c1bd5128fd14ee97d9f8ca96e587ea152a4c2d352f69a5c12c732b",
+    "tests/test_agent_task_plan.py": "f1dce768980c6cc07bae59c8e378141c12adb0cccf08f538ce571ac69b6b502d"
+  },
+  "score_delta": 0,
+  "decision": "Do not enable this planner or change application reasoning defaults. Stop budget-only tuning on these cases. A subsequent implementation must bind requested outputs and source references to question evidence, then pass whole-task unseen acceptance.",
+  "limitations": [
+    "One run per configuration; not a statistical estimate.",
+    "Reasoning mode and output cap changed together; no isolated causal claim.",
+    "Equal pass count does not imply identical behavior.",
+    "No production code integration, deployment, training or browser validation."
+  ]
+}

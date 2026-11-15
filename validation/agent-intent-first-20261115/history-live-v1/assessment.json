@@ -1,0 +1,65 @@
+{
+  "scope": "Two multi-turn history regressions on changed synthetic parameters. Existing known intent families, not new blind questions. Experimental planner is not used.",
+  "passed": 0,
+  "total": 2,
+  "cases": [
+    {
+      "id": "M01",
+      "passed": false,
+      "checks": {
+        "completed_transport": true,
+        "only_requested_numeric_outputs": false,
+        "current_R_independent_oracle": true,
+        "listed_business_records_unchanged": true,
+        "old_source_only_stale_limitation": true
+      },
+      "delivered_fact_keys": [
+        [
+          "thermal_8ce79e2c115c4643a63888718aa5fba5",
+          "total_resistance_m2k_w"
+        ],
+        [
+          "thermal_8ce79e2c115c4643a63888718aa5fba5",
+          "layer_resistance_m2k_w"
+        ],
+        [
+          "thermal_8ce79e2c115c4643a63888718aa5fba5",
+          "u_w_m2k"
+        ]
+      ],
+      "question_deferral": null,
+      "application_task_completion": "partial",
+      "failure": "Extra layer R and explicitly excluded U delivered."
+    },
+    {
+      "id": "M02",
+      "passed": false,
+      "checks": {
+        "completed_transport": true,
+        "only_requested_numeric_outputs": true,
+        "current_R_independent_oracle": true,
+        "listed_business_records_unchanged": true,
+        "current_authorization_gap_explicit": false
+      },
+      "delivered_fact_keys": [
+        [
+          "thermal_8ce79e2c115c4643a63888718aa5fba5",
+          "total_resistance_m2k_w"
+        ]
+      ],
+      "question_deferral": null,
+      "application_task_completion": "partial",
+      "failure": "New calculation obligation omitted; no current authorization-gap explanation."
+    }
+  ],
+  "score_delta": 0,
+  "source_sha256": {
+    "frozen.json": "02b57e8adb085ca435656926270ed71e07f1f61ee31cb1341494f9e5e0e979a7",
+    "receipt.json": "dcb2bc6ea75da36b0876a931b47a0aee0146811a25e49be8e9aca3fc163d14e5",
+    "M01-task.json": "21eeb4f6c92d21558aa3bc5ad95e3e82ac1956c3dce1342b86fb021612369adc",
+    "M01-record-observations.json": "0555a95aff96ef6b89751f88837ed6ee1c842ca3a5d79ca2310915d47317c58b",
+    "M02-task.json": "1c0ee3b6733784997e407f48228ed46dadcb9f06615946aa77787dbdecb53d01",
+    "M02-record-observations.json": "0555a95aff96ef6b89751f88837ed6ee1c842ca3a5d79ca2310915d47317c58b"
+  },
+  "note": "succeeded is transport/workflow status, not whole-task acceptance. Prior original receipts remain unchanged."
+}
