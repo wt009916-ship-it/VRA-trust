@@ -119,8 +119,9 @@ def progress(record,answer):
 
 def attach(answer,domain,pid,record,reader=None):
     if record.get('question_deferral'):
+        from .agent_task_exit import deferral_summary
         answer={**answer,'task_completion':'partial' if answer.get('checked_statements') else 'incomplete',
-                'question_deferral':record['question_deferral'],'summary':'模型仍需明确问题中的目标或指标；未将不确定性当成资料缺失、能力结论或任务完成。'}
+                'question_deferral':record['question_deferral'],'summary':deferral_summary(record['question_deferral'])}
     if not record.get('read_requests'):return answer
     answer={**answer,'verification':list(answer.get('verification',[])),'gaps':list(answer.get('gaps',[]))}
     answer['read_execution'] = record.get('read_execution', 'model')

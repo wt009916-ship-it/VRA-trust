@@ -1,0 +1,91 @@
+{
+  "agent_id": "agent_3dfaf505cb554e4f8cb3c128c8d6c91a",
+  "project_id": "project_612c6897f7d04eba9f461b36f62e42c5",
+  "question": "读取构造thermal_9c18e5cdb07f41d3b79ffc208d5b7810的总R。如果当前项目里找不到这个指定编号，请说明当前范围内不可用，不查询别的项目，也不要拿其他构造代替。",
+  "mode": "local_model",
+  "status": "failed",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:13:38.793115+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Integrated task reference",
+        "building": {
+          "use": "reference",
+          "location": "Synthetic reference only",
+          "region": "TEST",
+          "area_m2": 51.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_612c6897f7d04eba9f461b36f62e42c5",
+        "revision": 2,
+        "created_at": "2026-11-15T14:09:03.195620+00:00",
+        "updated_at": "2026-11-15T14:13:06.280481+00:00"
+      },
+      "result_hash": "fc1f52dd6bbfd2c03283246e8540637692f62ee0a76c5bc95fed4b82514bf063",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T14:13:38.816242+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:13:38.819242+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"thermal_read\", \"arguments\": {\"thermal_id\": \"thermal_9c18e5cdb07f41d3b79ffc208d5b7810\", \"fact_keys\": [\"total_resistance_m2k_w\"]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 4593,
+      "finished_at": "2026-11-15T14:13:43.429156+00:00"
+    },
+    {
+      "tool": "thermal_read",
+      "arguments": {
+        "thermal_id": "thermal_9c18e5cdb07f41d3b79ffc208d5b7810",
+        "fact_keys": [
+          "total_resistance_m2k_w"
+        ]
+      },
+      "status": "failed",
+      "started_at": "2026-11-15T14:13:43.432613+00:00",
+      "origin": "model",
+      "error": "Cross-project professional read rejected",
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T14:13:43.450451+00:00"
+    }
+  ],
+  "answer": null,
+  "created_at": "2026-11-15T14:13:38.785898+00:00",
+  "llm_commentary": null,
+  "error": "Cross-project professional read rejected",
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "revision": 8,
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-15T14:13:43.453455+00:00"
+}

@@ -4,6 +4,8 @@ import json
 import uuid
 from jsonschema import Draft202012Validator, ValidationError as SchemaValidationError
 from . import core
+from .agent_schema_sharing import compact_choices
+from .agent_context_sharing import share_catalogs
 
 
 class ActionProtocolError(core.ValidationError):
@@ -32,7 +34,7 @@ def schema(tools):
     result={'type':'object','properties':{'actions':{'type':'array','minItems':1,'maxItems':4,'items':{'oneOf':variants}}},
             'required':['actions'],'additionalProperties':False}
     if definitions:result['$defs']=definitions
-    return result
+    return compact_choices(result)
 
 
 def payload(messages, tools, *, strict):
@@ -42,7 +44,7 @@ def payload(messages, tools, *, strict):
                    'No prose, invented results, or completion claims. Read a selected fact before delivering it. '
                    'Use the offered clarification action when the requested metric is unresolved. '
                    'JSON action contract: ' + json.dumps(contract, ensure_ascii=False))
-    leading=[];remaining=list(messages)
+    leading=[];remaining=share_catalogs(messages)
     while remaining and remaining[0].get('role')=='system':leading.append(remaining.pop(0).get('content') or '')
     # The supported local chat template accepts exactly one leading system message.
     wire_messages=[{'role':'system','content':'\n\n'.join([instruction,*leading])},*remaining]

@@ -24,6 +24,7 @@ from . import agent_calculations as calculations
 from . import agent_capabilities as capabilities
 from . import agent_missing as missing_records
 from . import agent_recovery as read_recovery
+from . import agent_task_exit
 from . import agent_requests as requested_scopes
 from . import agent_simulation
 from . import agent_outputs, agent_actions, agent_selections, agent_metric_reads, agent_comparisons
@@ -87,6 +88,7 @@ class ToolArgs(Contract):
     review: agent_reviews.SourceReview | None = None
     output_plan: list[agent_outputs.OutputItem] | None = Field(default=None, min_length=1, max_length=6)
     request_keys: list[str] | None = Field(default=None,min_length=1,max_length=6)
+    defer_reason: Literal['unclear_outputs','calculation_not_authorized','missing_calculation_plan'] | None = None
     finish: StrictBool = False
     kinds: list[Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario', 'enduse', 'utility']] | None = Field(default=None,min_length=1,max_length=6)
     missing: missing_records.Missing | None = None
@@ -135,6 +137,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'professional_finish': '结束本轮专业交付。仅在所需结果或限制说明已经提交后使用；无需重复读取或重新提交刚已核验的说明。应用仍检查未交付目标、计划和当前来源；结束流程不证明自由问题全部完成，不恢复失效数值。',
     'professional_compare': '比较本轮已读的两份热工/成本/碳清单同一指标。明确baseline基准与candidate对照，选择fact_key和所需outputs（difference=对照减基准；relative_change_percent=除基准的百分比）。只选来源与指标，不填数值。应用核对口径并计算；零基准百分比无定义，口径冲突正式返回不可比。不是全年节能、性能等效或认证。',
     'end_use_list':'列出设备用途账名称和编号；before使用next_before翻页，不读取或认证数值。',
     'end_use_read':'按enduse_id实际读取原生用途账，fact_keys最多12个；省略只返回事实目录及期间口径。年量不是实测，热量不是电量。',
@@ -150,7 +153,7 @@ TOOLS = {
     'capability_lookup': '查询当前应用能做什么及明确边界，每批1到4个capability_ids；超过4项请分批查询，批次上限不是不支持剩余能力。分别核对用户要求的有限计算、资料检索与认证/确诊，不漏支持项，也不加无关项；不检查项目资料充分性。',
     'capability_explain': '先分批capability_lookup，再按同一catalog_hash汇总全部所需claims（最多16项）：每项capability_id、assessment、reason_code必须与当前应用范围一致。不能只交付第一批，不以少量已查项代表整个需求完成。用于正式能力说明，不代表执行计算或取得认证。最后所需说明可finish=true。',
     'calculation_execute': '选择本轮用户明确提交的plan_key，按已锁定参数调用热工/阶段碳/材料成本/梁/进度/设备规则计算器并保存新记录。不能修改工程输入或CSV；随后按返回的next_tool读取并核验交付；不重复创建。',
-    'requested_defer': '当前请求所需指标不明确时，提交未完成的request_keys等待用户澄清；没有声明读取范围时省略request_keys，标记整个自由问题需澄清。只表明模型不确定，不证明资料缺失或应用不支持，不产生数值、不计完成。不能用于用户已明确勾选的指标。',
+    'requested_defer': '请求澄清或说明本轮计算前提缺失。defer_reason选择unclear_outputs（指标不明确）、calculation_not_authorized（本轮未授权新建计算）或missing_calculation_plan（本轮缺少已授权且参数锁定的计划）；后两者须与本轮实际权限一致。新建要求不能改答旧记录，历史授权不延续。不产生数值、不计任务完成。声明读取范围时仅可用request_keys澄清未明确的指标，不能丢弃已明确勾选项。',
     'professional_deliver': '先读取delivery.kind对应记录，再提交statements及当前hash，核对值、单位、期间和面积。明确无定义字段保留null及来源原因；整条记录不完整、不适用或stale时改用professional_limit。',
     'professional_limit': '交付限制说明：先实际读取当前记录，再提交limitation含kind、record_id、record_hash、status（复制当前状态，包括stale）及finish。只允许当前结果不完整、不适用或已失效；不填数值或statements。核验说明不改变原记录状态，不恢复旧数值，也不等于完成工程计算。',
     'material_scenarios_list': '只读列出当前项目最近6份材料两方案对照；不创建计算，不认证等效或碳资产',
@@ -189,11 +192,12 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'professional_finish': (),
     'professional_compare': ('comparison',),
     'end_use_list':('before',),'end_use_read':('enduse_id','fact_keys'),
     'utility_comparison_list':('before',),'utility_comparison_read':('utility_id','fact_keys'),
     'requested_output_plan': ('output_plan',),
-    'requested_defer': ('request_keys',),
+    'requested_defer': ('request_keys','defer_reason'),
     'requested_availability': ('request_keys','finish'),
     'professional_inventory': ('kinds',),
     'professional_missing': ('missing',),
@@ -289,7 +293,7 @@ class Agent:
         for name, desc in TOOLS.items():
             # Unscoped probes omit compute and comparisons requiring task read receipts. Task execution
             # always supplies its explicit authorized set below.
-            if allowed is None and name in WRITE_TOOLS | {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability', 'professional_review', 'requested_defer', 'professional_compare'}:continue
+            if allowed is None and name in WRITE_TOOLS | {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability', 'professional_review', 'requested_defer', 'professional_compare', 'professional_finish'}:continue
             if allowed is not None and name not in allowed:
                 continue
             # The same root display title adds no constraint and repeats for every tool.
@@ -560,6 +564,10 @@ class Agent:
         if not any(p.execution_authorized for p in body.calculation_plans):offered -= {'calculation_execute','calculation_prepare'}
         if body.objective != 'open_ended':offered -= {'professional_deliver','professional_limit','professional_missing','professional_compare'}
         if body.objective != 'open_ended':offered -= {'capability_lookup', 'capability_explain'}
+        if body.objective == 'open_ended' and not body.read_requests:offered.add('professional_finish')
+        else:offered.discard('professional_finish')
+        if body.calculation_plans and not any(p.execution_authorized for p in body.calculation_plans):
+            offered.add('requested_defer')
         def reserved_reads():
             return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + len(record.get('professional_reviews', [])) + int(bool(record.get('missing_deliveries'))) + capabilities.read_count(record.get('capability_delivery')) + int(bool(record.get('availability_deliveries')))
         def missing_targets():
@@ -572,6 +580,8 @@ class Agent:
             if body.read_requests and body.infer_outputs and not record.get('output_plan'):
                 return [agent_outputs.constrain_tool(self.tools({'requested_output_plan'})[0], record['read_requests'], record['question'])]
             available = set(offered) - {'requested_output_plan'}
+            # A batch may deliver then finish. Execution, not pre-batch visibility,
+            # checks the finish precondition and all pending targets.
             review_keys = {i['request_key'] for i in (record.get('output_plan') or {}).get('items', [])
                            if not i['fact_keys'] and i['explanation_topics'] and not i.get('clarification_question')}
             waiting = set(requested_scopes.pending(record))
@@ -679,6 +689,11 @@ class Agent:
                     replacement=agent_metric_reads.batch_schema(tool,record,ids)
                     tool.clear();tool.update(replacement)
                 if name == 'requested_defer':
+                    reasons = ['unclear_outputs']
+                    if not body.read_requests:
+                        if not body.allow_compute:reasons.append('calculation_not_authorized')
+                        if not any(p.execution_authorized for p in body.calculation_plans):reasons.append('missing_calculation_plan')
+                    parameters['properties']['defer_reason'] = {'type':'string','enum':reasons}
                     if body.read_requests:
                         parameters['properties']['request_keys']={'type':'array','minItems':1,'maxItems':len(deferrable),'uniqueItems':True,'items':{'type':'string','enum':deferrable}}
                         parameters['required']=['request_keys']
@@ -727,7 +742,10 @@ class Agent:
             try:stored=self.store.get(ds.kind,ident)
             except KeyError:raise read_recovery.RecordsUnavailable([ident]) from None
             if stored['project_id'] != record['project_id']:
-                raise ToolRefusal('Cross-project professional read rejected')
+                if body.read_requests or body.calculation_plans:
+                    raise ToolRefusal('Cross-project professional read rejected')
+                # Same scoped absence as an unknown ID; never reveal another project's existence.
+                raise read_recovery.RecordsUnavailable([ident])
 
         def recheck_availability():
             if len(record['events'])>=15:raise ToolRefusal('Tool budget exceeded before final availability recheck')
@@ -786,6 +804,12 @@ class Agent:
                     event['selection_receipt']=receipt
                     args={'delivery':numeric}
                 canonical = ToolArgs.model_validate(args).model_dump(mode='json', include=set(TOOL_FIELDS[name]))
+                if name == 'professional_finish':
+                    if not agent_task_exit.submitted(record):
+                        raise core.ValidationError('No professional delivery submitted; cannot finish an unperformed task')
+                    result = {'status':'finish_requested','notice':'Current-source and pending-target checks still required; no task-completion certification.'}
+                    event.update(status='succeeded',result=result,result_hash=core.hash_json(result))
+                    return result
                 if name == 'requested_output_plan':
                     if not body.read_requests or not body.infer_outputs or not canonical['output_plan']:
                         raise core.ValidationError('Output planning requires this task declared read scopes')
@@ -799,10 +823,13 @@ class Agent:
                 if name=='requested_defer':
                     if not body.read_requests:
                         if canonical['request_keys'] is not None:raise core.ValidationError('No declared request keys in this task')
-                        record['question_deferral']={'question_hash':core.hash_json(record['question']),'origin':'model_uncertainty'}
-                        result={'status':'needs_clarification','finish':True,'notice':'Question needs clarification; no numeric result, unsupported-capability conclusion or completion claim.'}
+                        record['question_deferral']=agent_task_exit.deferral(record,body,canonical['defer_reason'])
+                        result={'status':'needs_clarification','finish':True,'deferral':record['question_deferral'],
+                                'notice':agent_task_exit.deferral_summary(record['question_deferral'])}
                         event.update(status='succeeded',result=result,result_hash=core.hash_json(result));return result
                     keys=canonical['request_keys'] or []
+                    if canonical['defer_reason'] not in (None,'unclear_outputs'):
+                        raise core.ValidationError('Declared read requests may defer only unclear output requirements')
                     allowed={r.request_key for r in body.read_requests if r.purpose=='results' and r.request_key in requested_scopes.pending(record) and not r.output_contract}
                     if not keys or len(set(keys))!=len(keys) or not set(keys)<=allowed:raise core.ValidationError('Defer only pending scopes without explicit user-selected outputs')
                     record['read_deferrals']=list(dict.fromkeys(record.get('read_deferrals',[])+keys))
@@ -1053,6 +1080,7 @@ class Agent:
                                 reads[ident] = {'kind':ds.kind, 'record_id':ident, 'record_status':current['status'],
                                                 'delivery_submitted':ident in delivered}
                         pending = {'remaining_model_responses':5-turn, 'submitted_plans':calculations.execution_stages(record),
+                                   'current_calculation_scope':agent_task_exit.calculation_scope(body),
                                    'read_records':list(reads.values()),'energy_read_progress':agent_metric_reads.progress(record),
                                    'queried_empty_without_delivery':missing_records.pending_empty(record),
                                    'queried_available_without_delivery':missing_records.pending_available(record),
@@ -1196,6 +1224,7 @@ class Agent:
                         if call['function']['name']=='professional_missing' and result.get('status')=='verified':
                             finish_requested |= any(r['request']['finish'] for r in missing_records.references(result))
                         if call['function']['name']=='requested_defer' and result.get('status')=='needs_clarification':finish_requested |= result['finish']
+                        if call['function']['name']=='professional_finish' and result.get('status')=='finish_requested':finish_requested = True
                         if call['function']['name']=='requested_availability' and result.get('status')=='verified':
                             finish_requested |= result['finish']
                         if (body.objective == 'inspect_results' and call['function']['name'] == 'simulation_result'
@@ -1221,6 +1250,9 @@ class Agent:
                             elif call['function']['name']=='capability_explain' and result.get('status')=='verified':
                                 result = {'status':'verified', 'accepted_capabilities':[c['capability_id'] for c in result['capability_assessments']],
                                           'notice':'所列能力边界已核验，不代表实际工程任务完成；其他所需结果须另行执行工具并交付。'}
+                            if (call['function']['name'] in {'professional_deliver','professional_limit','professional_missing','professional_review','professional_compare','capability_explain','requested_availability'}
+                                    and result.get('verification_status', result.get('status')) in {'verified','unavailable'}):
+                                result = {**result, 'continuation':agent_task_exit.continuation(record)}
                         messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': json.dumps(agent_simulation.model_result(call['function']['name'], result), ensure_ascii=False)})
                     if (record.get('read_execution') == 'application' and record.get('output_plan')
                             and not batch_failed):
