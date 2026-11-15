@@ -1,0 +1,205 @@
+{
+  "schedule_id": "schedule_ab6d3e719cd34ab0a6a331fe0381b7d4",
+  "project_id": "project_55030941c60244e6832aea6906e8588f",
+  "project_revision": 1,
+  "input": {
+    "name": "R01 fixed priority schedule",
+    "scope": "Synthetic independent resource case; not construction measurements",
+    "calendar": "continuous_elapsed_days",
+    "time_origin": "Synthetic reference elapsed day zero",
+    "tasks": [
+      {
+        "task_id": "A",
+        "name": "A",
+        "duration_days": 2.0,
+        "duration_source": "Independent frozen duration",
+        "predecessors": [],
+        "demands": [
+          {
+            "resource_id": "crew",
+            "units": 1.0
+          }
+        ]
+      },
+      {
+        "task_id": "B",
+        "name": "B",
+        "duration_days": 3.0,
+        "duration_source": "Independent frozen duration",
+        "predecessors": [],
+        "demands": [
+          {
+            "resource_id": "crew",
+            "units": 1.0
+          }
+        ]
+      },
+      {
+        "task_id": "C",
+        "name": "C",
+        "duration_days": 1.0,
+        "duration_source": "Independent frozen duration",
+        "predecessors": [
+          {
+            "task_id": "A",
+            "lag_days": 0.0,
+            "source": "Independent frozen precedence"
+          },
+          {
+            "task_id": "B",
+            "lag_days": 0.0,
+            "source": "Independent frozen precedence"
+          }
+        ],
+        "demands": [
+          {
+            "resource_id": "crew",
+            "units": 1.0
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "resource_id": "crew",
+        "name": "crew",
+        "capacity": null,
+        "unit": "synthetic resource",
+        "source": "Independent fixed capacity"
+      }
+    ],
+    "evidence_ids": [],
+    "progress": null,
+    "import_file_id": null
+  },
+  "calculation_type": "resource_leveling",
+  "leveling_request": {
+    "name": "R01 fixed priority schedule",
+    "source_hash": "e8e74d2ac2f6d22d02cd2abe9b2b356ef2ce425c136458bf3588c61e77766aa9",
+    "priority": [
+      "A",
+      "B",
+      "C"
+    ],
+    "resource_demands_complete": true,
+    "demand_basis": "Frozen independent benchmark specifies all declared renewable resource requirements"
+  },
+  "leveling_source": {
+    "schedule_id": "schedule_d1d0b8a32a874767b4a87b42e9fa92b2",
+    "hash": "e8e74d2ac2f6d22d02cd2abe9b2b356ef2ce425c136458bf3588c61e77766aa9",
+    "revision": 1
+  },
+  "source_snapshot": [],
+  "import_source": null,
+  "calculator_hash": "0f3549f82819a4a7c7ceaaa5696dea17cfd2245642f0e93d8f380f507ad22db3",
+  "created_at": "2026-11-15T12:22:51.498266+00:00",
+  "result": {
+    "status": "incomplete",
+    "planned": {
+      "duration_days": "4",
+      "rows": [
+        {
+          "task_id": "A",
+          "name": "A",
+          "start_day": "0",
+          "finish_day": "2",
+          "latest_start_day": "1",
+          "latest_finish_day": "3",
+          "total_float_days": "1",
+          "free_float_days": "1",
+          "critical": false
+        },
+        {
+          "task_id": "B",
+          "name": "B",
+          "start_day": "0",
+          "finish_day": "3",
+          "latest_start_day": "0",
+          "latest_finish_day": "3",
+          "total_float_days": "0",
+          "free_float_days": "0",
+          "critical": true
+        },
+        {
+          "task_id": "C",
+          "name": "C",
+          "start_day": "3",
+          "finish_day": "4",
+          "latest_start_day": "3",
+          "latest_finish_day": "4",
+          "total_float_days": "0",
+          "free_float_days": "0",
+          "critical": true
+        }
+      ],
+      "critical_tasks": [
+        "B",
+        "C"
+      ],
+      "critical_dependencies": [
+        {
+          "from": "B",
+          "to": "C",
+          "lag_days": "0"
+        }
+      ],
+      "resources": {
+        "status": "unknown",
+        "conflicts": [],
+        "unknown": [
+          {
+            "resource_id": "crew",
+            "task_id": "A"
+          },
+          {
+            "resource_id": "crew",
+            "task_id": "B"
+          },
+          {
+            "resource_id": "crew",
+            "task_id": "C"
+          }
+        ],
+        "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+      },
+      "formulas": [
+        "ES=max(EF predecessor + FS lag), EF=ES+duration",
+        "LF=min(LS successor - lag), LS=LF-duration",
+        "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+      ]
+    },
+    "forecast": null,
+    "resource_leveling": "serial_sgs_insertion_v1",
+    "leveled": {
+      "method": "serial_sgs_insertion_v1",
+      "time_unit": "continuous_elapsed_day",
+      "precision_days": "0.000001",
+      "site_safety": "NOT_ASSESSED",
+      "optimality": "not_proven",
+      "schedule": null,
+      "lower_bound": null,
+      "limitations": [
+        "固定可再生资源容量、固定占用、非抢占工序、FS非负间隔；按连续经过日计算。",
+        "优先序决定符合前置条件的下一工序；允许插入已安排工序之前的空档。不是所有优先序的搜索。",
+        "只核对声明资料，不证明现场可施工、资源已落实、专业工序适用或履约保证。",
+        "零工期里程碑不占用资源；无占用工序必须由提交者明确确认，未声明资源不纳入约束。"
+      ],
+      "status": "incomplete",
+      "reasons": [
+        "capacity_missing:crew"
+      ]
+    },
+    "site_safety": "NOT_ASSESSED",
+    "limitations": [
+      "固定可再生资源容量、固定占用、非抢占工序、FS非负间隔；按连续经过日计算。",
+      "优先序决定符合前置条件的下一工序；允许插入已安排工序之前的空档。不是所有优先序的搜索。",
+      "只核对声明资料，不证明现场可施工、资源已落实、专业工序适用或履约保证。",
+      "零工期里程碑不占用资源；无占用工序必须由提交者明确确认，未声明资源不纳入约束。"
+    ]
+  },
+  "hash": "92b11d077c8bb8ae317092ce915b3518ef4547f6c35b6aee308dc9cede9bf7a4",
+  "revision": 1,
+  "stale_reasons": [],
+  "stale_details": [],
+  "status": "incomplete"
+}

@@ -3,7 +3,7 @@ import copy
 import re
 from pydantic import Field, model_validator
 from .schema import Contract
-from . import core, agent_energy, agent_outputs
+from . import core, agent_energy, agent_outputs, agent_intent_catalog
 from .agent_semantics import inspection, model_projection
 
 KINDS='thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility'
@@ -54,10 +54,11 @@ def state(record, ident):
 
 def key_schema(record,ident):
     current=state(record,ident);keys=current['keys']
+    meanings=agent_intent_catalog.MEANINGS.get(ident.split('_',1)[0], {})
     if not keys:return {'type':'null','description':'Read current source/catalog only; no numeric fact selected.'}
     return {'type':'array','minItems':1,'maxItems':min(12,len(keys)),'uniqueItems':True,
             'items':{'type':'string','enum':keys},
-            'description':'Before reading values, select ONLY fields requested in the original question and obey exclusions. The initial selection is retained for subsequent reads and deliveries. Select the requested facts using the known catalog. Null is a defined source value, not a reason to skip reading. Catalog-only repetition makes no progress.'}
+            'description':'Before reading values, select ONLY fields requested in the original question and obey exclusions. The initial selection is retained for subsequent reads and deliveries. Select the requested facts using the known catalog. Null is a defined source value, not a reason to skip reading. Catalog-only repetition makes no progress. Field meanings: ' + '; '.join(k + '=' + meanings.get(k,k) for k in keys)}
 
 
 def leaf_schema(tool,record,ids,argument):

@@ -162,7 +162,7 @@ TOOLS = {
     'operations_list': '只读列出最近6份设备运行规则核查记录，不推断设备健康或控制设备',
     'operations_read': '按operation_id读取当前运行异常事件、缺测、阈值来源及检查建议，不能把规则事件当作已确认故障根因',
     'schedule_list': '只读列出最近6份施工进度记录及状态，不生成工期或施工安全结论',
-    'schedule_read': '按schedule_id读取当前关键路径、显式剩余工期情景、缺参及资源冲突；未资源调平，不保证现场可施工',
+    'schedule_read': '读取当前施工计划或资源受限方案、缺参和约束；不是现场施工安全结论',
     'material_cost_list': '只读列出最近6份材料成本清单和当前状态；不创建价格、数量或税率',
     'material_cost_read': '按material_cost_id读取当前来源核验后的成本清单；材料成本不等于工程总价或报价认证',
     'beam_analysis_list': '只读列出项目最近6条梁分析记录及当前状态；不创建荷载或判断结构安全',
@@ -601,9 +601,8 @@ class Agent:
                         if e['tool'] == ds.read_tool:
                             ids.add(e['result'][ds.record_key]);read_any = True
                             observed = e['result']
-                            if ds.kind in agent_energy.KINDS:
-                                observed = {**observed, 'explanation_facts': [f for f in observed.get('explanation_facts', [])
-                                    if f['fact'] in (observed.get('selected_energy_fact_keys') or [])]}
+                            if ds.kind in agent_energy.KINDS or 'selected_fact_keys' in observed:
+                                observed = {**observed, 'explanation_facts': model_projection(observed, ds.kind)['explanation_facts']}
                             read_records=[(old_spec,old) for old_spec,old in read_records if old[old_spec.record_key]!=observed[ds.record_key]]
                             read_records.append((ds, observed))
                     if body.read_requests:
