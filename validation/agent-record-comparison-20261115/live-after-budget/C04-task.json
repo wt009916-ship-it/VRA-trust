@@ -1,0 +1,1370 @@
+{
+  "agent_id": "agent_d03c3c1883e4487a81b56bdb45059190",
+  "project_id": "project_9456edf4b2d147c7a490e092d62d76e6",
+  "question": "比较cost_7f7f4c565025488abdb107128c230233基准和cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9对照的材料合计差值与相对变化。先核对计价口径，日期不一致时正式说明不可比较，不强行计算。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:13.238137+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Synthetic Agent record comparison",
+        "building": {
+          "use": "reference",
+          "location": "Synthetic reference only",
+          "region": "TEST",
+          "area_m2": 50.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_9456edf4b2d147c7a490e092d62d76e6",
+        "revision": 1,
+        "created_at": "2026-11-15T11:37:48.181757+00:00",
+        "updated_at": "2026-11-15T11:37:48.181757+00:00"
+      },
+      "result_hash": "4ca2478eac7748127730e88c3c4335380bbb3a60a83168a7e28eb8d77f126fbe",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T11:39:13.250573+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:13.253099+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\n  \"actions\": [\n    {\n      \"tool\": \"professional_read_many\",\n      \"arguments\": {\n        \"selections\": [\n          {\n            \"record_id\": \"cost_7f7f4c565025488abdb107128c230233\",\n            \"fact_keys\": [\n              \"material_total\"\n            ]\n          },\n          {\n            \"record_id\": \"cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9\",\n            \"fact_keys\": [\n              \"material_total\"\n            ]\n          }\n        ]\n      }\n    }\n  ]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 7157,
+      "finished_at": "2026-11-15T11:39:20.415604+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "selections": [
+          {
+            "record_id": "cost_7f7f4c565025488abdb107128c230233",
+            "fact_keys": [
+              "material_total"
+            ]
+          },
+          {
+            "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+            "fact_keys": [
+              "material_total"
+            ]
+          }
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:20.419352+00:00",
+      "origin": "model",
+      "result": {
+        "status": "records_read",
+        "records": [
+          {
+            "kind": "cost",
+            "record_id": "cost_7f7f4c565025488abdb107128c230233",
+            "current": {
+              "cost_id": "cost_7f7f4c565025488abdb107128c230233",
+              "hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+              "name": "Synthetic material reference",
+              "status": "calculated",
+              "source_status": "USER_DECLARED",
+              "scope": "已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。",
+              "explanation_facts": [
+                {
+                  "fact": "material_total",
+                  "label": "声明材料清单合计（日期 2026-11-15）",
+                  "value": "7.50",
+                  "source_value": "7.50",
+                  "value_policy": "exact_decimal",
+                  "unit": "USD",
+                  "period": "quote_date",
+                  "study_years": null,
+                  "area_m2": null,
+                  "area_basis": "no_area_normalization",
+                  "time_basis": "not_a_study_duration",
+                  "source_path": "/result/material_total",
+                  "energy_context": null
+                }
+              ],
+              "nonnumeric_review_reference": {
+                "kind": "cost",
+                "record_id": "cost_7f7f4c565025488abdb107128c230233",
+                "record_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+                "view_hash": "1f2bdb71371fc02325c93462f23bdbc9d2d45bacbc176686c7d00a5694096e38",
+                "finish": false
+              },
+              "limitation_delivery": null,
+              "calculation_context": null,
+              "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+              "projection_notice": "这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。",
+              "available_fact_catalog": [
+                {
+                  "fact": "material_total",
+                  "label": "声明材料清单合计（日期 2026-11-15）",
+                  "unit": "USD"
+                }
+              ],
+              "selected_fact_keys": [
+                "material_total"
+              ],
+              "selection_notice": "Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit."
+            }
+          },
+          {
+            "kind": "cost",
+            "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+            "current": {
+              "cost_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+              "hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+              "name": "Synthetic material reference",
+              "status": "calculated",
+              "source_status": "USER_DECLARED",
+              "scope": "已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。",
+              "explanation_facts": [
+                {
+                  "fact": "material_total",
+                  "label": "声明材料清单合计（日期 2026-12-01）",
+                  "value": "7.50",
+                  "source_value": "7.50",
+                  "value_policy": "exact_decimal",
+                  "unit": "USD",
+                  "period": "quote_date",
+                  "study_years": null,
+                  "area_m2": null,
+                  "area_basis": "no_area_normalization",
+                  "time_basis": "not_a_study_duration",
+                  "source_path": "/result/material_total",
+                  "energy_context": null
+                }
+              ],
+              "nonnumeric_review_reference": {
+                "kind": "cost",
+                "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+                "record_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+                "view_hash": "31d79771aea6437218fa1b6810f6b54f2cd352a3f4dba275ee045c654832a7d5",
+                "finish": false
+              },
+              "limitation_delivery": null,
+              "calculation_context": null,
+              "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+              "projection_notice": "这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。",
+              "available_fact_catalog": [
+                {
+                  "fact": "material_total",
+                  "label": "声明材料清单合计（日期 2026-12-01）",
+                  "unit": "USD"
+                }
+              ],
+              "selected_fact_keys": [
+                "material_total"
+              ],
+              "selection_notice": "Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit."
+            }
+          }
+        ],
+        "notice": "模型选择批次，控制流程逐项执行/读取并审计；尚未正式交付，不证明完整性或工程认证。未选计划未执行。"
+      },
+      "result_hash": "876180e15bcc85f1b78ed24645eaf611a1d8e01fb30684efeefaafe0c3d92d4c",
+      "duration_ms": 47,
+      "finished_at": "2026-11-15T11:39:20.466493+00:00"
+    },
+    {
+      "tool": "material_cost_read",
+      "arguments": {
+        "material_cost_id": "cost_7f7f4c565025488abdb107128c230233",
+        "fact_keys": [
+          "material_total"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:20.433888+00:00",
+      "origin": "controller",
+      "parent_event": 2,
+      "result": {
+        "cost_id": "cost_7f7f4c565025488abdb107128c230233",
+        "project_id": "project_9456edf4b2d147c7a490e092d62d76e6",
+        "project_revision": 1,
+        "input": {
+          "name": "Synthetic material reference",
+          "region": "TEST",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-15",
+          "functional_scope": "Same declared synthetic purchase scope",
+          "exclusions": [
+            "Tax",
+            "Labour"
+          ],
+          "import_file_id": null,
+          "lines": [
+            {
+              "line_id": "one",
+              "material_id": "reference",
+              "name": "Reference material",
+              "measure": {
+                "mode": "direct",
+                "unit": "kg",
+                "quantity": 1.0,
+                "length": null,
+                "width": null,
+                "height": null,
+                "dimension_unit": null,
+                "count": null,
+                "deduction": null,
+                "source": "Synthetic quantity, not measurement"
+              },
+              "waste_ratio": 0.0,
+              "waste_basis": "Declared zero allowance",
+              "density_kg_m3": null,
+              "density_source": null,
+              "quote": {
+                "quote_id": "q1",
+                "unit_price": 7.5,
+                "per_unit": "kg",
+                "currency": "USD",
+                "tax_basis": "excluded",
+                "region": "TEST",
+                "valid_from": "2026-01-01",
+                "valid_until": "2026-12-31",
+                "source": "Synthetic quote, not a market offer",
+                "version": "reference-1"
+              },
+              "evidence_ids": []
+            }
+          ]
+        },
+        "result": {
+          "status": "calculated",
+          "rows": [
+            {
+              "line_id": "one",
+              "material_id": "reference",
+              "name": "Reference material",
+              "unit": "kg",
+              "net_quantity": "1.0",
+              "purchase_quantity": "1.00",
+              "quantity_in_quote_unit": "1.00",
+              "quote_unit": "kg",
+              "amount": "7.50",
+              "quantity_formula": "declared net quantity",
+              "cost_formula": "net*(1+waste), ceil for item; dimensional conversion; *unit_price; round HALF_UP to 0.01 per line",
+              "missing": []
+            }
+          ],
+          "materials": [
+            {
+              "material_id": "reference",
+              "unit": "kg",
+              "net": "1.0",
+              "purchase": "1.00"
+            }
+          ],
+          "missing_lines": [],
+          "material_total": "7.50",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-15",
+          "source_status": "USER_DECLARED",
+          "tender_certification": "NOT_ASSESSED",
+          "functional_equivalence": "NOT_ASSESSED",
+          "rounding": "Decimal, HALF_UP 0.01 per line then sum; item procurement rounded upward per line",
+          "limitations": [
+            "只计算声明材料清单；不自动加入人工、机械、运输、管理费、税额、汇率或碳收益。",
+            "价格有效期、地区及来源由用户声明；未验证市场报价真实性或材料功能等效性。",
+            "几何量为矩形/长方体显式参数估算；扣减使用输出单位m²或m³，不是CAD自动算量或计量规范认证。",
+            "未计损耗填写0，未知留空；按件采购逐行向上取整。金额为十进制字符串，避免JSON浮点金额失真。"
+          ]
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "9d9d3078660b3173a513b8ce14323413059ffc33d48a4e6637c17324e34da30d",
+        "created_at": "2026-11-15T11:37:48.246823+00:00",
+        "hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "calculated",
+        "nonnumeric_review_reference": {
+          "kind": "cost",
+          "record_id": "cost_7f7f4c565025488abdb107128c230233",
+          "record_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+          "view_hash": "1f2bdb71371fc02325c93462f23bdbc9d2d45bacbc176686c7d00a5694096e38",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-11-15）",
+            "value": "7.50",
+            "source_value": "7.50",
+            "value_policy": "exact_decimal",
+            "unit": "USD",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_fact_keys": [
+          "material_total"
+        ]
+      },
+      "result_hash": "025a62bccfa21babda181bbe1b731fdd35433603e4019659f3d910e513ec5b20",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T11:39:20.443408+00:00"
+    },
+    {
+      "tool": "material_cost_read",
+      "arguments": {
+        "material_cost_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "fact_keys": [
+          "material_total"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:20.447413+00:00",
+      "origin": "controller",
+      "parent_event": 2,
+      "result": {
+        "cost_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "project_id": "project_9456edf4b2d147c7a490e092d62d76e6",
+        "project_revision": 1,
+        "input": {
+          "name": "Synthetic material reference",
+          "region": "TEST",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-12-01",
+          "functional_scope": "Same declared synthetic purchase scope",
+          "exclusions": [
+            "Tax",
+            "Labour"
+          ],
+          "import_file_id": null,
+          "lines": [
+            {
+              "line_id": "one",
+              "material_id": "reference",
+              "name": "Reference material",
+              "measure": {
+                "mode": "direct",
+                "unit": "kg",
+                "quantity": 1.0,
+                "length": null,
+                "width": null,
+                "height": null,
+                "dimension_unit": null,
+                "count": null,
+                "deduction": null,
+                "source": "Synthetic quantity, not measurement"
+              },
+              "waste_ratio": 0.0,
+              "waste_basis": "Declared zero allowance",
+              "density_kg_m3": null,
+              "density_source": null,
+              "quote": {
+                "quote_id": "q1",
+                "unit_price": 7.5,
+                "per_unit": "kg",
+                "currency": "USD",
+                "tax_basis": "excluded",
+                "region": "TEST",
+                "valid_from": "2026-01-01",
+                "valid_until": "2026-12-31",
+                "source": "Synthetic quote, not a market offer",
+                "version": "reference-1"
+              },
+              "evidence_ids": []
+            }
+          ]
+        },
+        "result": {
+          "status": "calculated",
+          "rows": [
+            {
+              "line_id": "one",
+              "material_id": "reference",
+              "name": "Reference material",
+              "unit": "kg",
+              "net_quantity": "1.0",
+              "purchase_quantity": "1.00",
+              "quantity_in_quote_unit": "1.00",
+              "quote_unit": "kg",
+              "amount": "7.50",
+              "quantity_formula": "declared net quantity",
+              "cost_formula": "net*(1+waste), ceil for item; dimensional conversion; *unit_price; round HALF_UP to 0.01 per line",
+              "missing": []
+            }
+          ],
+          "materials": [
+            {
+              "material_id": "reference",
+              "unit": "kg",
+              "net": "1.0",
+              "purchase": "1.00"
+            }
+          ],
+          "missing_lines": [],
+          "material_total": "7.50",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-12-01",
+          "source_status": "USER_DECLARED",
+          "tender_certification": "NOT_ASSESSED",
+          "functional_equivalence": "NOT_ASSESSED",
+          "rounding": "Decimal, HALF_UP 0.01 per line then sum; item procurement rounded upward per line",
+          "limitations": [
+            "只计算声明材料清单；不自动加入人工、机械、运输、管理费、税额、汇率或碳收益。",
+            "价格有效期、地区及来源由用户声明；未验证市场报价真实性或材料功能等效性。",
+            "几何量为矩形/长方体显式参数估算；扣减使用输出单位m²或m³，不是CAD自动算量或计量规范认证。",
+            "未计损耗填写0，未知留空；按件采购逐行向上取整。金额为十进制字符串，避免JSON浮点金额失真。"
+          ]
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "9d9d3078660b3173a513b8ce14323413059ffc33d48a4e6637c17324e34da30d",
+        "created_at": "2026-11-15T11:37:48.257588+00:00",
+        "hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "calculated",
+        "nonnumeric_review_reference": {
+          "kind": "cost",
+          "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+          "record_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+          "view_hash": "31d79771aea6437218fa1b6810f6b54f2cd352a3f4dba275ee045c654832a7d5",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-12-01）",
+            "value": "7.50",
+            "source_value": "7.50",
+            "value_policy": "exact_decimal",
+            "unit": "USD",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_fact_keys": [
+          "material_total"
+        ]
+      },
+      "result_hash": "663a6115fdba53458d37baf8ffbd43dce839b9528ef58fb8ea0844f93a6e9e1f",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T11:39:20.464486+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:20.475287+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_compare\", \"arguments\": {\"comparison\": {\"baseline_id\": \"cost_7f7f4c565025488abdb107128c230233\", \"baseline_hash\": \"06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f\", \"candidate_id\": \"cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9\", \"candidate_hash\": \"c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b\", \"fact_key\": \"material_total\", \"outputs\": [\"difference\", \"relative_change_percent\"], \"finish\": false}}}]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 10750,
+      "finished_at": "2026-11-15T11:39:31.245767+00:00"
+    },
+    {
+      "tool": "professional_compare",
+      "arguments": {
+        "comparison": {
+          "baseline_id": "cost_7f7f4c565025488abdb107128c230233",
+          "baseline_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+          "candidate_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+          "candidate_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+          "fact_key": "material_total",
+          "outputs": [
+            "difference",
+            "relative_change_percent"
+          ],
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:31.256931+00:00",
+      "origin": "model",
+      "result": {
+        "status": "unavailable",
+        "reference": {
+          "baseline_id": "cost_7f7f4c565025488abdb107128c230233",
+          "baseline_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+          "candidate_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+          "candidate_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+          "fact_key": "material_total",
+          "outputs": [
+            "difference",
+            "relative_change_percent"
+          ],
+          "finish": false
+        },
+        "kind": "cost",
+        "fact_key": "material_total",
+        "label": "声明材料清单合计（日期 2026-11-15）",
+        "unit": "USD",
+        "context": null,
+        "mismatches": [
+          "as_of"
+        ],
+        "baseline": null,
+        "candidate": null,
+        "values": null,
+        "unavailable_reason": "comparison_context_mismatch",
+        "notice": "仅比较当前记录中同一指标；相对变化=(对照−基准)/基准×100%。声明口径一致不证明功能等效、全年节能、合规、安全或可交易碳资产。",
+        "source_value_policy": "original source_value, not rounded display"
+      },
+      "result_hash": "498c57b564532f8a3d4aa5304375f66b9d397325e01cf176920678488123957e",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T11:39:31.275934+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:31.278930+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"cost\", \"record_id\": \"cost_7f7f4c565025488abdb107128c230233\", \"record_hash\": \"06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f\", \"fact_keys\": [\"material_total\"], \"finish\": false}}}, {\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"cost\", \"record_id\": \"cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9\", \"record_hash\": \"c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b\", \"fact_keys\": [\"material_total\"], \"finish\": false}}}, {\"tool\": \"requested_defer\", \"arguments\": {\"request_keys\": null}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 3,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 12125,
+      "finished_at": "2026-11-15T11:39:43.417191+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "cost",
+          "record_id": "cost_7f7f4c565025488abdb107128c230233",
+          "record_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+          "fact_keys": [
+            "material_total"
+          ],
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:43.438543+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 3,
+        "record_id": "cost_7f7f4c565025488abdb107128c230233",
+        "record_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+        "fact_keys": [
+          "material_total"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "cost",
+          "record_id": "cost_7f7f4c565025488abdb107128c230233",
+          "record_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "material_total",
+              "value": "7.50",
+              "unit": "USD",
+              "period": "quote_date",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": false
+        },
+        "statements": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-11-15）",
+            "value": "7.50",
+            "source_value": "7.50",
+            "value_policy": "exact_decimal",
+            "unit": "USD",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "073347bd955042edf53c2895a90f6051beb4abaf8792e86f87a6906b902de92d",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T11:39:43.459901+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "cost",
+          "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+          "record_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+          "fact_keys": [
+            "material_total"
+          ],
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:43.463416+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 4,
+        "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "record_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+        "fact_keys": [
+          "material_total"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "cost",
+          "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+          "record_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "material_total",
+              "value": "7.50",
+              "unit": "USD",
+              "period": "quote_date",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": false
+        },
+        "statements": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-12-01）",
+            "value": "7.50",
+            "source_value": "7.50",
+            "value_policy": "exact_decimal",
+            "unit": "USD",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "5885a055c242a409baf96833c7b2f2e65d8961c4787d7fb7a77100d55a26b249",
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T11:39:43.480734+00:00"
+    },
+    {
+      "tool": "requested_defer",
+      "arguments": {
+        "request_keys": null
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:43.483279+00:00",
+      "origin": "model",
+      "result": {
+        "status": "needs_clarification",
+        "finish": true,
+        "notice": "Question needs clarification; no numeric result, unsupported-capability conclusion or completion claim."
+      },
+      "result_hash": "43e253933b639fcf6c926e19c5a7aebf8d3c003ca6c659784678d434dea2f3e8",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T11:39:43.493981+00:00"
+    },
+    {
+      "tool": "material_cost_read",
+      "arguments": {
+        "material_cost_id": "cost_7f7f4c565025488abdb107128c230233"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:43.501510+00:00",
+      "origin": "controller",
+      "result": {
+        "cost_id": "cost_7f7f4c565025488abdb107128c230233",
+        "project_id": "project_9456edf4b2d147c7a490e092d62d76e6",
+        "project_revision": 1,
+        "input": {
+          "name": "Synthetic material reference",
+          "region": "TEST",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-15",
+          "functional_scope": "Same declared synthetic purchase scope",
+          "exclusions": [
+            "Tax",
+            "Labour"
+          ],
+          "import_file_id": null,
+          "lines": [
+            {
+              "line_id": "one",
+              "material_id": "reference",
+              "name": "Reference material",
+              "measure": {
+                "mode": "direct",
+                "unit": "kg",
+                "quantity": 1.0,
+                "length": null,
+                "width": null,
+                "height": null,
+                "dimension_unit": null,
+                "count": null,
+                "deduction": null,
+                "source": "Synthetic quantity, not measurement"
+              },
+              "waste_ratio": 0.0,
+              "waste_basis": "Declared zero allowance",
+              "density_kg_m3": null,
+              "density_source": null,
+              "quote": {
+                "quote_id": "q1",
+                "unit_price": 7.5,
+                "per_unit": "kg",
+                "currency": "USD",
+                "tax_basis": "excluded",
+                "region": "TEST",
+                "valid_from": "2026-01-01",
+                "valid_until": "2026-12-31",
+                "source": "Synthetic quote, not a market offer",
+                "version": "reference-1"
+              },
+              "evidence_ids": []
+            }
+          ]
+        },
+        "result": {
+          "status": "calculated",
+          "rows": [
+            {
+              "line_id": "one",
+              "material_id": "reference",
+              "name": "Reference material",
+              "unit": "kg",
+              "net_quantity": "1.0",
+              "purchase_quantity": "1.00",
+              "quantity_in_quote_unit": "1.00",
+              "quote_unit": "kg",
+              "amount": "7.50",
+              "quantity_formula": "declared net quantity",
+              "cost_formula": "net*(1+waste), ceil for item; dimensional conversion; *unit_price; round HALF_UP to 0.01 per line",
+              "missing": []
+            }
+          ],
+          "materials": [
+            {
+              "material_id": "reference",
+              "unit": "kg",
+              "net": "1.0",
+              "purchase": "1.00"
+            }
+          ],
+          "missing_lines": [],
+          "material_total": "7.50",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-15",
+          "source_status": "USER_DECLARED",
+          "tender_certification": "NOT_ASSESSED",
+          "functional_equivalence": "NOT_ASSESSED",
+          "rounding": "Decimal, HALF_UP 0.01 per line then sum; item procurement rounded upward per line",
+          "limitations": [
+            "只计算声明材料清单；不自动加入人工、机械、运输、管理费、税额、汇率或碳收益。",
+            "价格有效期、地区及来源由用户声明；未验证市场报价真实性或材料功能等效性。",
+            "几何量为矩形/长方体显式参数估算；扣减使用输出单位m²或m³，不是CAD自动算量或计量规范认证。",
+            "未计损耗填写0，未知留空；按件采购逐行向上取整。金额为十进制字符串，避免JSON浮点金额失真。"
+          ]
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "9d9d3078660b3173a513b8ce14323413059ffc33d48a4e6637c17324e34da30d",
+        "created_at": "2026-11-15T11:37:48.246823+00:00",
+        "hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "calculated",
+        "nonnumeric_review_reference": {
+          "kind": "cost",
+          "record_id": "cost_7f7f4c565025488abdb107128c230233",
+          "record_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+          "view_hash": "1f2bdb71371fc02325c93462f23bdbc9d2d45bacbc176686c7d00a5694096e38",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-11-15）",
+            "value": "7.50",
+            "source_value": "7.50",
+            "value_policy": "exact_decimal",
+            "unit": "USD",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "7cf55883ca5e23b64a00bb5cff1a712a36e3d201b587c18677738d740324d0e7",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T11:39:43.516994+00:00"
+    },
+    {
+      "tool": "material_cost_read",
+      "arguments": {
+        "material_cost_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T11:39:43.520084+00:00",
+      "origin": "controller",
+      "result": {
+        "cost_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "project_id": "project_9456edf4b2d147c7a490e092d62d76e6",
+        "project_revision": 1,
+        "input": {
+          "name": "Synthetic material reference",
+          "region": "TEST",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-12-01",
+          "functional_scope": "Same declared synthetic purchase scope",
+          "exclusions": [
+            "Tax",
+            "Labour"
+          ],
+          "import_file_id": null,
+          "lines": [
+            {
+              "line_id": "one",
+              "material_id": "reference",
+              "name": "Reference material",
+              "measure": {
+                "mode": "direct",
+                "unit": "kg",
+                "quantity": 1.0,
+                "length": null,
+                "width": null,
+                "height": null,
+                "dimension_unit": null,
+                "count": null,
+                "deduction": null,
+                "source": "Synthetic quantity, not measurement"
+              },
+              "waste_ratio": 0.0,
+              "waste_basis": "Declared zero allowance",
+              "density_kg_m3": null,
+              "density_source": null,
+              "quote": {
+                "quote_id": "q1",
+                "unit_price": 7.5,
+                "per_unit": "kg",
+                "currency": "USD",
+                "tax_basis": "excluded",
+                "region": "TEST",
+                "valid_from": "2026-01-01",
+                "valid_until": "2026-12-31",
+                "source": "Synthetic quote, not a market offer",
+                "version": "reference-1"
+              },
+              "evidence_ids": []
+            }
+          ]
+        },
+        "result": {
+          "status": "calculated",
+          "rows": [
+            {
+              "line_id": "one",
+              "material_id": "reference",
+              "name": "Reference material",
+              "unit": "kg",
+              "net_quantity": "1.0",
+              "purchase_quantity": "1.00",
+              "quantity_in_quote_unit": "1.00",
+              "quote_unit": "kg",
+              "amount": "7.50",
+              "quantity_formula": "declared net quantity",
+              "cost_formula": "net*(1+waste), ceil for item; dimensional conversion; *unit_price; round HALF_UP to 0.01 per line",
+              "missing": []
+            }
+          ],
+          "materials": [
+            {
+              "material_id": "reference",
+              "unit": "kg",
+              "net": "1.0",
+              "purchase": "1.00"
+            }
+          ],
+          "missing_lines": [],
+          "material_total": "7.50",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-12-01",
+          "source_status": "USER_DECLARED",
+          "tender_certification": "NOT_ASSESSED",
+          "functional_equivalence": "NOT_ASSESSED",
+          "rounding": "Decimal, HALF_UP 0.01 per line then sum; item procurement rounded upward per line",
+          "limitations": [
+            "只计算声明材料清单；不自动加入人工、机械、运输、管理费、税额、汇率或碳收益。",
+            "价格有效期、地区及来源由用户声明；未验证市场报价真实性或材料功能等效性。",
+            "几何量为矩形/长方体显式参数估算；扣减使用输出单位m²或m³，不是CAD自动算量或计量规范认证。",
+            "未计损耗填写0，未知留空；按件采购逐行向上取整。金额为十进制字符串，避免JSON浮点金额失真。"
+          ]
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "9d9d3078660b3173a513b8ce14323413059ffc33d48a4e6637c17324e34da30d",
+        "created_at": "2026-11-15T11:37:48.257588+00:00",
+        "hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "calculated",
+        "nonnumeric_review_reference": {
+          "kind": "cost",
+          "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+          "record_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+          "view_hash": "31d79771aea6437218fa1b6810f6b54f2cd352a3f4dba275ee045c654832a7d5",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-12-01）",
+            "value": "7.50",
+            "source_value": "7.50",
+            "value_policy": "exact_decimal",
+            "unit": "USD",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "9dd4749efbe171693db2f99ac94402ecfc28cb2d009f446d15548ee0b318aa7c",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T11:39:43.532350+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "partial",
+    "execution_scope": "checked_professional_deliveries",
+    "artifacts": [
+      {
+        "kind": "material_cost_review",
+        "cost_id": "cost_7f7f4c565025488abdb107128c230233",
+        "project_id": "project_9456edf4b2d147c7a490e092d62d76e6",
+        "name": "Synthetic material reference",
+        "record_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "checked_at": "2026-11-15T11:39:43.674550+00:00",
+        "scope": "已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。",
+        "currency": "USD",
+        "functional_scope": "Same declared synthetic purchase scope",
+        "exclusions": [
+          "Tax",
+          "Labour"
+        ],
+        "as_of": "2026-11-15",
+        "tax_basis": "excluded",
+        "source_status": "USER_DECLARED",
+        "material_total": "7.50",
+        "rows": [
+          {
+            "line_id": "one",
+            "material_id": "reference",
+            "name": "Reference material",
+            "unit": "kg",
+            "net_quantity": "1.0",
+            "purchase_quantity": "1.00",
+            "quantity_in_quote_unit": "1.00",
+            "quote_unit": "kg",
+            "amount": "7.50",
+            "missing": [],
+            "quantity_method": "net_times_waste",
+            "quantity_method_text": "净量×(1+损耗率)，此计量单位不向上取整",
+            "waste_ratio": "0.0",
+            "unit_price": "7.5",
+            "money_method": "计价数量×单价，每行HALF_UP保留两位小数后求和",
+            "quantity_source": "Synthetic quantity, not measurement",
+            "waste_source": "Declared zero allowance",
+            "price_source": "Synthetic quote, not a market offer",
+            "price_version": "reference-1",
+            "price_valid_from": "2026-01-01",
+            "price_valid_until": "2026-12-31",
+            "density_kg_m3": null,
+            "density_source": null,
+            "source_pointers": {
+              "result": "/result/rows/0",
+              "input_line_id": "one"
+            }
+          }
+        ],
+        "missing_lines": [],
+        "verified": true,
+        "notice": "数值及方法来自当前核验后的清单，不采纳模型自由文字作为计算依据。",
+        "record_id": "cost_7f7f4c565025488abdb107128c230233"
+      },
+      {
+        "kind": "material_cost_review",
+        "cost_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "project_id": "project_9456edf4b2d147c7a490e092d62d76e6",
+        "name": "Synthetic material reference",
+        "record_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "checked_at": "2026-11-15T11:39:43.676550+00:00",
+        "scope": "已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。",
+        "currency": "USD",
+        "functional_scope": "Same declared synthetic purchase scope",
+        "exclusions": [
+          "Tax",
+          "Labour"
+        ],
+        "as_of": "2026-12-01",
+        "tax_basis": "excluded",
+        "source_status": "USER_DECLARED",
+        "material_total": "7.50",
+        "rows": [
+          {
+            "line_id": "one",
+            "material_id": "reference",
+            "name": "Reference material",
+            "unit": "kg",
+            "net_quantity": "1.0",
+            "purchase_quantity": "1.00",
+            "quantity_in_quote_unit": "1.00",
+            "quote_unit": "kg",
+            "amount": "7.50",
+            "missing": [],
+            "quantity_method": "net_times_waste",
+            "quantity_method_text": "净量×(1+损耗率)，此计量单位不向上取整",
+            "waste_ratio": "0.0",
+            "unit_price": "7.5",
+            "money_method": "计价数量×单价，每行HALF_UP保留两位小数后求和",
+            "quantity_source": "Synthetic quantity, not measurement",
+            "waste_source": "Declared zero allowance",
+            "price_source": "Synthetic quote, not a market offer",
+            "price_version": "reference-1",
+            "price_valid_from": "2026-01-01",
+            "price_valid_until": "2026-12-31",
+            "density_kg_m3": null,
+            "density_source": null,
+            "source_pointers": {
+              "result": "/result/rows/0",
+              "input_line_id": "one"
+            }
+          }
+        ],
+        "missing_lines": [],
+        "verified": true,
+        "notice": "数值及方法来自当前核验后的清单，不采纳模型自由文字作为计算依据。",
+        "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9"
+      }
+    ],
+    "checked_statements": [
+      {
+        "record_id": "cost_7f7f4c565025488abdb107128c230233",
+        "name": "Synthetic material reference",
+        "facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-11-15）",
+            "value": "7.50",
+            "source_value": "7.50",
+            "value_policy": "exact_decimal",
+            "unit": "USD",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "energy_relationship": null
+      },
+      {
+        "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "name": "Synthetic material reference",
+        "facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-12-01）",
+            "value": "7.50",
+            "source_value": "7.50",
+            "value_policy": "exact_decimal",
+            "unit": "USD",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "energy_relationship": null
+      }
+    ],
+    "checked_limitations": [],
+    "verification": [
+      {
+        "record_id": "cost_7f7f4c565025488abdb107128c230233",
+        "passed": true,
+        "meaning": "结构化数值、单位与期间对照当前记录"
+      },
+      {
+        "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "passed": true,
+        "meaning": "结构化数值、单位与期间对照当前记录"
+      },
+      {
+        "check": "current_record_comparison",
+        "passed": false,
+        "baseline_id": "cost_7f7f4c565025488abdb107128c230233",
+        "candidate_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "fact_key": "material_total",
+        "meaning": "仅核验声明口径和数学差值，不证明功能等效或原问题完整覆盖"
+      }
+    ],
+    "summary": "模型仍需明确问题中的目标或指标；未将不确定性当成资料缺失、能力结论或任务完成。",
+    "task_notice": "模型选择记录与事实，应用核对字段；这不是对模型自由解释或整个复杂任务的认证。",
+    "gaps": [],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-15T11:39:43.676550+00:00",
+    "checked_comparisons": [
+      {
+        "status": "unavailable",
+        "reference": {
+          "baseline_id": "cost_7f7f4c565025488abdb107128c230233",
+          "baseline_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+          "candidate_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+          "candidate_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+          "fact_key": "material_total",
+          "outputs": [
+            "difference",
+            "relative_change_percent"
+          ],
+          "finish": false
+        },
+        "kind": "cost",
+        "fact_key": "material_total",
+        "label": "声明材料清单合计（日期 2026-11-15）",
+        "unit": "USD",
+        "context": null,
+        "mismatches": [
+          "as_of"
+        ],
+        "baseline": null,
+        "candidate": null,
+        "values": null,
+        "unavailable_reason": "comparison_context_mismatch",
+        "notice": "仅比较当前记录中同一指标；相对变化=(对照−基准)/基准×100%。声明口径一致不证明功能等效、全年节能、合规、安全或可交易碳资产。",
+        "source_value_policy": "original source_value, not rounded display"
+      }
+    ],
+    "checked_reviews": [],
+    "review_failures": [],
+    "question_deferral": {
+      "question_hash": "93874a5bef7da32610a5e9e0be46c32fdc24bf3c4dacc106191dd18cfb5cb67f",
+      "origin": "model_uncertainty"
+    },
+    "basis": [
+      "project_get",
+      "professional_read_many",
+      "material_cost_read",
+      "material_cost_read",
+      "professional_compare",
+      "professional_deliver",
+      "professional_deliver",
+      "requested_defer",
+      "material_cost_read",
+      "material_cost_read"
+    ]
+  },
+  "created_at": "2026-11-15T11:39:13.234877+00:00",
+  "llm_commentary": null,
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [
+    {
+      "kind": "cost",
+      "record_id": "cost_7f7f4c565025488abdb107128c230233",
+      "record_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+      "statements": [
+        {
+          "energy_context": null,
+          "fact": "material_total",
+          "value": "7.50",
+          "unit": "USD",
+          "period": "quote_date",
+          "study_years": null,
+          "area_m2": null
+        }
+      ],
+      "limitation_status": null,
+      "finish": false
+    },
+    {
+      "kind": "cost",
+      "record_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+      "record_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+      "statements": [
+        {
+          "energy_context": null,
+          "fact": "material_total",
+          "value": "7.50",
+          "unit": "USD",
+          "period": "quote_date",
+          "study_years": null,
+          "area_m2": null
+        }
+      ],
+      "limitation_status": null,
+      "finish": false
+    }
+  ],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "revision": 28,
+  "metric_read_selections": {
+    "cost_7f7f4c565025488abdb107128c230233": [
+      "material_total"
+    ],
+    "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9": [
+      "material_total"
+    ]
+  },
+  "professional_comparisons": [
+    {
+      "status": "unavailable",
+      "reference": {
+        "baseline_id": "cost_7f7f4c565025488abdb107128c230233",
+        "baseline_hash": "06477f7dd9f8d872792a6cd8ddbe735a1b912b811f7a37e0a24b2f3334df895f",
+        "candidate_id": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+        "candidate_hash": "c108cbbc495befb095fc498b8433545b039923073880ab3201e124ff2c42293b",
+        "fact_key": "material_total",
+        "outputs": [
+          "difference",
+          "relative_change_percent"
+        ],
+        "finish": false
+      },
+      "kind": "cost",
+      "fact_key": "material_total",
+      "label": "声明材料清单合计（日期 2026-11-15）",
+      "unit": "USD",
+      "context": null,
+      "mismatches": [
+        "as_of"
+      ],
+      "baseline": null,
+      "candidate": null,
+      "values": null,
+      "unavailable_reason": "comparison_context_mismatch",
+      "notice": "仅比较当前记录中同一指标；相对变化=(对照−基准)/基准×100%。声明口径一致不证明功能等效、全年节能、合规、安全或可交易碳资产。",
+      "source_value_policy": "original source_value, not rounded display"
+    }
+  ],
+  "question_deferral": {
+    "question_hash": "93874a5bef7da32610a5e9e0be46c32fdc24bf3c4dacc106191dd18cfb5cb67f",
+    "origin": "model_uncertainty"
+  },
+  "termination": {
+    "reason": "question_deferred",
+    "model_declared_finished": false
+  },
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-15T11:39:43.536357+00:00",
+  "read_request_progress": [],
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-15T11:39:43.677059+00:00",
+  "historical_task_completion": "partial",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}

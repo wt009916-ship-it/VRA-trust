@@ -180,6 +180,7 @@ def test_unscoped_probe_is_read_only_but_explicit_task_catalog_keeps_all_tools(c
     agent=client.app.state.agent
     default={t['function']['name'] for t in agent.tools()}
     assert not default & WRITE_TOOLS
+    assert 'professional_compare' not in default  # Requires current-task source reads; explicit catalogs retain it.
     assert {'end_use_read','utility_comparison_read','professional_deliver'} <= default
     explicit={t['function']['name'] for t in agent.tools(set(TOOLS))}
     assert explicit==set(TOOLS) and WRITE_TOOLS <= explicit
