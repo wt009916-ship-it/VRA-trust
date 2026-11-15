@@ -1,0 +1,140 @@
+{
+  "tasks": [
+    {
+      "id": "B01",
+      "message": "给出构造thermal_49710b06191948f2bb82a46edacc7cea的传热系数U，只要这一项，不要热阻。",
+      "expected": {
+        "facts": {
+          "A": [
+            "u_w_m2k"
+          ]
+        }
+      },
+      "previous_case": null,
+      "action": null,
+      "body": {
+        "message": "给出构造thermal_49710b06191948f2bb82a46edacc7cea的传热系数U，只要这一项，不要热阻。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "B02",
+      "message": "刚才那面构造，这一轮改为只看加上两侧表面热阻后的总R，不要U也不要各层热阻。",
+      "expected": {
+        "facts": {
+          "A": [
+            "total_resistance_m2k_w"
+          ]
+        }
+      },
+      "previous_case": "B01",
+      "action": null,
+      "body": {
+        "message": "刚才那面构造，这一轮改为只看加上两侧表面热阻后的总R，不要U也不要各层热阻。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "B15",
+      "message": "再读此前那面构造的总R；如果当前来源已失效，请说明现状，不沿用旧数值。",
+      "expected": {
+        "stale": "A",
+        "no_numbers": true,
+        "critical": true
+      },
+      "previous_case": "B02",
+      "action": "change_project",
+      "body": {
+        "message": "再读此前那面构造的总R；如果当前来源已失效，请说明现状，不沿用旧数值。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "B16",
+      "message": "读取构造thermal_d4550ab3a1244ff2a716cb1a630509ad的总R。如果当前项目里找不到这个指定编号，请说明当前范围内不可用，不查询别的项目，也不要拿其他构造代替。",
+      "expected": {
+        "missing": "thermal_d4550ab3a1244ff2a716cb1a630509ad",
+        "no_numbers": true,
+        "critical": true
+      },
+      "previous_case": null,
+      "action": null,
+      "body": {
+        "message": "读取构造thermal_d4550ab3a1244ff2a716cb1a630509ad的总R。如果当前项目里找不到这个指定编号，请说明当前范围内不可用，不查询别的项目，也不要拿其他构造代替。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "F17",
+      "message": "请完成本轮墙体计算计划。",
+      "expected": {
+        "unapproved_plan_exit": true,
+        "no_numbers": true,
+        "no_writes": true,
+        "critical": true
+      },
+      "previous_case": null,
+      "action": null,
+      "body": {
+        "message": "请完成本轮墙体计算计划。",
+        "mode": "local_model",
+        "allow_compute": true,
+        "calculation_plans": [
+          {
+            "plan_key": "wall_waiting_for_approval",
+            "kind": "thermal",
+            "execution_authorized": false,
+            "input": {
+              "name": "Plan requiring current approval",
+              "rsi_m2k_w": 0.11,
+              "rse_m2k_w": 0.04,
+              "surface_basis": "Explicit synthetic films; not standard defaults",
+              "application": "Same declared steady opaque reference conditions",
+              "layers": [
+                {
+                  "name": "main",
+                  "thickness": 0.21,
+                  "thickness_unit": "m",
+                  "conductivity": 0.7,
+                  "conductivity_unit": "W/(m K)",
+                  "correction_factor": 1.0,
+                  "correction_basis": "Declared reference factor",
+                  "source": "Synthetic arithmetic reference, no field measurement"
+                },
+                {
+                  "name": "insulation",
+                  "thickness": 0.054,
+                  "thickness_unit": "m",
+                  "conductivity": 0.039,
+                  "conductivity_unit": "W/(m K)",
+                  "correction_factor": 1.0,
+                  "correction_basis": "Declared reference factor",
+                  "source": "Synthetic arithmetic reference, no field measurement"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "ids": {
+    "A": "thermal_49710b06191948f2bb82a46edacc7cea",
+    "B": "thermal_ca04eb47da7d4abf9721aac3cd00b3f5",
+    "cost": "cost_b10c4e8f5c9741318474fbe0a8669004",
+    "carbon": "lifecycle_db07a55eab504e7cbd9361f4c7d968a4",
+    "incomplete": "lifecycle_8e52db2cdeac4729a192701b084ca77d",
+    "injection": "thermal_5d8f168f3ee943cc8408bcf4f2867b7b",
+    "foreign": "thermal_d4550ab3a1244ff2a716cb1a630509ad"
+  },
+  "oracle": {
+    "wall_A_R": "39/20",
+    "wall_A_U": "20/39",
+    "scope": "Four finish-related regressions and one all-unapproved plan case; no energy source needed or run."
+  },
+  "gate": "Targeted finish regression only; do not combine into a new16/16 or score. Preserve all original failures."
+}

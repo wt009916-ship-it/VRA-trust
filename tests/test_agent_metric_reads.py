@@ -35,11 +35,16 @@ def test_chinese_adjacent_id_offers_direct_read_without_inventory(client,monkeyp
     assert not any(e['tool']=='professional_inventory' for e in t['events'])
 
 
-def test_recognized_foreign_id_still_refused_without_source_data(client,monkeypatch):
+def test_explicit_foreign_id_recovers_only_to_current_scope_absence_without_source_data(client,monkeypatch):
     pid=create_project(client)['project_id'];other=create_project(client)['project_id'];r=create_record(client,other,'thermal');a=client.app.state.agent
-    scripted(a,monkeypatch,[tool('thermal_read',{'thermal_id':r['thermal_id']})])
+    scripted(a,monkeypatch,[tool('thermal_read',{'thermal_id':r['thermal_id']}),
+        tool('professional_missing',{'missing':{'kinds':['thermal'],'record_id':r['thermal_id'],'finish':True}})])
     t=a.start(pid,Chat(message='读取'+r['thermal_id']+'的总热阻',mode='provider'),background=False)
-    assert t['status']=='failed' and 'Cross-project' in t['error'] and t['answer'] is None
+    assert t['status']=='succeeded',t.get('error')
+    assert t['answer']['checked_missing'][0]['record_id']==r['thermal_id']
+    assert t['answer']['checked_missing'][0]['scope']=='requested_record_in_project'
+    assert not t['answer'].get('checked_statements')
+    assert other not in str(t) and r['hash'] not in str(t)
     assert not any(e.get('result',{}).get('explanation_facts') for e in t['events'])
 
 

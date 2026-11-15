@@ -1,0 +1,1108 @@
+{
+  "agent_id": "agent_5f1733f2ef7a4f4e99de5dfcec8c94d5",
+  "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+  "question": "给lifecycle_896ffed0cc614f868ecca39a06413484声明边界碳总量，并明确这是每年排放还是整个评估期累计，覆盖多少年。不要单位面积结果，也不要认证。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:40:17.747853+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Integrated task reference",
+        "building": {
+          "use": "reference",
+          "location": "Synthetic reference only",
+          "region": "TEST",
+          "area_m2": 25.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+        "revision": 1,
+        "created_at": "2026-11-15T14:37:50.688221+00:00",
+        "updated_at": "2026-11-15T14:37:50.688221+00:00"
+      },
+      "result_hash": "34768c67775796af8b9294475fa3297632110723bed401e416a26e4b97b21ae0",
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T14:40:17.767964+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:40:17.771494+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\n  \"actions\": [\n    {\n      \"tool\": \"lifecycle_read\",\n      \"arguments\": {\n        \"lifecycle_id\": \"lifecycle_896ffed0cc614f868ecca39a06413484\",\n        \"fact_keys\": [\n          \"boundary_total_kgco2e\",\n          \"kgco2e_m2_over_study_period\",\n          \"stage.production\",\n          \"stage.transport\",\n          \"stage.construction\",\n          \"stage.operation\",\n          \"stage.end_of_life\"\n        ]\n      }\n    }\n  ]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 6218,
+      "finished_at": "2026-11-15T14:40:24.003866+00:00"
+    },
+    {
+      "tool": "lifecycle_read",
+      "arguments": {
+        "lifecycle_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+        "fact_keys": [
+          "boundary_total_kgco2e",
+          "kgco2e_m2_over_study_period",
+          "stage.production",
+          "stage.transport",
+          "stage.construction",
+          "stage.operation",
+          "stage.end_of_life"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:40:24.011177+00:00",
+      "origin": "model",
+      "result": {
+        "lifecycle_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+        "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+        "project_revision": 1,
+        "input": {
+          "name": "Declared fifteen-year boundary",
+          "area_m2": 25.0,
+          "study_years": 15,
+          "region": "TEST",
+          "method": "Synthetic GWP arithmetic",
+          "functional_unit": "Declared twenty-five-square-metre scope",
+          "import_file_id": null,
+          "boundaries": [
+            {
+              "stage": "production",
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "transport",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "construction",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "operation",
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "end_of_life",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            }
+          ],
+          "activities": [
+            {
+              "activity_id": "material",
+              "name": "material",
+              "stage": "production",
+              "quantity": 0.4,
+              "unit": "t",
+              "period": "whole_period",
+              "replacement_overlap": "unknown",
+              "source": "Independent synthetic activity",
+              "factor": {
+                "factor_id": "material",
+                "value": 0.3,
+                "denominator": "kg",
+                "numerator": "kgCO2e",
+                "stage": "production",
+                "source": "Synthetic factor, not verified environmental data",
+                "publisher": "Reference author",
+                "version": "frozen-1",
+                "year": 2026,
+                "region": "TEST",
+                "method": "Synthetic GWP arithmetic",
+                "evidence_id": null
+              }
+            },
+            {
+              "activity_id": "annual",
+              "name": "annual",
+              "stage": "operation",
+              "quantity": 12.0,
+              "unit": "kWh",
+              "period": "annual",
+              "replacement_overlap": "unknown",
+              "source": "Independent synthetic activity",
+              "factor": {
+                "factor_id": "annual",
+                "value": 0.5,
+                "denominator": "kWh",
+                "numerator": "kgCO2e",
+                "stage": "operation",
+                "source": "Synthetic factor, not verified environmental data",
+                "publisher": "Reference author",
+                "version": "frozen-1",
+                "year": 2026,
+                "region": "TEST",
+                "method": "Synthetic GWP arithmetic",
+                "evidence_id": null
+              }
+            }
+          ],
+          "replacement_scope": "not_assessed",
+          "replacements": []
+        },
+        "result": {
+          "status": "calculated",
+          "replacement": {
+            "scope": "not_assessed",
+            "components": [],
+            "missing": [],
+            "total_kgco2e": null,
+            "status": "not_separately_assessed",
+            "aggregation": "Replacement ledger is added to operation stage; initial installation and horizon disposal remain in base activities."
+          },
+          "rows": [
+            {
+              "activity_id": "material",
+              "stage": "production",
+              "quantity_in_factor_unit": 400.0,
+              "factor_unit": "kgCO2e/kg",
+              "period_multiplier": 1,
+              "kgco2e": 120.0,
+              "formula": "quantity * unit_conversion * period_multiplier * factor"
+            },
+            {
+              "activity_id": "annual",
+              "stage": "operation",
+              "quantity_in_factor_unit": 180.0,
+              "factor_unit": "kgCO2e/kWh",
+              "period_multiplier": 15,
+              "kgco2e": 90.0,
+              "formula": "quantity * unit_conversion * period_multiplier * factor"
+            }
+          ],
+          "stages": {
+            "production": {
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": 120.0,
+              "replacement_kgco2e": null,
+              "status": "calculated",
+              "kgco2e": 120.0
+            },
+            "transport": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "construction": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "operation": {
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": 90.0,
+              "replacement_kgco2e": null,
+              "status": "calculated",
+              "kgco2e": 90.0
+            },
+            "end_of_life": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            }
+          },
+          "missing": [],
+          "boundary_total_kgco2e": 210.0,
+          "kgco2e_m2_over_study_period": 8.4,
+          "all_five_stages_entered": false,
+          "source_status": "USER_DECLARED",
+          "certification": "NOT_ASSESSED",
+          "issued_credits_t": null,
+          "limitations": [
+            "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+            "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+            "年运行量线性累计；替换仅按声明寿命离散发生，因子按当前版本固定，不预测电网、衰减或未来技术。",
+            "替换账列入使用阶段，逐项排除初次安装和评估终点处置；声明不重叠不等于独立证明没有重复计数。",
+            "replacement_scope=not_assessed 表示未评估替换；即使五阶段有值也不代表完整生命周期。",
+            "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+          ]
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "9a970c93b834f9be1f6ac529bcb08866a1b94a9a20a6986f12bf0a1257236094",
+        "created_at": "2026-11-15T14:37:50.799643+00:00",
+        "hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "calculated",
+        "nonnumeric_review_reference": {
+          "kind": "lifecycle",
+          "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+          "record_hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+          "view_hash": "0424252d50d994b2d291da2da5586afefbf5ed992ba39a92163f4cb4446156fb",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "boundary_total_kgco2e",
+            "label": "声明边界碳排总量",
+            "value": "210",
+            "source_value": "210.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/boundary_total_kgco2e",
+            "energy_context": null
+          },
+          {
+            "fact": "kgco2e_m2_over_study_period",
+            "label": "整个评估期单位面积碳排",
+            "value": "8.4",
+            "source_value": "8.4",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e/m2",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": 25.0,
+            "area_basis": "explicit_area_denominator",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/kgco2e_m2_over_study_period",
+            "energy_context": null
+          },
+          {
+            "fact": "stage.production",
+            "label": "production阶段总量",
+            "value": "120",
+            "source_value": "120.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/stages/production/kgco2e",
+            "energy_context": null
+          },
+          {
+            "fact": "stage.operation",
+            "label": "operation阶段总量",
+            "value": "90",
+            "source_value": "90.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/stages/operation/kgco2e",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_fact_keys": [
+          "boundary_total_kgco2e",
+          "kgco2e_m2_over_study_period",
+          "stage.production",
+          "stage.transport",
+          "stage.construction",
+          "stage.operation",
+          "stage.end_of_life"
+        ]
+      },
+      "result_hash": "df70fe3ffb1c601beed57a8ae054e158719d12f425ab13e126f1a86f98de157d",
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T14:40:24.034711+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:40:24.037977+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"lifecycle\", \"record_id\": \"lifecycle_896ffed0cc614f868ecca39a06413484\", \"record_hash\": \"f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604\", \"fact_keys\": [\"boundary_total_kgco2e\", \"stage.production\", \"stage.operation\"], \"finish\": true}}}]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 7672,
+      "finished_at": "2026-11-15T14:40:31.720961+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "lifecycle",
+          "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+          "record_hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+          "fact_keys": [
+            "boundary_total_kgco2e",
+            "stage.production",
+            "stage.operation"
+          ],
+          "finish": true
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:40:31.728542+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 2,
+        "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+        "record_hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+        "fact_keys": [
+          "boundary_total_kgco2e",
+          "stage.production",
+          "stage.operation"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "lifecycle",
+          "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+          "record_hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "boundary_total_kgco2e",
+              "value": "210",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 15,
+              "area_m2": null
+            },
+            {
+              "energy_context": null,
+              "fact": "stage.production",
+              "value": "120",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 15,
+              "area_m2": null
+            },
+            {
+              "energy_context": null,
+              "fact": "stage.operation",
+              "value": "90",
+              "unit": "kgCO2e",
+              "period": "study_period",
+              "study_years": 15,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": true
+        },
+        "statements": [
+          {
+            "fact": "boundary_total_kgco2e",
+            "label": "声明边界碳排总量",
+            "value": "210",
+            "source_value": "210.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/boundary_total_kgco2e",
+            "energy_context": null
+          },
+          {
+            "fact": "stage.production",
+            "label": "production阶段总量",
+            "value": "120",
+            "source_value": "120.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/stages/production/kgco2e",
+            "energy_context": null
+          },
+          {
+            "fact": "stage.operation",
+            "label": "operation阶段总量",
+            "value": "90",
+            "source_value": "90.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/stages/operation/kgco2e",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "e20b3c58583b1f13ce97e515a01425ce8f5d63595fb04466f80c4f23ecd51d48",
+      "duration_ms": 15,
+      "finished_at": "2026-11-15T14:40:31.749778+00:00"
+    },
+    {
+      "tool": "lifecycle_read",
+      "arguments": {
+        "lifecycle_id": "lifecycle_896ffed0cc614f868ecca39a06413484"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:40:31.753281+00:00",
+      "origin": "controller",
+      "result": {
+        "lifecycle_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+        "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+        "project_revision": 1,
+        "input": {
+          "name": "Declared fifteen-year boundary",
+          "area_m2": 25.0,
+          "study_years": 15,
+          "region": "TEST",
+          "method": "Synthetic GWP arithmetic",
+          "functional_unit": "Declared twenty-five-square-metre scope",
+          "import_file_id": null,
+          "boundaries": [
+            {
+              "stage": "production",
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "transport",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "construction",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "operation",
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "end_of_life",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            }
+          ],
+          "activities": [
+            {
+              "activity_id": "material",
+              "name": "material",
+              "stage": "production",
+              "quantity": 0.4,
+              "unit": "t",
+              "period": "whole_period",
+              "replacement_overlap": "unknown",
+              "source": "Independent synthetic activity",
+              "factor": {
+                "factor_id": "material",
+                "value": 0.3,
+                "denominator": "kg",
+                "numerator": "kgCO2e",
+                "stage": "production",
+                "source": "Synthetic factor, not verified environmental data",
+                "publisher": "Reference author",
+                "version": "frozen-1",
+                "year": 2026,
+                "region": "TEST",
+                "method": "Synthetic GWP arithmetic",
+                "evidence_id": null
+              }
+            },
+            {
+              "activity_id": "annual",
+              "name": "annual",
+              "stage": "operation",
+              "quantity": 12.0,
+              "unit": "kWh",
+              "period": "annual",
+              "replacement_overlap": "unknown",
+              "source": "Independent synthetic activity",
+              "factor": {
+                "factor_id": "annual",
+                "value": 0.5,
+                "denominator": "kWh",
+                "numerator": "kgCO2e",
+                "stage": "operation",
+                "source": "Synthetic factor, not verified environmental data",
+                "publisher": "Reference author",
+                "version": "frozen-1",
+                "year": 2026,
+                "region": "TEST",
+                "method": "Synthetic GWP arithmetic",
+                "evidence_id": null
+              }
+            }
+          ],
+          "replacement_scope": "not_assessed",
+          "replacements": []
+        },
+        "result": {
+          "status": "calculated",
+          "replacement": {
+            "scope": "not_assessed",
+            "components": [],
+            "missing": [],
+            "total_kgco2e": null,
+            "status": "not_separately_assessed",
+            "aggregation": "Replacement ledger is added to operation stage; initial installation and horizon disposal remain in base activities."
+          },
+          "rows": [
+            {
+              "activity_id": "material",
+              "stage": "production",
+              "quantity_in_factor_unit": 400.0,
+              "factor_unit": "kgCO2e/kg",
+              "period_multiplier": 1,
+              "kgco2e": 120.0,
+              "formula": "quantity * unit_conversion * period_multiplier * factor"
+            },
+            {
+              "activity_id": "annual",
+              "stage": "operation",
+              "quantity_in_factor_unit": 180.0,
+              "factor_unit": "kgCO2e/kWh",
+              "period_multiplier": 15,
+              "kgco2e": 90.0,
+              "formula": "quantity * unit_conversion * period_multiplier * factor"
+            }
+          ],
+          "stages": {
+            "production": {
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": 120.0,
+              "replacement_kgco2e": null,
+              "status": "calculated",
+              "kgco2e": 120.0
+            },
+            "transport": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "construction": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "operation": {
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": 90.0,
+              "replacement_kgco2e": null,
+              "status": "calculated",
+              "kgco2e": 90.0
+            },
+            "end_of_life": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            }
+          },
+          "missing": [],
+          "boundary_total_kgco2e": 210.0,
+          "kgco2e_m2_over_study_period": 8.4,
+          "all_five_stages_entered": false,
+          "source_status": "USER_DECLARED",
+          "certification": "NOT_ASSESSED",
+          "issued_credits_t": null,
+          "limitations": [
+            "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+            "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+            "年运行量线性累计；替换仅按声明寿命离散发生，因子按当前版本固定，不预测电网、衰减或未来技术。",
+            "替换账列入使用阶段，逐项排除初次安装和评估终点处置；声明不重叠不等于独立证明没有重复计数。",
+            "replacement_scope=not_assessed 表示未评估替换；即使五阶段有值也不代表完整生命周期。",
+            "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+          ]
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "9a970c93b834f9be1f6ac529bcb08866a1b94a9a20a6986f12bf0a1257236094",
+        "created_at": "2026-11-15T14:37:50.799643+00:00",
+        "hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "calculated",
+        "nonnumeric_review_reference": {
+          "kind": "lifecycle",
+          "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+          "record_hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+          "view_hash": "0424252d50d994b2d291da2da5586afefbf5ed992ba39a92163f4cb4446156fb",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "boundary_total_kgco2e",
+            "label": "声明边界碳排总量",
+            "value": "210",
+            "source_value": "210.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/boundary_total_kgco2e",
+            "energy_context": null
+          },
+          {
+            "fact": "kgco2e_m2_over_study_period",
+            "label": "整个评估期单位面积碳排",
+            "value": "8.4",
+            "source_value": "8.4",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e/m2",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": 25.0,
+            "area_basis": "explicit_area_denominator",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/kgco2e_m2_over_study_period",
+            "energy_context": null
+          },
+          {
+            "fact": "stage.production",
+            "label": "production阶段总量",
+            "value": "120",
+            "source_value": "120.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/stages/production/kgco2e",
+            "energy_context": null
+          },
+          {
+            "fact": "stage.operation",
+            "label": "operation阶段总量",
+            "value": "90",
+            "source_value": "90.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/stages/operation/kgco2e",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "fe099a05efae106ee09c8371021e1dd574661d597c542d7b12f09ead9e40c015",
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T14:40:31.769136+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "partial",
+    "execution_scope": "checked_professional_deliveries",
+    "artifacts": [
+      {
+        "kind": "lifecycle_review",
+        "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+        "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+        "record_hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+        "name": "Declared fifteen-year boundary",
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "checked_at": "2026-11-15T14:40:31.946100+00:00",
+        "source_status": "USER_DECLARED",
+        "input": {
+          "name": "Declared fifteen-year boundary",
+          "area_m2": 25.0,
+          "study_years": 15,
+          "region": "TEST",
+          "method": "Synthetic GWP arithmetic",
+          "functional_unit": "Declared twenty-five-square-metre scope",
+          "import_file_id": null,
+          "boundaries": [
+            {
+              "stage": "production",
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "transport",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "construction",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "operation",
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            },
+            {
+              "stage": "end_of_life",
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded"
+            }
+          ],
+          "activities": [
+            {
+              "activity_id": "material",
+              "name": "material",
+              "stage": "production",
+              "quantity": 0.4,
+              "unit": "t",
+              "period": "whole_period",
+              "replacement_overlap": "unknown",
+              "source": "Independent synthetic activity",
+              "factor": {
+                "factor_id": "material",
+                "value": 0.3,
+                "denominator": "kg",
+                "numerator": "kgCO2e",
+                "stage": "production",
+                "source": "Synthetic factor, not verified environmental data",
+                "publisher": "Reference author",
+                "version": "frozen-1",
+                "year": 2026,
+                "region": "TEST",
+                "method": "Synthetic GWP arithmetic",
+                "evidence_id": null
+              }
+            },
+            {
+              "activity_id": "annual",
+              "name": "annual",
+              "stage": "operation",
+              "quantity": 12.0,
+              "unit": "kWh",
+              "period": "annual",
+              "replacement_overlap": "unknown",
+              "source": "Independent synthetic activity",
+              "factor": {
+                "factor_id": "annual",
+                "value": 0.5,
+                "denominator": "kWh",
+                "numerator": "kgCO2e",
+                "stage": "operation",
+                "source": "Synthetic factor, not verified environmental data",
+                "publisher": "Reference author",
+                "version": "frozen-1",
+                "year": 2026,
+                "region": "TEST",
+                "method": "Synthetic GWP arithmetic",
+                "evidence_id": null
+              }
+            }
+          ],
+          "replacement_scope": "not_assessed",
+          "replacements": []
+        },
+        "result": {
+          "status": "calculated",
+          "replacement": {
+            "scope": "not_assessed",
+            "components": [],
+            "missing": [],
+            "total_kgco2e": null,
+            "status": "not_separately_assessed",
+            "aggregation": "Replacement ledger is added to operation stage; initial installation and horizon disposal remain in base activities."
+          },
+          "rows": [
+            {
+              "activity_id": "material",
+              "stage": "production",
+              "quantity_in_factor_unit": 400.0,
+              "factor_unit": "kgCO2e/kg",
+              "period_multiplier": 1,
+              "kgco2e": 120.0,
+              "formula": "quantity * unit_conversion * period_multiplier * factor"
+            },
+            {
+              "activity_id": "annual",
+              "stage": "operation",
+              "quantity_in_factor_unit": 180.0,
+              "factor_unit": "kgCO2e/kWh",
+              "period_multiplier": 15,
+              "kgco2e": 90.0,
+              "formula": "quantity * unit_conversion * period_multiplier * factor"
+            }
+          ],
+          "stages": {
+            "production": {
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": 120.0,
+              "replacement_kgco2e": null,
+              "status": "calculated",
+              "kgco2e": 120.0
+            },
+            "transport": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "construction": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "operation": {
+              "included": true,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": 90.0,
+              "replacement_kgco2e": null,
+              "status": "calculated",
+              "kgco2e": 90.0
+            },
+            "end_of_life": {
+              "included": false,
+              "reason": "Declared two-stage synthetic inventory, other stages excluded",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            }
+          },
+          "missing": [],
+          "boundary_total_kgco2e": 210.0,
+          "kgco2e_m2_over_study_period": 8.4,
+          "all_five_stages_entered": false,
+          "source_status": "USER_DECLARED",
+          "certification": "NOT_ASSESSED",
+          "issued_credits_t": null,
+          "limitations": [
+            "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+            "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+            "年运行量线性累计；替换仅按声明寿命离散发生，因子按当前版本固定，不预测电网、衰减或未来技术。",
+            "替换账列入使用阶段，逐项排除初次安装和评估终点处置；声明不重叠不等于独立证明没有重复计数。",
+            "replacement_scope=not_assessed 表示未评估替换；即使五阶段有值也不代表完整生命周期。",
+            "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+          ]
+        },
+        "verified": true,
+        "scope": "声明边界内的阶段CO₂e清单；不是完整性认证、碳核证或可交易碳资产。",
+        "report_path": "/api/projects/project_bac3a11edcbc491d81df5b8d6386e287/lifecycle/lifecycle_896ffed0cc614f868ecca39a06413484/report.html"
+      }
+    ],
+    "checked_statements": [
+      {
+        "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+        "name": "Declared fifteen-year boundary",
+        "facts": [
+          {
+            "fact": "boundary_total_kgco2e",
+            "label": "声明边界碳排总量",
+            "value": "210",
+            "source_value": "210.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/boundary_total_kgco2e",
+            "energy_context": null
+          },
+          {
+            "fact": "stage.production",
+            "label": "production阶段总量",
+            "value": "120",
+            "source_value": "120.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/stages/production/kgco2e",
+            "energy_context": null
+          },
+          {
+            "fact": "stage.operation",
+            "label": "operation阶段总量",
+            "value": "90",
+            "source_value": "90.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kgCO2e",
+            "period": "study_period",
+            "study_years": 15,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "whole_study_period_not_annual",
+            "source_path": "/result/stages/operation/kgco2e",
+            "energy_context": null
+          }
+        ],
+        "energy_relationship": null
+      }
+    ],
+    "checked_limitations": [],
+    "verification": [
+      {
+        "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+        "passed": true,
+        "meaning": "结构化数值、单位与期间对照当前记录"
+      }
+    ],
+    "summary": "已核验所选结果或限制；自由问题的完整覆盖度仍未评估。",
+    "task_notice": "模型选择记录与事实，应用核对字段；这不是对模型自由解释或整个复杂任务的认证。",
+    "gaps": [],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-15T14:40:31.946100+00:00",
+    "checked_reviews": [],
+    "review_failures": [],
+    "basis": [
+      "project_get",
+      "lifecycle_read",
+      "professional_deliver",
+      "lifecycle_read"
+    ]
+  },
+  "created_at": "2026-11-15T14:40:17.739183+00:00",
+  "llm_commentary": null,
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [
+    {
+      "kind": "lifecycle",
+      "record_id": "lifecycle_896ffed0cc614f868ecca39a06413484",
+      "record_hash": "f1431e91d4f518f3e0df688b12849c7bfc675fafa42c1fbdcba12465658aa604",
+      "statements": [
+        {
+          "energy_context": null,
+          "fact": "boundary_total_kgco2e",
+          "value": "210",
+          "unit": "kgCO2e",
+          "period": "study_period",
+          "study_years": 15,
+          "area_m2": null
+        },
+        {
+          "energy_context": null,
+          "fact": "stage.production",
+          "value": "120",
+          "unit": "kgCO2e",
+          "period": "study_period",
+          "study_years": 15,
+          "area_m2": null
+        },
+        {
+          "energy_context": null,
+          "fact": "stage.operation",
+          "value": "90",
+          "unit": "kgCO2e",
+          "period": "study_period",
+          "study_years": 15,
+          "area_m2": null
+        }
+      ],
+      "limitation_status": null,
+      "finish": true
+    }
+  ],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "revision": 14,
+  "metric_read_selections": {
+    "lifecycle_896ffed0cc614f868ecca39a06413484": [
+      "boundary_total_kgco2e",
+      "kgco2e_m2_over_study_period",
+      "stage.production",
+      "stage.transport",
+      "stage.construction",
+      "stage.operation",
+      "stage.end_of_life"
+    ]
+  },
+  "model_finished_delivery": true,
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-15T14:40:31.772148+00:00",
+  "read_request_progress": [],
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-15T14:40:31.946100+00:00",
+  "historical_task_completion": "partial",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}
