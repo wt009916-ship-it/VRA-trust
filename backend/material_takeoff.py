@@ -19,7 +19,7 @@ class LayerRequest(Contract):
 
 def calculator_version():
     return core.hash_json({name:core.sha(Path(__file__).with_name(name)) for name in
-                          ['material_takeoff.py','ifc_layer_quantities.py','ifc_member_quantities.py','ifc_geometry.py','ifc_details.py']})
+                          ['material_takeoff.py','ifc_layer_quantities.py','ifc_member_quantities.py','ifc_composite_materials.py','ifc_geometry.py','ifc_details.py']})
 
 
 class LayerTakeoffs:
@@ -74,7 +74,7 @@ def report(record):
     rows=(record.get('result') or {}).get('layers',[])
     table=''.join('<tr>'+''.join('<td>'+esc(v)+'</td>' for v in [r['layer_id'],r['material_name'],
             r['thickness_m'],r['envelope_volume_m3']])+'</tr>' for r in rows)
-    return '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>构件分层计量</title><body><h1>模型构件材料包络体积</h1><p>当前状态：'+esc(record['status'])+'</p><p>已扣除模型洞口；不是采购材料净量。梁柱整材片段编号指材料定义实体，不是实际分层；厚度为空。空腔、龙骨等层的实体比例及计量规则需另有依据。</p><table><tr><th>来源片段编号</th><th>材料声明</th><th>厚度 m</th><th>包络体积 m³</th></tr>'+table+'</table><h2>来源与计算回执</h2><pre style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(json.dumps(record,ensure_ascii=False,indent=2))+'</pre></body></html>'
+    return '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>构件分层计量</title><body><h1>模型构件材料包络体积</h1><p>当前状态：'+esc(record['status'])+'</p><p>已扣除模型洞口；不是采购材料净量。梁柱整材片段编号指材料定义实体，不是实际分层；厚度为空；复合梁柱片段编号指原材料轮廓实体，逐材空间分区。空腔、龙骨等层的实体比例及计量规则需另有依据。</p><table><tr><th>来源片段编号</th><th>材料声明</th><th>厚度 m</th><th>包络体积 m³</th></tr>'+table+'</table><h2>来源与计算回执</h2><pre style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(json.dumps(record,ensure_ascii=False,indent=2))+'</pre></body></html>'
 
 
 def register(app,cad):

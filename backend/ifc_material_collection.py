@@ -53,7 +53,7 @@ def measure_collection(path, ids):
               'method': 'voided_layer_mesh_union_by_source_material_entity',
               'quantity_kind': 'selected_model_material_envelope_not_purchase_quantity',
               'limitations': [
-                  'Selected layered walls/slabs/plates and declared homogeneous beams/columns in one IFC; verified geometry required.',
+                  'Selected layered walls/slabs/plates and declared homogeneous or explicitly partitioned composite beams/columns in one IFC; verified geometry required.',
                   'Grouping uses IFC material entity IDs, never equality of material names.',
                   'Same-material spatial overlap is counted once; cross-material overlap blocks all totals.',
                   'Layer envelopes may include cavities/studs; no density, solid fraction or purchasing rule is inferred.',

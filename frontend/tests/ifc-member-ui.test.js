@@ -12,5 +12,5 @@ test('beam and column expose actual material calculation while unsupported equip
 });
 test('mixed material result names the actual supported member scope without procurement claim',()=>{
  const html=materialCollectionMarkup({status:'measured',product_ids:[1,2],materialset_id:'materialset_a',source:{name:'mixed'},result:{status:'measured',materials:[]}},'/projects/p');
- assert.match(html,/明确单一材料的梁柱/);assert.match(html,/不能直接当作采购净量/);
+ assert.match(html,/明确单材或可核验复合分区的梁柱/);assert.match(html,/不能直接当作采购净量/);
 });

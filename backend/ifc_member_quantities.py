@@ -76,6 +76,15 @@ def measure_member(doc, element, *, mesh_sink=None):
         if assignment['status'] != 'declared' or len(active) != 1:
             return refuse('material_assignment_missing_or_ambiguous')
         binding = active[0]
+        declared = binding['material']
+        group = declared.get('profile_set') if declared['type'] == 'IfcMaterialProfileSetUsage' else declared
+        if (group and group['type'] == 'IfcMaterialProfileSet' and len(group['profiles']) > 1
+                and (group.get('composite_profile_id') or len({p['material']['id'] for p in group['profiles']}) > 1)):
+            try:
+                from .ifc_composite_materials import measure_composite
+            except ImportError:
+                from ifc_composite_materials import measure_composite
+            return measure_composite(doc, element, binding, group, scale, result, mesh_sink)
         material, mapping = single_material(binding, element)
         meshes = []
         inspected = inspect_shapes(doc, [element], scale, mesh_sink=meshes)
