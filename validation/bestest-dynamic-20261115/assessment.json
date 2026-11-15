@@ -1,0 +1,150 @@
+{
+  "reference_sha256": "528e2aefa779a81006c6ea4916bac0788fa181c93a00e83fdc58dab4d914b587",
+  "candidate_parent": "f32b4f4fd9e86324164e48f8b646d6e18923438e",
+  "source_commit": "5891243a6b0dd2d32e0e9a3274caee3921595ac7",
+  "scope": "17 fixed historical envelope/fabric cases,67 scalar metrics,24 within-program paired load differences; not the complete standard or field calibration",
+  "native_cases": 17,
+  "scalar_inside": 58,
+  "scalar_count": 67,
+  "outside": [
+    {
+      "case": "620",
+      "key": "heating_mwh",
+      "actual": 4.55329320543356,
+      "minimum": 4.613,
+      "maximum": 5.944,
+      "signed_distance_to_range": -0.05970679456644046,
+      "archived_energyplus": 4.550216942345008
+    },
+    {
+      "case": "630",
+      "key": "heating_mwh",
+      "actual": 4.884125298343531,
+      "minimum": 5.05,
+      "maximum": 6.469,
+      "signed_distance_to_range": -0.16587470165646856,
+      "archived_energyplus": 4.881399217822413
+    },
+    {
+      "case": "640",
+      "key": "heating_mwh",
+      "actual": 2.6862916526749516,
+      "minimum": 2.751,
+      "maximum": 3.803,
+      "signed_distance_to_range": -0.06470834732504827,
+      "archived_energyplus": 2.684255883275289
+    },
+    {
+      "case": "910",
+      "key": "heating_mwh",
+      "actual": 1.5057443154944192,
+      "minimum": 1.512,
+      "maximum": 2.282,
+      "signed_distance_to_range": -0.006255684505580783,
+      "archived_energyplus": 1.5058206356438613
+    },
+    {
+      "case": "920",
+      "key": "heating_mwh",
+      "actual": 3.1939114120498804,
+      "minimum": 3.261,
+      "maximum": 4.3,
+      "signed_distance_to_range": -0.06708858795011974,
+      "archived_energyplus": 3.1930816554431765
+    },
+    {
+      "case": "930",
+      "key": "heating_mwh",
+      "actual": 3.9072760575222216,
+      "minimum": 4.143,
+      "maximum": 5.335,
+      "signed_distance_to_range": -0.23572394247777817,
+      "archived_energyplus": 3.906195769882261
+    },
+    {
+      "case": "940",
+      "key": "heating_mwh",
+      "actual": 0.7676280778608661,
+      "minimum": 0.793,
+      "maximum": 1.411,
+      "signed_distance_to_range": -0.025371922139133973,
+      "archived_energyplus": 0.7681001766815712
+    },
+    {
+      "case": "650FF",
+      "key": "temperature_min_c",
+      "actual": -23.04399621362698,
+      "minimum": -23.0,
+      "maximum": -21.0,
+      "signed_distance_to_range": -0.04399621362697914,
+      "archived_energyplus": -23.0438235411366
+    },
+    {
+      "case": "950FF",
+      "key": "temperature_min_c",
+      "actual": -20.338521322170116,
+      "minimum": -20.2,
+      "maximum": -17.8,
+      "signed_distance_to_range": -0.13852132217011714,
+      "archived_energyplus": -20.339623145764
+    }
+  ],
+  "paired_inside": 21,
+  "paired_count": 24,
+  "paired_outside": [
+    {
+      "changed": "650",
+      "baseline": "600",
+      "key": "cooling_mwh",
+      "minimum": -1.4190000000000005,
+      "maximum": -1.2439999999999998,
+      "actual": -1.4378192767013376
+    },
+    {
+      "changed": "920",
+      "baseline": "900",
+      "key": "heating_mwh",
+      "minimum": 1.9980000000000002,
+      "maximum": 2.5050000000000003,
+      "actual": 1.9703415928172572
+    },
+    {
+      "changed": "920",
+      "baseline": "900",
+      "key": "cooling_mwh",
+      "minimum": -0.35599999999999987,
+      "maximum": 0.018000000000000238,
+      "actual": 0.0387321521474826
+    }
+  ],
+  "native_warnings": "Ground temperature applicability warning in every case; Case960 also has world-coordinate/axis warning; kept for professional review; no severe/fatal in final17.",
+  "http_integration": {
+    "cases": 17,
+    "checks": 499,
+    "all_checks_passed": true,
+    "server_stopped": true,
+    "note": "Repeated same fixed cases for integration, not 17 extra independent references"
+  },
+  "unit_tests": {
+    "backend_targeted": 63,
+    "frontend": 258,
+    "frontend_build": "passed after missing junction corrected; first failure retained"
+  },
+  "original_failures": [
+    "First workbook reader treated chartsheet as worksheet; fixed skip for nonworksheet relations only",
+    "First freeze script used string path; corrected before any native run; v1/v2 retained",
+    "First native harness mkdir on existing temp dir failed before engine",
+    "First engine v2 rejected10 severe legacy field schema errors; no simulated hours",
+    "Next v3 engine rejected missed IdealLoads inlet node field; v4 field mapping preserved separately",
+    "Existing application rejected32-column public weather; actualHTTP409/no run saved",
+    "First isolated build lacked dependency junction; corrected environment only",
+    "Post-run historical diagnostic found absent archivedEnergyPlus cells; kept null without affecting frozen external-program intervals"
+  ],
+  "product_change": "Read-only uniform32-column EPW support, explicit absent columns with unknown numeric values, retained strict35 and critical data validation, UI notification",
+  "score": 79,
+  "score_delta": 0,
+  "published_score": 76,
+  "browser": "deferred_by_user",
+  "field_validation": "unavailable_no_authorized_building_data",
+  "decision": "No reference interval widening, no physical parameter fitting, no replacement of missing observations. Comparative discrepancies remain open; no full-standard/engineering-compliance claim."
+}
