@@ -2,6 +2,7 @@ import {escape as esc, number as num} from './api.js';
 
 export const statusText={calculated:'数值计算完成',needs_refinement:'需要细化网格 · 仅供诊断',incomplete:'输入待补全',stale:'来源或版本已变更'};
 export const sideText={left:'左边',right:'右边',bottom:'下边',top:'上边'};
+export const meshText={uniform_interface_aligned:'材料分区内均匀网格',graded_interface_aligned:'材料界面附近加密网格'};
 export function nullableNumber(value){
   if(value===null || value===undefined || String(value).trim()==='')return null;
   if(typeof value==='boolean')throw new Error('布尔值不是工程数值');
@@ -40,6 +41,7 @@ export function resultMarkup(record,base){
       <figure><canvas data-temperature-field role="img" aria-label="二维截面单元温度场，原点左下角；精确数值见温度 CSV"></canvas><figcaption>单元中心温度：${num(bounds.low,3)} ～ ${num(bounds.high,3)} °C。蓝色较冷，红色较暖；颜色范围仅对应本次记录。<br>保持截面长宽比例；界面温度取值见指定位置表。</figcaption></figure>
       <table><caption>边界热流 · W/m 延伸长度（正值进入截面）</caption><thead><tr><th>边界</th><th>热流</th></tr></thead><tbody>${Object.entries(r.boundary_heat_into_domain_w_per_m).map(([s,q])=>`<tr><td>${sideText[s]}</td><td>${num(q,6)}</td></tr>`).join('')}</tbody></table>
       <p>热平衡残差 ${num(r.energy_balance_w_per_m,10)} W/m。不是全楼功率或全年能耗。</p>
+      <p>网格方式：${esc(meshText[mesh.strategy]||'历史记录未注明')}。${mesh.strategy==='graded_interface_aligned'?'在各材料区间两端加密；仍需通过两级网格检查。':''}</p>
       <p>网格：${mesh.coarse_cells} → ${mesh.fine_cells} 单元；温度最大差 ${num(mesh.max_temperature_difference_k,6)} K（限 0.1 K）；边界热流相对差 ${num(mesh.max_edge_heat_difference_relative*100,4)}%（限 1%）。</p>
       ${mesh.fixed_temperature_corner_discontinuities.length?'<p>相邻固定温度边在角点不连续：'+mesh.fixed_temperature_corner_discontinuities.map(esc).join('、')+'；总热流可能奇异，不能宣称网格收敛。</p>':''}
       ${r.probes.length?'<table><caption>指定位置温度 · 网格重构近似</caption><thead><tr><th>位置</th><th>x / m</th><th>y / m</th><th>温度 / °C</th></tr></thead><tbody>'+r.probes.map(p=>`<tr><td>${esc(p.name)}</td><td>${num(p.x,6)}</td><td>${num(p.y,6)}</td><td>${num(p.temperature_c,4)}</td></tr>`).join('')+'</tbody></table>':''}

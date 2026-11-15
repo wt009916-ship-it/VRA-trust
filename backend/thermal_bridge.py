@@ -64,6 +64,7 @@ class Section(Contract):
     regions: list[Region] = Field(min_length=1, max_length=32)
     boundaries: Boundaries
     cell_size: StrictFloat = Field(gt=0)
+    mesh_strategy: Literal['uniform_interface_aligned', 'graded_interface_aligned'] = 'uniform_interface_aligned'
     probes: list[Probe] = Field(default_factory=list, max_length=50)
     evidence_ids: list[str] = Field(default_factory=list, max_length=32)
 
@@ -112,6 +113,7 @@ def normalize(body):
         k = None if r.conductivity is None else r.conductivity * (1 if r.conductivity_unit == 'W/(m K)' else .001)
         regions.append({'name': r.name, **{key: getattr(r, key) * scale for key in ('x0', 'x1', 'y0', 'y1')}, 'conductivity': k})
     return {'width': body.width * scale, 'height': body.height * scale, 'cell_size': body.cell_size * scale,
+            'mesh_strategy': body.mesh_strategy,
             'regions': regions, 'boundaries': body.boundaries.model_dump(),
             'probes': [{'name': p.name, 'x': p.x * scale, 'y': p.y * scale} for p in body.probes]}
 
@@ -190,7 +192,9 @@ def report(record):
     if result and result['status'] == 'incomplete':
         summary = '<p>缺失输入：' + text(', '.join(result['missing'])) + '；未进入求解器。</p>'
     elif result:
-        summary = ('<h2>边界热流（W/m 延伸长度，正值进入截面）</h2><table><tr><th>边界</th><th>热流</th></tr>' +
+        strategy = {'uniform_interface_aligned': '材料分区内均匀网格', 'graded_interface_aligned': '材料界面附近加密网格'}.get(result['mesh_check'].get('strategy'), '历史记录未注明')
+        summary = ('<p>网格方式：' + text(strategy) + '。两网格差异是数值估计，不是连续体误差保证。</p>' +
+                   '<h2>边界热流（W/m 延伸长度，正值进入截面）</h2><table><tr><th>边界</th><th>热流</th></tr>' +
                    ''.join('<tr><td>' + text(s) + '</td><td>' + text(round(q, 6)) + '</td></tr>' for s, q in result['boundary_heat_into_domain_w_per_m'].items()) +
                    '</table><p>热平衡残差：' + text(result['energy_balance_w_per_m']) + ' W/m</p><h2>指定位置温度（°C）</h2>' +
                    '<table><tr><th>位置</th><th>x / m</th><th>y / m</th><th>温度 / °C</th></tr>' +
