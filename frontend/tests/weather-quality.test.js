@@ -20,3 +20,10 @@ test('weather notices use readable field names without claiming project readines
   assert.ok(html.includes('液态降水量') && !html.includes('liquid_precipitation_depth'));
   assert.ok(!html.includes('可运行'));
 });
+
+test('legacy weather shows absent columns before opening details', () => {
+  const html=weatherQualityMarkup({record_field_count:32,hours:8760,conditions:[]});
+  assert.ok(html.indexOf('旧版32列气象文件') < html.indexOf('<details>'));
+  assert.ok(html.includes('反照率、液态降水量和累计时长未提供'));
+  assert.ok(!weatherQualityMarkup({record_field_count:35,conditions:[]}).includes('旧版32列气象文件'));
+});

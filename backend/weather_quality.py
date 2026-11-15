@@ -10,7 +10,7 @@ from pathlib import Path
 
 from .core import ValidationError, sha
 
-POLICY_VERSION = 'epw-hourly-9.0-v1'
+POLICY_VERSION = 'epw-hourly-9.0-v2'
 DICTIONARY = 'https://bigladdersoftware.com/epx/docs/9-0/auxiliary-programs/energyplus-weather-file-epw-data-dictionary.html'
 ENGINE_SOURCE = 'https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/WeatherManager.cc'
 # Column (zero based), name, unit, minimum, maximum, missing threshold.
@@ -115,9 +115,13 @@ def inspect_epw(path):
         conditions[key]['last_line'] = line
 
     times, years, minutes = [], set(), set()
+    record_field_count = None
     for line, row in enumerate(rows[8:], 9):
-        if len(row) != 35:
-            fail(line, 'record', 'field', '每小时需要 35 个字段')
+        if len(row) not in {32, 35}:
+            fail(line, 'record', 'field', '每小时需要 35 个字段，或完整旧版 32 列；不接受其他截断格式')
+        if record_field_count is not None and len(row) != record_field_count:
+            fail(line, 'record', 'field', '全文件列数必须一致，不能混用 32 列与 35 列')
+        record_field_count = len(row)
         for col in range(5):
             if not re.fullmatch(r'[0-9]{1,' + ('4' if col == 0 else '2') + '}', row[col].strip()):
                 fail(line, ['year', 'month', 'day', 'hour', 'minute'][col], 'integer', '时间字段须为整数')
@@ -129,6 +133,15 @@ def inspect_epw(path):
         minutes.add(minute); years.add(year); times.append((month, day, hour, 60))
         values, missing = {}, set()
         for col, name, unit, lo, hi, sentinel in FIELDS:
+            if col >= record_field_count:
+                # E+9.0.1 WeatherManager.cc 3997-4004 accepts the final DaysSinceSnow
+                # value in a 32-column record, marking albedo/precipitation absent.
+                # Do not pad the source or report the engine's defaults as observations.
+                fields[name]['missing_count'] += 1
+                condition('LEGACY_COLUMN_ABSENT', name, line,
+                          '旧版32列未包含此字段，全年未观测；引擎可使用原生缺省或天气代码推导，'
+                          '不等于零，降水、湿润、植被及反照率相关用途须另行补证')
+                continue
             value = numeric(row[col], line, name, unit)
             values[col] = value
             is_missing = value >= sentinel or (col == 12 and value == 0)
@@ -176,11 +189,13 @@ def inspect_epw(path):
         fail(1, 'source_sha256', 'hash', '校验期间源文件变化，请重新导入')
     return {'policy_version': POLICY_VERSION, 'validator_sha256': sha(Path(__file__)), 'source_sha256': digest,
             'status': 'accepted_with_conditions' if conditions else 'accepted', 'hours': len(times), 'leap_day': leap,
-            'minute_convention': next(iter(minutes)), 'source_years': sorted(years), 'station': station,
+            'minute_convention': next(iter(minutes)), 'record_field_count': record_field_count,
+            'source_years': sorted(years), 'station': station,
             'fields': fields, 'conditions': list(conditions.values()), 'application_imputation_count': 0,
             'references': [DICTIONARY, ENGINE_SOURCE],
             'scope': '单年小时输入筛查；允许有记录的可选缺测和原生天空推导，不认证气象来源、设计日或模型适用性。',
             'limitations': ['年份可由典型气象年跨年组合，不等于连续实测年。',
                             '0 分钟仅作为旧版整点文件约定接受，未改写原件。',
+                            '仅兼容一致的32列或35列；32列未含反照率、液态降水量和累计时长，接受格式不证明这些数据完整。',
                             '未核验设计条件、典型周期及地温头的专业适用性；未执行气象一致性全面质量认证。',
                             '可选缺测仍影响相应模型能力，雨雪、地表反照率、湿润和植被功能须另行补证。']}
