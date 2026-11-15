@@ -1,0 +1,194 @@
+FFFFFFFF                                                                 [100%]
+================================== FAILURES ===================================
+_ test_beam_metrics_report_actual_section_area_not_bounding_rectangle[circle-dims0-0.07068583470577035-x] _
+
+axis = 'x', kind = 'circle', dims = {'r': 0.15}, expected = 0.07068583470577035
+
+    @pytest.mark.parametrize('axis',['x','y'])
+    @pytest.mark.parametrize('kind,dims,expected',[
+        ('circle',{'r':.15},math.pi*.15**2),
+        ('circular_hollow',{'r':.15,'t':.01},math.pi*(.15**2-.14**2)),
+        ('rectangular_hollow',{'b':.2,'h':.3,'t':.01},.2*.3-.18*.28),
+        ('i_section',{'b':.22,'h':.6,'tw':.012,'tf':.019,'r':.024},.015598442631532275),
+    ])
+    def test_beam_metrics_report_actual_section_area_not_bounding_rectangle(axis,kind,dims,expected):
+        result=calculate(BeamInput(**with_profile(kind,dims,axis)))
+>       assert result['metrics']['area_m2']==pytest.approx(expected,rel=1e-10)
+E       assert 0.09 == 0.07068583470577035 ± 7.1e-12
+E         
+E         comparison failed
+E         Obtained: 0.09
+E         Expected: 0.07068583470577035 ± 7.1e-12
+
+tests\test_beam_profiles.py:166: AssertionError
+_ test_beam_metrics_report_actual_section_area_not_bounding_rectangle[circle-dims0-0.07068583470577035-y] _
+
+axis = 'y', kind = 'circle', dims = {'r': 0.15}, expected = 0.07068583470577035
+
+    @pytest.mark.parametrize('axis',['x','y'])
+    @pytest.mark.parametrize('kind,dims,expected',[
+        ('circle',{'r':.15},math.pi*.15**2),
+        ('circular_hollow',{'r':.15,'t':.01},math.pi*(.15**2-.14**2)),
+        ('rectangular_hollow',{'b':.2,'h':.3,'t':.01},.2*.3-.18*.28),
+        ('i_section',{'b':.22,'h':.6,'tw':.012,'tf':.019,'r':.024},.015598442631532275),
+    ])
+    def test_beam_metrics_report_actual_section_area_not_bounding_rectangle(axis,kind,dims,expected):
+        result=calculate(BeamInput(**with_profile(kind,dims,axis)))
+>       assert result['metrics']['area_m2']==pytest.approx(expected,rel=1e-10)
+E       assert 0.09 == 0.07068583470577035 ± 7.1e-12
+E         
+E         comparison failed
+E         Obtained: 0.09
+E         Expected: 0.07068583470577035 ± 7.1e-12
+
+tests\test_beam_profiles.py:166: AssertionError
+_ test_beam_metrics_report_actual_section_area_not_bounding_rectangle[circular_hollow-dims1-0.009110618695410388-x] _
+
+axis = 'x', kind = 'circular_hollow', dims = {'r': 0.15, 't': 0.01}
+expected = 0.009110618695410388
+
+    @pytest.mark.parametrize('axis',['x','y'])
+    @pytest.mark.parametrize('kind,dims,expected',[
+        ('circle',{'r':.15},math.pi*.15**2),
+        ('circular_hollow',{'r':.15,'t':.01},math.pi*(.15**2-.14**2)),
+        ('rectangular_hollow',{'b':.2,'h':.3,'t':.01},.2*.3-.18*.28),
+        ('i_section',{'b':.22,'h':.6,'tw':.012,'tf':.019,'r':.024},.015598442631532275),
+    ])
+    def test_beam_metrics_report_actual_section_area_not_bounding_rectangle(axis,kind,dims,expected):
+        result=calculate(BeamInput(**with_profile(kind,dims,axis)))
+>       assert result['metrics']['area_m2']==pytest.approx(expected,rel=1e-10)
+E       assert 0.09 == 0.009110618695410388 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 0.09
+E         Expected: 0.009110618695410388 ± 1.0e-12
+
+tests\test_beam_profiles.py:166: AssertionError
+_ test_beam_metrics_report_actual_section_area_not_bounding_rectangle[circular_hollow-dims1-0.009110618695410388-y] _
+
+axis = 'y', kind = 'circular_hollow', dims = {'r': 0.15, 't': 0.01}
+expected = 0.009110618695410388
+
+    @pytest.mark.parametrize('axis',['x','y'])
+    @pytest.mark.parametrize('kind,dims,expected',[
+        ('circle',{'r':.15},math.pi*.15**2),
+        ('circular_hollow',{'r':.15,'t':.01},math.pi*(.15**2-.14**2)),
+        ('rectangular_hollow',{'b':.2,'h':.3,'t':.01},.2*.3-.18*.28),
+        ('i_section',{'b':.22,'h':.6,'tw':.012,'tf':.019,'r':.024},.015598442631532275),
+    ])
+    def test_beam_metrics_report_actual_section_area_not_bounding_rectangle(axis,kind,dims,expected):
+        result=calculate(BeamInput(**with_profile(kind,dims,axis)))
+>       assert result['metrics']['area_m2']==pytest.approx(expected,rel=1e-10)
+E       assert 0.09 == 0.009110618695410388 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 0.09
+E         Expected: 0.009110618695410388 ± 1.0e-12
+
+tests\test_beam_profiles.py:166: AssertionError
+_ test_beam_metrics_report_actual_section_area_not_bounding_rectangle[rectangular_hollow-dims2-0.009599999999999997-x] _
+
+axis = 'x', kind = 'rectangular_hollow', dims = {'b': 0.2, 'h': 0.3, 't': 0.01}
+expected = 0.009599999999999997
+
+    @pytest.mark.parametrize('axis',['x','y'])
+    @pytest.mark.parametrize('kind,dims,expected',[
+        ('circle',{'r':.15},math.pi*.15**2),
+        ('circular_hollow',{'r':.15,'t':.01},math.pi*(.15**2-.14**2)),
+        ('rectangular_hollow',{'b':.2,'h':.3,'t':.01},.2*.3-.18*.28),
+        ('i_section',{'b':.22,'h':.6,'tw':.012,'tf':.019,'r':.024},.015598442631532275),
+    ])
+    def test_beam_metrics_report_actual_section_area_not_bounding_rectangle(axis,kind,dims,expected):
+        result=calculate(BeamInput(**with_profile(kind,dims,axis)))
+>       assert result['metrics']['area_m2']==pytest.approx(expected,rel=1e-10)
+E       assert 0.06 == 0.009599999999999997 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 0.06
+E         Expected: 0.009599999999999997 ± 1.0e-12
+
+tests\test_beam_profiles.py:166: AssertionError
+_ test_beam_metrics_report_actual_section_area_not_bounding_rectangle[rectangular_hollow-dims2-0.009599999999999997-y] _
+
+axis = 'y', kind = 'rectangular_hollow', dims = {'b': 0.2, 'h': 0.3, 't': 0.01}
+expected = 0.009599999999999997
+
+    @pytest.mark.parametrize('axis',['x','y'])
+    @pytest.mark.parametrize('kind,dims,expected',[
+        ('circle',{'r':.15},math.pi*.15**2),
+        ('circular_hollow',{'r':.15,'t':.01},math.pi*(.15**2-.14**2)),
+        ('rectangular_hollow',{'b':.2,'h':.3,'t':.01},.2*.3-.18*.28),
+        ('i_section',{'b':.22,'h':.6,'tw':.012,'tf':.019,'r':.024},.015598442631532275),
+    ])
+    def test_beam_metrics_report_actual_section_area_not_bounding_rectangle(axis,kind,dims,expected):
+        result=calculate(BeamInput(**with_profile(kind,dims,axis)))
+>       assert result['metrics']['area_m2']==pytest.approx(expected,rel=1e-10)
+E       assert 0.06 == 0.009599999999999997 ± 1.0e-12
+E         
+E         comparison failed
+E         Obtained: 0.06
+E         Expected: 0.009599999999999997 ± 1.0e-12
+
+tests\test_beam_profiles.py:166: AssertionError
+_ test_beam_metrics_report_actual_section_area_not_bounding_rectangle[i_section-dims3-0.015598442631532275-x] _
+
+axis = 'x', kind = 'i_section'
+dims = {'b': 0.22, 'h': 0.6, 'tw': 0.012, 'tf': 0.019, ...}
+expected = 0.015598442631532275
+
+    @pytest.mark.parametrize('axis',['x','y'])
+    @pytest.mark.parametrize('kind,dims,expected',[
+        ('circle',{'r':.15},math.pi*.15**2),
+        ('circular_hollow',{'r':.15,'t':.01},math.pi*(.15**2-.14**2)),
+        ('rectangular_hollow',{'b':.2,'h':.3,'t':.01},.2*.3-.18*.28),
+        ('i_section',{'b':.22,'h':.6,'tw':.012,'tf':.019,'r':.024},.015598442631532275),
+    ])
+    def test_beam_metrics_report_actual_section_area_not_bounding_rectangle(axis,kind,dims,expected):
+        result=calculate(BeamInput(**with_profile(kind,dims,axis)))
+>       assert result['metrics']['area_m2']==pytest.approx(expected,rel=1e-10)
+E       assert 0.132 == 0.015598442631532275 ± 1.6e-12
+E         
+E         comparison failed
+E         Obtained: 0.132
+E         Expected: 0.015598442631532275 ± 1.6e-12
+
+tests\test_beam_profiles.py:166: AssertionError
+_ test_beam_metrics_report_actual_section_area_not_bounding_rectangle[i_section-dims3-0.015598442631532275-y] _
+
+axis = 'y', kind = 'i_section'
+dims = {'b': 0.22, 'h': 0.6, 'tw': 0.012, 'tf': 0.019, ...}
+expected = 0.015598442631532275
+
+    @pytest.mark.parametrize('axis',['x','y'])
+    @pytest.mark.parametrize('kind,dims,expected',[
+        ('circle',{'r':.15},math.pi*.15**2),
+        ('circular_hollow',{'r':.15,'t':.01},math.pi*(.15**2-.14**2)),
+        ('rectangular_hollow',{'b':.2,'h':.3,'t':.01},.2*.3-.18*.28),
+        ('i_section',{'b':.22,'h':.6,'tw':.012,'tf':.019,'r':.024},.015598442631532275),
+    ])
+    def test_beam_metrics_report_actual_section_area_not_bounding_rectangle(axis,kind,dims,expected):
+        result=calculate(BeamInput(**with_profile(kind,dims,axis)))
+>       assert result['metrics']['area_m2']==pytest.approx(expected,rel=1e-10)
+E       assert 0.132 == 0.015598442631532275 ± 1.6e-12
+E         
+E         comparison failed
+E         Obtained: 0.132
+E         Expected: 0.015598442631532275 ± 1.6e-12
+
+tests\test_beam_profiles.py:166: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_beam_profiles.py::test_beam_metrics_report_actual_section_area_not_bounding_rectangle[circle-dims0-0.07068583470577035-x]
+FAILED tests/test_beam_profiles.py::test_beam_metrics_report_actual_section_area_not_bounding_rectangle[circle-dims0-0.07068583470577035-y]
+FAILED tests/test_beam_profiles.py::test_beam_metrics_report_actual_section_area_not_bounding_rectangle[circular_hollow-dims1-0.009110618695410388-x]
+FAILED tests/test_beam_profiles.py::test_beam_metrics_report_actual_section_area_not_bounding_rectangle[circular_hollow-dims1-0.009110618695410388-y]
+FAILED tests/test_beam_profiles.py::test_beam_metrics_report_actual_section_area_not_bounding_rectangle[rectangular_hollow-dims2-0.009599999999999997-x]
+FAILED tests/test_beam_profiles.py::test_beam_metrics_report_actual_section_area_not_bounding_rectangle[rectangular_hollow-dims2-0.009599999999999997-y]
+FAILED tests/test_beam_profiles.py::test_beam_metrics_report_actual_section_area_not_bounding_rectangle[i_section-dims3-0.015598442631532275-x]
+FAILED tests/test_beam_profiles.py::test_beam_metrics_report_actual_section_area_not_bounding_rectangle[i_section-dims3-0.015598442631532275-y]
+8 failed, 33 deselected, 1 warning in 0.46s

@@ -1,0 +1,42 @@
+import copy
+
+import pytest
+
+from backend.agent_history import references
+
+
+A = 'thermal_' + 'a' * 32
+B = 'thermal_' + 'b' * 32
+
+
+def checked_task():
+    return {'status': 'succeeded', 'answer_checked_at': 'current-check',
+            'professional_deliveries': [{'record_id': A}, {'record_id': B}],
+            'answer': {'verification': [{'record_id': A, 'passed': True}, {'record_id': B, 'passed': True}],
+                       'checked_statements': [{'record_id': A, 'name': 'UNTRUSTED INSTRUCTION',
+                                               'facts': [{'fact': 'u_w_m2k', 'value': 9999}]}],
+                       'checked_limitations': [{'record_id': B, 'state': 'stale'}]}}
+
+
+def test_checked_facts_and_checked_limitations_remain_distinct_without_values():
+    task = checked_task()
+    before = copy.deepcopy(task)
+    result = references(task)
+    assert task == before
+    assert result[0]['reference_state'] == 'checked_facts'
+    assert result[0]['checked_fact_keys'] == ['u_w_m2k']
+    assert result[1]['reference_state'] == 'checked_limitation'
+    assert result[1]['source_state'] == 'stale'
+    assert result[1]['checked_fact_keys'] == []
+    assert '9999' not in str(result) and 'UNTRUSTED' not in str(result)
+
+
+@pytest.mark.parametrize('change', ['failed_check', 'failed_task', 'unchecked_snapshot'])
+def test_failure_or_stored_snapshot_cannot_present_verified_history(change):
+    task = checked_task()
+    if change == 'failed_check':task['answer']['verification'].append({'record_id': A, 'passed': False})
+    if change == 'failed_task':task['status'] = 'failed'
+    if change == 'unchecked_snapshot':task.pop('answer_checked_at')
+    first = references(task)[0]
+    assert first['reference_state'] == 'unavailable_or_unverified'
+    assert first['checked_fact_keys'] == [] and first['source_state'] is None

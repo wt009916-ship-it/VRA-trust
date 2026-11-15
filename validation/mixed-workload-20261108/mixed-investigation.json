@@ -1,0 +1,90 @@
+{
+  "issue": "MIX-01",
+  "function": "Mixed-load health probe / idle HTTP connection compatibility",
+  "severity": "medium; acceptance blocker, no observed engineering data corruption",
+  "reproduction": "Two120-second mixed runs with2epochs and health polling every5s using default HTTPX pool expiry5s; failure after restart in second epoch.",
+  "expected": "Every health GET completes under the frozen no-error criterion.",
+  "actual": "WinError10053 twice on a reused idle socket; process alive; diagnostic fresh-connection GET200. Engine,IFC/OCR,model reference outputs and drained-restart preservation passed before interruption.",
+  "evidence": {
+    "vra-mixed-smoke-20261108-v2": {
+      "head": "44f344e69ee847871c5437509c111ba88d4c66f0",
+      "completed": false,
+      "passed": false,
+      "formal_prototype_touched": false,
+      "model_semantics_new_score": false,
+      "seconds": 120,
+      "failures": [
+        {
+          "lane": "monitor",
+          "error_type": "ReadError",
+          "message": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。"
+        },
+        {
+          "error_type": "AssertionError",
+          "message": "Monitoring failed"
+        }
+      ],
+      "api_stopped": true,
+      "model_stopped": true
+    },
+    "vra-mixed-smoke-20261108-diagnostic": {
+      "head": "44f344e69ee847871c5437509c111ba88d4c66f0",
+      "completed": false,
+      "passed": false,
+      "formal_prototype_touched": false,
+      "model_semantics_new_score": false,
+      "seconds": 120,
+      "failures": [
+        {
+          "lane": "monitor",
+          "error_type": "ReadError",
+          "message": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+          "server_exit": null,
+          "monotonic": 83966.921,
+          "fresh_connection_status": 200
+        },
+        {
+          "error_type": "AssertionError",
+          "message": "Monitoring failed"
+        }
+      ],
+      "api_stopped": true,
+      "model_stopped": true
+    },
+    "vra-health-idle-20261108": {
+      "scope": "health only; no model/native load or authentication",
+      "observations": 45,
+      "by_interval": [
+        {
+          "interval": 4.8,
+          "errors": 0,
+          "non200": 0
+        },
+        {
+          "interval": 5.0,
+          "errors": 0,
+          "non200": 0
+        },
+        {
+          "interval": 5.2,
+          "errors": 0,
+          "non200": 0
+        }
+      ],
+      "server_exit": 0
+    }
+  },
+  "diagnosis": "Evidence supports an idle-expiry race in the test-client pool, not proof of application crash. No-load45requests did not reproduce. Model/engineering correctness is not generalized from this workload.",
+  "clock": "namespace(implementation='GetTickCount64()', monotonic=True, adjustable=False, resolution=0.015625)",
+  "installed_httpcore_has_expired": "    def has_expired(self) -> bool:\n        now = time.monotonic()\n        keepalive_expired = self._expire_at is not None and now > self._expire_at\n\n        # If the HTTP connection is idle but the socket is readable, then the\n        # only valid state is that the socket is about to return b\"\", indicating\n        # a server-initiated disconnect.\n        server_disconnected = (\n            self._state == HTTPConnectionState.IDLE\n            and self._network_stream.get_extra_info(\"is_readable\")\n        )\n\n        return keepalive_expired or server_disconnected\n",
+  "installed_httpcore_response_closed": "    def _response_closed(self) -> None:\n        with self._state_lock:\n            if (\n                self._h11_state.our_state is h11.DONE\n                and self._h11_state.their_state is h11.DONE\n            ):\n                self._state = HTTPConnectionState.IDLE\n                self._h11_state.start_next_cycle()\n                if self._keepalive_expiry is not None:\n                    now = time.monotonic()\n                    self._expire_at = now + self._keepalive_expiry\n            else:\n                self.close()\n",
+  "primary_sources": [
+    "https://www.python-httpx.org/advanced/resource-limits/",
+    "https://uvicorn.dev/settings/"
+  ],
+  "correction": "Explicit4s expiry for unauthenticated test health client, before server5s; no ignored retry, threshold/rate/production config changes. Prior failed attempts remain failed.",
+  "status": "Corrected 120s short run passed; 1800s full mixed acceptance running in vra-mixed-acceptance-20261108, session93571. No stability credit yet.",
+  "candidate_commit": "44f344e69ee847871c5437509c111ba88d4c66f0",
+  "formal_prototype_changed": false,
+  "additional_harness_correction": "Per-operation login caused429. Reuse isolated registered session only in memory; production abuse limits unchanged. Original failure retained in vra-mixed-smoke-20261108-pool4."
+}

@@ -1,13 +1,13 @@
 import {request,post,escape as esc,number as fmt} from './api.js';
 
 export function processingControls(){
-  return `<fieldset><legend>处理版本（原件保留）</legend><label>纠偏方式<select name="deskew_mode"><option value="none">保持原方向</option><option value="auto">尝试自动纠偏，方向不明确则保持原图</option><option value="manual">明确输入旋转角度</option></select></label><label>顺时针旋转角度 °（手动时使用，−15～15）<input name="angle_degrees" type="number" min="-15" max="15" step="any" value="0"></label><label><input name="median_filter" type="checkbox">生成 3×3 中值过滤版本及差异图（可能删除细线、文字）</label></fieldset>`;
+  return `<fieldset><legend>处理版本（原件保留）</legend><label>纠偏方式<select name="deskew_mode"><option value="none">保持原方向</option><option value="auto">尝试自动纠偏，方向不明确则保持原图</option><option value="manual">明确输入旋转角度</option></select></label><label>顺时针旋转角度 °（手动时使用，−15～15）<input name="angle_degrees" type="number" min="-15" max="15" step="any" value="0"></label><label><input name="median_filter" type="checkbox">生成 3×3 中值过滤版本及差异图（可能删除细线、文字）</label><label><input name="line_analysis" type="checkbox">分析原图线段与疑似短断点（生成待复核假设，不自动补线）</label></fieldset>`;
 }
 
 export function processingInput(form){
   const mode=form.get('deskew_mode');
   if(mode==='manual'&&(form.get('angle_degrees')==null||form.get('angle_degrees')===''))throw Error('请输入明确的旋转角度。');
-  return {deskew_mode:mode,angle_degrees:mode==='manual'?Number(form.get('angle_degrees')):0,median_filter:form.has('median_filter')};
+  return {deskew_mode:mode,angle_degrees:mode==='manual'?Number(form.get('angle_degrees')):0,median_filter:form.has('median_filter'),line_analysis:form.has('line_analysis')};
 }
 
 export function geometryMarkup(record,base){

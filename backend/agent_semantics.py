@@ -7,28 +7,33 @@ from pydantic import Field, model_validator
 
 from .schema import Contract
 from .agent_inspections import INSPECTIONS, record_name
-from . import agent_scenarios
+from . import agent_scenarios, agent_energy
 from . import core
 
 
 class Statement(Contract):
-    fact: str = Field(min_length=1, max_length=100, description='Copy explanation_facts.fact exactly; do not translate or use its label.')
+    energy_context: agent_energy.EnergyContext | None = Field(default=None, description="能耗事实逐项复制来源energy_context（年份、期间、载体、边界、数据性质、口径）；非能耗用null。")
+    fact: str = Field(min_length=1, max_length=100, description='逐字复制explanation_facts.fact，不用译名或label。')
     value: str | None = Field(max_length=80, pattern=r'^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]{1,4})?$',
-                             description='Copy source numeric string. Null requires source_undefined with unavailable_reason. Never invent values. Incomplete/stale record: professional_limit.')
+                             description='复制来源数值字符串；null须source_undefined及unavailable_reason；缺证/失效用professional_limit，禁止编数。')
     unit: str = Field(min_length=1, max_length=40)
-    period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window']
-    study_years: int | None = Field(ge=1, le=200, description='Required: copy the fact study_years; null for a non-period calculation.')
-    area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='Required: copy fact area_m2. Null means no explicit area denominator; see area_basis. R/U are intrinsic area-normalized properties, not totals.')
+    period: Literal['steady_state', 'study_period', 'quote_date', 'static_load_case', 'elapsed_days', 'observed_window', 'native_annual', 'utility_periods']
+    study_years: int | None = Field(ge=1, le=200, description='必填：复制事实study_years；无期间为null。')
+    area_m2: float | None = Field(gt=0, allow_inf_nan=False, description='必填：复制事实area_m2；null表示无明确面积分母，参见area_basis。R/U为固有面密度性质，不是总量。')
+
+
+def statement_instruction():
+    return 'Copy every source fact field: ' + ', '.join(Statement.model_fields) + '. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.'
 
 
 class Delivery(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(default_factory=list, max_length=12)
     limitation_status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale'] | None = Field(default=None,
-        description='For a currently incomplete/inapplicable/stale record, copy its status here and use statements: []. This verifies the limitation only, never revives stale numbers or changes record status.')
-    finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
+        description='缺证、不适用或失效时复制当前status并用statements: []；仅验证局限，不恢复旧值或修改状态。')
+    finish: bool = Field(default=False, description='仅最后一份计划交付的专业记录设true；验证成功后结束模型调用，无需追加文本轮次。')
 
     @model_validator(mode='after')
     def consistent(self):
@@ -43,11 +48,11 @@ class Delivery(Contract):
 
 class NumericDelivery(Contract):
     """The model-facing numeric contract matches server validation exactly."""
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     statements: list[Statement] = Field(min_length=1, max_length=12)
-    finish: bool = Field(default=False, description='True only for the last professional record you intend to deliver in this task. Ends model calls after successful validation; no extra prose turn needed.')
+    finish: bool = Field(default=False, description='仅最后一份计划交付的专业记录设true；验证成功后结束模型调用，无需追加文本轮次。')
 
     @model_validator(mode='after')
     def consistent(self):
@@ -59,8 +64,8 @@ class NumericDelivery(Contract):
 
 
 class Limitation(Contract):
-    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario']
-    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    kind: Literal['thermal', 'lifecycle', 'cost', 'engineering', 'schedule', 'operation', 'scenario', 'enduse', 'utility']
+    record_id: str = Field(pattern=r'^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
     record_hash: str = Field(pattern=r'^[a-f0-9]{64}$')
     status: Literal['incomplete','outside_model_screen','constraints_unresolved','incomplete_progress','insufficient_evidence','events_detected','stale']
     finish: bool = False
@@ -82,7 +87,7 @@ def facts(record, kind):
     body = record['input']
     rows = []
 
-    def add(key, label, value, unit, period, *, years=None, area=None, path=None, unavailable_reason=None):
+    def add(key, label, value, unit, period, *, years=None, area=None, path=None, unavailable_reason=None, energy_context=None):
         if value is None and not unavailable_reason:
             return  # Only explicitly explained source-null fields may be acknowledged.
         # Match the established 12-significant-digit engineering display, not binary float tails.
@@ -94,11 +99,13 @@ def facts(record, kind):
                      'area_basis': 'intrinsic_area_normalized_property' if kind == 'thermal' else (
                          'explicit_area_denominator' if area is not None else 'no_area_normalization'),
                      'time_basis': 'whole_study_period_not_annual' if period == 'study_period' else 'not_a_study_duration',
-                     'source_path': path or '/result/' + key})
+                     'source_path': path or '/result/' + key, 'energy_context': energy_context})
         if value is None:
             rows[-1]['unavailable_reason'] = unavailable_reason
 
-    if kind == 'scenario':
+    if kind in agent_energy.KINDS:
+        agent_energy.append_facts(record,kind,add)
+    elif kind == 'scenario':
         agent_scenarios.append_facts(record,add)
     elif kind == 'thermal':
         for key, label, unit in [('total_resistance_m2k_w', '总热阻 R', 'm2 K/W'),
@@ -127,6 +134,13 @@ def facts(record, kind):
     elif kind == 'schedule':
         planned = result.get('planned') or {}
         add('planned_duration_days','声明计划总工期',planned.get('duration_days'),'day','elapsed_days',path='/result/planned/duration_days')
+        leveling = result.get('leveled') or {}
+        level = leveling.get('schedule') or {}
+        for key, label, value, path in [
+            ('leveled_duration_days', '声明资源受限方案完成日', level.get('duration_days'), '/result/leveled/schedule/duration_days'),
+            ('leveled_delay_days', '资源受限方案相对原CPM延后', level.get('delay_vs_cpm_days'), '/result/leveled/schedule/delay_vs_cpm_days'),
+            ('leveled_lower_bound_days', '数学下界向下显示6位小数（不是实际完工日）', (leveling.get('lower_bound') or {}).get('days_floor_6dp'), '/result/leveled/lower_bound/days_floor_6dp')]:
+            add(key, label, value, 'day', 'elapsed_days', path=path)
         if result.get('forecast'):
             for key,label in [('as_of_day','进度记录截至日'),('finish_day','显式情景完工日'),('finish_variance_days','情景相对计划的完工偏差')]:
                 add('forecast_'+key,label,result['forecast'][key],'day','elapsed_days',path='/result/forecast/'+key)
@@ -161,7 +175,7 @@ def can_deliver_requested_facts(record, kind, required):
 def readable(record, kind):
     from .agent_reviews import reference
     return {**record, 'nonnumeric_review_reference': reference(record, kind), 'explanation_facts': facts(record, kind),
-            'explanation_instruction': '开放问答需用professional_deliver提交所需事实的value/unit/period/study_years/area_m2及当前hash。'
+            'explanation_instruction': statement_instruction() +
             '只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。'}
 
 
@@ -170,7 +184,7 @@ def model_projection(record, kind):
     from .agent_reviews import reference
     spec = inspection(kind)
     artifact = spec.artifact(record)
-    return {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record_name(record),
+    projected = {spec.record_key: record[spec.record_key], 'hash': record['hash'], 'name': record_name(record),
             'status': record['status'], 'source_status': artifact['source_status'], 'scope': artifact['scope'],
             'explanation_facts': facts(record, kind),
             'nonnumeric_review_reference': reference(record, kind),
@@ -182,10 +196,18 @@ def model_projection(record, kind):
             'calculation_context': calculation_context(record, kind),
             'explanation_instruction': record['explanation_instruction'],
             'projection_notice': '这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。'}
+    if kind in agent_energy.KINDS or 'selected_fact_keys' in record:
+        selected=record.get('selected_fact_keys', record.get('selected_energy_fact_keys')) or []
+        projected['available_fact_catalog']=[{'fact':f['fact'],'label':f['label'],'unit':f['unit']} for f in projected['explanation_facts']]
+        projected['explanation_facts']=[f for f in projected['explanation_facts'] if f['fact'] in selected]
+        projected['selected_fact_keys']=selected
+        projected['selection_notice']='Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit.'
+    return projected
 
 
 def calculation_context(record, kind):
     result = record.get('result') or {}
+    if kind in agent_energy.KINDS:return agent_energy.context(record,kind)
     if kind == 'scenario':return agent_scenarios.context(record)
     if kind == 'thermal':
         return {'method': 'one_dimensional_steady_state_opaque_assembly',
@@ -205,6 +227,10 @@ def calculation_context(record, kind):
                 'critical_tasks':(result.get('planned') or {}).get('critical_tasks'),
                 'resource_status':((result.get('planned') or {}).get('resources') or {}).get('status'),
                 'forecast_status':(result.get('forecast') or {}).get('status'),
+                'resource_leveling': (result.get('leveled') or {}).get('method'),
+                'leveling_status': (result.get('leveled') or {}).get('status'),
+                'leveling_optimality': (result.get('leveled') or {}).get('optimality'),
+                'leveling_reasons': (result.get('leveled') or {}).get('reasons', []),
                 'notice':'连续经过日；关键任务集合不等于唯一串行路径，情景不是履约保证。'}
     if kind == 'operation':
         quality = result.get('quality') or {}
@@ -247,7 +273,8 @@ def check(record, delivery):
         value_matches = (claim.value is None and fact['value'] is None) or (
             claim.value is not None and fact['value'] is not None and
             Decimal(claim.value) in {Decimal(fact['value']), Decimal(fact['source_value'])})
-        if not value_matches or any(getattr(claim, k) != fact[k] for k in ('unit', 'period', 'study_years', 'area_m2')):
+        supplied_context=claim.energy_context.model_dump(mode='json') if claim.energy_context else None
+        if not value_matches or supplied_context!=fact.get('energy_context') or any(getattr(claim, k) != fact[k] for k in ('unit', 'period', 'study_years', 'area_m2')):
             corrections.append({'fact': claim.fact, 'expected': fact})
         else:
             accepted.append(fact)
@@ -286,7 +313,9 @@ def current_answer(domain, project_id, deliveries, reader=None):
             checked = check(record, request)
             artifacts.append({**spec.artifact(record), 'record_id': request.record_id})
             if checked['statements']:
-                statements.append({'record_id': request.record_id, 'name': record_name(record), 'facts': checked['statements']})
+                statements.append({'record_id': request.record_id, 'name': record_name(record),
+                                   'facts': checked['statements'],
+                                   'energy_relationship': agent_energy.relationship(checked['statements'])})
             if checked.get('limitation'):
                 limitations.append(checked['limitation'])
             valid = True

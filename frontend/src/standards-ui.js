@@ -9,7 +9,7 @@ export async function standardsWorkspace(state,host,action){
   const base='/projects/'+state.project.project_id;
   let fileId=null, preview=null, catalog=[], uploadTicket=0;
   host.innerHTML=`<div class="view-heading"><div><h1>规范资料与条款</h1><p>查询返回原文摘录和页码。未命中不代表规范不存在；人工复核和检索结果均不替代合规判断。</p></div></div>
-    <form id="norm-search"><label>查询方式<select name="mode"><option value="single">关键词或单条精确查询</option><option value="batch">多规范 / 多条款精确对照</option></select></label><div class="form-grid" id="norm-single-fields">${input('text','检索关键词或问题')}${input('standard_code','规范编号（不含年份，可选）')}${input('edition','版本年份（可选）')}${input('clause_id','精确条款号（可选）')}</div><div id="norm-target-panel" hidden><p>每条独立指定规范、版次及条款，最多8条。缺失和版本冲突逐项显示。</p><div id="norm-targets"></div><button id="norm-target-add" type="button">添加查询条款</button></div>${input('as_of','查询适用日期','date','required')}<button class="primary" type="submit">检索已复核条款</button></form><div id="norm-result" aria-live="polite"></div>
+    <form id="norm-search"><label>查询方式<select name="mode"><option value="single">关键词或单条精确查询</option><option value="semantic">自然语言语义候选（需本地模型）</option><option value="batch">多规范 / 多条款精确对照</option></select></label><div class="form-grid" id="norm-single-fields">${input('text','检索关键词或问题')}${input('standard_code','规范编号（不含年份，可选）')}${input('edition','版本年份（可选）')}${input('clause_id','精确条款号（可选）')}</div><div id="norm-target-panel" hidden><p>每条独立指定规范、版次及条款，最多8条。缺失和版本冲突逐项显示。</p><div id="norm-targets"></div><button id="norm-target-add" type="button">添加查询条款</button></div>${input('as_of','查询适用日期','date','required')}<button class="primary" type="submit">检索已复核条款</button></form><div id="norm-result" aria-live="polite"></div>
     <h2>项目规范资料库</h2><div id="norm-catalog"></div>
     <details><summary>复核或撤回一份资料</summary><form id="norm-review"><label>资料版本<select name="standard_id" id="norm-review-choice" required></select></label><label>复核结论<select name="state"><option value="confirmed">人工已复核</option><option value="rejected">撤回该版本</option></select></label><label>核验依据<textarea name="basis" required minlength="10" placeholder="记录原件、条款编号、摘录范围、页码、有效日期和适用范围的核对依据。"></textarea></label><p>确认是当前账号的人工声明；软件未自动验证发布机构、最新版本或扫描文字正确性。</p><button type="submit">保存复核记录</button></form></details>
     <details id="norm-import-panel"><summary>登记 PDF 与条款摘录</summary><p>保留原始PDF。文字层摘录校验所在页和条款编号；扫描页可选页OCR辅助摘录，候选和人工修订分别留痕。每份最多500条，每项目最多50份。</p>
@@ -31,7 +31,7 @@ export async function standardsWorkspace(state,host,action){
     row.querySelector('button').onclick=()=>{row.remove();};targets.append(row);
   }
   addTarget();addTarget();host.querySelector('#norm-target-add').onclick=addTarget;
-  function mode(){const batch=search.elements.mode.value==='batch';host.querySelector('#norm-target-panel').hidden=!batch;host.querySelector('#norm-single-fields').hidden=batch;
+  function mode(){searchTicket++;monitor.select(null);const batch=search.elements.mode.value==='batch';host.querySelector('#norm-target-panel').hidden=!batch;host.querySelector('#norm-single-fields').hidden=batch;
     for(const e of targets.querySelectorAll('input'))e.disabled=!batch;
     for(const e of host.querySelectorAll('#norm-single-fields input'))e.disabled=batch;}
   search.elements.mode.onchange=mode;mode();
@@ -81,7 +81,10 @@ export async function standardsWorkspace(state,host,action){
     const ticket=++searchTicket;monitor.select(null);
     const values=Object.fromEntries(new FormData(search));
     const rows=[...targets.children].map(row=>({standard_code:row.querySelector('[name=target_code]').value,edition:row.querySelector('[name=target_edition]').value,clause_id:row.querySelector('[name=target_clause]').value}));
-    const r=await post(base+'/standard-queries',standardQueryBody(values,rows));
+    resultHost.textContent=values.mode==='semantic'?'正在本地检索已复核资料；返回候选后请核对相关性…':'正在检索…';
+    let r;
+    try{r=await post(base+'/standard-queries',standardQueryBody(values,rows));}
+    catch(error){if(ticket===searchTicket&&host.isConnected)resultHost.textContent='检索未完成：'+error.message;throw error;}
     if(ticket!==searchTicket||!host.isConnected)return;
     monitor.select(r.normquery_id);await monitor.refresh();
   },e.submitter);};

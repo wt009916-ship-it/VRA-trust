@@ -33,7 +33,7 @@ def batch(pairs):
 
 def response_driver(agent, monkeypatch, plans, *, duplicate=False):
     captured=[]
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         captured.append(copy.deepcopy(tools))
         turn=len(captured)
         if turn==1:
@@ -138,7 +138,7 @@ def test_missing_parameter_saved_incomplete_never_verified(client,monkeypatch):
 
 def test_project_changed_between_submission_and_write_refused(client,monkeypatch):
     p=create_project(client);pid=p['project_id'];a=client.app.state.agent
-    def complete(*args):
+    def complete(*args, **response_options):
         assert client.put(f'/api/projects/{pid}/building',json={'expected_revision':p['revision'],
             'building':{**p['building'],'area_m2':1000.}}).status_code==200
         return tool('calculation_execute',{'plan_key':'a'})
@@ -174,7 +174,7 @@ def test_bound_evidence_cannot_be_foreign_or_withdrawn(client,monkeypatch,foreig
         'source_locator':'Synthetic row 1','authority':'Auditor','permission':'test only','acquisition_method':'test',
         'responsible_person':'auditor','status':'IMPORTED'}).json()
     p=plan();p['input']['layers'][0]['evidence_id']=ev['evidence_id']
-    def complete(*args):
+    def complete(*args, **response_options):
         assert client.patch(f'/api/projects/{pid}/evidence/'+ev['evidence_id'],json={'expected_revision':1,
             'review_state':'rejected','responsible_person':'auditor','review_note':'Withdrawn in test'}).status_code==200
         return tool('calculation_execute',{'plan_key':'a'})

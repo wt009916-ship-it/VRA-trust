@@ -105,7 +105,7 @@ def test_header_only_and_negative_material_rejected(tmp_path):
 
 def test_provider_test_is_admin_only_and_does_not_execute_tools(client, monkeypatch):
     calls = []
-    monkeypatch.setattr(client.app.state.gateway, 'complete', lambda *args: {'tool_calls': [
+    monkeypatch.setattr(client.app.state.gateway, 'complete', lambda *args, **response_options: {'tool_calls': [
         {'function': {'name': 'simulation_create', 'arguments': '{}'}}]})
     monkeypatch.setattr(client.app.state.agent, 'call', lambda *args: calls.append(args))
     response = client.post('/api/developer/provider/test')

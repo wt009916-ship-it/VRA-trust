@@ -109,7 +109,7 @@ def test_local_agent_uses_real_registry_and_preserves_authorization(client, monk
         {'role': 'assistant', 'content': '虚构已认证，不得进入正式指标'},
         {'role': 'assistant', 'tool_calls': [{'id': 't2', 'type': 'function', 'function': {'name': 'simulation_create', 'arguments': '{}'}}]},
     ])
-    monkeypatch.setattr(gateway, 'complete', lambda messages, tools: next(calls))
+    monkeypatch.setattr(gateway, 'complete', lambda messages, tools, **response_options: next(calls))
     def no_cloud(*args, **kwargs):
         pytest.fail('Local model must never fall back to cloud')
     monkeypatch.setattr(agent.gateway, 'complete', no_cloud)
@@ -129,7 +129,10 @@ def test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs(
     scoped = agent.tools({'requested_output_plan', 'requested_availability', 'professional_review'})
     assert {t['function']['name'] for t in scoped} == {'requested_output_plan', 'requested_availability', 'professional_review'}
     assert not {t['function']['name'] for t in tools} & {'requested_output_plan', 'requested_availability', 'professional_review'}
-    for tool in tools + scoped:
+    from backend.agent import TOOLS
+    explicit = agent.tools(set(TOOLS))
+    assert {t['function']['name'] for t in explicit} == set(TOOLS)
+    for tool in explicit:
         name = tool['function']['name']; schema = tool['function']['parameters']
         assert schema['additionalProperties'] is False
         # Only display titles are omitted; every non-title property, default and validation constraint is unchanged.
@@ -162,7 +165,7 @@ def test_date_tool_arguments_are_canonical_json_and_missing_runs_not_invented(cl
         {'role': 'assistant', 'tool_calls': [{'id': 'q1', 'type': 'function', 'function': {
             'name': 'standards_search', 'arguments': json.dumps({'standards_query': {'text': 'NONEXIST', 'as_of': '2026-01-01'}})}}]},
         {'role': 'assistant', 'content': 'No matching source'}])
-    monkeypatch.setattr(gateway, 'complete', lambda messages, tools: next(replies))
+    monkeypatch.setattr(gateway, 'complete', lambda messages, tools, **response_options: next(replies))
     result = agent.start(pid, Chat(message='Query missing standard', mode='local_model'), background=False)
     assert result['status'] == 'succeeded'
     event = next(e for e in result['events'] if e['tool'] == 'standards_search')
@@ -170,3 +173,17 @@ def test_date_tool_arguments_are_canonical_json_and_missing_runs_not_invented(cl
     assert agent.call(pid, 'simulation_list', {}, False) == []
     with pytest.raises(ValueError):
         ToolArgs(run_id=pid)
+
+
+def test_unscoped_probe_is_read_only_but_explicit_task_catalog_keeps_all_tools(client):
+    from backend.agent import TOOLS, WRITE_TOOLS
+    agent=client.app.state.agent
+    default={t['function']['name'] for t in agent.tools()}
+    assert not default & WRITE_TOOLS
+    assert 'professional_compare' not in default  # Requires current-task source reads; explicit catalogs retain it.
+    assert {'end_use_read','utility_comparison_read','professional_deliver'} <= default
+    explicit={t['function']['name'] for t in agent.tools(set(TOOLS))}
+    assert explicit==set(TOOLS) and WRITE_TOOLS <= explicit
+    status=client.get('/api/agent/status').json()
+    assert status['tool_catalog_scope']=='default_read_only'
+    assert set(status['installed_tool_names'])==set(TOOLS)

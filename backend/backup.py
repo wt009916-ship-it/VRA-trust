@@ -25,7 +25,7 @@ FORMAT = 'vra-cold-backup-1'
 MAX_BYTES = 4 * 1024**3
 MAX_FILES = 20000
 MAX_MANIFEST = 8 * 1024**2
-DIRECTORIES = {'files', 'runs', 'searches', 'drawings', 'recovery'}
+DIRECTORIES = {'files', 'runs', 'searches', 'drawings', 'recovery', 'conversions'}
 EXCLUDED = {'private', 'exports', '.vra.lock', 'vra.sqlite3', 'vra.sqlite3-wal', 'vra.sqlite3-shm'}
 SCHEMA = '''
 CREATE TABLE records (kind TEXT NOT NULL, id TEXT NOT NULL, revision INTEGER NOT NULL,
@@ -89,6 +89,13 @@ def check_database(con, entries, read_json):
                 derivative_name=name_ok(derivative['path'])
                 if derivative_name not in entries or entries[derivative_name]['sha256']!=derivative['sha256']:
                     raise ValueError('Missing or corrupt registered drawing derivative')
+    for (body,) in con.execute("SELECT body FROM records WHERE kind='cad'"):
+        obj = json.loads(body)
+        if obj.get('conversion'):
+            derivative = obj['derivative']
+            name = name_ok(derivative['path'])
+            if name not in entries or entries[name]['sha256'] != derivative['sha256']:
+                raise ValueError('Missing or corrupt registered DWG derivative')
     for rid, state, body in con.execute('SELECT id,state,body FROM jobs'):
         if not re.fullmatch('run_[a-f0-9]{32}', rid):
             raise ValueError('Invalid archived run identifier')

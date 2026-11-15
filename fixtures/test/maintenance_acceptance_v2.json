@@ -1,0 +1,104 @@
+{
+  "purpose": "Pre-implementation acceptance scenarios for I07 manual maintenance and rule recheck; no field diagnosis or certified repair claim",
+  "baseline": {
+    "equipment": "declared-fan-01",
+    "unit": "degC",
+    "threshold_upper": "30",
+    "start": "2026-01-01T00:00:00Z",
+    "interval_seconds": 60,
+    "values": [
+      "25",
+      "33",
+      "34",
+      "35",
+      "25"
+    ],
+    "gate": [
+      "1",
+      "1",
+      "1",
+      "1",
+      "1"
+    ],
+    "minimum_duration_seconds": 120
+  },
+  "cases": [
+    {
+      "id": "R01",
+      "description": "New later source, same rule, all evaluated samples below limit, confirmed manual work evidence",
+      "after_values": [
+        "28",
+        "27",
+        "26",
+        "27"
+      ],
+      "after_start": "2026-01-01T01:00:00Z",
+      "gate": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "expected": "eligible for bounded rule recheck; never automatic fault-root-cause or full-health certification"
+    },
+    {
+      "id": "R02",
+      "description": "No new operation data; only a statement saying repaired",
+      "expected": "cannot verify or close as passed"
+    },
+    {
+      "id": "R03",
+      "description": "Reused original file with another record ID",
+      "expected": "reject as new recheck evidence"
+    },
+    {
+      "id": "R04",
+      "description": "Changed threshold from30 to40 hides same33/34 observations",
+      "expected": "incomparable rules; cannot claim resolved"
+    },
+    {
+      "id": "R05",
+      "description": "New window all gate values zero",
+      "expected": "insufficient evaluated coverage; no healthy verdict"
+    },
+    {
+      "id": "R06",
+      "description": "New window contains blanks or cadence gaps",
+      "expected": "unknown coverage; not verified as resolved"
+    },
+    {
+      "id": "R07",
+      "description": "After window overlaps or precedes original event",
+      "expected": "cannot certify post-maintenance recheck"
+    },
+    {
+      "id": "R08",
+      "description": "New data has continuing threshold event",
+      "after_values": [
+        "25",
+        "33",
+        "34",
+        "25"
+      ],
+      "expected": "recheck still detects rule event; no verified closure"
+    },
+    {
+      "id": "R09",
+      "description": "Original or recheck source later withdrawn or corrupted",
+      "expected": "current recheck conclusion revoked; historical actions preserved"
+    },
+    {
+      "id": "R10",
+      "description": "Wrong project, stale revision, unreviewed direct state jump, concurrent closure",
+      "expected": "ownership/version/transition refusal; no partial history overwrite"
+    }
+  ],
+  "required_separation": [
+    "human action record vs independently verified event data",
+    "same declared equipment vs proven physical asset identity",
+    "no rule event vs equipment health",
+    "public simulation comparison vs actual field maintenance"
+  ],
+  "baseline_preflight_correction": "v1 used two violating samples 60 seconds apart but required 120 observed seconds, so it had no qualifying event. v2 adds a third violating sample before product implementation; original v1 retained.",
+  "supersedes_sha256": "44395d02e4fc2a254ba0c6fce6d0a5d293b921b6d5f8fd7bb289cc275891ea19"
+}

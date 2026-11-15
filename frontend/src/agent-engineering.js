@@ -1,4 +1,5 @@
 import {escape as esc} from './api.js';
+import {levelingMarkup} from './schedule-leveling.js';
 const number=x=>esc(x==null?'—':typeof x==='number'&&Number.isFinite(x)?Number(x.toPrecision(12)):x);
 
 const kinds={engineering_review:['梁分析','beam-analyses'],schedule_review:['施工进度','schedules'],operation_review:['设备规则','operations']};
@@ -17,6 +18,7 @@ export function engineeringArtifactMarkup(a) {
   } else if(r&&a.kind==='schedule_review') {
     const p=r.planned,f=r.forecast;
     content=`<p>时间原点：${esc(a.input.time_origin)}；按连续经过日计算，不自动扣除休息日。</p><p>计划工期：${esc(p?.duration_days??'—')} day；关键任务集合（并非唯一串行路径）：${p? p.critical_tasks.map(esc).join('、'):'—'}</p><p>资源核查：${esc(p?.resources?.status??'未评估')}；未自动调平。</p>${f?`<p>截至第 ${esc(f.as_of_day)} 天的显式情景：完工日 ${esc(f.finish_day??'—')}；相对计划偏差 ${esc(f.finish_variance_days??'—')} day。情景状态：${esc(f.status)}</p>`:'<p>未提交进度情景，不能预测实际完工日。</p>'}`;
+    if(r.leveled)content=levelingMarkup({calculation_type:'resource_leveling',status:a.status,result:r})+content;
   } else if(r&&a.kind==='operation_review') {
     content=`<p>数据性质：${esc(a.input.data_nature)}；观测窗口 ${esc(r.quality.first_time)} 至 ${esc(r.quality.last_time)}；时钟 ${esc(a.input.clock_basis)}。</p><p>样本 ${r.quality.sample_count}；缺失或无效单元 ${r.quality.cell_issue_count}；采样缺口 ${r.quality.gap_count}。</p><ul>${r.rules.map(x=>`<li>${esc(x.name)}：规则事件 ${x.event_count}；未知样本 ${x.unknown_samples}；状态 ${esc(states[x.state]||x.state)}${x.events_truncated?'；事件详情已截断，须核对原始CSV':''}</li>`).join('')}</ul><p>不同规则可能覆盖同一段时间；不能相加当作独立故障数，不下发设备控制命令。</p>`;
   }

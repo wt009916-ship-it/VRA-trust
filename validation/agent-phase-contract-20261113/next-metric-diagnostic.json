@@ -1,0 +1,238 @@
+{
+  "basis": "Original raw request schemas and frozen task, not inference about internal model thoughts",
+  "read_schema_evidence": [
+    {
+      "call": "model-call-007.json",
+      "sha256": "caafa806401dc626e724cd8fdd390bdc77e78ff4abad59298d19a602ce0ca242",
+      "schemas": {
+        "utility_comparison_read": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "utility_id": {
+              "type": "string",
+              "enum": [
+                "utility_2474d50be0e34622aa8eceed22717866"
+              ]
+            },
+            "fact_keys": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 12,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Energy reads: select exact needed keys from the output-plan catalog or available_fact_catalog. Omitting returns context/catalog only, no numeric model projection."
+            }
+          },
+          "required": [
+            "utility_id"
+          ]
+        },
+        "professional_read_many": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "record_ids": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "utility_2474d50be0e34622aa8eceed22717866"
+                ]
+              }
+            }
+          },
+          "required": [
+            "record_ids"
+          ]
+        }
+      }
+    },
+    {
+      "call": "model-call-008.json",
+      "sha256": "32a42d9e55bfec58964fffeb77e92cd5548252b4465823e8f12603534bfd5015",
+      "schemas": {
+        "utility_comparison_read": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "utility_id": {
+              "type": "string",
+              "enum": [
+                "utility_2474d50be0e34622aa8eceed22717866"
+              ]
+            },
+            "fact_keys": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 12,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Energy reads: select exact needed keys from the output-plan catalog or available_fact_catalog. Omitting returns context/catalog only, no numeric model projection."
+            }
+          },
+          "required": [
+            "utility_id"
+          ]
+        },
+        "professional_read_many": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "record_ids": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "utility_2474d50be0e34622aa8eceed22717866"
+                ]
+              }
+            }
+          },
+          "required": [
+            "record_ids"
+          ]
+        }
+      }
+    },
+    {
+      "call": "model-call-023.json",
+      "sha256": "693d453d5a02654b442ff539075b40ad5b6a1371516061dec820cb6799ff5977",
+      "schemas": {
+        "utility_comparison_read": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "utility_id": {
+              "type": "string",
+              "enum": [
+                "utility_2474d50be0e34622aa8eceed22717866",
+                "utility_34e90331ff0148809afe151a2faa78c8",
+                "utility_d02f64a085e848c1ad3e1309f7a1ba33",
+                "utility_d6134008058c411987e319543044423e"
+              ]
+            },
+            "fact_keys": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 12,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Energy reads: select exact needed keys from the output-plan catalog or available_fact_catalog. Omitting returns context/catalog only, no numeric model projection."
+            }
+          },
+          "required": [
+            "utility_id"
+          ]
+        },
+        "professional_read_many": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "record_ids": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "thermal_48c03230bb864773aef81e2144ecb457",
+                  "utility_2474d50be0e34622aa8eceed22717866",
+                  "utility_34e90331ff0148809afe151a2faa78c8",
+                  "utility_d02f64a085e848c1ad3e1309f7a1ba33",
+                  "utility_d6134008058c411987e319543044423e"
+                ]
+              }
+            }
+          },
+          "required": [
+            "record_ids"
+          ]
+        }
+      }
+    }
+  ],
+  "repeated_catalog_calls_in_A03": 4,
+  "A06_question": "请从用途账交付室内设备的燃气能量，从账单比较交付电力模拟累计能量，并解释：同为kWh是否就能把燃气能量当成用电量？",
+  "A06_selected_explanations": {
+    "gas": [],
+    "electric": []
+  },
+  "confirmed_gaps": [
+    "Regex Unicode word boundary prevents explicit ID extraction when Chinese text is adjacent, unnecessarily withholding direct read tools.",
+    "Read fact_keys schema has unconstrained string items despite available domain catalog",
+    "professional_read_many accepts record_ids only; it cannot request energy fact keys",
+    "Relationship requirement absent from model output plan; current topic coverage cannot detect missing question obligation"
+  ],
+  "next_batch": "docs/AGENT_METRIC_READ_PLAN.md",
+  "identifier_boundary_reproduction": [
+    {
+      "task": "O01",
+      "question": "给出墙体记录thermal_48c03230bb864773aef81e2144ecb457的总热阻。只要这一项，不要U值，不增加面积或年能耗结论。",
+      "current_word_boundary_matches": {
+        "thermal": [],
+        "utility": []
+      },
+      "complete_ascii_identifier_matches": {
+        "thermal": [
+          "thermal_48c03230bb864773aef81e2144ecb457"
+        ],
+        "utility": []
+      },
+      "observed_first_model_tool": "professional_inventory",
+      "scope": "Static reproduction against exact frozen message and actual first action; revised parser has not been implemented or accepted."
+    },
+    {
+      "task": "O02",
+      "question": "读取记录utility_2474d50be0e34622aa8eceed22717866，给出比较小时数；再读取thermal_48c03230bb864773aef81e2144ecb457，只给出传热系数。除此之外不交付其他指标。",
+      "current_word_boundary_matches": {
+        "thermal": [],
+        "utility": []
+      },
+      "complete_ascii_identifier_matches": {
+        "thermal": [
+          "thermal_48c03230bb864773aef81e2144ecb457"
+        ],
+        "utility": [
+          "utility_2474d50be0e34622aa8eceed22717866"
+        ]
+      },
+      "observed_first_model_tool": "professional_inventory",
+      "scope": "Static reproduction against exact frozen message and actual first action; revised parser has not been implemented or accepted."
+    }
+  ]
+}

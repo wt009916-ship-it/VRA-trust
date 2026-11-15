@@ -1,0 +1,238 @@
+{
+  "status": "independent reference only; product not implemented or tested",
+  "cases": [
+    {
+      "id": "R01",
+      "capacities": {
+        "crew": 1
+      },
+      "tasks": {
+        "A": {
+          "duration_half_days": 4,
+          "demands": {
+            "crew": 1
+          },
+          "predecessors": []
+        },
+        "B": {
+          "duration_half_days": 6,
+          "demands": {
+            "crew": 1
+          },
+          "predecessors": []
+        },
+        "C": {
+          "duration_half_days": 2,
+          "demands": {
+            "crew": 1
+          },
+          "predecessors": [
+            [
+              "A",
+              0
+            ],
+            [
+              "B",
+              0
+            ]
+          ]
+        }
+      },
+      "priority": [
+        "A",
+        "B",
+        "C"
+      ],
+      "expected_starts_days": {
+        "A": 0,
+        "B": 2,
+        "C": 5
+      },
+      "expected_finish_days": 6,
+      "independent_discrete_optimum": {
+        "minimum_makespan_days": 6.0,
+        "one_witness_start_days": {
+          "A": 0.0,
+          "B": 2.0,
+          "C": 5.0
+        },
+        "scope": "only stated half-day integer grid, not general continuous optimization"
+      }
+    },
+    {
+      "id": "R02",
+      "capacities": {
+        "crew": 2
+      },
+      "tasks": {
+        "A": {
+          "duration_half_days": 8,
+          "demands": {
+            "crew": 1
+          },
+          "predecessors": []
+        },
+        "B": {
+          "duration_half_days": 4,
+          "demands": {
+            "crew": 2
+          },
+          "predecessors": []
+        },
+        "C": {
+          "duration_half_days": 6,
+          "demands": {
+            "crew": 1
+          },
+          "predecessors": []
+        }
+      },
+      "priority": [
+        "A",
+        "B",
+        "C"
+      ],
+      "expected_starts_days": {
+        "A": 0,
+        "B": 4,
+        "C": 0
+      },
+      "expected_finish_days": 6,
+      "purpose": "Later-priority task must be allowed in the free earlier slot; serial selection does not require serial time",
+      "independent_discrete_optimum": {
+        "minimum_makespan_days": 6.0,
+        "one_witness_start_days": {
+          "A": 0.0,
+          "B": 4.0,
+          "C": 0.0
+        },
+        "scope": "only stated half-day integer grid, not general continuous optimization"
+      }
+    },
+    {
+      "id": "R03",
+      "capacities": {
+        "crew": 2,
+        "crane": 1
+      },
+      "tasks": {
+        "A": {
+          "duration_half_days": 4,
+          "demands": {
+            "crew": 1,
+            "crane": 1
+          },
+          "predecessors": []
+        },
+        "B": {
+          "duration_half_days": 6,
+          "demands": {
+            "crew": 1
+          },
+          "predecessors": []
+        },
+        "C": {
+          "duration_half_days": 2,
+          "demands": {
+            "crew": 2,
+            "crane": 1
+          },
+          "predecessors": [
+            [
+              "A",
+              1
+            ]
+          ]
+        }
+      },
+      "priority": [
+        "A",
+        "C",
+        "B"
+      ],
+      "expected_starts_days": {
+        "A": 0,
+        "C": 2.5,
+        "B": 3.5
+      },
+      "expected_finish_days": 6.5,
+      "purpose": "Feasible priority schedule is intentionally worse than the independent small-grid optimum",
+      "independent_discrete_optimum": {
+        "minimum_makespan_days": 4.0,
+        "one_witness_start_days": {
+          "A": 0.0,
+          "B": 0.0,
+          "C": 3.0
+        },
+        "scope": "only stated half-day integer grid, not general continuous optimization"
+      }
+    },
+    {
+      "id": "R04",
+      "capacities": {
+        "crew": 1
+      },
+      "tasks": {
+        "M": {
+          "duration_half_days": 0,
+          "demands": {},
+          "predecessors": []
+        },
+        "A": {
+          "duration_half_days": 4,
+          "demands": {
+            "crew": 1
+          },
+          "predecessors": [
+            [
+              "M",
+              2
+            ]
+          ]
+        },
+        "B": {
+          "duration_half_days": 2,
+          "demands": {
+            "crew": 1
+          },
+          "predecessors": [
+            [
+              "A",
+              0
+            ]
+          ]
+        }
+      },
+      "priority": [
+        "M",
+        "A",
+        "B"
+      ],
+      "expected_starts_days": {
+        "M": 0,
+        "A": 1,
+        "B": 3
+      },
+      "expected_finish_days": 4,
+      "independent_discrete_optimum": {
+        "minimum_makespan_days": 4.0,
+        "one_witness_start_days": {
+          "M": 0.0,
+          "A": 1.0,
+          "B": 3.0
+        },
+        "scope": "only stated half-day integer grid, not general continuous optimization"
+      }
+    }
+  ],
+  "adversarial": [
+    "unknown capacity",
+    "zero capacity with positive-duration demand",
+    "individual demand above capacity",
+    "missing duration",
+    "source withdrawal",
+    "cross-project source",
+    "cycle",
+    "no invented work calendar"
+  ]
+}

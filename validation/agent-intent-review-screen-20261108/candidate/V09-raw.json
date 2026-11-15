@@ -1,0 +1,171 @@
+{
+  "case": {
+    "id": "V09",
+    "question": "我需要这面墙在面积75平方米、温差18K时的总传热功率。若只读目录没有这个功率字段，请先问我后续如何处理；不允许拿U值替代，也没有授权新增计算。",
+    "wants": [
+      {
+        "key": "wall",
+        "kind": "thermal",
+        "facts": [],
+        "topics": [],
+        "clarification_reason": "metric_not_available"
+      }
+    ]
+  },
+  "records": {
+    "wall": {
+      "thermal_id": "thermal_114e43d854bd49928b90b296070c32f5",
+      "project_id": "project_2551b8b8bf2b4cc0af4914a4e46d6ab8",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh review wall",
+        "layers": [
+          {
+            "name": "core",
+            "thickness": 210.0,
+            "thickness_unit": "mm",
+            "conductivity": 0.7,
+            "conductivity_unit": "W/(m K)",
+            "correction_factor": 1,
+            "correction_basis": "Explicit unity factor",
+            "source": "Independent synthetic data",
+            "evidence_id": null
+          },
+          {
+            "name": "insulation",
+            "thickness": 6.0,
+            "thickness_unit": "cm",
+            "conductivity": 0.05,
+            "conductivity_unit": "W/(m K)",
+            "correction_factor": 1,
+            "correction_basis": "Explicit unity factor",
+            "source": "Independent synthetic data",
+            "evidence_id": null
+          }
+        ],
+        "rsi_m2k_w": 0.13,
+        "rse_m2k_w": 0.05,
+        "surface_basis": "Explicit synthetic films",
+        "application": "Homogeneous test layers only"
+      },
+      "result": {
+        "status": "calculated",
+        "layers": [
+          {
+            "name": "core",
+            "thickness": 210.0,
+            "thickness_unit": "mm",
+            "conductivity": 0.7,
+            "conductivity_unit": "W/(m K)",
+            "correction_factor": 1,
+            "correction_basis": "Explicit unity factor",
+            "source": "Independent synthetic data",
+            "evidence_id": null,
+            "thickness_m": 0.21,
+            "conductivity_w_mk": 0.7,
+            "effective_conductivity_w_mk": 0.7,
+            "resistance_m2k_w": 0.3,
+            "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+          },
+          {
+            "name": "insulation",
+            "thickness": 6.0,
+            "thickness_unit": "cm",
+            "conductivity": 0.05,
+            "conductivity_unit": "W/(m K)",
+            "correction_factor": 1,
+            "correction_basis": "Explicit unity factor",
+            "source": "Independent synthetic data",
+            "evidence_id": null,
+            "thickness_m": 0.06,
+            "conductivity_w_mk": 0.05,
+            "effective_conductivity_w_mk": 0.05,
+            "resistance_m2k_w": 1.2,
+            "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+          }
+        ],
+        "missing": [],
+        "layer_resistance_m2k_w": 1.5,
+        "total_resistance_m2k_w": 1.68,
+        "u_w_m2k": 0.5952380952380952,
+        "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+        "compliance_status": "NOT_ASSESSED",
+        "energy_saving_rate": null,
+        "limitations": [
+          "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+          "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+          "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+          "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+        ]
+      },
+      "calculator_version": "f114f3d884db7cece43d1c46d688766b1edf2d219c50f1bfa69b82b3e2bc2973",
+      "evidence_snapshot": [],
+      "created_at": "2026-11-08T08:40:46.889423+00:00",
+      "hash": "095aa073881468b42d2081a00301ad227f7fc43bc7d0d1db062eecbde29926c3",
+      "revision": 1,
+      "status": "calculated",
+      "stale_reasons": [],
+      "stale_details": [],
+      "source_status": "USER_DECLARED",
+      "source_notice": "来源人工复核不代表材料性能实测或法定认证。"
+    }
+  },
+  "task": {
+    "agent_id": "agent_0def8ae009aa41ac8968f8e8958e9435",
+    "project_id": "project_2551b8b8bf2b4cc0af4914a4e46d6ab8",
+    "question": "我需要这面墙在面积75平方米、温差18K时的总传热功率。若只读目录没有这个功率字段，请先问我后续如何处理；不允许拿U值替代，也没有授权新增计算。",
+    "mode": "local_model",
+    "status": "failed",
+    "events": [
+      {
+        "tool": "llm.request",
+        "status": "failed",
+        "started_at": "2026-11-08T08:40:46.911699+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "error": "服务商调用失败；不会降级为假成功",
+        "duration_ms": 19500,
+        "finished_at": "2026-11-08T08:41:06.419018+00:00"
+      }
+    ],
+    "answer": null,
+    "created_at": "2026-11-08T08:40:46.908703+00:00",
+    "llm_commentary": null,
+    "error": "本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果",
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 0,
+    "provider_recovery_attempts": 0,
+    "professional_deliveries": [],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "wall",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_114e43d854bd49928b90b296070c32f5"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "review_intent": true,
+    "revision": 4,
+    "read_request_progress": [
+      {
+        "request_key": "wall",
+        "kind": "thermal",
+        "purpose": "results",
+        "record_id": "thermal_114e43d854bd49928b90b296070c32f5",
+        "state": "output_plan_missing"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T08:41:06.529446+00:00"
+  }
+}

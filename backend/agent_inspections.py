@@ -1,13 +1,13 @@
 """Declared read-only professional tasks; completed calculation is not certification."""
 from dataclasses import dataclass
 
-from . import core
+from . import core, agent_energy
 from .agent_artifacts import material_cost_review, cost_answer
 from .material_cost import Costs
 from .thermal import Thermal
 from .lifecycle import Lifecycle
 from .engineering import Engineering
-from .construction import Schedules
+from .construction_records import ScheduleRecords as Schedules
 from .operations import Operations
 from .agent_scenarios import ScenarioReads, review as scenario_review, name as scenario_name
 
@@ -23,6 +23,7 @@ def engineering_review(record):
 
 def schedule_review(record):
     return bounded_review(record, 'schedule', 'schedule_id',
+        '连续经过日、声明容量下的独立资源受限方案；最优性须核对精确数学下界，不是施工安全审批或履约保证。' if record.get('calculation_type') == 'resource_leveling' else
         '连续经过日、FS关系的关键路径及显式剩余工期情景；资源冲突未调平，不是施工安全审批或履约保证。')
 
 
@@ -105,6 +106,8 @@ class Inspection:
 
 
 INSPECTIONS = {
+    'inspect_enduse': Inspection('enduse','enduse_id','target_enduse_id','enduse_id','end_use_list','end_use_read','enduse_selection_basis','原生设备用途账',agent_energy.EndUseReads,lambda r:agent_energy.review(r,'enduse')),
+    'inspect_utility': Inspection('utility','utility_id','target_utility_id','utility_id','utility_comparison_list','utility_comparison_read','utility_selection_basis','账单模拟比较',agent_energy.UtilityReads,lambda r:agent_energy.review(r,'utility')),
     'inspect_material_scenarios': Inspection('scenario', 'scenario_id', 'target_scenario_id', 'scenario_id',
         'material_scenarios_list', 'material_scenarios_read', 'scenario_selection_basis', '材料两方案对照', ScenarioReads, scenario_review),
     'inspect_material_cost': Inspection('cost', 'cost_id', 'target_cost_id', 'material_cost_id',

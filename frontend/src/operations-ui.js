@@ -1,3 +1,4 @@
+import {maintenanceWorkspace} from './maintenance-ui.js';
 import {request,post,escape as esc,number as fmt} from './api.js';
 
 const units=['degC','degF','K','W','kW','Pa','kPa','ratio','percent','rpm','rev_s','kg_s','L_s','m3_s','state'];
@@ -24,6 +25,7 @@ export function operationsResult(record){
 }
 
 export async function operationsWorkspace(state,host,action){
+  let maintenanceRefresh=null;
   const base='/projects/'+state.project.project_id;
   host.innerHTML=`<div class="view-heading"><div><h1>设备运行核查</h1><p>从原始 CSV 到异常样本，保留规则、单位和数据缺口。</p></div></div>
     <section class="schedule-section"><h2>1. 选择运行数据</h2><p>UTF-8 CSV，最多 8 MiB / 50,000 行。保留原件，不自动猜测时间格式和单位。</p><label>上传运行 CSV<input id="ops-upload" type="file" accept=".csv,text/csv"></label><label>已上传 CSV<select id="ops-files"><option value="">请选择文件</option></select></label><div id="ops-preview"></div></section>
@@ -57,6 +59,7 @@ export async function operationsWorkspace(state,host,action){
   host.querySelector('#ops-add-channel').onclick=()=>addChannel();host.querySelector('#ops-add-rule').onclick=()=>addRule();
   files.onchange=()=>action(preview);
   host.querySelector('#ops-upload').onchange=e=>{const file=e.target.files[0];if(!file)return;action(async()=>{if(file.size>8*1024*1024)throw new Error('CSV 最大 8 MiB');const data=new FormData();data.append('file',file);const uploaded=await request(base+'/files',{method:'POST',body:data});await loadFiles(uploaded.file_id);},e.currentTarget);};
-  form.onsubmit=e=>{e.preventDefault();action(async()=>{if(!files.value)throw new Error('请先选择 CSV');const b=Object.fromEntries(['name','equipment','data_nature','source','time_column','time_format','clock_basis','clock_source'].map(k=>[k,get(form,k)]));Object.assign(b,{file_id:files.value,expected_interval_seconds:number(form,'expected_interval_seconds'),maximum_gap_seconds:number(form,'maximum_gap_seconds'),channels:[...channels.children].map(r=>r.read()),rules:[...rules.children].map(r=>r.read()),evidence_ids:[...form.querySelectorAll('[name=evidence_ids]:checked')].map(e=>e.value)});render(await post(base+'/operations',b));await history();},e.submitter);};
+  form.onsubmit=e=>{e.preventDefault();action(async()=>{if(!files.value)throw new Error('请先选择 CSV');const b=Object.fromEntries(['name','equipment','data_nature','source','time_column','time_format','clock_basis','clock_source'].map(k=>[k,get(form,k)]));Object.assign(b,{file_id:files.value,expected_interval_seconds:number(form,'expected_interval_seconds'),maximum_gap_seconds:number(form,'maximum_gap_seconds'),channels:[...channels.children].map(r=>r.read()),rules:[...rules.children].map(r=>r.read()),evidence_ids:[...form.querySelectorAll('[name=evidence_ids]:checked')].map(e=>e.value)});render(await post(base+'/operations',b));await history();if(maintenanceRefresh)await maintenanceRefresh();},e.submitter);};
   addChannel();addRule();await loadFiles();await history();
+  if(!host.isConnected)return;const maintenanceHost=document.createElement('section');host.append(maintenanceHost);maintenanceRefresh=await maintenanceWorkspace(state,maintenanceHost,action);
 }

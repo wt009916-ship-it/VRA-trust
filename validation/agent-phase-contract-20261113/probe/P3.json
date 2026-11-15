@@ -1,0 +1,116 @@
+{
+  "request": {
+    "model": "vra-nine-b-tools",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Use only observed values. Choose an actual read or a clarification. Never invent results."
+      },
+      {
+        "role": "user",
+        "content": "给我可以签发的碳信用数量。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read_metric",
+          "description": "Read actual data; select only a requested known metric.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "fact": {
+                "type": "string",
+                "enum": [
+                  "temperature",
+                  "power"
+                ]
+              }
+            },
+            "required": [
+              "fact"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "defer_request",
+          "description": "Requested metric is unclear or unavailable in this catalogue; ask for clarification without inventing numbers.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "needs_clarification"
+                ]
+              }
+            },
+            "required": [
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    ],
+    "tool_choice": "required",
+    "max_tokens": 1400,
+    "temperature": 0,
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "stream": false
+  },
+  "status": 200,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "tool_calls",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "",
+          "tool_calls": [
+            {
+              "type": "function",
+              "function": {
+                "name": "defer_request",
+                "arguments": "{\"reason\":\"needs_clarification\"}"
+              },
+              "id": "V22QSOYxw577t7qrWUB2e4kP34FcOjAA"
+            }
+          ]
+        }
+      }
+    ],
+    "created": 1794509862,
+    "model": "vra-nine-b-tools",
+    "system_fingerprint": "b12110-cd959bae9",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 30,
+      "prompt_tokens": 396,
+      "total_tokens": 426,
+      "prompt_tokens_details": {
+        "cached_tokens": 376
+      }
+    },
+    "id": "chatcmpl-fCAq3BelyIv1F0IheTNNnmW2zo5dcdq9",
+    "timings": {
+      "cache_n": 376,
+      "prompt_n": 20,
+      "prompt_ms": 99.021,
+      "prompt_per_token_ms": 4.95105,
+      "prompt_per_second": 201.9773583381303,
+      "predicted_n": 30,
+      "predicted_ms": 522.543,
+      "predicted_per_token_ms": 18.018724137931034,
+      "predicted_per_second": 55.497825059373106
+    }
+  }
+}

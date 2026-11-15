@@ -41,3 +41,20 @@ test('budget termination retains separate incomplete request state',()=>{
   assert.ok(html.includes('已到模型轮次上限') && html.includes('尚未交付'));
   assert.ok(!html.includes('全部任务已完成'));
 });
+
+test('user metric contract survives validation and cannot be empty or duplicated',()=>{
+ const row={...req,purpose:'results',record_id:'thermal_'+'a'.repeat(32),output_contract:{fact_keys:['u_w_m2k'],explanation_topics:['area']}};
+ assert.deepEqual(validateReadRequests([row],options)[0].output_contract,row.output_contract);
+ for(const c of [{fact_keys:[],explanation_topics:[]},{fact_keys:['u_w_m2k','u_w_m2k'],explanation_topics:[]}])assert.throws(()=>validateReadRequests([{...row,output_contract:c}],options));
+ assert.throws(()=>validateReadRequests([{...row,purpose:'availability'}],options));
+});
+
+test('explicit selector escapes source labels and separates availability topics',async()=>{
+ const {explicitOutputMarkup}=await import('../src/agent-requests.js');
+ const entry={facts:[{key:'x',label:'<script>bad</script>'}],topics:['meaning','period','scope']};
+ const numeric=explicitOutputMarkup(entry,'results');
+ assert.ok(numeric.includes('&lt;script&gt;')&&!numeric.includes('<script>'));
+ assert.ok(numeric.includes('multiple')&&numeric.includes('最多12项'));
+ const availability=explicitOutputMarkup(entry,'availability');
+ assert.ok(!availability.includes('data-output-facts')&&availability.includes('记录历史边界'));
+});

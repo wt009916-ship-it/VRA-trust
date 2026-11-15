@@ -1,0 +1,283 @@
+{
+  "case": {
+    "id": "V04",
+    "question": "设备数据质量先列CSV样本数、缺失单元格数和时间缺口数。不要列规则事件，也不要给设备诊断。只要这三个计数和单位。",
+    "wants": [
+      {
+        "key": "device",
+        "kind": "operation",
+        "facts": [
+          "sample_count",
+          "cell_issue_count",
+          "gap_count"
+        ],
+        "topics": []
+      }
+    ]
+  },
+  "records": {
+    "device": {
+      "operation_id": "operation_c723b27b7b4841e6be8557216afa6fa4",
+      "project_id": "project_ebbac578772943cd8108d4d05d7464be",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh data quality window",
+        "file_id": "file_127cf747b7954f53af43a083b4e425ad",
+        "equipment": "Synthetic FCU",
+        "data_nature": "synthetic",
+        "source": "New independent synthetic CSV",
+        "time_column": "time",
+        "time_format": "iso8601",
+        "clock_basis": "offset_aware",
+        "clock_source": "Explicit UTC",
+        "expected_interval_seconds": 60.0,
+        "maximum_gap_seconds": 90.0,
+        "channels": [
+          {
+            "channel_id": "t",
+            "column": "t",
+            "name": "Temperature",
+            "unit": "degC",
+            "source": "Declared synthetic units"
+          }
+        ],
+        "rules": [
+          {
+            "rule_id": "hot",
+            "name": "Upper band",
+            "kind": "range",
+            "channel_id": "t",
+            "other_channel_id": null,
+            "unit": "degC",
+            "lower": null,
+            "upper": 22.0,
+            "threshold": null,
+            "minimum_duration_seconds": 60.0,
+            "gate_channel_id": null,
+            "gate_minimum": null,
+            "gate_unit": null,
+            "source": "Synthetic threshold, not a fault diagnosis"
+          }
+        ],
+        "evidence_ids": []
+      },
+      "result": {
+        "status": "events_detected",
+        "quality": {
+          "sample_count": 7,
+          "cell_issue_count": 1,
+          "cell_issues": [
+            {
+              "line": 5,
+              "channel_id": "t",
+              "reason": "missing"
+            }
+          ],
+          "cell_issues_truncated": false,
+          "gap_count": 1,
+          "gaps": [
+            {
+              "before_line": 6,
+              "seconds": 120.0
+            }
+          ],
+          "gaps_truncated": false,
+          "irregular_intervals": 1,
+          "first_time": "2026-07-12T00:00:00+00:00",
+          "last_time": "2026-07-12T00:07:00+00:00"
+        },
+        "channels": [
+          {
+            "channel_id": "t",
+            "name": "Temperature",
+            "input_unit": "degC",
+            "unit": "degC",
+            "valid_samples": 6,
+            "missing_or_invalid": 1,
+            "minimum": 20.0,
+            "maximum": 28.0,
+            "sample_mean": 24.0
+          }
+        ],
+        "rules": [
+          {
+            "rule_id": "hot",
+            "name": "Upper band",
+            "kind": "range",
+            "unit": "degC",
+            "evaluated_samples": 6,
+            "excluded_by_gate_samples": 0,
+            "unknown_samples": 1,
+            "violating_samples": 4,
+            "event_count": 2,
+            "events": [
+              {
+                "first_line": 3,
+                "last_line": 4,
+                "start": "2026-07-12T00:01:00+00:00",
+                "end": "2026-07-12T00:02:00+00:00",
+                "observed_span_seconds": 60.0,
+                "samples": 2
+              },
+              {
+                "first_line": 6,
+                "last_line": 7,
+                "start": "2026-07-12T00:05:00+00:00",
+                "end": "2026-07-12T00:06:00+00:00",
+                "observed_span_seconds": 60.0,
+                "samples": 2
+              }
+            ],
+            "events_truncated": false,
+            "state": "events_detected",
+            "recommended_checks": [
+              "复核对应行、采样时钟、单位和传感器校准；确认规则适用于当前工况。",
+              "核查设定值和运行边界，比较独立测点；不能仅凭越限判断故障部件。"
+            ],
+            "cause_confirmed": false
+          }
+        ],
+        "series_preview": [
+          {
+            "line": 2,
+            "timestamp": "2026-07-12T00:00:00+00:00",
+            "values": {
+              "t": 20.0
+            }
+          },
+          {
+            "line": 3,
+            "timestamp": "2026-07-12T00:01:00+00:00",
+            "values": {
+              "t": 24.0
+            }
+          },
+          {
+            "line": 4,
+            "timestamp": "2026-07-12T00:02:00+00:00",
+            "values": {
+              "t": 25.0
+            }
+          },
+          {
+            "line": 5,
+            "timestamp": "2026-07-12T00:03:00+00:00",
+            "values": {
+              "t": null
+            }
+          },
+          {
+            "line": 6,
+            "timestamp": "2026-07-12T00:05:00+00:00",
+            "values": {
+              "t": 27.0
+            }
+          },
+          {
+            "line": 7,
+            "timestamp": "2026-07-12T00:06:00+00:00",
+            "values": {
+              "t": 28.0
+            }
+          },
+          {
+            "line": 8,
+            "timestamp": "2026-07-12T00:07:00+00:00",
+            "values": {
+              "t": 20.0
+            }
+          }
+        ],
+        "preview_downsampled": false,
+        "source_status": "USER_DECLARED",
+        "data_nature": "synthetic",
+        "equipment": "Synthetic FCU",
+        "diagnosis": "NOT_CONFIRMED",
+        "control_action": "NONE",
+        "limitations": [
+          "仅检测声明规则，不把无告警当作设备健康；故障原因及维修措施需专业复核。",
+          "持续时间是首末异常样本间跨度；缺测或超出最大间隔会断开事件，不外推最后一个样本后的持续时间。",
+          "样本间连续性为明确采样假设，无法证明两次采样之间没有变化。均值是样本均值，不是时间加权均值或能耗积分。",
+          "本地时钟不自动推断时区或夏令时；预览最多200个抽样点，完整数据以原件和事件行号为准。",
+          "事件判断用原始十进制有理数计算；数值单元限128字符、40位有效数字和±100十进制指数。汇总与预览转为浮点显示。"
+        ]
+      },
+      "file_snapshot": {
+        "file_id": "file_127cf747b7954f53af43a083b4e425ad",
+        "project_id": "project_ebbac578772943cd8108d4d05d7464be",
+        "name": "fresh.csv",
+        "path": "files/file_127cf747b7954f53af43a083b4e425ad.csv",
+        "hash": "16dfa4464973aa08b1c4da6c42dd8e856e5645caa960fe0a6fe499ea6e94b791",
+        "size": 173,
+        "timestamp": "2026-11-08T08:38:56.455579+00:00",
+        "revision": 1
+      },
+      "source_snapshot": [],
+      "calculator_hash": "802d4864cdca672a9eae52e83e2537a662f83f897a2b6358e8a11c0f1699f0a3",
+      "created_at": "2026-11-08T08:38:56.487075+00:00",
+      "hash": "7d6a7e0f5f031542f9f7e118be2d5b9d97a65e928a83cd6bcab85172284a8aca",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "events_detected"
+    }
+  },
+  "task": {
+    "agent_id": "agent_eedd84fa0a884799a2546bddba418305",
+    "project_id": "project_ebbac578772943cd8108d4d05d7464be",
+    "question": "设备数据质量先列CSV样本数、缺失单元格数和时间缺口数。不要列规则事件，也不要给设备诊断。只要这三个计数和单位。",
+    "mode": "local_model",
+    "status": "failed",
+    "events": [
+      {
+        "tool": "llm.request",
+        "status": "failed",
+        "started_at": "2026-11-08T08:38:56.515528+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "error": "服务商调用失败；不会降级为假成功",
+        "duration_ms": 16969,
+        "finished_at": "2026-11-08T08:39:13.491825+00:00"
+      }
+    ],
+    "answer": null,
+    "created_at": "2026-11-08T08:38:56.511775+00:00",
+    "llm_commentary": null,
+    "error": "本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果",
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 0,
+    "provider_recovery_attempts": 0,
+    "professional_deliveries": [],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "device",
+        "kind": "operation",
+        "purpose": "results",
+        "record_id": "operation_c723b27b7b4841e6be8557216afa6fa4"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "review_intent": true,
+    "revision": 4,
+    "read_request_progress": [
+      {
+        "request_key": "device",
+        "kind": "operation",
+        "purpose": "results",
+        "record_id": "operation_c723b27b7b4841e6be8557216afa6fa4",
+        "state": "output_plan_missing"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T08:39:13.557410+00:00"
+  }
+}

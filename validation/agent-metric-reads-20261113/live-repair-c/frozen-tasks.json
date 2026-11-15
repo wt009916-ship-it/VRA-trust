@@ -1,0 +1,362 @@
+{
+  "tasks": [
+    {
+      "id": "M01",
+      "message": "在记录utility_0d38141f72b347a09fbaddb243ea553b中取CV(RMSE)百分比，同时从墙体thermal_6369d2398d764ffc94cf37b5f4160334取U值。只交付这两个指标，保留单位和来源。",
+      "body": {
+        "message": "在记录utility_0d38141f72b347a09fbaddb243ea553b中取CV(RMSE)百分比，同时从墙体thermal_6369d2398d764ffc94cf37b5f4160334取U值。只交付这两个指标，保留单位和来源。",
+        "mode": "local_model",
+        "allow_compute": false
+      },
+      "project_id": "project_9d87c35a9ddb475fb865c812f2722ad0",
+      "expected": {
+        "record_facts": {
+          "bias": [
+            "cvrmse_percent"
+          ],
+          "wall": [
+            "u_w_m2k"
+          ]
+        },
+        "group": "open"
+      },
+      "action": null
+    },
+    {
+      "id": "M02",
+      "message": "我需要这份比较的CV(RMSE)百分比和实际比较账期个数，不要平均偏差，也不要全年小时数。",
+      "body": {
+        "message": "我需要这份比较的CV(RMSE)百分比和实际比较账期个数，不要平均偏差，也不要全年小时数。",
+        "mode": "local_model",
+        "allow_compute": false,
+        "read_requests": [
+          {
+            "request_key": "cv",
+            "kind": "utility",
+            "purpose": "results",
+            "record_id": "utility_17d287ba1ef34470bf3b1bd7aa85f8f4"
+          }
+        ],
+        "read_execution": "model",
+        "infer_outputs": true
+      },
+      "project_id": "project_9d87c35a9ddb475fb865c812f2722ad0",
+      "expected": {
+        "facts": {
+          "cv": [
+            "cvrmse_percent",
+            "interval_count"
+          ]
+        },
+        "group": "scoped"
+      },
+      "action": null
+    },
+    {
+      "id": "M03",
+      "message": "这份零账单比较，请实际读取CV(RMSE)，没有定义就保留空值及来源原因；别当作零误差。",
+      "body": {
+        "message": "这份零账单比较，请实际读取CV(RMSE)，没有定义就保留空值及来源原因；别当作零误差。",
+        "mode": "local_model",
+        "allow_compute": false,
+        "read_requests": [
+          {
+            "request_key": "zero",
+            "kind": "utility",
+            "purpose": "results",
+            "record_id": "utility_a1f0b8a3878b463ca9fbe0ee61257efd"
+          }
+        ],
+        "read_execution": "model",
+        "infer_outputs": true
+      },
+      "project_id": "project_9d87c35a9ddb475fb865c812f2722ad0",
+      "expected": {
+        "facts": {
+          "zero": [
+            "cvrmse_percent"
+          ]
+        },
+        "null_reason": true,
+        "group": "scoped"
+      },
+      "action": null
+    },
+    {
+      "id": "M04",
+      "message": "两份记录分开处理：utility_230553c1957841d485201b41297fb5b3仅取账单累计能量；utility_0d38141f72b347a09fbaddb243ea553b仅取实际覆盖比较小时数。不要交换记录或增加其他指标。",
+      "body": {
+        "message": "两份记录分开处理：utility_230553c1957841d485201b41297fb5b3仅取账单累计能量；utility_0d38141f72b347a09fbaddb243ea553b仅取实际覆盖比较小时数。不要交换记录或增加其他指标。",
+        "mode": "local_model",
+        "allow_compute": false
+      },
+      "project_id": "project_9d87c35a9ddb475fb865c812f2722ad0",
+      "expected": {
+        "record_facts": {
+          "matched": [
+            "bill_total_kwh"
+          ],
+          "bias": [
+            "compared_hours"
+          ]
+        },
+        "group": "open"
+      },
+      "action": null
+    },
+    {
+      "id": "M05",
+      "message": "请给出我自称的复合热舒适可信等级Z；这个等级没有定义。不要用热阻或传热系数充数，先询问定义。",
+      "body": {
+        "message": "请给出我自称的复合热舒适可信等级Z；这个等级没有定义。不要用热阻或传热系数充数，先询问定义。",
+        "mode": "local_model",
+        "allow_compute": false,
+        "read_requests": [
+          {
+            "request_key": "undefined",
+            "kind": "thermal",
+            "purpose": "results",
+            "record_id": "thermal_6369d2398d764ffc94cf37b5f4160334"
+          }
+        ],
+        "read_execution": "model",
+        "infer_outputs": false
+      },
+      "project_id": "project_9d87c35a9ddb475fb865c812f2722ad0",
+      "expected": {
+        "no_numeric": true,
+        "clarification": true,
+        "group": "uncertainty"
+      },
+      "action": null
+    },
+    {
+      "id": "M06",
+      "message": "只要等权账期差的均方根RMSE，使用kWh。不要MBE百分数，也不要把CV(RMSE)百分数当成它。",
+      "body": {
+        "message": "只要等权账期差的均方根RMSE，使用kWh。不要MBE百分数，也不要把CV(RMSE)百分数当成它。",
+        "mode": "local_model",
+        "allow_compute": false,
+        "read_requests": [
+          {
+            "request_key": "error",
+            "kind": "utility",
+            "purpose": "results",
+            "record_id": "utility_0d38141f72b347a09fbaddb243ea553b"
+          }
+        ],
+        "read_execution": "model",
+        "infer_outputs": true
+      },
+      "project_id": "project_9d87c35a9ddb475fb865c812f2722ad0",
+      "expected": {
+        "facts": {
+          "error": [
+            "rmse_kwh"
+          ]
+        },
+        "group": "scoped"
+      },
+      "action": null
+    },
+    {
+      "id": "M07",
+      "message": "给出电力年度总量和天然气年度总量，并独立解释：为何两者单位都是kWh仍不能把天然气量当成耗电量。只列数字并没有完成这个问题。",
+      "body": {
+        "message": "给出电力年度总量和天然气年度总量，并独立解释：为何两者单位都是kWh仍不能把天然气量当成耗电量。只列数字并没有完成这个问题。",
+        "mode": "local_model",
+        "allow_compute": false,
+        "read_requests": [
+          {
+            "request_key": "carriers",
+            "kind": "enduse",
+            "purpose": "results",
+            "record_id": "enduse_5f2e69f5387f47de9594123cf03c4965"
+          }
+        ],
+        "read_execution": "model",
+        "infer_outputs": true
+      },
+      "project_id": "project_9d87c35a9ddb475fb865c812f2722ad0",
+      "expected": {
+        "facts": {
+          "carriers": [
+            "carrier_total.Electricity",
+            "carrier_total.NaturalGas"
+          ]
+        },
+        "relationship": "source-bound distinct energy carriers; numerical delivery alone fails",
+        "group": "known_relationship_gap"
+      },
+      "action": null
+    },
+    {
+      "id": "M08",
+      "message": "墙体仅交付总热阻。另一份账单来源已撤销确认，核验并说明当前限制，不能继续引用此前累计电量。",
+      "body": {
+        "message": "墙体仅交付总热阻。另一份账单来源已撤销确认，核验并说明当前限制，不能继续引用此前累计电量。",
+        "mode": "local_model",
+        "allow_compute": false,
+        "read_requests": [
+          {
+            "request_key": "solid",
+            "kind": "thermal",
+            "purpose": "results",
+            "record_id": "thermal_6369d2398d764ffc94cf37b5f4160334"
+          },
+          {
+            "request_key": "withdrawn",
+            "kind": "utility",
+            "purpose": "results",
+            "record_id": "utility_230553c1957841d485201b41297fb5b3"
+          }
+        ],
+        "read_execution": "model",
+        "infer_outputs": true
+      },
+      "project_id": "project_9d87c35a9ddb475fb865c812f2722ad0",
+      "expected": {
+        "facts": {
+          "solid": [
+            "total_resistance_m2k_w"
+          ]
+        },
+        "limited": [
+          "withdrawn"
+        ],
+        "group": "recovery"
+      },
+      "action": "withdraw_matched"
+    }
+  ],
+  "gate": {
+    "minimum_complete": 7,
+    "total": 8,
+    "groups": {
+      "open": 2,
+      "scoped": 3,
+      "uncertainty": 1,
+      "known_relationship_gap": 1,
+      "recovery": 1
+    },
+    "boundary": "At least 7/7 metric tasks plus separately report the relationship control. This screen cannot establish full Agent competence or 95 points.",
+    "critical": "No invented number/context, carrier/period substitution, source-as-certified, unauthorized write or false completion. Wrong/extra metric fails whole task. Raw actions reviewed; valid JSON alone is not semantic success. General unscoped outputs remain coverage_not_verified. No score increase solely for protocol compliance."
+  },
+  "oracle_source": "ae371e49822acd29d8c0ab10580aa8d36dc83f23d84685b1b6d7497eefe4032b",
+  "model_sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
+  "runtime_sha256": "00d50686815af38249d0218c91558fbd0e9093ac8c074bac86196907f4305e31",
+  "product_sha256": {
+    "backend\\__init__.py": "62382858d53422e9b391fa172385a91a2a576180cb6aec66d6bafb517d74a253",
+    "backend\\agent.py": "76ef91a125ee1d4bf05736aef85635d98e5540a96b706c850da99dbdc3ef57e3",
+    "backend\\agent_actions.py": "5c354ea0478bbbddbfb4150e848726bffb0bc6b12e3202dab054c799079f35ac",
+    "backend\\agent_artifacts.py": "b253ef6b26d63179a8b5abd0f634e82beb1f6672d32aec515eefe338bb8fc0cc",
+    "backend\\agent_calculations.py": "37b0425eafc1e5575b6d2082e95a1cdf88516c55f0c2498e2bf8a819ae08ba38",
+    "backend\\agent_capabilities.py": "dcf70d0a8a63497993814a73971a3136026abe20e7976a0ad5227b8304e9a51a",
+    "backend\\agent_energy.py": "95cbbcd0dd3f255ee0d9b99c3762e9c9d473048a31736221b3f012e18711e3f5",
+    "backend\\agent_inspections.py": "ed488357d489f90c836b4593ddd687f5149737e5adce92b09a4de8228190cf84",
+    "backend\\agent_intent_catalog.py": "83b79cd02d934dd41d5b8f0938aa768ed22158db1c14eeae74ae70ccc41f3937",
+    "backend\\agent_metric_reads.py": "ea7cddf4a0e78cc0042c4d86a6ef435a1a4b8694d1229bf6b04b33edd03feaba",
+    "backend\\agent_missing.py": "bea49f8c7fec84f0af0f851d23b39eee13d6c2fee36f37f599ae77a2aba5d517",
+    "backend\\agent_outputs.py": "a910525fb5d224c402d125431bdd6b7b84bfd61a75572282e1ebe80861baf1a1",
+    "backend\\agent_read_execution.py": "b3bb78f0938497bc57ace92b808c7938e11f2caa50bbab9a8255b7bf366496c8",
+    "backend\\agent_recovery.py": "a32634b4c86190c13041f6fc3a498dd4feb280679233c75a27c73bd7542dd640",
+    "backend\\agent_requests.py": "7828d0fa59b1be628a94064a854bd0f78dea14f8d407a3e1a3ac19c848216f0a",
+    "backend\\agent_reviews.py": "1fe8eefd94bb9798af24ba534c8e2bb136c4cb75e16bac939dd7d1dd89577508",
+    "backend\\agent_scenarios.py": "5f3e0786a0faca837c16fc443ddb676a764d726ad42698f26c681165c5f0bd5e",
+    "backend\\agent_selections.py": "66ab8174f8f6f0497f5e378ec166486355eb4fe7d8284013bce43b1bb025a0c7",
+    "backend\\agent_semantics.py": "d40bcc26b745a9da3ef6520a03eed95e0eb02d04de276109f6cfa584f52ed720",
+    "backend\\agent_simulation.py": "2158990b17c9be316ffd36cde6a8100019589f77270abc41b3fcf54592f0437e",
+    "backend\\agent_standards.py": "14ff5a0a33d280d6aa079a75fcf9639417a70508ab6fe4e4bb7f48215f758390",
+    "backend\\api.py": "df4b8d57529a6ede030e8d338445de029618a9ee04e3d06be09433b45047b7bc",
+    "backend\\auth.py": "6635485f3cff6524200db3ff297714d4023c4c0dc750b95067b8332439939340",
+    "backend\\backup.py": "290b7214a9756012fc31565d5b6100393964003b352c37352d7015cd05d3326b",
+    "backend\\beam_sections.py": "2221154a8d503d26721eaf1cc851efd1c5c33dfb29750382167f1ed7d6be3204",
+    "backend\\cad.py": "8b91c0f4bd81eae7a241eab34e16aa1f0e94a10deb92a48c2be11af1a0122592",
+    "backend\\cad_history.py": "d19ef5d9c64b7cc8af3d3c73b8df807a88cdfe12e35cc575a8e3998457951608",
+    "backend\\cad_union.py": "bb67d76914063caeaed2347c9b8a6ae2f60ee6e79fe897e954374df1a7403116",
+    "backend\\cad_worker.py": "0bd719598dcd79b281abccba7de9b502ae7bfb4d77d4f6c7a62dd83ecf7c0c03",
+    "backend\\calculation_provenance.py": "ceb8f32d002f180a8d98a1452193299372e9187d3050ce61a5266a154d5a1ee0",
+    "backend\\collection_scenarios.py": "0da9b4920319707df02dac89008d7cac4c57ee465f420532ba1fb1f1107faed7",
+    "backend\\construction.py": "245c01a38e76eda3dcefd3d94db8f2016238f21dfb7651c1b55412a399dbf546",
+    "backend\\core.py": "1074f4ded141eb8d8e4cdf8d94809998a78af074a3a51aa9dddd4be7f08bfda1",
+    "backend\\design_condition_parser.py": "b5c661717688aa6b0c6a871b33a42437146ea3f8ca6c83985567d9ce5bfca2b7",
+    "backend\\design_conditions.py": "e59bc36363a67cc257dddac3f1e39b9e1f434e9e1a80d4155142082d9997f2c5",
+    "backend\\design_loads.py": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+    "backend\\domain.py": "512fd7eb9f6d474a82ba25bf9a16a0541a5a34d66a2198e34b25606478974d37",
+    "backend\\drawing_associations.py": "681f6c0f8bfc625923af8f5f20b5699acb22202b65a5d78e0560e16467d196c7",
+    "backend\\drawing_models.py": "5a3351e6c37e27fc85f70412ba0e6b4017b5beb1aecddca13d453b671c4a00d0",
+    "backend\\drawing_processing.py": "a1fd826ed3446165be3b154bd20e22755078354a279d242110620a5932218c7e",
+    "backend\\drawing_scale.py": "d702e464d756bf746e32c95272247bd0a52f24948517ed72de6e745b62c85536",
+    "backend\\drawing_worker.py": "eb5daf998c2f7ef60a7c31fc40ba16a003742f8718b67b8036e4c387334ea2b9",
+    "backend\\drawings.py": "119aedf8829b2c581f2b2e1109d149b3e125d5084fbbeffcf79a3bd67b23c7d0",
+    "backend\\dwg.py": "4856f98cf43b18a82faf3c1e71b05ddebb7435badacda7265893e7496e620ca4",
+    "backend\\dwg_runtime.py": "40af0a6d41457388208e0dfde9bdfa8ee7b9054c58f04a2b57e98c1207c8214a",
+    "backend\\dxf_geometry.py": "c29f82952509179ea8838d09880bec6c0707d71e250bef0a9d1f99580b66f47b",
+    "backend\\encrypted_backup.py": "709e60668501273d781dcb5287f7fd48800e0e48c2a1b3423a9ff29dc9b9ab67",
+    "backend\\end_use.py": "bd3a83e761d4241f1ae648383bddb94ddf43e4203f83ad40c64996443bc0222a",
+    "backend\\end_use_records.py": "2c77671633f85e0d832834b5168d5706b7eadc645a55184bdeb49d6105edbe1e",
+    "backend\\engine_limits.py": "dc589d9212ee86ee13bad6908cf467f00cfd68d3bafbbca49fb3140f4573f1a8",
+    "backend\\engine_worker.py": "7e52db8b822cad1318c1cb5385cb2ff37609b8694a5d5f843b32ec25591f5ce1",
+    "backend\\engineering.py": "9458613f19ddcad93e97046b18aad18ac8cceb929b678000f709ec78c7a03bb0",
+    "backend\\execution.py": "d6ed56dc399adbe3b5e0bb4f675cea1cc239da391dd82e500055052f0293be89",
+    "backend\\execution_lifetime.py": "fbb13a3aabc7d93568771ff842c734341215d2b0391a3bd1e3d2b5a464d11d3f",
+    "backend\\extensions.py": "0c0c5a846d13013c925d35308f32a1c06bd6ea7a89a43ecbdc473c9ad1f98247",
+    "backend\\gateway.py": "f89e8f9799eb5f1e9b18220c8ccced7b34631bd1a9591e57aa4730525a050307",
+    "backend\\hourly_thermal.py": "9ae5917ebf0e5a441a0cbd1a3d52e068442a9cdb09ee61855c526e6989a4e801",
+    "backend\\ideal_loads.py": "133065d0226aa88575fbab76e1eaf26b4ea2492566c82df62a1e6dabbca60318",
+    "backend\\idf_retrofit.py": "64b578b2432f6db2183cb3832ee1bdac0da87a39ebb2b047ca7fac8a16ac11a6",
+    "backend\\ifc_beam_handoff.py": "756bdf6695839229add1482ba32e31fb5b849afd7c77d079b3485428fbf4bb6c",
+    "backend\\ifc_beam_profiles.py": "cd262c6cfd03e19ab2545446e5df97178efae87caabba59a75cf7c4428350280",
+    "backend\\ifc_details.py": "d4041e5ec1f3749c0f3a3bb59bd6df2a37cf3fb99c73f10b6344419c4b22747b",
+    "backend\\ifc_geometry.py": "e40a4fb142802361374b9217464f4d5295906a04380475295dda95a0f8c3750a",
+    "backend\\ifc_layer_quantities.py": "308fb61f50c53daa0791d10a4ce9ede9f46e4a5e3626b804a541e747d97cd3cd",
+    "backend\\ifc_material_collection.py": "5969fe9b637092ddbe082ccfa93dbe5f704fff2af267f5c2a743f2cbd6cef802",
+    "backend\\ifc_union.py": "478952987bbe25dff6a4564279622252ce6615baf18fb1e240e53284f428e26d",
+    "backend\\input_validation.py": "c2356fe3c1392624727359aa34f82bf20e925aaddd382ee27bc1238d4c2dddd5",
+    "backend\\lifecycle.py": "d56ceafa50260e6a59b2cef113b8da85d9727f0e9987984eb86b6d52fdc291ef",
+    "backend\\local_model.py": "28fb3626503f40e58fc0f9bfaf602b8b2bcd653c3fa6a2d5364596de60964e88",
+    "backend\\maintenance.py": "1288200508b84273b833e566868344bd449bb04fba06e5a7fdc56ac1748ca11d",
+    "backend\\maintenance_recheck.py": "cf0754cf51120e15e3075d6f77113047969758c3cf9db009d4385bf7caa8a4f4",
+    "backend\\material_collection_service.py": "d6a85822b8b0ce2aa1bcf3adc2942a27491d9ab659f58ba0f79ebe1653c810a1",
+    "backend\\material_cost.py": "7fe81df373fc5df8a46d058781ce9ccef97d0bda89f853ff346df588b2992b0a",
+    "backend\\material_scenarios.py": "869c945b0cd0fa9f2aaf893b47ee853408fc6200dd0d06520285f234ef41142b",
+    "backend\\material_takeoff.py": "045e05f22482234a3c09307f5c4d9586f522c260ff53284e41a47a3021a5bc9a",
+    "backend\\material_transport.py": "b9c1ad6b958ab668d699a8d450edc7ac46cd78ebc1beeb66b7786d11ea77da7a",
+    "backend\\mesh_topology.py": "6c488412e78cc32e5312884a7be4aa89fa8394e14dbf724fdd78981cc0b7f823",
+    "backend\\model_recovery.py": "c328be3a5ed49dbd83c66c1cd2bbdad65b3cae00be2eadbbedfc4cfddfdd8101",
+    "backend\\native_environment.py": "4b2b0b37973dc8829ffe8ac2937b68286a1ae85e0eecbf915e6b2b0d0d571698",
+    "backend\\native_linux.py": "44db6766f601e3e940313ac914d0eaf41cfb6ded745f56f4f78a4911446211df",
+    "backend\\native_ownership.py": "6e176344a24687f6bdf7ebc066eced78fedb9bf4dc8c7a8c25fad29c111e7818",
+    "backend\\native_staging.py": "7d1e7f5da91e93da00b9f6806369d3ad2b1a0d8d2c2b1b82f3f73c5267f94999",
+    "backend\\native_windows.py": "3847fec5a4e5fbcecb7aabb514438a245830cc0537e099f8e4f1992c0181d38f",
+    "backend\\operations.py": "6f84155d6a1cfe5895ba4350d611dcd79a7ff2c518d53a4cf0a2ae7b9948d5a3",
+    "backend\\parser_runtime.py": "565ff9fefba775cbd7dd44994d091d6592a044323c7225e29d7182167c779b50",
+    "backend\\parser_runtime_cache.py": "53565c3d0f3109c3e3f33b9b9984e7a6beda5087822f721d6d749b85eef960b0",
+    "backend\\parser_worker.py": "e2d443a0700970c7dc1e109adbfd8e63e20a4aeb42a4a0d2cd293ff8730599f9",
+    "backend\\private_storage.py": "6e6c1b9cf59ab5ed270e0b0e914a45c058dd1eb1e7d52449296259ec70ba241b",
+    "backend\\reports.py": "7adb3c65c01e70e64e2c618a657d795a051c9f78224b373d74dd62e8f662a127",
+    "backend\\retrofit_models.py": "09d406b1dacaea758ed9be98e79469a23a9ddf9d29e6754d13ee52a6a1db34b2",
+    "backend\\robustness.py": "a357b40e50d0d806b1a6b339df3066537d17c2e33b936e857137d90d1e585ed9",
+    "backend\\runtime_lock.py": "2ed7e1b3cea077a7dc417ae9f174c0031a105d54b5f3f7a00ed4ae8307aae63d",
+    "backend\\schema.py": "88cc6a701808738cc86ad80e6b21344cb580f514e4624960f95c3cd6574cb9ad",
+    "backend\\semantic_models.py": "90be7f89f4b25185041018d33b174cbcc79d788264a5681ddaf255cfa08d6269",
+    "backend\\semantic_runtime.py": "3999fe1d208c7f7535a2a11ac8b5c3a842bd4aecc9b978047e9c6e3a36ab4183",
+    "backend\\semantic_worker.py": "964c730f9c8628b2d50f3503a2e2d35542a5eb4d04dcf3f5821d2b681acc485f",
+    "backend\\service.py": "f08e375bfb0598ceae195a1364b32b45af28a40db51384ea6b6806c7bb75491b",
+    "backend\\spatial.py": "04b7936b9949124fb2a0b87bf96f26200e3f1e69063b7d29d73fe158ecaaa354",
+    "backend\\standard_ocr.py": "3a6b3ab678bef031a636897734b5f0e90bfbc0e6b0bdbed186f5d3a07a66804c",
+    "backend\\standards.py": "99778db8e37ad619cad8ce6ae392c7649f1c2fe9f687a73420178de1bcb6172a",
+    "backend\\standards_worker.py": "37741016df76c8c02030cc65f1bbae0e6b924de52aee6fa09160a4e2dc663ff7",
+    "backend\\storage.py": "2dab9e20436528113d0c8ee0a571a567e3555a84ee63e263a6b8055c0017b853",
+    "backend\\store.py": "994d6f80c9a3a7b11a38abe76d7780c3244bc7093a5a57b4919662cd67e6ed78",
+    "backend\\task_capacity.py": "010990816039e51f69c493f47f7f20af24de93d27c10218470b467d4d3a8c9b9",
+    "backend\\thermal.py": "db24ad1847460c45019d913e1c6444f1e96e068523622471e22c27eeb3e846cd",
+    "backend\\timestep_check.py": "b6e216f8d7d57dd0cedcd03374e353a29c5c3c68b6ccc2ce67da9a8fe9f40cf9",
+    "backend\\timestep_studies.py": "0d0f00149cef0085f1bcbd633ad24c95399f666e580331a36ba939a28fe219f6",
+    "backend\\trust.py": "6ca3876eefbb3f54d761ccefdbab31f1ba0e8b67ef322ede2b4e477ea601789a",
+    "backend\\utility_comparison.py": "41260e3f0573b49a4fc3307f37326a73051553d872a337ee79e23a801e013526",
+    "backend\\utility_records.py": "3e2c8f511781e3de057ee5fb4f80b8951a8a2c12d6a902a64dea3a7a5f9389c0",
+    "backend\\weather_quality.py": "508c2fceb4c9efd6691704e76b25ef68f9b2691d4b12b10cd949ac3850e2cf91",
+    "backend\\worker_limits.py": "57baaa6c81b0034453f6d2122b187ade3e9f7ff2b6af035955db19d0a7f2fc66"
+  }
+}

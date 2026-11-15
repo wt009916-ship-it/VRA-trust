@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "D:\稀土agent-稀土制暖全流程\outputs\vra-soak-20261108\run_mixed_workload.py", line 246, in <module>
+    with authenticated(users[user_index]) as c:ensure(hashlib.sha256(call(c,'GET',path).content).hexdigest()==digest,'Uploaded source changed')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\18483\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\outputs\vra-soak-20261108\run_mixed_workload.py", line 112, in authenticated
+    r=call(c,'POST','/api/auth/login',json={'username':user['username'],'password':user['password']}).json()
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\outputs\vra-soak-20261108\run_mixed_workload.py", line 83, in call
+    ensure(r.status_code in status,f'{method} {path}: status {r.status_code}')
+  File "D:\稀土agent-稀土制暖全流程\outputs\vra-soak-20261108\run_mixed_workload.py", line 79, in ensure
+    if not ok:raise AssertionError(message)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: POST /api/auth/login: status 429

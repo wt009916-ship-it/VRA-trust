@@ -1,0 +1,82 @@
+{
+  "request": {
+    "model": "vra-nine-b-tools",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Use only observed values. Choose an actual read or a clarification. Never invent results."
+      },
+      {
+        "role": "user",
+        "content": "读取温度。不要直接解释、不要猜数值。"
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "read_or_defer",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "read_temperature",
+                "read_power",
+                "defer_request"
+              ]
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 1400,
+    "temperature": 0,
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "stream": false
+  },
+  "status": 200,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{ \"action\": \"read_temperature\" }"
+        }
+      }
+    ],
+    "created": 1794510073,
+    "model": "vra-nine-b-tools",
+    "system_fingerprint": "b12110-cd959bae9",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 10,
+      "prompt_tokens": 45,
+      "total_tokens": 55,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-dATFCP8vGgFcP1oBzNvoxPoApyoaepL7",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 45,
+      "prompt_ms": 254.207,
+      "prompt_per_token_ms": 5.649044444444444,
+      "prompt_per_second": 177.02108911241626,
+      "predicted_n": 10,
+      "predicted_ms": 244.33,
+      "predicted_per_token_ms": 27.14777777777778,
+      "predicted_per_second": 36.83542749560021
+    }
+  }
+}

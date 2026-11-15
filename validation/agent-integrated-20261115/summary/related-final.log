@@ -1,0 +1,70 @@
+................................................................F....... [ 36%]
+................F...........F........................................... [ 73%]
+.....................................................                    [100%]
+================================== FAILURES ===================================
+_____ test_cross_project_refusal_is_not_absence_and_other_scope_continues _____
+
+client = <starlette.testclient.TestClient object at 0x00000245CFE31A00>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000245D0351E80>
+
+    def test_cross_project_refusal_is_not_absence_and_other_scope_continues(client, monkeypatch):
+        pid = create_project(client)['project_id']; other = create_project(client)['project_id']
+        foreign = make(client, other, 'thermal')
+        task = execute(client, monkeypatch, pid, [scope('thermal',foreign),availability('schedule')],
+                       {'thermal':['total_resistance_m2k_w']})
+>       assert task['answer']['output_contract_coverage'] == 'incomplete'
+E       AssertionError: assert 'addressed_with_source_limits' == 'incomplete'
+E         
+E         - incomplete
+E         + addressed_with_source_limits
+
+tests\test_agent_read_execution.py:89: AssertionError
+__________ test_model_schema_exposes_only_declared_availability_keys __________
+
+client = <starlette.testclient.TestClient object at 0x00000245CE841EB0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000245CFD61E80>
+
+    def test_model_schema_exposes_only_declared_availability_keys(client,monkeypatch):
+        pid=create_project(client)['project_id'];a=client.app.state.agent;definitions=[]
+        monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
+        def complete(messages,tools, **response_options):
+            definitions.extend(tools)
+            return tool('requested_availability',{'request_keys':['chosen'],'finish':True})
+        monkeypatch.setattr(a.gateway,'complete',complete)
+        t=a.start(pid,chat([req(key='chosen')]),background=False)
+        assert t['status']=='succeeded'
+>       assert {d['function']['name'] for d in definitions}=={'project_get','requested_availability'}
+E       AssertionError: assert {'professiona...availability'} == {'project_get...availability'}
+E         
+E         Extra items in the left set:
+E         'professional_finish'
+E         Use -v to get more diff
+
+tests\test_agent_requests.py:131: AssertionError
+_____ test_foreign_selected_result_refuses_whole_batch_before_leaf_reads ______
+
+client = <starlette.testclient.TestClient object at 0x00000245D2471C70>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000245D2506390>
+
+    def test_foreign_selected_result_refuses_whole_batch_before_leaf_reads(client,monkeypatch):
+        pid=create_project(client)['project_id'];other=create_project(client)['project_id'];a=client.app.state.agent
+        own=create_record(client,pid,'thermal');foreign=create_record(client,other,'thermal')
+        scripted(a,monkeypatch,[tool('professional_read_many',{'record_ids':[own['thermal_id'],foreign['thermal_id']]})])
+        t=a.start(pid,chat([req(purpose='results',record_id=r['thermal_id'],key=str(i)) for i,r in enumerate([own,foreign])]),background=False)
+>       assert t['status']=='failed' and 'Cross-project' in t['error']
+E       AssertionError: assert ('failed' == 'failed'
+E         
+E           failed and 'Cross-project' in '')
+
+tests\test_agent_requests.py:232: AssertionError
+============================== warnings summary ===============================
+..\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_read_execution.py::test_cross_project_refusal_is_not_absence_and_other_scope_continues
+FAILED tests/test_agent_requests.py::test_model_schema_exposes_only_declared_availability_keys
+FAILED tests/test_agent_requests.py::test_foreign_selected_result_refuses_whole_batch_before_leaf_reads
+3 failed, 194 passed, 1 warning in 228.97s (0:03:48)

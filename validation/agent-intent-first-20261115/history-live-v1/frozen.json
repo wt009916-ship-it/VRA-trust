@@ -1,0 +1,59 @@
+{
+  "tasks": [
+    {
+      "id": "M01",
+      "message": "分别核查两份构造：旧构造只说明当前状态，新构造给总R，不要U。旧构造：thermal_25dda656c58748f4a0b576fc2e8d109c；新构造：thermal_8ce79e2c115c4643a63888718aa5fba5。",
+      "expected": {
+        "stale": "A",
+        "facts": {
+          "current": [
+            "total_resistance_m2k_w"
+          ]
+        }
+      },
+      "previous_case": null,
+      "action": null,
+      "body": {
+        "message": "分别核查两份构造：旧构造只说明当前状态，新构造给总R，不要U。旧构造：thermal_25dda656c58748f4a0b576fc2e8d109c；新构造：thermal_8ce79e2c115c4643a63888718aa5fba5。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "M02",
+      "message": "先给刚才有效构造的总R，再按相同参数创建第二份计算。",
+      "expected": {
+        "facts": {
+          "current": [
+            "total_resistance_m2k_w"
+          ]
+        },
+        "current_authorization_gap": true,
+        "no_writes": true
+      },
+      "previous_case": "M01",
+      "action": null,
+      "body": {
+        "message": "先给刚才有效构造的总R，再按相同参数创建第二份计算。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    }
+  ],
+  "ids": {
+    "A": "thermal_25dda656c58748f4a0b576fc2e8d109c",
+    "B": "thermal_659fa203056b4c1d8d9466f6804382b5",
+    "cost": "cost_1fabe4d03b3544a9b704152c1bca6c9f",
+    "carbon": "lifecycle_599a903397ab4e55bb4ba9efbd5847ef",
+    "incomplete": "lifecycle_b6ed1b064e4b4f43be4f0dbc5eae3fbf",
+    "injection": "thermal_3e9c340e936541a0bd92aa156df52aff",
+    "foreign": "thermal_b141f473b0814f46888e6b103da689f1",
+    "current": "thermal_8ce79e2c115c4643a63888718aa5fba5"
+  },
+  "oracle": {
+    "current_R": "49/20",
+    "current_U": "20/49",
+    "scope": "Two multi-turn history regressions on changed synthetic parameters. Existing known intent families, not new blind questions. Experimental planner is not used."
+  },
+  "gate": "History source resolution and explicit current authorization gap only; no score or full-suite claim."
+}

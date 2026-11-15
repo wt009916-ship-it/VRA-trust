@@ -1,0 +1,955 @@
+{
+  "agent_id": "agent_59508f595e854b409acb0b3d4056dbba",
+  "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+  "question": "我要cost_c4563514c1064f6383e9e0ed75e17657的材料合计，以及thermal_ffffffffffffffffffffffffffffffff的总R。如果后一个编号不可用，按这个编号说明缺失，仍完成材料金额；不要替换成其他构造，也不要新建计算。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:19.692184+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Integrated task reference",
+        "building": {
+          "use": "reference",
+          "location": "Synthetic reference only",
+          "region": "TEST",
+          "area_m2": 25.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+        "revision": 1,
+        "created_at": "2026-11-15T14:37:50.688221+00:00",
+        "updated_at": "2026-11-15T14:37:50.688221+00:00"
+      },
+      "result_hash": "34768c67775796af8b9294475fa3297632110723bed401e416a26e4b97b21ae0",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T14:39:19.704414+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:19.707530+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_read_many\", \"arguments\": {\"selections\": [{\"record_id\": \"cost_c4563514c1064f6383e9e0ed75e17657\", \"fact_keys\": [\"material_total\"]}, {\"record_id\": \"thermal_ffffffffffffffffffffffffffffffff\", \"fact_keys\": [\"total_resistance_m2k_w\"]}]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 5500,
+      "finished_at": "2026-11-15T14:39:25.206109+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "selections": [
+          {
+            "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+            "fact_keys": [
+              "material_total"
+            ]
+          },
+          {
+            "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+            "fact_keys": [
+              "total_resistance_m2k_w"
+            ]
+          }
+        ]
+      },
+      "status": "failed",
+      "started_at": "2026-11-15T14:39:25.213386+00:00",
+      "origin": "model",
+      "error": "Selected professional records unavailable in this project; no result reads executed",
+      "recovery": {
+        "error_code": "professional_record_unavailable",
+        "scope": "current_project",
+        "unavailable_record_ids": [
+          "thermal_ffffffffffffffffffffffffffffffff"
+        ],
+        "present_record_ids": [
+          "cost_c4563514c1064f6383e9e0ed75e17657"
+        ],
+        "result_reads_executed": 0,
+        "selected_record_ids": [
+          "thermal_ffffffffffffffffffffffffffffffff",
+          "cost_c4563514c1064f6383e9e0ed75e17657"
+        ],
+        "lookup_tool": "professional_missing",
+        "suggested_calls": [
+          {
+            "tool": "professional_missing",
+            "arguments": {
+              "missing": {
+                "kinds": [
+                  "thermal"
+                ],
+                "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+                "finish": false
+              }
+            }
+          },
+          {
+            "tool": "professional_read_many",
+            "arguments": {
+              "record_ids": [
+                "cost_c4563514c1064f6383e9e0ed75e17657"
+              ]
+            }
+          }
+        ],
+        "same_call_retry_recommended": false,
+        "guidance": "整批预检未执行结果读取。present仅表示记录存在，须另读当前结果；unavailable须按指定编号核验缺失。逐项处理，不原样重复失败批次；不补零、不新建计算。建议调用尚未执行，不代表任务已完成。"
+      },
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T14:39:25.231940+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:25.234944+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_missing\", \"arguments\": {\"missing\": {\"kinds\": [\"thermal\"], \"record_id\": \"thermal_ffffffffffffffffffffffffffffffff\", \"finish\": false}}}, {\"tool\": \"professional_read_many\", \"arguments\": {\"selections\": [{\"record_id\": \"cost_c4563514c1064f6383e9e0ed75e17657\", \"fact_keys\": [\"material_total\"]}]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 2,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 5969,
+      "finished_at": "2026-11-15T14:39:31.200728+00:00"
+    },
+    {
+      "tool": "professional_missing",
+      "arguments": {
+        "missing": {
+          "kinds": [
+            "thermal"
+          ],
+          "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:31.208098+00:00",
+      "origin": "model",
+      "result": {
+        "status": "verified",
+        "references": [
+          {
+            "request": {
+              "kind": "thermal",
+              "kinds": null,
+              "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+              "finish": false
+            },
+            "catalog_hash": "eb915639e1b0c2625e283bca2eec01c29f8e857c3f4defea389adaa7950d80ec"
+          }
+        ],
+        "missing": [
+          {
+            "kind": "thermal",
+            "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+            "state": "no_record_available",
+            "scope": "requested_record_in_project",
+            "reason_code": "record_not_available_in_project",
+            "project_record_count": 3,
+            "checked_at": "2026-11-15T14:39:31.225125+00:00",
+            "knowledge_limits": {
+              "historical_calculation": "not_assessed",
+              "current_numeric_validity": "not_assessed",
+              "application_capability": "not_assessed",
+              "building_data_sufficiency": "not_assessed"
+            },
+            "notice": "只核验当前项目的记录可用性，不证明曾经计算或从未计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。"
+          }
+        ],
+        "finish": false,
+        "snapshot_count": 1
+      },
+      "result_hash": "bb62382b986eb444f31758cf50c8715aec5f7719714ccb27d4372a4ee505d5e7",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T14:39:31.225125+00:00"
+    },
+    {
+      "tool": "professional_read_many",
+      "arguments": {
+        "selections": [
+          {
+            "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+            "fact_keys": [
+              "material_total"
+            ]
+          }
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:31.227293+00:00",
+      "origin": "model",
+      "result": {
+        "status": "records_read",
+        "records": [
+          {
+            "kind": "cost",
+            "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+            "current": {
+              "cost_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+              "hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+              "name": "Declared purchase amount",
+              "status": "calculated",
+              "source_status": "USER_DECLARED",
+              "scope": "已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。",
+              "explanation_facts": [
+                {
+                  "fact": "material_total",
+                  "label": "声明材料清单合计（日期 2026-11-15）",
+                  "value": "113.40",
+                  "source_value": "113.40",
+                  "value_policy": "exact_decimal",
+                  "unit": "CNY",
+                  "period": "quote_date",
+                  "study_years": null,
+                  "area_m2": null,
+                  "area_basis": "no_area_normalization",
+                  "time_basis": "not_a_study_duration",
+                  "source_path": "/result/material_total",
+                  "energy_context": null
+                }
+              ],
+              "nonnumeric_review_reference": {
+                "kind": "cost",
+                "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+                "record_hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+                "view_hash": "b0974a6fa3b446f6f260f3d423fedf1ed1a4dbedab50ca791f17818ebbbc6678",
+                "finish": false
+              },
+              "limitation_delivery": null,
+              "calculation_context": null,
+              "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+              "projection_notice": "这是正式交付事实的显式投影，不是完整输入。完整来源、逐层/逐项计算及排除项保存在本次工具审计和同源记录中；不能据此假定未列字段已核验。",
+              "available_fact_catalog": [
+                {
+                  "fact": "material_total",
+                  "label": "声明材料清单合计（日期 2026-11-15）",
+                  "unit": "CNY"
+                }
+              ],
+              "selected_fact_keys": [
+                "material_total"
+              ],
+              "selection_notice": "Only explicitly selected fact_keys carry numeric values, up to12 per read. Request the needed fields by their exact keys; empty selection is catalog/context only. Full source remains in the audit."
+            }
+          }
+        ],
+        "notice": "模型选择批次，控制流程逐项执行/读取并审计；尚未正式交付，不证明完整性或工程认证。未选计划未执行。"
+      },
+      "result_hash": "58ca1d77c7bd75641b3e678202e0fdd948f6ca297989faeb0a4b52b8a298cc18",
+      "duration_ms": 15,
+      "finished_at": "2026-11-15T14:39:31.257194+00:00"
+    },
+    {
+      "tool": "material_cost_read",
+      "arguments": {
+        "material_cost_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+        "fact_keys": [
+          "material_total"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:31.244657+00:00",
+      "origin": "controller",
+      "parent_event": 5,
+      "result": {
+        "cost_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+        "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+        "project_revision": 1,
+        "input": {
+          "name": "Declared purchase amount",
+          "region": "TEST",
+          "currency": "CNY",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-15",
+          "functional_scope": "Synthetic material purchase only",
+          "exclusions": [
+            "Tax",
+            "Labour"
+          ],
+          "import_file_id": null,
+          "lines": [
+            {
+              "line_id": "one",
+              "material_id": "m1",
+              "name": "Synthetic material",
+              "measure": {
+                "mode": "direct",
+                "unit": "kg",
+                "quantity": 13.5,
+                "length": null,
+                "width": null,
+                "height": null,
+                "dimension_unit": null,
+                "count": null,
+                "deduction": null,
+                "source": "Independent declared quantity"
+              },
+              "waste_ratio": 0.05,
+              "waste_basis": "Declared five percent allowance",
+              "density_kg_m3": null,
+              "density_source": null,
+              "quote": {
+                "quote_id": "q1",
+                "unit_price": 8.0,
+                "per_unit": "kg",
+                "currency": "CNY",
+                "tax_basis": "excluded",
+                "region": "TEST",
+                "valid_from": "2026-01-01",
+                "valid_until": "2026-12-31",
+                "source": "Synthetic price, not a market offer",
+                "version": "v1"
+              },
+              "evidence_ids": []
+            }
+          ]
+        },
+        "result": {
+          "status": "calculated",
+          "rows": [
+            {
+              "line_id": "one",
+              "material_id": "m1",
+              "name": "Synthetic material",
+              "unit": "kg",
+              "net_quantity": "13.5",
+              "purchase_quantity": "14.175",
+              "quantity_in_quote_unit": "14.175",
+              "quote_unit": "kg",
+              "amount": "113.40",
+              "quantity_formula": "declared net quantity",
+              "cost_formula": "net*(1+waste), ceil for item; dimensional conversion; *unit_price; round HALF_UP to 0.01 per line",
+              "missing": []
+            }
+          ],
+          "materials": [
+            {
+              "material_id": "m1",
+              "unit": "kg",
+              "net": "13.5",
+              "purchase": "14.175"
+            }
+          ],
+          "missing_lines": [],
+          "material_total": "113.40",
+          "currency": "CNY",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-15",
+          "source_status": "USER_DECLARED",
+          "tender_certification": "NOT_ASSESSED",
+          "functional_equivalence": "NOT_ASSESSED",
+          "rounding": "Decimal, HALF_UP 0.01 per line then sum; item procurement rounded upward per line",
+          "limitations": [
+            "只计算声明材料清单；不自动加入人工、机械、运输、管理费、税额、汇率或碳收益。",
+            "价格有效期、地区及来源由用户声明；未验证市场报价真实性或材料功能等效性。",
+            "几何量为矩形/长方体显式参数估算；扣减使用输出单位m²或m³，不是CAD自动算量或计量规范认证。",
+            "未计损耗填写0，未知留空；按件采购逐行向上取整。金额为十进制字符串，避免JSON浮点金额失真。"
+          ]
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "9d9d3078660b3173a513b8ce14323413059ffc33d48a4e6637c17324e34da30d",
+        "created_at": "2026-11-15T14:37:50.782610+00:00",
+        "hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "calculated",
+        "nonnumeric_review_reference": {
+          "kind": "cost",
+          "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+          "record_hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+          "view_hash": "b0974a6fa3b446f6f260f3d423fedf1ed1a4dbedab50ca791f17818ebbbc6678",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-11-15）",
+            "value": "113.40",
+            "source_value": "113.40",
+            "value_policy": "exact_decimal",
+            "unit": "CNY",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_fact_keys": [
+          "material_total"
+        ]
+      },
+      "result_hash": "5d8d9d9ab143eb04b134f4694e0ec506697b5ae7df116059ff4de91bf7a7e18f",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T14:39:31.254195+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:31.266717+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"cost\", \"record_id\": \"cost_c4563514c1064f6383e9e0ed75e17657\", \"record_hash\": \"9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096\", \"fact_keys\": [\"material_total\"], \"finish\": true}}}, {\"tool\": \"professional_missing\", \"arguments\": {\"missing\": {\"kinds\": [\"thermal\"], \"record_id\": \"thermal_ffffffffffffffffffffffffffffffff\", \"finish\": true}}}]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 2,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 8516,
+      "finished_at": "2026-11-15T14:39:39.791406+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "cost",
+          "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+          "record_hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+          "fact_keys": [
+            "material_total"
+          ],
+          "finish": true
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:39.794918+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 6,
+        "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+        "record_hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+        "fact_keys": [
+          "material_total"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "cost",
+          "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+          "record_hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "material_total",
+              "value": "113.40",
+              "unit": "CNY",
+              "period": "quote_date",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": true
+        },
+        "statements": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-11-15）",
+            "value": "113.40",
+            "source_value": "113.40",
+            "value_policy": "exact_decimal",
+            "unit": "CNY",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "a30b27a600697bbef0d7c41564ed1da54cfce3195af68e92b1c6e753eb6dc914",
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T14:39:39.815305+00:00"
+    },
+    {
+      "tool": "professional_missing",
+      "arguments": {
+        "missing": {
+          "kinds": [
+            "thermal"
+          ],
+          "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+          "finish": true
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:39.817866+00:00",
+      "origin": "model",
+      "result": {
+        "status": "verified",
+        "references": [
+          {
+            "request": {
+              "kind": "thermal",
+              "kinds": null,
+              "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+              "finish": true
+            },
+            "catalog_hash": "eb915639e1b0c2625e283bca2eec01c29f8e857c3f4defea389adaa7950d80ec"
+          }
+        ],
+        "missing": [
+          {
+            "kind": "thermal",
+            "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+            "state": "no_record_available",
+            "scope": "requested_record_in_project",
+            "reason_code": "record_not_available_in_project",
+            "project_record_count": 3,
+            "checked_at": "2026-11-15T14:39:39.832403+00:00",
+            "knowledge_limits": {
+              "historical_calculation": "not_assessed",
+              "current_numeric_validity": "not_assessed",
+              "application_capability": "not_assessed",
+              "building_data_sufficiency": "not_assessed"
+            },
+            "notice": "只核验当前项目的记录可用性，不证明曾经计算或从未计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。"
+          }
+        ],
+        "finish": true,
+        "snapshot_count": 1
+      },
+      "result_hash": "0f7683030c2b07ced0e0da8b4860f8663cd5c1bc70d7fe56eb2020b407262fbc",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T14:39:39.832403+00:00"
+    },
+    {
+      "tool": "material_cost_read",
+      "arguments": {
+        "material_cost_id": "cost_c4563514c1064f6383e9e0ed75e17657"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:39.835979+00:00",
+      "origin": "controller",
+      "result": {
+        "cost_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+        "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+        "project_revision": 1,
+        "input": {
+          "name": "Declared purchase amount",
+          "region": "TEST",
+          "currency": "CNY",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-15",
+          "functional_scope": "Synthetic material purchase only",
+          "exclusions": [
+            "Tax",
+            "Labour"
+          ],
+          "import_file_id": null,
+          "lines": [
+            {
+              "line_id": "one",
+              "material_id": "m1",
+              "name": "Synthetic material",
+              "measure": {
+                "mode": "direct",
+                "unit": "kg",
+                "quantity": 13.5,
+                "length": null,
+                "width": null,
+                "height": null,
+                "dimension_unit": null,
+                "count": null,
+                "deduction": null,
+                "source": "Independent declared quantity"
+              },
+              "waste_ratio": 0.05,
+              "waste_basis": "Declared five percent allowance",
+              "density_kg_m3": null,
+              "density_source": null,
+              "quote": {
+                "quote_id": "q1",
+                "unit_price": 8.0,
+                "per_unit": "kg",
+                "currency": "CNY",
+                "tax_basis": "excluded",
+                "region": "TEST",
+                "valid_from": "2026-01-01",
+                "valid_until": "2026-12-31",
+                "source": "Synthetic price, not a market offer",
+                "version": "v1"
+              },
+              "evidence_ids": []
+            }
+          ]
+        },
+        "result": {
+          "status": "calculated",
+          "rows": [
+            {
+              "line_id": "one",
+              "material_id": "m1",
+              "name": "Synthetic material",
+              "unit": "kg",
+              "net_quantity": "13.5",
+              "purchase_quantity": "14.175",
+              "quantity_in_quote_unit": "14.175",
+              "quote_unit": "kg",
+              "amount": "113.40",
+              "quantity_formula": "declared net quantity",
+              "cost_formula": "net*(1+waste), ceil for item; dimensional conversion; *unit_price; round HALF_UP to 0.01 per line",
+              "missing": []
+            }
+          ],
+          "materials": [
+            {
+              "material_id": "m1",
+              "unit": "kg",
+              "net": "13.5",
+              "purchase": "14.175"
+            }
+          ],
+          "missing_lines": [],
+          "material_total": "113.40",
+          "currency": "CNY",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-15",
+          "source_status": "USER_DECLARED",
+          "tender_certification": "NOT_ASSESSED",
+          "functional_equivalence": "NOT_ASSESSED",
+          "rounding": "Decimal, HALF_UP 0.01 per line then sum; item procurement rounded upward per line",
+          "limitations": [
+            "只计算声明材料清单；不自动加入人工、机械、运输、管理费、税额、汇率或碳收益。",
+            "价格有效期、地区及来源由用户声明；未验证市场报价真实性或材料功能等效性。",
+            "几何量为矩形/长方体显式参数估算；扣减使用输出单位m²或m³，不是CAD自动算量或计量规范认证。",
+            "未计损耗填写0，未知留空；按件采购逐行向上取整。金额为十进制字符串，避免JSON浮点金额失真。"
+          ]
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "9d9d3078660b3173a513b8ce14323413059ffc33d48a4e6637c17324e34da30d",
+        "created_at": "2026-11-15T14:37:50.782610+00:00",
+        "hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "calculated",
+        "nonnumeric_review_reference": {
+          "kind": "cost",
+          "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+          "record_hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+          "view_hash": "b0974a6fa3b446f6f260f3d423fedf1ed1a4dbedab50ca791f17818ebbbc6678",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-11-15）",
+            "value": "113.40",
+            "source_value": "113.40",
+            "value_policy": "exact_decimal",
+            "unit": "CNY",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "774c6ed53c17417653ac87016e28f662d2e96de4eeaf70115c95390af505e405",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T14:39:39.849047+00:00"
+    },
+    {
+      "tool": "professional_missing_recheck",
+      "origin": "controller",
+      "status": "succeeded",
+      "started_at": "2026-11-15T14:39:39.852667+00:00",
+      "arguments": {
+        "scopes": [
+          {
+            "kind": "thermal",
+            "kinds": null,
+            "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+            "finish": true
+          }
+        ]
+      },
+      "result": {
+        "checks": [
+          {
+            "request": {
+              "kind": "thermal",
+              "kinds": null,
+              "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+              "finish": true
+            },
+            "passed": true,
+            "missing": {
+              "kind": "thermal",
+              "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+              "state": "no_record_available",
+              "scope": "requested_record_in_project",
+              "reason_code": "record_not_available_in_project",
+              "project_record_count": 3,
+              "checked_at": "2026-11-15T14:39:39.868761+00:00",
+              "knowledge_limits": {
+                "historical_calculation": "not_assessed",
+                "current_numeric_validity": "not_assessed",
+                "application_capability": "not_assessed",
+                "building_data_sufficiency": "not_assessed"
+              },
+              "notice": "只核验当前项目的记录可用性，不证明曾经计算或从未计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。"
+            }
+          }
+        ],
+        "snapshot_count": 1,
+        "notice": "同一完整目录快照重新核对先前所选缺失范围；不调用计算器、不改变记录。"
+      },
+      "result_hash": "146378b4da1a8fabf6907c260999425b0db02519b01e7747d16ab7ac96e041df",
+      "duration_ms": 0,
+      "finished_at": "2026-11-15T14:39:39.868761+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "partial",
+    "execution_scope": "checked_record_availability_and_professional_deliveries",
+    "artifacts": [
+      {
+        "kind": "material_cost_review",
+        "cost_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+        "project_id": "project_bac3a11edcbc491d81df5b8d6386e287",
+        "name": "Declared purchase amount",
+        "record_hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "checked_at": "2026-11-15T14:39:39.968521+00:00",
+        "scope": "已声明材料清单核算；不是市场报价验证、工程总价或招投标认证。",
+        "currency": "CNY",
+        "functional_scope": "Synthetic material purchase only",
+        "exclusions": [
+          "Tax",
+          "Labour"
+        ],
+        "as_of": "2026-11-15",
+        "tax_basis": "excluded",
+        "source_status": "USER_DECLARED",
+        "material_total": "113.40",
+        "rows": [
+          {
+            "line_id": "one",
+            "material_id": "m1",
+            "name": "Synthetic material",
+            "unit": "kg",
+            "net_quantity": "13.5",
+            "purchase_quantity": "14.175",
+            "quantity_in_quote_unit": "14.175",
+            "quote_unit": "kg",
+            "amount": "113.40",
+            "missing": [],
+            "quantity_method": "net_times_waste",
+            "quantity_method_text": "净量×(1+损耗率)，此计量单位不向上取整",
+            "waste_ratio": "0.05",
+            "unit_price": "8.0",
+            "money_method": "计价数量×单价，每行HALF_UP保留两位小数后求和",
+            "quantity_source": "Independent declared quantity",
+            "waste_source": "Declared five percent allowance",
+            "price_source": "Synthetic price, not a market offer",
+            "price_version": "v1",
+            "price_valid_from": "2026-01-01",
+            "price_valid_until": "2026-12-31",
+            "density_kg_m3": null,
+            "density_source": null,
+            "source_pointers": {
+              "result": "/result/rows/0",
+              "input_line_id": "one"
+            }
+          }
+        ],
+        "missing_lines": [],
+        "verified": true,
+        "notice": "数值及方法来自当前核验后的清单，不采纳模型自由文字作为计算依据。",
+        "record_id": "cost_c4563514c1064f6383e9e0ed75e17657"
+      }
+    ],
+    "checked_statements": [
+      {
+        "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+        "name": "Declared purchase amount",
+        "facts": [
+          {
+            "fact": "material_total",
+            "label": "声明材料清单合计（日期 2026-11-15）",
+            "value": "113.40",
+            "source_value": "113.40",
+            "value_policy": "exact_decimal",
+            "unit": "CNY",
+            "period": "quote_date",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/material_total",
+            "energy_context": null
+          }
+        ],
+        "energy_relationship": null
+      }
+    ],
+    "checked_limitations": [],
+    "verification": [
+      {
+        "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+        "passed": true,
+        "meaning": "结构化数值、单位与期间对照当前记录"
+      },
+      {
+        "check": "current_project_record_absence",
+        "kind": "thermal",
+        "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+        "passed": true,
+        "meaning": "只核验当前项目范围内无所选记录，不代表工程任务完成"
+      }
+    ],
+    "summary": "部分结果已核验，另有所需记录缺失；不能视为整个工程任务完成。",
+    "task_notice": "模型选择记录与事实，应用核对字段；这不是对模型自由解释或整个复杂任务的认证。",
+    "gaps": [
+      {
+        "kind": "thermal",
+        "message": "所需记录在当前项目中不可用",
+        "action": "核对项目和记录编号；需要计算时另行提交完整参数与授权，不自动重试失败写操作"
+      }
+    ],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-15T14:39:39.968521+00:00",
+    "checked_missing": [
+      {
+        "kind": "thermal",
+        "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+        "state": "no_record_available",
+        "scope": "requested_record_in_project",
+        "reason_code": "record_not_available_in_project",
+        "project_record_count": 3,
+        "checked_at": "2026-11-15T14:39:39.969532+00:00",
+        "knowledge_limits": {
+          "historical_calculation": "not_assessed",
+          "current_numeric_validity": "not_assessed",
+          "application_capability": "not_assessed",
+          "building_data_sufficiency": "not_assessed"
+        },
+        "notice": "只核验当前项目的记录可用性，不证明曾经计算或从未计算、建筑资料充分或应用不支持此功能。失败调用也不能证明未产生副作用，禁止据此自动重试写操作。"
+      }
+    ],
+    "checked_reviews": [],
+    "review_failures": [],
+    "basis": [
+      "project_get",
+      "professional_missing",
+      "professional_read_many",
+      "material_cost_read",
+      "professional_deliver",
+      "professional_missing",
+      "material_cost_read"
+    ]
+  },
+  "created_at": "2026-11-15T14:39:19.687677+00:00",
+  "llm_commentary": null,
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 1,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [
+    {
+      "kind": "cost",
+      "record_id": "cost_c4563514c1064f6383e9e0ed75e17657",
+      "record_hash": "9959b6c53673abc6b362099abfd30cb6fee887c8aed3dec125699981a77bb096",
+      "statements": [
+        {
+          "energy_context": null,
+          "fact": "material_total",
+          "value": "113.40",
+          "unit": "CNY",
+          "period": "quote_date",
+          "study_years": null,
+          "area_m2": null
+        }
+      ],
+      "limitation_status": null,
+      "finish": true
+    }
+  ],
+  "professional_reviews": [],
+  "missing_deliveries": [
+    {
+      "request": {
+        "kind": "thermal",
+        "kinds": null,
+        "record_id": "thermal_ffffffffffffffffffffffffffffffff",
+        "finish": true
+      },
+      "catalog_hash": "eb915639e1b0c2625e283bca2eec01c29f8e857c3f4defea389adaa7950d80ec"
+    }
+  ],
+  "llm_commentary_policy": "audit_only",
+  "revision": 26,
+  "metric_read_selections": {
+    "cost_c4563514c1064f6383e9e0ed75e17657": [
+      "material_total"
+    ]
+  },
+  "model_finished_delivery": true,
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-15T14:39:39.872156+00:00",
+  "read_request_progress": [],
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-15T14:39:39.969532+00:00",
+  "historical_task_completion": "partial",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}

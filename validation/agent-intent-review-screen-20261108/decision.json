@@ -1,0 +1,77 @@
+{
+  "base_commit": "99646dc8ca2cf212673a8100b6aff7451c3f8de6",
+  "decision": "rejected_not_adopted",
+  "adoption_gate_unchanged": true,
+  "new_passes": [],
+  "regressions": [
+    "V11",
+    "V12"
+  ],
+  "published_score": 76,
+  "unpublished_prior_candidate_score": 76.5,
+  "score_delta": 0,
+  "frontend_changed": false,
+  "prototype_changed": false,
+  "browser_tested": false,
+  "arms": {
+    "baseline": {
+      "strict_passes": 12,
+      "model_calls": 23,
+      "clarification_followup": {
+        "strict_pass": true,
+        "checks": {
+          "task_succeeded": true,
+          "within_event_budget": true,
+          "no_write_tools": true,
+          "exact_plan_scopes": true,
+          "wall_exact_requirements": true,
+          "wall_values": true,
+          "wall_fulfilled": true,
+          "exact_delivery_sets": true
+        },
+        "model_calls": 1
+      },
+      "completed": true,
+      "server_stopped": true
+    },
+    "candidate": {
+      "strict_passes": 0,
+      "model_calls": 27,
+      "clarification_followup": {
+        "strict_pass": false,
+        "reason": "no_valid_prior_clarification",
+        "model_calls": 0
+      },
+      "completed": true,
+      "server_stopped": true
+    },
+    "candidate-schema-repair": {
+      "strict_passes": 10,
+      "model_calls": 40,
+      "clarification_followup": {
+        "strict_pass": false,
+        "reason": "no_valid_prior_clarification",
+        "model_calls": 0
+      },
+      "completed": true,
+      "server_stopped": true
+    }
+  },
+  "inference_count_total": 90,
+  "limitation": "Development comparison; repaired arm reused the fixed cases after a schema integration fix. Not third-party blind evidence. Intervention combines strict schema and review, so effect cannot be attributed to review alone.",
+  "failure_logs": {
+    "baseline": {
+      "sha256": "5ace41381cc217e9f998354cb4b63cae427194952f86f4bb9eb91d0174b5c7f2",
+      "bytes": 22807
+    },
+    "candidate": {
+      "sha256": "399a8ed9b7f2d34c98f433d26a2e666c66225d1ade65c4dee751d972ae10dc07",
+      "bytes": 39332
+    },
+    "candidate-schema-repair": {
+      "sha256": "70e6df4438c7b679d850c8bd09309f60351f318a5463b1217df0956f35828d51",
+      "bytes": 38981
+    }
+  },
+  "stop_rule": "Do not tune or rerun V01-V20/P/Q/original24; do not activate rejected review_intent API. A new independent method is needed."
+}

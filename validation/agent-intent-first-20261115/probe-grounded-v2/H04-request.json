@@ -1,0 +1,365 @@
+{
+  "model": "vra-nine-b-tools",
+  "max_tokens": 1400,
+  "temperature": 0,
+  "stream": false,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "Return one JSON object containing actions, each with tool and arguments. Only choose offered actions, obey their schemas and the original request. No prose, invented results, or completion claims. Read a selected fact before delivering it. Use the offered clarification action when the requested metric is unresolved. JSON action contract: {\"type\": \"object\", \"properties\": {\"actions\": {\"type\": \"array\", \"minItems\": 1, \"maxItems\": 4, \"items\": {\"oneOf\": [{\"type\": \"object\", \"description\": \"在读取资料前，将原问题拆成完整任务清单，明确读取与新建及精确指标；保留全部要求与排除项。不执行、不授权、不输出计算数值。\", \"properties\": {\"tool\": {\"type\": \"string\", \"const\": \"task_plan\"}, \"arguments\": {\"type\": \"object\", \"properties\": {\"items\": {\"type\": \"array\", \"minItems\": 1, \"maxItems\": 6, \"items\": {\"oneOf\": [{\"type\": \"object\", \"properties\": {\"request_quote\": {\"type\": \"string\", \"minLength\": 1, \"maxLength\": 180, \"description\": \"支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。\"}, \"question_fragment_ids\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"enum\": [\"q1\"]}, \"minItems\": 1, \"maxItems\": 24, \"uniqueItems\": true, \"description\": \"原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。\"}, \"operation\": {\"const\": \"create_calculation\"}, \"kind\": {\"enum\": [\"thermal\", \"lifecycle\", \"cost\", \"engineering\", \"schedule\", \"operation\"]}, \"plan_key\": {\"enum\": [null]}}, \"required\": [\"request_quote\", \"question_fragment_ids\", \"operation\", \"kind\", \"plan_key\"], \"additionalProperties\": false, \"description\": \"用户要求新建或再次计算时必须保留创建任务，即使当前无权限或无计划；不能改为读取旧结果。没有当前锁定计划用null，执行器会明确前提缺口。不可填写或猜测工程参数。\"}, {\"type\": \"object\", \"properties\": {\"request_quote\": {\"type\": \"string\", \"minLength\": 1, \"maxLength\": 180, \"description\": \"支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。\"}, \"question_fragment_ids\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"enum\": [\"q1\"]}, \"minItems\": 1, \"maxItems\": 24, \"uniqueItems\": true, \"description\": \"原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。\"}, \"operation\": {\"const\": \"explain_capabilities\"}, \"capability_ids\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"enum\": [\"thermal_resistance\", \"energy_simulation\", \"lifecycle_inventory\", \"beam_analysis\", \"material_cost\", \"schedule_cpm\", \"operations_rules\", \"standards_retrieval\", \"cad_bim_read\", \"drawing_ocr\", \"structural_safety_certification\", \"carbon_credit_issuance\", \"energy_compliance_certification\", \"drawing_structural_reconstruction\", \"equipment_fault_diagnosis\", \"site_safety_approval\"]}, \"minItems\": 1, \"maxItems\": 16, \"uniqueItems\": true}}, \"required\": [\"request_quote\", \"question_fragment_ids\", \"operation\", \"capability_ids\"], \"additionalProperties\": false, \"description\": \"要求认证、签发或询问能力边界时，列出全部相关能力；能力说明不能代替用户另行要求的实际读取或计算。\"}, {\"type\": \"object\", \"properties\": {\"request_quote\": {\"type\": \"string\", \"minLength\": 1, \"maxLength\": 180, \"description\": \"支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。\"}, \"question_fragment_ids\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"enum\": [\"q1\"]}, \"minItems\": 1, \"maxItems\": 24, \"uniqueItems\": true, \"description\": \"原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。\"}, \"operation\": {\"const\": \"locate_record\"}, \"kind\": {\"enum\": [\"enduse\", \"utility\", \"scenario\", \"thermal\", \"lifecycle\", \"cost\", \"engineering\", \"schedule\", \"operation\"]}, \"selection\": {\"enum\": [\"named\", \"latest\", \"unspecified\"]}, \"name_from_question\": {\"type\": [\"string\", \"null\"], \"maxLength\": 120}}, \"required\": [\"request_quote\", \"question_fragment_ids\", \"operation\", \"kind\", \"selection\", \"name_from_question\"], \"additionalProperties\": false, \"description\": \"确实要求已有记录但尚无明确编号时定位。只能按原问题指定名称/最新/待澄清；不因新建缺授权而改用此项。\"}, {\"type\": \"object\", \"properties\": {\"request_quote\": {\"type\": \"string\", \"minLength\": 1, \"maxLength\": 180, \"description\": \"支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。\"}, \"question_fragment_ids\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"enum\": [\"q1\"]}, \"minItems\": 1, \"maxItems\": 24, \"uniqueItems\": true, \"description\": \"原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。\"}, \"operation\": {\"const\": \"other_request\"}, \"domain\": {\"enum\": [\"standards\", \"files_drawings\", \"simulation\", \"other\"]}}, \"required\": [\"request_quote\", \"question_fragment_ids\", \"operation\", \"domain\"], \"additionalProperties\": false, \"description\": \"保留上述动作未覆盖的真实请求，后续单独处理；不得悄悄丢弃或假称完成。\"}, {\"type\": \"object\", \"properties\": {\"request_quote\": {\"type\": \"string\", \"minLength\": 1, \"maxLength\": 180, \"description\": \"支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。\"}, \"question_fragment_ids\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"enum\": [\"q1\"]}, \"minItems\": 1, \"maxItems\": 24, \"uniqueItems\": true, \"description\": \"原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。\"}, \"operation\": {\"const\": \"clarify_request\"}, \"reason\": {\"enum\": [\"ambiguous_target\", \"ambiguous_metric\", \"contradictory_request\"]}}, \"required\": [\"request_quote\", \"question_fragment_ids\", \"operation\", \"reason\"], \"additionalProperties\": false, \"description\": \"原用户目标本身不明确或矛盾才澄清。数据缺失、stale、无计算权限不是指标不明确，应保留原读取/新建任务。\"}]}}, \"constraint_fragment_ids\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"enum\": [\"q1\"]}, \"minItems\": 0, \"maxItems\": 24, \"uniqueItems\": true}, \"unassigned_fragment_ids\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"enum\": [\"q1\"]}, \"minItems\": 0, \"maxItems\": 24, \"uniqueItems\": true}}, \"required\": [\"items\", \"constraint_fragment_ids\", \"unassigned_fragment_ids\"], \"additionalProperties\": false}}, \"required\": [\"tool\", \"arguments\"], \"additionalProperties\": false}]}}}, \"required\": [\"actions\"], \"additionalProperties\": false}\n\n先理解原问题，再读取资料。逐项引用本轮原问题的连续短语；数值指标和解释分别绑定短语。来源状态及必要边界由应用固定核验，不为履行这些职责扩展用户输出。历史reference_states可区分刚才有效数值与失效说明，但不继承旧值或权限。现在只能提交task_plan，不执行工程工具。逐项保留用户的读取、新建、解释、比较和排除要求；没有当前参数计划或授权时仍保留create_calculation，由应用说明缺口。原目标明确但来源缺失/失效不是澄清目标。仅选择所问字段，禁止用阶段量代替总量或用旧记录代替新建。"
+    },
+    {
+      "role": "user",
+      "content": "{\"question\": \"新建一份材料费用计算：采购7.4kg、单价2.8EUR/kg、损耗为0。 \", \"question_hash\": \"22c7678a6c21c9d3b237fbe9a395bd74951c4620e79fe7071fa9a957faf13a53\", \"fragments\": [{\"fragment_id\": \"q1\", \"start\": 0, \"end\": 36, \"text\": \"新建一份材料费用计算：采购7.4kg、单价2.8EUR/kg、损耗为0。\"}], \"previous_turns\": [], \"known_record_ids\": [], \"current_authorization\": {\"allow_compute\": true, \"plans\": [], \"historical_authorization_inherited\": false}, \"notice\": \"只提供问题、引用编号和应用重新核验的非数值交付状态；不提供工程数值、来源正文或历史权限。引用状态不替代本轮工具读取与复核。计划是模型理解，尚未执行或核验意图。\"}"
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "vra_actions",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "actions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "description": "在读取资料前，将原问题拆成完整任务清单，明确读取与新建及精确指标；保留全部要求与排除项。不执行、不授权、不输出计算数值。",
+                  "properties": {
+                    "tool": {
+                      "type": "string",
+                      "const": "task_plan"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 6,
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "request_quote": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 180,
+                                    "description": "支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。"
+                                  },
+                                  "question_fragment_ids": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "enum": [
+                                        "q1"
+                                      ]
+                                    },
+                                    "minItems": 1,
+                                    "maxItems": 24,
+                                    "uniqueItems": true,
+                                    "description": "原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。"
+                                  },
+                                  "operation": {
+                                    "const": "create_calculation"
+                                  },
+                                  "kind": {
+                                    "enum": [
+                                      "thermal",
+                                      "lifecycle",
+                                      "cost",
+                                      "engineering",
+                                      "schedule",
+                                      "operation"
+                                    ]
+                                  },
+                                  "plan_key": {
+                                    "enum": [
+                                      null
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "request_quote",
+                                  "question_fragment_ids",
+                                  "operation",
+                                  "kind",
+                                  "plan_key"
+                                ],
+                                "additionalProperties": false,
+                                "description": "用户要求新建或再次计算时必须保留创建任务，即使当前无权限或无计划；不能改为读取旧结果。没有当前锁定计划用null，执行器会明确前提缺口。不可填写或猜测工程参数。"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "request_quote": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 180,
+                                    "description": "支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。"
+                                  },
+                                  "question_fragment_ids": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "enum": [
+                                        "q1"
+                                      ]
+                                    },
+                                    "minItems": 1,
+                                    "maxItems": 24,
+                                    "uniqueItems": true,
+                                    "description": "原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。"
+                                  },
+                                  "operation": {
+                                    "const": "explain_capabilities"
+                                  },
+                                  "capability_ids": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "enum": [
+                                        "thermal_resistance",
+                                        "energy_simulation",
+                                        "lifecycle_inventory",
+                                        "beam_analysis",
+                                        "material_cost",
+                                        "schedule_cpm",
+                                        "operations_rules",
+                                        "standards_retrieval",
+                                        "cad_bim_read",
+                                        "drawing_ocr",
+                                        "structural_safety_certification",
+                                        "carbon_credit_issuance",
+                                        "energy_compliance_certification",
+                                        "drawing_structural_reconstruction",
+                                        "equipment_fault_diagnosis",
+                                        "site_safety_approval"
+                                      ]
+                                    },
+                                    "minItems": 1,
+                                    "maxItems": 16,
+                                    "uniqueItems": true
+                                  }
+                                },
+                                "required": [
+                                  "request_quote",
+                                  "question_fragment_ids",
+                                  "operation",
+                                  "capability_ids"
+                                ],
+                                "additionalProperties": false,
+                                "description": "要求认证、签发或询问能力边界时，列出全部相关能力；能力说明不能代替用户另行要求的实际读取或计算。"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "request_quote": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 180,
+                                    "description": "支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。"
+                                  },
+                                  "question_fragment_ids": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "enum": [
+                                        "q1"
+                                      ]
+                                    },
+                                    "minItems": 1,
+                                    "maxItems": 24,
+                                    "uniqueItems": true,
+                                    "description": "原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。"
+                                  },
+                                  "operation": {
+                                    "const": "locate_record"
+                                  },
+                                  "kind": {
+                                    "enum": [
+                                      "enduse",
+                                      "utility",
+                                      "scenario",
+                                      "thermal",
+                                      "lifecycle",
+                                      "cost",
+                                      "engineering",
+                                      "schedule",
+                                      "operation"
+                                    ]
+                                  },
+                                  "selection": {
+                                    "enum": [
+                                      "named",
+                                      "latest",
+                                      "unspecified"
+                                    ]
+                                  },
+                                  "name_from_question": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "maxLength": 120
+                                  }
+                                },
+                                "required": [
+                                  "request_quote",
+                                  "question_fragment_ids",
+                                  "operation",
+                                  "kind",
+                                  "selection",
+                                  "name_from_question"
+                                ],
+                                "additionalProperties": false,
+                                "description": "确实要求已有记录但尚无明确编号时定位。只能按原问题指定名称/最新/待澄清；不因新建缺授权而改用此项。"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "request_quote": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 180,
+                                    "description": "支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。"
+                                  },
+                                  "question_fragment_ids": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "enum": [
+                                        "q1"
+                                      ]
+                                    },
+                                    "minItems": 1,
+                                    "maxItems": 24,
+                                    "uniqueItems": true,
+                                    "description": "原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。"
+                                  },
+                                  "operation": {
+                                    "const": "other_request"
+                                  },
+                                  "domain": {
+                                    "enum": [
+                                      "standards",
+                                      "files_drawings",
+                                      "simulation",
+                                      "other"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "request_quote",
+                                  "question_fragment_ids",
+                                  "operation",
+                                  "domain"
+                                ],
+                                "additionalProperties": false,
+                                "description": "保留上述动作未覆盖的真实请求，后续单独处理；不得悄悄丢弃或假称完成。"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "request_quote": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 180,
+                                    "description": "支持该请求的本轮原问题中的连续短语，逐字复制；不含历史回答或来源文字。否定的请求不转为交付目标。"
+                                  },
+                                  "question_fragment_ids": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "enum": [
+                                        "q1"
+                                      ]
+                                    },
+                                    "minItems": 1,
+                                    "maxItems": 24,
+                                    "uniqueItems": true,
+                                    "description": "原问题中支持本项任务的片段；约束可另记constraint_fragment_ids。覆盖片段不证明已正确理解。"
+                                  },
+                                  "operation": {
+                                    "const": "clarify_request"
+                                  },
+                                  "reason": {
+                                    "enum": [
+                                      "ambiguous_target",
+                                      "ambiguous_metric",
+                                      "contradictory_request"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "request_quote",
+                                  "question_fragment_ids",
+                                  "operation",
+                                  "reason"
+                                ],
+                                "additionalProperties": false,
+                                "description": "原用户目标本身不明确或矛盾才澄清。数据缺失、stale、无计算权限不是指标不明确，应保留原读取/新建任务。"
+                              }
+                            ]
+                          }
+                        },
+                        "constraint_fragment_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "q1"
+                            ]
+                          },
+                          "minItems": 0,
+                          "maxItems": 24,
+                          "uniqueItems": true
+                        },
+                        "unassigned_fragment_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "q1"
+                            ]
+                          },
+                          "minItems": 0,
+                          "maxItems": 24,
+                          "uniqueItems": true
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "constraint_fragment_ids",
+                        "unassigned_fragment_ids"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "tool",
+                    "arguments"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "actions"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

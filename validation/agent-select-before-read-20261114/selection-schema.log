@@ -1,0 +1,53 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_ test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs _
+
+client = <starlette.testclient.TestClient object at 0x000001B3EA69ED80>
+
+    def test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs(client):
+        source = ToolArgs.model_json_schema(); agent = client.app.state.agent
+        tools = agent.tools(); before = copy.deepcopy(tools)
+        scoped = agent.tools({'requested_output_plan', 'requested_availability', 'professional_review'})
+        assert {t['function']['name'] for t in scoped} == {'requested_output_plan', 'requested_availability', 'professional_review'}
+        assert not {t['function']['name'] for t in tools} & {'requested_output_plan', 'requested_availability', 'professional_review'}
+        from backend.agent import TOOLS
+        explicit = agent.tools(set(TOOLS))
+        assert {t['function']['name'] for t in explicit} == set(TOOLS)
+        for tool in explicit:
+            name = tool['function']['name']; schema = tool['function']['parameters']
+            assert schema['additionalProperties'] is False
+            # Only display titles are omitted; every non-title property, default and validation constraint is unchanged.
+            assert schema['properties'] == {k:{a:b for a,b in source['properties'][k].items() if a!='title'} for k in TOOL_FIELDS[name]}
+            references = set()
+            def walk(node):
+                if isinstance(node, dict):
+                    if '$ref' in node:
+                        key = node['$ref'].removeprefix('#/$defs/')
+                        expected = {k:v for k,v in source['$defs'][key].items() if k != 'title'}
+                        if 'properties' in expected:
+                            expected['properties'] = {name:{k:v for k,v in field.items() if k != 'title'}
+                                                      for name,field in expected['properties'].items()}
+                        assert schema['$defs'][key] == expected
+                        if key not in references:
+                            references.add(key); walk(schema['$defs'][key])
+                    for value in node.values(): walk(value)
+                elif isinstance(node, list):
+                    for value in node: walk(value)
+            walk(schema['properties'])
+            assert set(schema.get('$defs', {})) == references
+>       assert len(json.dumps(tools, ensure_ascii=False)) < 20000
+E       assert 20036 < 20000
+E        +  where 20036 = len('[{"type": "function", "function": {"name": "end_use_read", "description": "按enduse_id实际读取原生用途账，fact_keys最多12个；省略只返回事实...": {"run_id": {"anyOf": [{"pattern": "^run_[a-f0-9]{32}$", "type": "string"}, {"type": "null"}], "default": null}}}}}]')
+E        +    where '[{"type": "function", "function": {"name": "end_use_read", "description": "按enduse_id实际读取原生用途账，fact_keys最多12个；省略只返回事实...": {"run_id": {"anyOf": [{"pattern": "^run_[a-f0-9]{32}$", "type": "string"}, {"type": "null"}], "default": null}}}}}]' = <function dumps at 0x000001B3E5BB89A0>([{'type': 'function', 'function': {'name': 'end_use_read', 'description': '按enduse_id实际读取原生用途账，fact_keys最多12个；省略只返回事实目...ionalProperties': False, 'type': 'object', 'properties': {'capability_ids': {'anyOf': [...], 'default': None}}}}}, ...], ensure_ascii=False)
+E        +      where <function dumps at 0x000001B3E5BB89A0> = json.dumps
+
+tests\test_local_model.py:157: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_local_model.py::test_tool_schema_preserves_all_reachable_constraints_without_duplicate_defs
+1 failed, 1 warning in 1.59s

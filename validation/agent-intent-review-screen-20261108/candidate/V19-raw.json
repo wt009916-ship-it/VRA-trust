@@ -1,0 +1,837 @@
+{
+  "case": {
+    "id": "V19",
+    "question": "For the beam, return only maximum deflection with its original unit. Omit reactions, moments, stresses and commentary.",
+    "wants": [
+      {
+        "key": "beam",
+        "kind": "engineering",
+        "facts": [
+          "max_deflection_m"
+        ],
+        "topics": []
+      }
+    ]
+  },
+  "records": {
+    "beam": {
+      "engineering_id": "engineering_76c1310b7de04fa1a566ecd47df6d46d",
+      "project_id": "project_459c8694ba4343c390bca7eb3c3c8e46",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh cantilever",
+        "support": "cantilever",
+        "span": 4.5,
+        "span_unit": "m",
+        "width": 240.0,
+        "depth": 360.0,
+        "section_unit": "mm",
+        "elastic_modulus": 27.0,
+        "modulus_unit": "GPa",
+        "geometry_source": "Synthetic geometry",
+        "material_source": "Synthetic modulus",
+        "support_basis": "Ideal fixed left and free right",
+        "analysis_basis": "Linear elastic small deflection only",
+        "evidence_ids": [],
+        "loads": [
+          {
+            "type": "point",
+            "name": "Free-end load",
+            "magnitude": 2.8,
+            "unit": "kN",
+            "position": 4.5,
+            "position_unit": "m",
+            "source": "Synthetic point load, excludes self weight"
+          }
+        ]
+      },
+      "result": {
+        "normalized": {
+          "span_m": 4.5,
+          "width_m": 0.24,
+          "depth_m": 0.36,
+          "e_pa": 27000000000.0,
+          "loads": [
+            {
+              "name": "Free-end load",
+              "type": "point",
+              "force_n": 2800.0,
+              "position_m": 4.5
+            }
+          ]
+        },
+        "missing": [],
+        "structural_safety": "NOT_ASSESSED",
+        "code_compliance": "NOT_ASSESSED",
+        "source_status": "USER_DECLARED",
+        "self_weight_included_automatically": false,
+        "sign_convention": "Loads and deflections downward positive; reactions upward; support reaction moment counterclockwise; internal moment sagging positive.",
+        "limitations": [
+          "等截面矩形、恒定EI、小挠度线弹性Euler–Bernoulli梁；忽略剪切变形、扭转、轴力、屈曲和动力影响。",
+          "只支持向下集中力及分段均布荷载；不自动加入自重、组合系数或材料设计强度。",
+          "输入来源及支承理想化由用户声明；弯曲应力不是承载能力验算，不能输出结构安全或规范合格结论。",
+          "跨高比、转角和挠跨比只用于模型适用性提示，阈值为本工具的筛查值，不是规范限值。"
+        ],
+        "method_sources": [
+          "https://mude.citg.tudelft.nl/workbook-2025/assignments/WS1.3/2-solving-boundary-value-problems.html"
+        ],
+        "method": "Factored Green-function integration of equilibrium and EI*y_second=M; reactions from statics; exact interval extrema and bisection of rotation, not plot-sample maxima.",
+        "status": "calculated",
+        "metrics": {
+          "area_m2": 0.08639999999999999,
+          "inertia_m4": 0.00093312,
+          "ei_nm2": 25194240.0,
+          "total_downward_load_n": 2800.0,
+          "left_reaction_n": 2800.0,
+          "right_reaction_n": 0.0,
+          "left_reaction_moment_nm": 12600.0,
+          "max_abs_moment_nm": 12600.0,
+          "max_moment_at_m": 0.0,
+          "max_abs_shear_n": 2800.0,
+          "max_shear_at_m": 0.0,
+          "max_shear_side": "right",
+          "max_deflection_m": 0.0033757716049382714,
+          "max_deflection_at_m": 4.5,
+          "max_abs_rotation_rad": 0.0011252572016460906,
+          "max_elastic_bending_stress_pa": 2430555.5555555555,
+          "span_depth_ratio": 12.5,
+          "deflection_span_ratio": 0.0007501714677640603
+        },
+        "samples": [
+          {
+            "x_m": 0.0,
+            "shear_left_n": null,
+            "shear_right_n": 2800.0,
+            "moment_nm": -12600.0,
+            "deflection_down_m": 0.0,
+            "rotation_down_rad": 0.0
+          },
+          {
+            "x_m": 0.05625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -12442.499999999998,
+            "deflection_down_m": 7.878998179494599e-07,
+            "rotation_down_rad": 2.7955608603395063e-05
+          },
+          {
+            "x_m": 0.1125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -12285.0,
+            "deflection_down_m": 3.1384126639660493e-06,
+            "rotation_down_rad": 5.555957433127572e-05
+          },
+          {
+            "x_m": 0.16875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -12127.5,
+            "deflection_down_m": 7.031758626302084e-06,
+            "rotation_down_rad": 8.2811897183642e-05
+          },
+          {
+            "x_m": 0.225,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -11970.000000000002,
+            "deflection_down_m": 1.2448157793209876e-05,
+            "rotation_down_rad": 0.00010971257716049383
+          },
+          {
+            "x_m": 0.28125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -11812.5,
+            "deflection_down_m": 1.9367830252941744e-05,
+            "rotation_down_rad": 0.00013626161426183128
+          },
+          {
+            "x_m": 0.3375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -11654.999999999998,
+            "deflection_down_m": 2.777099609375e-05,
+            "rotation_down_rad": 0.00016245900848765434
+          },
+          {
+            "x_m": 0.39375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -11497.5,
+            "deflection_down_m": 3.763787540388696e-05,
+            "rotation_down_rad": 0.00018830475983796295
+          },
+          {
+            "x_m": 0.45,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -11340.0,
+            "deflection_down_m": 4.894868827160494e-05,
+            "rotation_down_rad": 0.00021379886831275722
+          },
+          {
+            "x_m": 0.50625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -11182.5,
+            "deflection_down_m": 6.168365478515626e-05,
+            "rotation_down_rad": 0.00023894133391203705
+          },
+          {
+            "x_m": 0.5625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -11025.0,
+            "deflection_down_m": 7.582299503279321e-05,
+            "rotation_down_rad": 0.00026373215663580245
+          },
+          {
+            "x_m": 0.61875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -10867.5,
+            "deflection_down_m": 9.134692910276813e-05,
+            "rotation_down_rad": 0.0002881713364840535
+          },
+          {
+            "x_m": 0.675,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -10710.0,
+            "deflection_down_m": 0.00010823567708333334,
+            "rotation_down_rad": 0.0003122588734567901
+          },
+          {
+            "x_m": 0.73125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -10552.5,
+            "deflection_down_m": 0.00012646945906274112,
+            "rotation_down_rad": 0.00033599476755401237
+          },
+          {
+            "x_m": 0.7875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -10395.0,
+            "deflection_down_m": 0.00014602849512924384,
+            "rotation_down_rad": 0.0003593790187757202
+          },
+          {
+            "x_m": 0.84375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -10237.5,
+            "deflection_down_m": 0.00016689300537109375,
+            "rotation_down_rad": 0.00038241162712191357
+          },
+          {
+            "x_m": 0.9,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -10080.0,
+            "deflection_down_m": 0.0001890432098765432,
+            "rotation_down_rad": 0.0004050925925925926
+          },
+          {
+            "x_m": 0.95625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -9922.5,
+            "deflection_down_m": 0.0002124593287338445,
+            "rotation_down_rad": 0.0004274219151877571
+          },
+          {
+            "x_m": 1.0125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -9765.0,
+            "deflection_down_m": 0.00023712158203125,
+            "rotation_down_rad": 0.0004493995949074074
+          },
+          {
+            "x_m": 1.06875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -9607.5,
+            "deflection_down_m": 0.00026301018985701205,
+            "rotation_down_rad": 0.0004710256317515433
+          },
+          {
+            "x_m": 1.125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -9450.0,
+            "deflection_down_m": 0.0002901053722993827,
+            "rotation_down_rad": 0.0004923000257201646
+          },
+          {
+            "x_m": 1.18125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -9292.5,
+            "deflection_down_m": 0.0003183873494466145,
+            "rotation_down_rad": 0.0005132227768132715
+          },
+          {
+            "x_m": 1.2375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -9135.0,
+            "deflection_down_m": 0.00034783634138695985,
+            "rotation_down_rad": 0.0005337938850308642
+          },
+          {
+            "x_m": 1.29375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -8977.5,
+            "deflection_down_m": 0.0003784325682086709,
+            "rotation_down_rad": 0.0005540133503729424
+          },
+          {
+            "x_m": 1.35,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -8820.0,
+            "deflection_down_m": 0.0004101562500000001,
+            "rotation_down_rad": 0.0005738811728395062
+          },
+          {
+            "x_m": 1.40625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -8662.5,
+            "deflection_down_m": 0.00044298760684919946,
+            "rotation_down_rad": 0.0005933973524305555
+          },
+          {
+            "x_m": 1.4625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -8505.0,
+            "deflection_down_m": 0.0004769068588445215,
+            "rotation_down_rad": 0.0006125618891460905
+          },
+          {
+            "x_m": 1.51875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -8347.5,
+            "deflection_down_m": 0.0005118942260742187,
+            "rotation_down_rad": 0.0006313747829861111
+          },
+          {
+            "x_m": 1.575,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -8189.999999999999,
+            "deflection_down_m": 0.0005479299286265432,
+            "rotation_down_rad": 0.0006498360339506173
+          },
+          {
+            "x_m": 1.63125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -8032.5,
+            "deflection_down_m": 0.0005849941865897473,
+            "rotation_down_rad": 0.0006679456420396091
+          },
+          {
+            "x_m": 1.6875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -7875.0,
+            "deflection_down_m": 0.0006230672200520834,
+            "rotation_down_rad": 0.0006857036072530864
+          },
+          {
+            "x_m": 1.74375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -7717.5,
+            "deflection_down_m": 0.0006621292491018037,
+            "rotation_down_rad": 0.0007031099295910494
+          },
+          {
+            "x_m": 1.8,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -7560.000000000001,
+            "deflection_down_m": 0.0007021604938271604,
+            "rotation_down_rad": 0.000720164609053498
+          },
+          {
+            "x_m": 1.85625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -7402.499999999999,
+            "deflection_down_m": 0.0007431411743164063,
+            "rotation_down_rad": 0.0007368676456404321
+          },
+          {
+            "x_m": 1.9125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -7245.0,
+            "deflection_down_m": 0.0007850515106577932,
+            "rotation_down_rad": 0.0007532190393518518
+          },
+          {
+            "x_m": 1.96875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -7087.5,
+            "deflection_down_m": 0.0008278717229395736,
+            "rotation_down_rad": 0.0007692187901877572
+          },
+          {
+            "x_m": 2.025,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -6930.0,
+            "deflection_down_m": 0.00087158203125,
+            "rotation_down_rad": 0.0007848668981481481
+          },
+          {
+            "x_m": 2.08125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -6772.500000000001,
+            "deflection_down_m": 0.0009161626556773241,
+            "rotation_down_rad": 0.0008001633632330245
+          },
+          {
+            "x_m": 2.1375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -6614.999999999999,
+            "deflection_down_m": 0.0009615938163097998,
+            "rotation_down_rad": 0.000815108185442387
+          },
+          {
+            "x_m": 2.19375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -6457.5,
+            "deflection_down_m": 0.0010078557332356772,
+            "rotation_down_rad": 0.0008297013647762346
+          },
+          {
+            "x_m": 2.25,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -6300.0,
+            "deflection_down_m": 0.0010549286265432098,
+            "rotation_down_rad": 0.0008439429012345679
+          },
+          {
+            "x_m": 2.30625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -6142.5,
+            "deflection_down_m": 0.00110279271632065,
+            "rotation_down_rad": 0.0008578327948173868
+          },
+          {
+            "x_m": 2.3625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -5985.000000000001,
+            "deflection_down_m": 0.0011514282226562495,
+            "rotation_down_rad": 0.0008713710455246912
+          },
+          {
+            "x_m": 2.41875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -5827.499999999999,
+            "deflection_down_m": 0.0012008153656382623,
+            "rotation_down_rad": 0.0008845576533564817
+          },
+          {
+            "x_m": 2.475,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -5670.0,
+            "deflection_down_m": 0.0012509343653549383,
+            "rotation_down_rad": 0.0008973926183127572
+          },
+          {
+            "x_m": 2.53125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -5512.5,
+            "deflection_down_m": 0.0013017654418945312,
+            "rotation_down_rad": 0.0009098759403935185
+          },
+          {
+            "x_m": 2.5875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -5355.0,
+            "deflection_down_m": 0.001353288815345293,
+            "rotation_down_rad": 0.0009220076195987654
+          },
+          {
+            "x_m": 2.64375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -5197.500000000001,
+            "deflection_down_m": 0.0014054847057954761,
+            "rotation_down_rad": 0.0009337876559284978
+          },
+          {
+            "x_m": 2.7,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -5039.999999999999,
+            "deflection_down_m": 0.0014583333333333338,
+            "rotation_down_rad": 0.0009452160493827161
+          },
+          {
+            "x_m": 2.75625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -4882.5,
+            "deflection_down_m": 0.0015118149180471162,
+            "rotation_down_rad": 0.0009562927999614198
+          },
+          {
+            "x_m": 2.8125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -4725.0,
+            "deflection_down_m": 0.0015659096800250771,
+            "rotation_down_rad": 0.0009670179076646091
+          },
+          {
+            "x_m": 2.86875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -4567.5,
+            "deflection_down_m": 0.0016205978393554687,
+            "rotation_down_rad": 0.000977391372492284
+          },
+          {
+            "x_m": 2.925,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -4410.000000000001,
+            "deflection_down_m": 0.0016758596161265428,
+            "rotation_down_rad": 0.0009874131944444444
+          },
+          {
+            "x_m": 2.98125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -4252.499999999999,
+            "deflection_down_m": 0.0017316752304265528,
+            "rotation_down_rad": 0.0009970833735210905
+          },
+          {
+            "x_m": 3.0375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -4094.9999999999995,
+            "deflection_down_m": 0.00178802490234375,
+            "rotation_down_rad": 0.0010064019097222221
+          },
+          {
+            "x_m": 3.09375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -3937.5,
+            "deflection_down_m": 0.001844888851966387,
+            "rotation_down_rad": 0.0010153688030478396
+          },
+          {
+            "x_m": 3.15,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -3780.0000000000005,
+            "deflection_down_m": 0.001902247299382716,
+            "rotation_down_rad": 0.0010239840534979423
+          },
+          {
+            "x_m": 3.20625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -3622.5000000000005,
+            "deflection_down_m": 0.0019600804646809893,
+            "rotation_down_rad": 0.001032247661072531
+          },
+          {
+            "x_m": 3.2625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -3464.9999999999995,
+            "deflection_down_m": 0.00201836856794946,
+            "rotation_down_rad": 0.001040159625771605
+          },
+          {
+            "x_m": 3.31875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -3307.4999999999995,
+            "deflection_down_m": 0.0020770918292763794,
+            "rotation_down_rad": 0.0010477199475951646
+          },
+          {
+            "x_m": 3.375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -3150.0,
+            "deflection_down_m": 0.00213623046875,
+            "rotation_down_rad": 0.0010549286265432098
+          },
+          {
+            "x_m": 3.43125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -2992.5000000000005,
+            "deflection_down_m": 0.0021957647064585746,
+            "rotation_down_rad": 0.0010617856626157407
+          },
+          {
+            "x_m": 3.4875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -2835.0000000000005,
+            "deflection_down_m": 0.0022556747624903548,
+            "rotation_down_rad": 0.0010682910558127573
+          },
+          {
+            "x_m": 3.54375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -2677.4999999999995,
+            "deflection_down_m": 0.002315940856933594,
+            "rotation_down_rad": 0.0010744448061342593
+          },
+          {
+            "x_m": 3.6,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -2519.9999999999995,
+            "deflection_down_m": 0.0023765432098765433,
+            "rotation_down_rad": 0.0010802469135802468
+          },
+          {
+            "x_m": 3.65625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -2362.5,
+            "deflection_down_m": 0.0024374620414074556,
+            "rotation_down_rad": 0.0010856973781507202
+          },
+          {
+            "x_m": 3.7125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -2205.0000000000005,
+            "deflection_down_m": 0.0024986775716145833,
+            "rotation_down_rad": 0.0010907961998456788
+          },
+          {
+            "x_m": 3.76875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -2047.5000000000005,
+            "deflection_down_m": 0.0025601700205861782,
+            "rotation_down_rad": 0.0010955433786651234
+          },
+          {
+            "x_m": 3.825,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -1889.9999999999995,
+            "deflection_down_m": 0.002621919608410494,
+            "rotation_down_rad": 0.0010999389146090536
+          },
+          {
+            "x_m": 3.88125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -1732.4999999999998,
+            "deflection_down_m": 0.0026839065551757814,
+            "rotation_down_rad": 0.0011039828076774693
+          },
+          {
+            "x_m": 3.9375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -1575.0,
+            "deflection_down_m": 0.0027461110809702933,
+            "rotation_down_rad": 0.0011076750578703704
+          },
+          {
+            "x_m": 3.99375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -1417.5000000000002,
+            "deflection_down_m": 0.002808513405882282,
+            "rotation_down_rad": 0.001111015665187757
+          },
+          {
+            "x_m": 4.05,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -1260.0000000000005,
+            "deflection_down_m": 0.00287109375,
+            "rotation_down_rad": 0.0011140046296296297
+          },
+          {
+            "x_m": 4.10625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -1102.4999999999995,
+            "deflection_down_m": 0.0029338323334116997,
+            "rotation_down_rad": 0.0011166419511959877
+          },
+          {
+            "x_m": 4.1625,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -945.000000000001,
+            "deflection_down_m": 0.002996709376205632,
+            "rotation_down_rad": 0.001118927629886831
+          },
+          {
+            "x_m": 4.21875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -787.5,
+            "deflection_down_m": 0.0030597050984700522,
+            "rotation_down_rad": 0.0011208616657021604
+          },
+          {
+            "x_m": 4.275,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -629.999999999999,
+            "deflection_down_m": 0.0031227997202932104,
+            "rotation_down_rad": 0.0011224440586419754
+          },
+          {
+            "x_m": 4.33125,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -472.5000000000005,
+            "deflection_down_m": 0.0031859734617633584,
+            "rotation_down_rad": 0.0011236748087062756
+          },
+          {
+            "x_m": 4.3875,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -314.9999999999995,
+            "deflection_down_m": 0.0032492065429687504,
+            "rotation_down_rad": 0.0011245539158950618
+          },
+          {
+            "x_m": 4.44375,
+            "shear_left_n": 2800.0,
+            "shear_right_n": 2800.0,
+            "moment_nm": -157.500000000001,
+            "deflection_down_m": 0.0033124791839976363,
+            "rotation_down_rad": 0.0011250813802083331
+          },
+          {
+            "x_m": 4.5,
+            "shear_left_n": 2800.0,
+            "shear_right_n": null,
+            "moment_nm": 0.0,
+            "deflection_down_m": 0.0033757716049382714,
+            "rotation_down_rad": 0.0011252572016460906
+          }
+        ],
+        "model_screening": [],
+        "integration_constants": {
+          "y_at_left_m": 0,
+          "upward_slope_constant_rad": -0.0
+        },
+        "equilibrium_residual": {
+          "force_n": 0.0,
+          "moment_nm": 0.0
+        },
+        "formulas": [
+          "y is upward-positive; output deflection_down=-y and rotation_down=-y_prime",
+          "I=b*h^3/12",
+          "EI*y_second=M(x)",
+          "M(x)=M0+RA*x-sum(P*<x-a>)-sum(q*(<x-a>^2-<x-b>^2)/2)",
+          "EI*y=M0*x^2/2+RA*x^3/6-sum(P*<x-a>^3/6)-sum(q*(<x-a>^4-<x-b>^4)/24)+EI*C1*x",
+          "simply supported: y(0)=y(L)=0; cantilever: y(0)=y_prime(0)=0",
+          "sigma_max=abs(M_max)*(h/2)/I"
+        ]
+      },
+      "source_snapshot": [],
+      "created_at": "2026-11-08T08:43:50.236010+00:00",
+      "calculator_hash": "e7cace07c1ad627df82388ff468ce1f04df11fecb899088202761b82c9ab930d",
+      "hash": "553c38fafe0611ee49cfa8bd4d48ba570a7dcfd9c45280e5b83e5538c8729e85",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "calculated"
+    }
+  },
+  "task": {
+    "agent_id": "agent_1ef58e86e0484dac8f3766426d738c4d",
+    "project_id": "project_459c8694ba4343c390bca7eb3c3c8e46",
+    "question": "For the beam, return only maximum deflection with its original unit. Omit reactions, moments, stresses and commentary.",
+    "mode": "local_model",
+    "status": "failed",
+    "events": [
+      {
+        "tool": "llm.request",
+        "status": "failed",
+        "started_at": "2026-11-08T08:43:50.257308+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "error": "服务商调用失败；不会降级为假成功",
+        "duration_ms": 19453,
+        "finished_at": "2026-11-08T08:44:09.728100+00:00"
+      }
+    ],
+    "answer": null,
+    "created_at": "2026-11-08T08:43:50.254298+00:00",
+    "llm_commentary": null,
+    "error": "本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果",
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 0,
+    "provider_recovery_attempts": 0,
+    "professional_deliveries": [],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "beam",
+        "kind": "engineering",
+        "purpose": "results",
+        "record_id": "engineering_76c1310b7de04fa1a566ecd47df6d46d"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "review_intent": true,
+    "revision": 4,
+    "read_request_progress": [
+      {
+        "request_key": "beam",
+        "kind": "engineering",
+        "purpose": "results",
+        "record_id": "engineering_76c1310b7de04fa1a566ecd47df6d46d",
+        "state": "output_plan_missing"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T08:44:09.732125+00:00"
+  }
+}

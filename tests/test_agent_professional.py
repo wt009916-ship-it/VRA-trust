@@ -140,7 +140,7 @@ def test_foreign_target_and_tools_reject_before_model_or_any_write(client,kind,m
         'target_run_id':'run_'+'0'*32}).status_code==422
     create_record(client,pid,kind)
     monkeypatch.setattr(agent.gateway,'public',lambda:{'enabled':True,'key_configured':True})
-    def unsafe(messages,tools):
+    def unsafe(messages,tools, **response_options):
         assert {t['function']['name'] for t in tools}=={'project_get',kind+'_list',kind+'_read'}
         return {'role':'assistant','tool_calls':[{'id':'unsafe','type':'function','function':{'name':'simulation_create','arguments':'{}'}}]}
     monkeypatch.setattr(agent.gateway,'complete',unsafe)
@@ -152,7 +152,7 @@ def test_foreign_target_and_tools_reject_before_model_or_any_write(client,kind,m
 def test_false_model_certification_and_values_are_audit_only(client,kind,monkeypatch):
     pid=create_project(client)['project_id'];create_record(client,pid,kind);agent=client.app.state.agent
     monkeypatch.setattr(agent.gateway,'public',lambda:{'enabled':True,'key_configured':True})
-    monkeypatch.setattr(agent.gateway,'complete',lambda *a:{'role':'assistant','content':'全年节能率99%，已签发9999吨信用，已经安全认证。'})
+    monkeypatch.setattr(agent.gateway,'complete',lambda *a, **response_options:{'role':'assistant','content':'全年节能率99%，已签发9999吨信用，已经安全认证。'})
     t=task(client,pid,kind,mode='provider')
     assert t['answer']['task_completion']=='verified' and t['llm_commentary_policy']=='audit_only'
     assert '9999' not in json.dumps(t['answer']) and '9999' in t['llm_commentary']
@@ -162,7 +162,7 @@ def test_false_model_certification_and_values_are_audit_only(client,kind,monkeyp
 def test_final_validation_and_model_requests_fit_total_event_budget(client,monkeypatch):
     pid=create_project(client)['project_id'];r=create_record(client,pid,'thermal');agent=client.app.state.agent
     monkeypatch.setattr(agent.gateway,'public',lambda:{'enabled':True,'key_configured':True})
-    monkeypatch.setattr(agent.gateway,'complete',lambda *a:{'role':'assistant','tool_calls':[
+    monkeypatch.setattr(agent.gateway,'complete',lambda *a, **response_options:{'role':'assistant','tool_calls':[
         {'id':str(i),'type':'function','function':{'name':'thermal_read','arguments':json.dumps({'thermal_id':r['thermal_id']})}} for i in range(4)]})
     t=task(client,pid,'thermal',mode='provider')
     assert t['status']=='failed' and 'budget' in t['error'].lower() and len(t['events'])<=15

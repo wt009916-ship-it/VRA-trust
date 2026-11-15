@@ -1,0 +1,340 @@
+{
+  "case": {
+    "id": "V05",
+    "question": "碳清单仅交付运行阶段在整个评估期内的累计排放，并说明该数值的期间口径；其他阶段及总排放不要列。",
+    "wants": [
+      {
+        "key": "carbon",
+        "kind": "lifecycle",
+        "facts": [
+          "stage.operation"
+        ],
+        "topics": [
+          "period"
+        ]
+      }
+    ]
+  },
+  "records": {
+    "carbon": {
+      "lifecycle_id": "lifecycle_b8bd76d1ef544045ad5cc900408fedcf",
+      "project_id": "project_6b52e63be2424dac9c823580ce4d1e5a",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh twelve-year inventory",
+        "area_m2": 960.0,
+        "study_years": 12,
+        "region": "US-CO",
+        "method": "Synthetic GWP arithmetic",
+        "functional_unit": "960 declared square metres over twelve years",
+        "import_file_id": null,
+        "boundaries": [
+          {
+            "stage": "production",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "transport",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "construction",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "operation",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "end_of_life",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          }
+        ],
+        "activities": [
+          {
+            "activity_id": "production",
+            "name": "production",
+            "stage": "production",
+            "quantity": 2.4,
+            "unit": "t",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "production-fixed",
+              "value": 0.6,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "production",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "transport",
+            "name": "transport",
+            "stage": "transport",
+            "quantity": 210.0,
+            "unit": "tkm",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "transport-fixed",
+              "value": 0.09,
+              "denominator": "tkm",
+              "numerator": "kgCO2e",
+              "stage": "transport",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "construction",
+            "name": "construction",
+            "stage": "construction",
+            "quantity": 150.0,
+            "unit": "kWh",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "construction-fixed",
+              "value": 0.37,
+              "denominator": "kWh",
+              "numerator": "kgCO2e",
+              "stage": "construction",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "operation",
+            "name": "operation",
+            "stage": "operation",
+            "quantity": 510.0,
+            "unit": "kWh",
+            "period": "annual",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "operation-fixed",
+              "value": 0.31,
+              "denominator": "kWh",
+              "numerator": "kgCO2e",
+              "stage": "operation",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "end_of_life",
+            "name": "end_of_life",
+            "stage": "end_of_life",
+            "quantity": 40.0,
+            "unit": "kg",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "end_of_life-fixed",
+              "value": 0.06,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "end_of_life",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          }
+        ]
+      },
+      "result": {
+        "status": "calculated",
+        "rows": [
+          {
+            "activity_id": "production",
+            "stage": "production",
+            "quantity_in_factor_unit": 2400.0,
+            "factor_unit": "kgCO2e/kg",
+            "period_multiplier": 1,
+            "kgco2e": 1440.0,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "transport",
+            "stage": "transport",
+            "quantity_in_factor_unit": 210.0,
+            "factor_unit": "kgCO2e/tkm",
+            "period_multiplier": 1,
+            "kgco2e": 18.9,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "construction",
+            "stage": "construction",
+            "quantity_in_factor_unit": 150.0,
+            "factor_unit": "kgCO2e/kWh",
+            "period_multiplier": 1,
+            "kgco2e": 55.5,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "operation",
+            "stage": "operation",
+            "quantity_in_factor_unit": 6120.0,
+            "factor_unit": "kgCO2e/kWh",
+            "period_multiplier": 12,
+            "kgco2e": 1897.2,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "end_of_life",
+            "stage": "end_of_life",
+            "quantity_in_factor_unit": 40.0,
+            "factor_unit": "kgCO2e/kg",
+            "period_multiplier": 1,
+            "kgco2e": 2.4,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          }
+        ],
+        "stages": {
+          "production": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 1440.0
+          },
+          "transport": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 18.9
+          },
+          "construction": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 55.5
+          },
+          "operation": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 1897.2
+          },
+          "end_of_life": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 2.4
+          }
+        },
+        "missing": [],
+        "boundary_total_kgco2e": 3414.0,
+        "kgco2e_m2_over_study_period": 3.55625,
+        "all_five_stages_entered": true,
+        "source_status": "USER_DECLARED",
+        "certification": "NOT_ASSESSED",
+        "issued_credits_t": null,
+        "limitations": [
+          "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+          "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+          "年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。",
+          "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+        ]
+      },
+      "source_snapshot": [],
+      "import_source": null,
+      "calculator_hash": "6d0b613ba5293b782a40d0b9580f1e66710ed941ca595a44ca5475b9c5cd4e3e",
+      "created_at": "2026-11-08T08:39:13.673519+00:00",
+      "hash": "f9b1b1e59f25a303c9c4b0991a294895c40a1427f7fd99bed4558147d0966639",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "calculated"
+    }
+  },
+  "task": {
+    "agent_id": "agent_575ae68fa8e94935ae16e6b488da9a1d",
+    "project_id": "project_6b52e63be2424dac9c823580ce4d1e5a",
+    "question": "碳清单仅交付运行阶段在整个评估期内的累计排放，并说明该数值的期间口径；其他阶段及总排放不要列。",
+    "mode": "local_model",
+    "status": "failed",
+    "events": [
+      {
+        "tool": "llm.request",
+        "status": "failed",
+        "started_at": "2026-11-08T08:39:13.707058+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "error": "服务商调用失败；不会降级为假成功",
+        "duration_ms": 19375,
+        "finished_at": "2026-11-08T08:39:33.094324+00:00"
+      }
+    ],
+    "answer": null,
+    "created_at": "2026-11-08T08:39:13.704060+00:00",
+    "llm_commentary": null,
+    "error": "本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果",
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 0,
+    "provider_recovery_attempts": 0,
+    "professional_deliveries": [],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_b8bd76d1ef544045ad5cc900408fedcf"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "review_intent": true,
+    "revision": 4,
+    "read_request_progress": [
+      {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_b8bd76d1ef544045ad5cc900408fedcf",
+        "state": "output_plan_missing"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T08:39:33.125727+00:00"
+  }
+}

@@ -1,0 +1,32 @@
+...............................F.                                        [100%]
+================================== FAILURES ===================================
+_________________ test_study_protocol_and_invalidated_results _________________
+
+client = <starlette.testclient.TestClient object at 0x0000017D66153110>
+native = [(WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-timestep-unit-20261108-v1/test_study_protocol_and_invali0/0/outpu...f'), WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-timestep-unit-20261108-v1/test_study_protocol_and_invali0/2'))]
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000017D665AAE10>
+
+    def test_study_protocol_and_invalidated_results(client,native,monkeypatch):
+        # Protocol-only source seam. Actual run authentication/binding is covered by real HTTP verifier.
+        pid=create_project(client)['project_id'];service=client.app.state.timestep_studies;ids=['run_'+str(i)*32 for i in range(1,4)]
+        snapshots={rid:{'run_id':rid,'scheme_id':str(i),'model_sha256':core.sha(native[i][1]),'sql_sha256':core.sha(native[i][0]),'weather_sha256':'weather','engine_sha256':'engine','idd_sha256':'idd','code_sha256':'code'} for i,rid in enumerate(ids)}
+        def source(project,rid):
+            if project!=pid:raise core.ValidationError('wrong project')
+            return copy.deepcopy(snapshots[rid]),native[ids.index(rid)][2]
+        monkeypatch.setattr(service,'run_source',source);route=f'/api/projects/{pid}/timestep-studies'
+>       response=client.post(route,json=body(ids));assert response.status_code==201,response.text;r=response.json();assert r['status']=='assessed_model_sensitivity' and r['summary']['verdict']=='exceeds_declared_threshold'
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: {"detail":"Hourly source unavailable: Select one supported weather period or explicit design day"}
+E       assert 409 == 201
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests\test_timestep_studies.py:126: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_timestep_studies.py::test_study_protocol_and_invalidated_results
+1 failed, 32 passed, 1 warning in 7.25s

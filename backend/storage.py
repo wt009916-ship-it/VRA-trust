@@ -21,7 +21,7 @@ from .runtime_lock import safe_path
 
 MIB = 1024**2
 SCAN_LIMIT = 50000
-EXTENSIONS = {'.ddy', '.idf', '.epw', '.pdf', '.csv', '.xlsx', '.xls', '.png', '.jpg', '.jpeg', '.ifc', '.dxf', '.json', '.xml'}
+EXTENSIONS = {'.ddy', '.idf', '.epw', '.pdf', '.csv', '.xlsx', '.xls', '.png', '.jpg', '.jpeg', '.ifc', '.dxf', '.dwg', '.json', '.xml'}
 
 
 class StorageError(core.ValidationError):

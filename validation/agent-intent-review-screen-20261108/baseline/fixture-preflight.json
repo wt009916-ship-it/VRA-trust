@@ -1,0 +1,1576 @@
+{
+  "thermal": {
+    "thermal_id": "thermal_235c2840c3b3494f9082af94252229c8",
+    "project_id": "project_a9d5d4bf3d2f4f1ba4aef6c576cd32b7",
+    "project_revision": 1,
+    "input": {
+      "name": "Fresh review wall",
+      "layers": [
+        {
+          "name": "core",
+          "thickness": 210.0,
+          "thickness_unit": "mm",
+          "conductivity": 0.7,
+          "conductivity_unit": "W/(m K)",
+          "correction_factor": 1,
+          "correction_basis": "Explicit unity factor",
+          "source": "Independent synthetic data",
+          "evidence_id": null
+        },
+        {
+          "name": "insulation",
+          "thickness": 6.0,
+          "thickness_unit": "cm",
+          "conductivity": 0.05,
+          "conductivity_unit": "W/(m K)",
+          "correction_factor": 1,
+          "correction_basis": "Explicit unity factor",
+          "source": "Independent synthetic data",
+          "evidence_id": null
+        }
+      ],
+      "rsi_m2k_w": 0.13,
+      "rse_m2k_w": 0.05,
+      "surface_basis": "Explicit synthetic films",
+      "application": "Homogeneous test layers only"
+    },
+    "result": {
+      "status": "calculated",
+      "layers": [
+        {
+          "name": "core",
+          "thickness": 210.0,
+          "thickness_unit": "mm",
+          "conductivity": 0.7,
+          "conductivity_unit": "W/(m K)",
+          "correction_factor": 1,
+          "correction_basis": "Explicit unity factor",
+          "source": "Independent synthetic data",
+          "evidence_id": null,
+          "thickness_m": 0.21,
+          "conductivity_w_mk": 0.7,
+          "effective_conductivity_w_mk": 0.7,
+          "resistance_m2k_w": 0.3,
+          "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+        },
+        {
+          "name": "insulation",
+          "thickness": 6.0,
+          "thickness_unit": "cm",
+          "conductivity": 0.05,
+          "conductivity_unit": "W/(m K)",
+          "correction_factor": 1,
+          "correction_basis": "Explicit unity factor",
+          "source": "Independent synthetic data",
+          "evidence_id": null,
+          "thickness_m": 0.06,
+          "conductivity_w_mk": 0.05,
+          "effective_conductivity_w_mk": 0.05,
+          "resistance_m2k_w": 1.2,
+          "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+        }
+      ],
+      "missing": [],
+      "layer_resistance_m2k_w": 1.5,
+      "total_resistance_m2k_w": 1.68,
+      "u_w_m2k": 0.5952380952380952,
+      "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+      "compliance_status": "NOT_ASSESSED",
+      "energy_saving_rate": null,
+      "limitations": [
+        "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+        "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+        "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+        "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+      ]
+    },
+    "calculator_version": "f114f3d884db7cece43d1c46d688766b1edf2d219c50f1bfa69b82b3e2bc2973",
+    "evidence_snapshot": [],
+    "created_at": "2026-11-08T08:36:24.163807+00:00",
+    "hash": "b8c38286ee62f04246873606990e96c2f5d2751eda815318727420d7a76ec7ce",
+    "revision": 1,
+    "status": "calculated",
+    "stale_reasons": [],
+    "stale_details": [],
+    "source_status": "USER_DECLARED",
+    "source_notice": "来源人工复核不代表材料性能实测或法定认证。"
+  },
+  "lifecycle": {
+    "lifecycle_id": "lifecycle_b0d184cdab4a40a384faff9d8876222d",
+    "project_id": "project_a9d5d4bf3d2f4f1ba4aef6c576cd32b7",
+    "project_revision": 1,
+    "input": {
+      "name": "Fresh twelve-year inventory",
+      "area_m2": 960.0,
+      "study_years": 12,
+      "region": "US-CO",
+      "method": "Synthetic GWP arithmetic",
+      "functional_unit": "960 declared square metres over twelve years",
+      "import_file_id": null,
+      "boundaries": [
+        {
+          "stage": "production",
+          "included": true,
+          "reason": "Explicit synthetic scope"
+        },
+        {
+          "stage": "transport",
+          "included": true,
+          "reason": "Explicit synthetic scope"
+        },
+        {
+          "stage": "construction",
+          "included": true,
+          "reason": "Explicit synthetic scope"
+        },
+        {
+          "stage": "operation",
+          "included": true,
+          "reason": "Explicit synthetic scope"
+        },
+        {
+          "stage": "end_of_life",
+          "included": true,
+          "reason": "Explicit synthetic scope"
+        }
+      ],
+      "activities": [
+        {
+          "activity_id": "production",
+          "name": "production",
+          "stage": "production",
+          "quantity": 2.4,
+          "unit": "t",
+          "period": "whole_period",
+          "source": "Independent synthetic activity",
+          "factor": {
+            "factor_id": "production-fixed",
+            "value": 0.6,
+            "denominator": "kg",
+            "numerator": "kgCO2e",
+            "stage": "production",
+            "source": "Synthetic test factor only",
+            "publisher": "Application comparison",
+            "version": "fixed-next-20261108",
+            "year": 2026,
+            "region": "*",
+            "method": "Synthetic GWP arithmetic",
+            "evidence_id": null
+          }
+        },
+        {
+          "activity_id": "transport",
+          "name": "transport",
+          "stage": "transport",
+          "quantity": 210.0,
+          "unit": "tkm",
+          "period": "whole_period",
+          "source": "Independent synthetic activity",
+          "factor": {
+            "factor_id": "transport-fixed",
+            "value": 0.09,
+            "denominator": "tkm",
+            "numerator": "kgCO2e",
+            "stage": "transport",
+            "source": "Synthetic test factor only",
+            "publisher": "Application comparison",
+            "version": "fixed-next-20261108",
+            "year": 2026,
+            "region": "*",
+            "method": "Synthetic GWP arithmetic",
+            "evidence_id": null
+          }
+        },
+        {
+          "activity_id": "construction",
+          "name": "construction",
+          "stage": "construction",
+          "quantity": 150.0,
+          "unit": "kWh",
+          "period": "whole_period",
+          "source": "Independent synthetic activity",
+          "factor": {
+            "factor_id": "construction-fixed",
+            "value": 0.37,
+            "denominator": "kWh",
+            "numerator": "kgCO2e",
+            "stage": "construction",
+            "source": "Synthetic test factor only",
+            "publisher": "Application comparison",
+            "version": "fixed-next-20261108",
+            "year": 2026,
+            "region": "*",
+            "method": "Synthetic GWP arithmetic",
+            "evidence_id": null
+          }
+        },
+        {
+          "activity_id": "operation",
+          "name": "operation",
+          "stage": "operation",
+          "quantity": 510.0,
+          "unit": "kWh",
+          "period": "annual",
+          "source": "Independent synthetic activity",
+          "factor": {
+            "factor_id": "operation-fixed",
+            "value": 0.31,
+            "denominator": "kWh",
+            "numerator": "kgCO2e",
+            "stage": "operation",
+            "source": "Synthetic test factor only",
+            "publisher": "Application comparison",
+            "version": "fixed-next-20261108",
+            "year": 2026,
+            "region": "*",
+            "method": "Synthetic GWP arithmetic",
+            "evidence_id": null
+          }
+        },
+        {
+          "activity_id": "end_of_life",
+          "name": "end_of_life",
+          "stage": "end_of_life",
+          "quantity": 40.0,
+          "unit": "kg",
+          "period": "whole_period",
+          "source": "Independent synthetic activity",
+          "factor": {
+            "factor_id": "end_of_life-fixed",
+            "value": 0.06,
+            "denominator": "kg",
+            "numerator": "kgCO2e",
+            "stage": "end_of_life",
+            "source": "Synthetic test factor only",
+            "publisher": "Application comparison",
+            "version": "fixed-next-20261108",
+            "year": 2026,
+            "region": "*",
+            "method": "Synthetic GWP arithmetic",
+            "evidence_id": null
+          }
+        }
+      ]
+    },
+    "result": {
+      "status": "calculated",
+      "rows": [
+        {
+          "activity_id": "production",
+          "stage": "production",
+          "quantity_in_factor_unit": 2400.0,
+          "factor_unit": "kgCO2e/kg",
+          "period_multiplier": 1,
+          "kgco2e": 1440.0,
+          "formula": "quantity * unit_conversion * period_multiplier * factor"
+        },
+        {
+          "activity_id": "transport",
+          "stage": "transport",
+          "quantity_in_factor_unit": 210.0,
+          "factor_unit": "kgCO2e/tkm",
+          "period_multiplier": 1,
+          "kgco2e": 18.9,
+          "formula": "quantity * unit_conversion * period_multiplier * factor"
+        },
+        {
+          "activity_id": "construction",
+          "stage": "construction",
+          "quantity_in_factor_unit": 150.0,
+          "factor_unit": "kgCO2e/kWh",
+          "period_multiplier": 1,
+          "kgco2e": 55.5,
+          "formula": "quantity * unit_conversion * period_multiplier * factor"
+        },
+        {
+          "activity_id": "operation",
+          "stage": "operation",
+          "quantity_in_factor_unit": 6120.0,
+          "factor_unit": "kgCO2e/kWh",
+          "period_multiplier": 12,
+          "kgco2e": 1897.2,
+          "formula": "quantity * unit_conversion * period_multiplier * factor"
+        },
+        {
+          "activity_id": "end_of_life",
+          "stage": "end_of_life",
+          "quantity_in_factor_unit": 40.0,
+          "factor_unit": "kgCO2e/kg",
+          "period_multiplier": 1,
+          "kgco2e": 2.4,
+          "formula": "quantity * unit_conversion * period_multiplier * factor"
+        }
+      ],
+      "stages": {
+        "production": {
+          "included": true,
+          "reason": "Explicit synthetic scope",
+          "status": "calculated",
+          "kgco2e": 1440.0
+        },
+        "transport": {
+          "included": true,
+          "reason": "Explicit synthetic scope",
+          "status": "calculated",
+          "kgco2e": 18.9
+        },
+        "construction": {
+          "included": true,
+          "reason": "Explicit synthetic scope",
+          "status": "calculated",
+          "kgco2e": 55.5
+        },
+        "operation": {
+          "included": true,
+          "reason": "Explicit synthetic scope",
+          "status": "calculated",
+          "kgco2e": 1897.2
+        },
+        "end_of_life": {
+          "included": true,
+          "reason": "Explicit synthetic scope",
+          "status": "calculated",
+          "kgco2e": 2.4
+        }
+      },
+      "missing": [],
+      "boundary_total_kgco2e": 3414.0,
+      "kgco2e_m2_over_study_period": 3.55625,
+      "all_five_stages_entered": true,
+      "source_status": "USER_DECLARED",
+      "certification": "NOT_ASSESSED",
+      "issued_credits_t": null,
+      "limitations": [
+        "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+        "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+        "年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。",
+        "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+      ]
+    },
+    "source_snapshot": [],
+    "import_source": null,
+    "calculator_hash": "6d0b613ba5293b782a40d0b9580f1e66710ed941ca595a44ca5475b9c5cd4e3e",
+    "created_at": "2026-11-08T08:36:24.184933+00:00",
+    "hash": "853e38a0cef85153cbc71f8653609cdff0f739dc1db8717ad8d04ae810648fa0",
+    "revision": 1,
+    "stale_reasons": [],
+    "stale_details": [],
+    "status": "calculated"
+  },
+  "engineering": {
+    "engineering_id": "engineering_35b2fe15d2ed4ae1b16f05e867698e74",
+    "project_id": "project_a9d5d4bf3d2f4f1ba4aef6c576cd32b7",
+    "project_revision": 1,
+    "input": {
+      "name": "Fresh cantilever",
+      "support": "cantilever",
+      "span": 4.5,
+      "span_unit": "m",
+      "width": 240.0,
+      "depth": 360.0,
+      "section_unit": "mm",
+      "elastic_modulus": 27.0,
+      "modulus_unit": "GPa",
+      "geometry_source": "Synthetic geometry",
+      "material_source": "Synthetic modulus",
+      "support_basis": "Ideal fixed left and free right",
+      "analysis_basis": "Linear elastic small deflection only",
+      "evidence_ids": [],
+      "loads": [
+        {
+          "type": "point",
+          "name": "Free-end load",
+          "magnitude": 2.8,
+          "unit": "kN",
+          "position": 4.5,
+          "position_unit": "m",
+          "source": "Synthetic point load, excludes self weight"
+        }
+      ]
+    },
+    "result": {
+      "normalized": {
+        "span_m": 4.5,
+        "width_m": 0.24,
+        "depth_m": 0.36,
+        "e_pa": 27000000000.0,
+        "loads": [
+          {
+            "name": "Free-end load",
+            "type": "point",
+            "force_n": 2800.0,
+            "position_m": 4.5
+          }
+        ]
+      },
+      "missing": [],
+      "structural_safety": "NOT_ASSESSED",
+      "code_compliance": "NOT_ASSESSED",
+      "source_status": "USER_DECLARED",
+      "self_weight_included_automatically": false,
+      "sign_convention": "Loads and deflections downward positive; reactions upward; support reaction moment counterclockwise; internal moment sagging positive.",
+      "limitations": [
+        "等截面矩形、恒定EI、小挠度线弹性Euler–Bernoulli梁；忽略剪切变形、扭转、轴力、屈曲和动力影响。",
+        "只支持向下集中力及分段均布荷载；不自动加入自重、组合系数或材料设计强度。",
+        "输入来源及支承理想化由用户声明；弯曲应力不是承载能力验算，不能输出结构安全或规范合格结论。",
+        "跨高比、转角和挠跨比只用于模型适用性提示，阈值为本工具的筛查值，不是规范限值。"
+      ],
+      "method_sources": [
+        "https://mude.citg.tudelft.nl/workbook-2025/assignments/WS1.3/2-solving-boundary-value-problems.html"
+      ],
+      "method": "Factored Green-function integration of equilibrium and EI*y_second=M; reactions from statics; exact interval extrema and bisection of rotation, not plot-sample maxima.",
+      "status": "calculated",
+      "metrics": {
+        "area_m2": 0.08639999999999999,
+        "inertia_m4": 0.00093312,
+        "ei_nm2": 25194240.0,
+        "total_downward_load_n": 2800.0,
+        "left_reaction_n": 2800.0,
+        "right_reaction_n": 0.0,
+        "left_reaction_moment_nm": 12600.0,
+        "max_abs_moment_nm": 12600.0,
+        "max_moment_at_m": 0.0,
+        "max_abs_shear_n": 2800.0,
+        "max_shear_at_m": 0.0,
+        "max_shear_side": "right",
+        "max_deflection_m": 0.0033757716049382714,
+        "max_deflection_at_m": 4.5,
+        "max_abs_rotation_rad": 0.0011252572016460906,
+        "max_elastic_bending_stress_pa": 2430555.5555555555,
+        "span_depth_ratio": 12.5,
+        "deflection_span_ratio": 0.0007501714677640603
+      },
+      "samples": [
+        {
+          "x_m": 0.0,
+          "shear_left_n": null,
+          "shear_right_n": 2800.0,
+          "moment_nm": -12600.0,
+          "deflection_down_m": 0.0,
+          "rotation_down_rad": 0.0
+        },
+        {
+          "x_m": 0.05625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -12442.499999999998,
+          "deflection_down_m": 7.878998179494599e-07,
+          "rotation_down_rad": 2.7955608603395063e-05
+        },
+        {
+          "x_m": 0.1125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -12285.0,
+          "deflection_down_m": 3.1384126639660493e-06,
+          "rotation_down_rad": 5.555957433127572e-05
+        },
+        {
+          "x_m": 0.16875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -12127.5,
+          "deflection_down_m": 7.031758626302084e-06,
+          "rotation_down_rad": 8.2811897183642e-05
+        },
+        {
+          "x_m": 0.225,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -11970.000000000002,
+          "deflection_down_m": 1.2448157793209876e-05,
+          "rotation_down_rad": 0.00010971257716049383
+        },
+        {
+          "x_m": 0.28125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -11812.5,
+          "deflection_down_m": 1.9367830252941744e-05,
+          "rotation_down_rad": 0.00013626161426183128
+        },
+        {
+          "x_m": 0.3375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -11654.999999999998,
+          "deflection_down_m": 2.777099609375e-05,
+          "rotation_down_rad": 0.00016245900848765434
+        },
+        {
+          "x_m": 0.39375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -11497.5,
+          "deflection_down_m": 3.763787540388696e-05,
+          "rotation_down_rad": 0.00018830475983796295
+        },
+        {
+          "x_m": 0.45,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -11340.0,
+          "deflection_down_m": 4.894868827160494e-05,
+          "rotation_down_rad": 0.00021379886831275722
+        },
+        {
+          "x_m": 0.50625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -11182.5,
+          "deflection_down_m": 6.168365478515626e-05,
+          "rotation_down_rad": 0.00023894133391203705
+        },
+        {
+          "x_m": 0.5625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -11025.0,
+          "deflection_down_m": 7.582299503279321e-05,
+          "rotation_down_rad": 0.00026373215663580245
+        },
+        {
+          "x_m": 0.61875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -10867.5,
+          "deflection_down_m": 9.134692910276813e-05,
+          "rotation_down_rad": 0.0002881713364840535
+        },
+        {
+          "x_m": 0.675,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -10710.0,
+          "deflection_down_m": 0.00010823567708333334,
+          "rotation_down_rad": 0.0003122588734567901
+        },
+        {
+          "x_m": 0.73125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -10552.5,
+          "deflection_down_m": 0.00012646945906274112,
+          "rotation_down_rad": 0.00033599476755401237
+        },
+        {
+          "x_m": 0.7875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -10395.0,
+          "deflection_down_m": 0.00014602849512924384,
+          "rotation_down_rad": 0.0003593790187757202
+        },
+        {
+          "x_m": 0.84375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -10237.5,
+          "deflection_down_m": 0.00016689300537109375,
+          "rotation_down_rad": 0.00038241162712191357
+        },
+        {
+          "x_m": 0.9,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -10080.0,
+          "deflection_down_m": 0.0001890432098765432,
+          "rotation_down_rad": 0.0004050925925925926
+        },
+        {
+          "x_m": 0.95625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -9922.5,
+          "deflection_down_m": 0.0002124593287338445,
+          "rotation_down_rad": 0.0004274219151877571
+        },
+        {
+          "x_m": 1.0125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -9765.0,
+          "deflection_down_m": 0.00023712158203125,
+          "rotation_down_rad": 0.0004493995949074074
+        },
+        {
+          "x_m": 1.06875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -9607.5,
+          "deflection_down_m": 0.00026301018985701205,
+          "rotation_down_rad": 0.0004710256317515433
+        },
+        {
+          "x_m": 1.125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -9450.0,
+          "deflection_down_m": 0.0002901053722993827,
+          "rotation_down_rad": 0.0004923000257201646
+        },
+        {
+          "x_m": 1.18125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -9292.5,
+          "deflection_down_m": 0.0003183873494466145,
+          "rotation_down_rad": 0.0005132227768132715
+        },
+        {
+          "x_m": 1.2375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -9135.0,
+          "deflection_down_m": 0.00034783634138695985,
+          "rotation_down_rad": 0.0005337938850308642
+        },
+        {
+          "x_m": 1.29375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -8977.5,
+          "deflection_down_m": 0.0003784325682086709,
+          "rotation_down_rad": 0.0005540133503729424
+        },
+        {
+          "x_m": 1.35,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -8820.0,
+          "deflection_down_m": 0.0004101562500000001,
+          "rotation_down_rad": 0.0005738811728395062
+        },
+        {
+          "x_m": 1.40625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -8662.5,
+          "deflection_down_m": 0.00044298760684919946,
+          "rotation_down_rad": 0.0005933973524305555
+        },
+        {
+          "x_m": 1.4625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -8505.0,
+          "deflection_down_m": 0.0004769068588445215,
+          "rotation_down_rad": 0.0006125618891460905
+        },
+        {
+          "x_m": 1.51875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -8347.5,
+          "deflection_down_m": 0.0005118942260742187,
+          "rotation_down_rad": 0.0006313747829861111
+        },
+        {
+          "x_m": 1.575,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -8189.999999999999,
+          "deflection_down_m": 0.0005479299286265432,
+          "rotation_down_rad": 0.0006498360339506173
+        },
+        {
+          "x_m": 1.63125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -8032.5,
+          "deflection_down_m": 0.0005849941865897473,
+          "rotation_down_rad": 0.0006679456420396091
+        },
+        {
+          "x_m": 1.6875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -7875.0,
+          "deflection_down_m": 0.0006230672200520834,
+          "rotation_down_rad": 0.0006857036072530864
+        },
+        {
+          "x_m": 1.74375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -7717.5,
+          "deflection_down_m": 0.0006621292491018037,
+          "rotation_down_rad": 0.0007031099295910494
+        },
+        {
+          "x_m": 1.8,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -7560.000000000001,
+          "deflection_down_m": 0.0007021604938271604,
+          "rotation_down_rad": 0.000720164609053498
+        },
+        {
+          "x_m": 1.85625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -7402.499999999999,
+          "deflection_down_m": 0.0007431411743164063,
+          "rotation_down_rad": 0.0007368676456404321
+        },
+        {
+          "x_m": 1.9125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -7245.0,
+          "deflection_down_m": 0.0007850515106577932,
+          "rotation_down_rad": 0.0007532190393518518
+        },
+        {
+          "x_m": 1.96875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -7087.5,
+          "deflection_down_m": 0.0008278717229395736,
+          "rotation_down_rad": 0.0007692187901877572
+        },
+        {
+          "x_m": 2.025,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -6930.0,
+          "deflection_down_m": 0.00087158203125,
+          "rotation_down_rad": 0.0007848668981481481
+        },
+        {
+          "x_m": 2.08125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -6772.500000000001,
+          "deflection_down_m": 0.0009161626556773241,
+          "rotation_down_rad": 0.0008001633632330245
+        },
+        {
+          "x_m": 2.1375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -6614.999999999999,
+          "deflection_down_m": 0.0009615938163097998,
+          "rotation_down_rad": 0.000815108185442387
+        },
+        {
+          "x_m": 2.19375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -6457.5,
+          "deflection_down_m": 0.0010078557332356772,
+          "rotation_down_rad": 0.0008297013647762346
+        },
+        {
+          "x_m": 2.25,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -6300.0,
+          "deflection_down_m": 0.0010549286265432098,
+          "rotation_down_rad": 0.0008439429012345679
+        },
+        {
+          "x_m": 2.30625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -6142.5,
+          "deflection_down_m": 0.00110279271632065,
+          "rotation_down_rad": 0.0008578327948173868
+        },
+        {
+          "x_m": 2.3625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -5985.000000000001,
+          "deflection_down_m": 0.0011514282226562495,
+          "rotation_down_rad": 0.0008713710455246912
+        },
+        {
+          "x_m": 2.41875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -5827.499999999999,
+          "deflection_down_m": 0.0012008153656382623,
+          "rotation_down_rad": 0.0008845576533564817
+        },
+        {
+          "x_m": 2.475,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -5670.0,
+          "deflection_down_m": 0.0012509343653549383,
+          "rotation_down_rad": 0.0008973926183127572
+        },
+        {
+          "x_m": 2.53125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -5512.5,
+          "deflection_down_m": 0.0013017654418945312,
+          "rotation_down_rad": 0.0009098759403935185
+        },
+        {
+          "x_m": 2.5875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -5355.0,
+          "deflection_down_m": 0.001353288815345293,
+          "rotation_down_rad": 0.0009220076195987654
+        },
+        {
+          "x_m": 2.64375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -5197.500000000001,
+          "deflection_down_m": 0.0014054847057954761,
+          "rotation_down_rad": 0.0009337876559284978
+        },
+        {
+          "x_m": 2.7,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -5039.999999999999,
+          "deflection_down_m": 0.0014583333333333338,
+          "rotation_down_rad": 0.0009452160493827161
+        },
+        {
+          "x_m": 2.75625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -4882.5,
+          "deflection_down_m": 0.0015118149180471162,
+          "rotation_down_rad": 0.0009562927999614198
+        },
+        {
+          "x_m": 2.8125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -4725.0,
+          "deflection_down_m": 0.0015659096800250771,
+          "rotation_down_rad": 0.0009670179076646091
+        },
+        {
+          "x_m": 2.86875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -4567.5,
+          "deflection_down_m": 0.0016205978393554687,
+          "rotation_down_rad": 0.000977391372492284
+        },
+        {
+          "x_m": 2.925,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -4410.000000000001,
+          "deflection_down_m": 0.0016758596161265428,
+          "rotation_down_rad": 0.0009874131944444444
+        },
+        {
+          "x_m": 2.98125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -4252.499999999999,
+          "deflection_down_m": 0.0017316752304265528,
+          "rotation_down_rad": 0.0009970833735210905
+        },
+        {
+          "x_m": 3.0375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -4094.9999999999995,
+          "deflection_down_m": 0.00178802490234375,
+          "rotation_down_rad": 0.0010064019097222221
+        },
+        {
+          "x_m": 3.09375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -3937.5,
+          "deflection_down_m": 0.001844888851966387,
+          "rotation_down_rad": 0.0010153688030478396
+        },
+        {
+          "x_m": 3.15,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -3780.0000000000005,
+          "deflection_down_m": 0.001902247299382716,
+          "rotation_down_rad": 0.0010239840534979423
+        },
+        {
+          "x_m": 3.20625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -3622.5000000000005,
+          "deflection_down_m": 0.0019600804646809893,
+          "rotation_down_rad": 0.001032247661072531
+        },
+        {
+          "x_m": 3.2625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -3464.9999999999995,
+          "deflection_down_m": 0.00201836856794946,
+          "rotation_down_rad": 0.001040159625771605
+        },
+        {
+          "x_m": 3.31875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -3307.4999999999995,
+          "deflection_down_m": 0.0020770918292763794,
+          "rotation_down_rad": 0.0010477199475951646
+        },
+        {
+          "x_m": 3.375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -3150.0,
+          "deflection_down_m": 0.00213623046875,
+          "rotation_down_rad": 0.0010549286265432098
+        },
+        {
+          "x_m": 3.43125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -2992.5000000000005,
+          "deflection_down_m": 0.0021957647064585746,
+          "rotation_down_rad": 0.0010617856626157407
+        },
+        {
+          "x_m": 3.4875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -2835.0000000000005,
+          "deflection_down_m": 0.0022556747624903548,
+          "rotation_down_rad": 0.0010682910558127573
+        },
+        {
+          "x_m": 3.54375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -2677.4999999999995,
+          "deflection_down_m": 0.002315940856933594,
+          "rotation_down_rad": 0.0010744448061342593
+        },
+        {
+          "x_m": 3.6,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -2519.9999999999995,
+          "deflection_down_m": 0.0023765432098765433,
+          "rotation_down_rad": 0.0010802469135802468
+        },
+        {
+          "x_m": 3.65625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -2362.5,
+          "deflection_down_m": 0.0024374620414074556,
+          "rotation_down_rad": 0.0010856973781507202
+        },
+        {
+          "x_m": 3.7125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -2205.0000000000005,
+          "deflection_down_m": 0.0024986775716145833,
+          "rotation_down_rad": 0.0010907961998456788
+        },
+        {
+          "x_m": 3.76875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -2047.5000000000005,
+          "deflection_down_m": 0.0025601700205861782,
+          "rotation_down_rad": 0.0010955433786651234
+        },
+        {
+          "x_m": 3.825,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -1889.9999999999995,
+          "deflection_down_m": 0.002621919608410494,
+          "rotation_down_rad": 0.0010999389146090536
+        },
+        {
+          "x_m": 3.88125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -1732.4999999999998,
+          "deflection_down_m": 0.0026839065551757814,
+          "rotation_down_rad": 0.0011039828076774693
+        },
+        {
+          "x_m": 3.9375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -1575.0,
+          "deflection_down_m": 0.0027461110809702933,
+          "rotation_down_rad": 0.0011076750578703704
+        },
+        {
+          "x_m": 3.99375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -1417.5000000000002,
+          "deflection_down_m": 0.002808513405882282,
+          "rotation_down_rad": 0.001111015665187757
+        },
+        {
+          "x_m": 4.05,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -1260.0000000000005,
+          "deflection_down_m": 0.00287109375,
+          "rotation_down_rad": 0.0011140046296296297
+        },
+        {
+          "x_m": 4.10625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -1102.4999999999995,
+          "deflection_down_m": 0.0029338323334116997,
+          "rotation_down_rad": 0.0011166419511959877
+        },
+        {
+          "x_m": 4.1625,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -945.000000000001,
+          "deflection_down_m": 0.002996709376205632,
+          "rotation_down_rad": 0.001118927629886831
+        },
+        {
+          "x_m": 4.21875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -787.5,
+          "deflection_down_m": 0.0030597050984700522,
+          "rotation_down_rad": 0.0011208616657021604
+        },
+        {
+          "x_m": 4.275,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -629.999999999999,
+          "deflection_down_m": 0.0031227997202932104,
+          "rotation_down_rad": 0.0011224440586419754
+        },
+        {
+          "x_m": 4.33125,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -472.5000000000005,
+          "deflection_down_m": 0.0031859734617633584,
+          "rotation_down_rad": 0.0011236748087062756
+        },
+        {
+          "x_m": 4.3875,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -314.9999999999995,
+          "deflection_down_m": 0.0032492065429687504,
+          "rotation_down_rad": 0.0011245539158950618
+        },
+        {
+          "x_m": 4.44375,
+          "shear_left_n": 2800.0,
+          "shear_right_n": 2800.0,
+          "moment_nm": -157.500000000001,
+          "deflection_down_m": 0.0033124791839976363,
+          "rotation_down_rad": 0.0011250813802083331
+        },
+        {
+          "x_m": 4.5,
+          "shear_left_n": 2800.0,
+          "shear_right_n": null,
+          "moment_nm": 0.0,
+          "deflection_down_m": 0.0033757716049382714,
+          "rotation_down_rad": 0.0011252572016460906
+        }
+      ],
+      "model_screening": [],
+      "integration_constants": {
+        "y_at_left_m": 0,
+        "upward_slope_constant_rad": -0.0
+      },
+      "equilibrium_residual": {
+        "force_n": 0.0,
+        "moment_nm": 0.0
+      },
+      "formulas": [
+        "y is upward-positive; output deflection_down=-y and rotation_down=-y_prime",
+        "I=b*h^3/12",
+        "EI*y_second=M(x)",
+        "M(x)=M0+RA*x-sum(P*<x-a>)-sum(q*(<x-a>^2-<x-b>^2)/2)",
+        "EI*y=M0*x^2/2+RA*x^3/6-sum(P*<x-a>^3/6)-sum(q*(<x-a>^4-<x-b>^4)/24)+EI*C1*x",
+        "simply supported: y(0)=y(L)=0; cantilever: y(0)=y_prime(0)=0",
+        "sigma_max=abs(M_max)*(h/2)/I"
+      ]
+    },
+    "source_snapshot": [],
+    "created_at": "2026-11-08T08:36:24.197614+00:00",
+    "calculator_hash": "e7cace07c1ad627df82388ff468ce1f04df11fecb899088202761b82c9ab930d",
+    "hash": "370baf412d23e161eb0bda0661899bc7d31020154efe12f0b223c6ddc52b64a3",
+    "revision": 1,
+    "stale_reasons": [],
+    "stale_details": [],
+    "status": "calculated"
+  },
+  "schedule": {
+    "schedule_id": "schedule_46b8108984bc41ac830fd249911de8ba",
+    "project_id": "project_a9d5d4bf3d2f4f1ba4aef6c576cd32b7",
+    "project_revision": 1,
+    "input": {
+      "name": "Fresh progress network",
+      "scope": "Synthetic network, not site instructions",
+      "calendar": "continuous_elapsed_days",
+      "time_origin": "Synthetic day zero",
+      "tasks": [
+        {
+          "task_id": "A",
+          "name": "Task A",
+          "duration_days": 2.0,
+          "duration_source": "Synthetic duration",
+          "predecessors": [],
+          "demands": []
+        },
+        {
+          "task_id": "B",
+          "name": "Task B",
+          "duration_days": 5.0,
+          "duration_source": "Synthetic duration",
+          "predecessors": [
+            {
+              "task_id": "A",
+              "lag_days": 0.0,
+              "source": "Synthetic precedence"
+            }
+          ],
+          "demands": []
+        },
+        {
+          "task_id": "C",
+          "name": "Task C",
+          "duration_days": 3.0,
+          "duration_source": "Synthetic duration",
+          "predecessors": [
+            {
+              "task_id": "A",
+              "lag_days": 0.0,
+              "source": "Synthetic precedence"
+            }
+          ],
+          "demands": []
+        },
+        {
+          "task_id": "D",
+          "name": "Task D",
+          "duration_days": 2.0,
+          "duration_source": "Synthetic duration",
+          "predecessors": [
+            {
+              "task_id": "B",
+              "lag_days": 0.0,
+              "source": "Synthetic precedence"
+            },
+            {
+              "task_id": "C",
+              "lag_days": 0.0,
+              "source": "Synthetic precedence"
+            }
+          ],
+          "demands": []
+        }
+      ],
+      "resources": [],
+      "evidence_ids": [],
+      "progress": {
+        "as_of_day": 4.0,
+        "source": "Synthetic progress",
+        "observations": [
+          {
+            "task_id": "A",
+            "state": "completed",
+            "actual_start_day": 0.0,
+            "actual_finish_day": 2.0,
+            "remaining_days": null,
+            "source": "Synthetic observation"
+          },
+          {
+            "task_id": "B",
+            "state": "in_progress",
+            "actual_start_day": 2.0,
+            "actual_finish_day": null,
+            "remaining_days": 6.0,
+            "source": "Synthetic observation"
+          },
+          {
+            "task_id": "C",
+            "state": "in_progress",
+            "actual_start_day": 2.0,
+            "actual_finish_day": null,
+            "remaining_days": 1.0,
+            "source": "Synthetic observation"
+          },
+          {
+            "task_id": "D",
+            "state": "not_started",
+            "actual_start_day": null,
+            "actual_finish_day": null,
+            "remaining_days": null,
+            "source": "Synthetic observation"
+          }
+        ]
+      },
+      "import_file_id": null
+    },
+    "result": {
+      "calendar": "continuous_elapsed_days",
+      "time_origin": "Synthetic day zero",
+      "scope": "Synthetic network, not site instructions",
+      "missing_duration_tasks": [],
+      "source_status": "USER_DECLARED",
+      "site_safety": "NOT_ASSESSED",
+      "resource_leveling": "NOT_IMPLEMENTED",
+      "limitations": [
+        "连续经过日，从声明的第0天起算；不自动跳过周末、节假日、天气或夜间。",
+        "只支持完成到开始FS及非负间隔；零工期表示里程碑。关键路径基于声明工期，不代表施工安全或履约保证。",
+        "预测使用显式剩余工期；不按完成百分比推测，不自动补齐未报告工序。资源冲突未自动调平。"
+      ],
+      "status": "calculated",
+      "planned": {
+        "duration_days": "9",
+        "rows": [
+          {
+            "task_id": "A",
+            "name": "Task A",
+            "start_day": "0",
+            "finish_day": "2",
+            "latest_start_day": "0",
+            "latest_finish_day": "2",
+            "total_float_days": "0",
+            "free_float_days": "0",
+            "critical": true
+          },
+          {
+            "task_id": "B",
+            "name": "Task B",
+            "start_day": "2",
+            "finish_day": "7",
+            "latest_start_day": "2",
+            "latest_finish_day": "7",
+            "total_float_days": "0",
+            "free_float_days": "0",
+            "critical": true
+          },
+          {
+            "task_id": "C",
+            "name": "Task C",
+            "start_day": "2",
+            "finish_day": "5",
+            "latest_start_day": "4",
+            "latest_finish_day": "7",
+            "total_float_days": "2",
+            "free_float_days": "2",
+            "critical": false
+          },
+          {
+            "task_id": "D",
+            "name": "Task D",
+            "start_day": "7",
+            "finish_day": "9",
+            "latest_start_day": "7",
+            "latest_finish_day": "9",
+            "total_float_days": "0",
+            "free_float_days": "0",
+            "critical": true
+          }
+        ],
+        "critical_tasks": [
+          "A",
+          "B",
+          "D"
+        ],
+        "critical_dependencies": [
+          {
+            "from": "A",
+            "to": "B",
+            "lag_days": "0"
+          },
+          {
+            "from": "B",
+            "to": "D",
+            "lag_days": "0"
+          }
+        ],
+        "resources": {
+          "status": "not_assessed",
+          "conflicts": [],
+          "unknown": [],
+          "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+        },
+        "formulas": [
+          "ES=max(EF predecessor + FS lag), EF=ES+duration",
+          "LF=min(LS successor - lag), LS=LF-duration",
+          "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+        ]
+      },
+      "forecast": {
+        "status": "scenario",
+        "as_of_day": "4",
+        "finish_day": "12",
+        "finish_variance_days": "3",
+        "missing": [],
+        "unverified_actual_dependencies": [],
+        "rows": [
+          {
+            "task_id": "A",
+            "state": "completed",
+            "start_day": "0",
+            "finish_day": "2"
+          },
+          {
+            "task_id": "B",
+            "state": "in_progress",
+            "start_day": "2",
+            "finish_day": "10"
+          },
+          {
+            "task_id": "C",
+            "state": "in_progress",
+            "start_day": "2",
+            "finish_day": "5"
+          },
+          {
+            "task_id": "D",
+            "state": "not_started",
+            "start_day": "10",
+            "finish_day": "12"
+          }
+        ],
+        "resources": {
+          "status": "not_assessed",
+          "conflicts": [],
+          "unknown": [],
+          "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+        }
+      }
+    },
+    "source_snapshot": [],
+    "import_source": null,
+    "calculator_hash": "ddcb7730d511001cb6bcd6c2d026826e900a5c559fa31d0a223bfc2b0a33afbf",
+    "created_at": "2026-11-08T08:36:24.212178+00:00",
+    "hash": "0a21335d8088f163698eed64efe3e04a5b8dff3e3493f67c726c72e935bb3afe",
+    "revision": 1,
+    "stale_reasons": [],
+    "stale_details": [],
+    "status": "calculated"
+  },
+  "operation": {
+    "operation_id": "operation_86af7b8f063b4e50b3a262a7d1bdedab",
+    "project_id": "project_a9d5d4bf3d2f4f1ba4aef6c576cd32b7",
+    "project_revision": 1,
+    "input": {
+      "name": "Fresh data quality window",
+      "file_id": "file_ce92e9af7b734fc4976cd44dbdfd953a",
+      "equipment": "Synthetic FCU",
+      "data_nature": "synthetic",
+      "source": "New independent synthetic CSV",
+      "time_column": "time",
+      "time_format": "iso8601",
+      "clock_basis": "offset_aware",
+      "clock_source": "Explicit UTC",
+      "expected_interval_seconds": 60.0,
+      "maximum_gap_seconds": 90.0,
+      "channels": [
+        {
+          "channel_id": "t",
+          "column": "t",
+          "name": "Temperature",
+          "unit": "degC",
+          "source": "Declared synthetic units"
+        }
+      ],
+      "rules": [
+        {
+          "rule_id": "hot",
+          "name": "Upper band",
+          "kind": "range",
+          "channel_id": "t",
+          "other_channel_id": null,
+          "unit": "degC",
+          "lower": null,
+          "upper": 22.0,
+          "threshold": null,
+          "minimum_duration_seconds": 60.0,
+          "gate_channel_id": null,
+          "gate_minimum": null,
+          "gate_unit": null,
+          "source": "Synthetic threshold, not a fault diagnosis"
+        }
+      ],
+      "evidence_ids": []
+    },
+    "result": {
+      "status": "events_detected",
+      "quality": {
+        "sample_count": 7,
+        "cell_issue_count": 1,
+        "cell_issues": [
+          {
+            "line": 5,
+            "channel_id": "t",
+            "reason": "missing"
+          }
+        ],
+        "cell_issues_truncated": false,
+        "gap_count": 1,
+        "gaps": [
+          {
+            "before_line": 6,
+            "seconds": 120.0
+          }
+        ],
+        "gaps_truncated": false,
+        "irregular_intervals": 1,
+        "first_time": "2026-07-12T00:00:00+00:00",
+        "last_time": "2026-07-12T00:07:00+00:00"
+      },
+      "channels": [
+        {
+          "channel_id": "t",
+          "name": "Temperature",
+          "input_unit": "degC",
+          "unit": "degC",
+          "valid_samples": 6,
+          "missing_or_invalid": 1,
+          "minimum": 20.0,
+          "maximum": 28.0,
+          "sample_mean": 24.0
+        }
+      ],
+      "rules": [
+        {
+          "rule_id": "hot",
+          "name": "Upper band",
+          "kind": "range",
+          "unit": "degC",
+          "evaluated_samples": 6,
+          "excluded_by_gate_samples": 0,
+          "unknown_samples": 1,
+          "violating_samples": 4,
+          "event_count": 2,
+          "events": [
+            {
+              "first_line": 3,
+              "last_line": 4,
+              "start": "2026-07-12T00:01:00+00:00",
+              "end": "2026-07-12T00:02:00+00:00",
+              "observed_span_seconds": 60.0,
+              "samples": 2
+            },
+            {
+              "first_line": 6,
+              "last_line": 7,
+              "start": "2026-07-12T00:05:00+00:00",
+              "end": "2026-07-12T00:06:00+00:00",
+              "observed_span_seconds": 60.0,
+              "samples": 2
+            }
+          ],
+          "events_truncated": false,
+          "state": "events_detected",
+          "recommended_checks": [
+            "复核对应行、采样时钟、单位和传感器校准；确认规则适用于当前工况。",
+            "核查设定值和运行边界，比较独立测点；不能仅凭越限判断故障部件。"
+          ],
+          "cause_confirmed": false
+        }
+      ],
+      "series_preview": [
+        {
+          "line": 2,
+          "timestamp": "2026-07-12T00:00:00+00:00",
+          "values": {
+            "t": 20.0
+          }
+        },
+        {
+          "line": 3,
+          "timestamp": "2026-07-12T00:01:00+00:00",
+          "values": {
+            "t": 24.0
+          }
+        },
+        {
+          "line": 4,
+          "timestamp": "2026-07-12T00:02:00+00:00",
+          "values": {
+            "t": 25.0
+          }
+        },
+        {
+          "line": 5,
+          "timestamp": "2026-07-12T00:03:00+00:00",
+          "values": {
+            "t": null
+          }
+        },
+        {
+          "line": 6,
+          "timestamp": "2026-07-12T00:05:00+00:00",
+          "values": {
+            "t": 27.0
+          }
+        },
+        {
+          "line": 7,
+          "timestamp": "2026-07-12T00:06:00+00:00",
+          "values": {
+            "t": 28.0
+          }
+        },
+        {
+          "line": 8,
+          "timestamp": "2026-07-12T00:07:00+00:00",
+          "values": {
+            "t": 20.0
+          }
+        }
+      ],
+      "preview_downsampled": false,
+      "source_status": "USER_DECLARED",
+      "data_nature": "synthetic",
+      "equipment": "Synthetic FCU",
+      "diagnosis": "NOT_CONFIRMED",
+      "control_action": "NONE",
+      "limitations": [
+        "仅检测声明规则，不把无告警当作设备健康；故障原因及维修措施需专业复核。",
+        "持续时间是首末异常样本间跨度；缺测或超出最大间隔会断开事件，不外推最后一个样本后的持续时间。",
+        "样本间连续性为明确采样假设，无法证明两次采样之间没有变化。均值是样本均值，不是时间加权均值或能耗积分。",
+        "本地时钟不自动推断时区或夏令时；预览最多200个抽样点，完整数据以原件和事件行号为准。",
+        "事件判断用原始十进制有理数计算；数值单元限128字符、40位有效数字和±100十进制指数。汇总与预览转为浮点显示。"
+      ]
+    },
+    "file_snapshot": {
+      "file_id": "file_ce92e9af7b734fc4976cd44dbdfd953a",
+      "project_id": "project_a9d5d4bf3d2f4f1ba4aef6c576cd32b7",
+      "name": "fresh.csv",
+      "path": "files/file_ce92e9af7b734fc4976cd44dbdfd953a.csv",
+      "hash": "16dfa4464973aa08b1c4da6c42dd8e856e5645caa960fe0a6fe499ea6e94b791",
+      "size": 173,
+      "timestamp": "2026-11-08T08:36:24.274596+00:00",
+      "revision": 1
+    },
+    "source_snapshot": [],
+    "calculator_hash": "802d4864cdca672a9eae52e83e2537a662f83f897a2b6358e8a11c0f1699f0a3",
+    "created_at": "2026-11-08T08:36:24.304986+00:00",
+    "hash": "742b4b2692488f481fd76315f9c035ee891d644d5218a79a24eb0257021df901",
+    "revision": 1,
+    "stale_reasons": [],
+    "stale_details": [],
+    "status": "events_detected"
+  }
+}

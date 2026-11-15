@@ -1,0 +1,237 @@
+{
+  "cases": [
+    {
+      "spec": {
+        "id": "C01",
+        "type": "cool",
+        "gain": 1000,
+        "flow": 0.25,
+        "pressure": 180,
+        "fan_eff": 0.6,
+        "cop": 3.0,
+        "outside": 24,
+        "inside": 24
+      },
+      "oracle": {
+        "expected_power_W": {
+          "Fans:Electricity": "75",
+          "InteriorEquipment:Electricity": "1000",
+          "Cooling:Electricity": "1075/3"
+        },
+        "expected_24h_kWh": {
+          "Fans:Electricity": "9/5",
+          "InteriorEquipment:Electricity": "24",
+          "Cooling:Electricity": "43/5"
+        },
+        "absolute_W": 1.0,
+        "relative": 0.005,
+        "equations": "Fan=q*deltaP/total_eff; cooling=(gain+fan)/COP with unit performance curves and PLF=1; heating=(110*(Ti-To)/(1.73+.1+.04)-gain-fan)/eff; plant gas=(load-pump_power*motor_eff)/boiler_eff. All schedules constant; ideal zone separate thermal load."
+      },
+      "model_sha256": "fc1489ad2905a646df1a5284a2d4fafc83c2ec77d5c415ffc972e218fe845d86"
+    },
+    {
+      "spec": {
+        "id": "C02",
+        "type": "cool",
+        "gain": 1650,
+        "flow": 0.31,
+        "pressure": 240,
+        "fan_eff": 0.62,
+        "cop": 4.2,
+        "outside": 24,
+        "inside": 24
+      },
+      "oracle": {
+        "expected_power_W": {
+          "Fans:Electricity": "120",
+          "InteriorEquipment:Electricity": "1650",
+          "Cooling:Electricity": "2950/7"
+        },
+        "expected_24h_kWh": {
+          "Fans:Electricity": "72/25",
+          "InteriorEquipment:Electricity": "198/5",
+          "Cooling:Electricity": "354/35"
+        },
+        "absolute_W": 1.0,
+        "relative": 0.005,
+        "equations": "Fan=q*deltaP/total_eff; cooling=(gain+fan)/COP with unit performance curves and PLF=1; heating=(110*(Ti-To)/(1.73+.1+.04)-gain-fan)/eff; plant gas=(load-pump_power*motor_eff)/boiler_eff. All schedules constant; ideal zone separate thermal load."
+      },
+      "model_sha256": "f04a22d68b50b9eb1b22b807508c9c64dedff197b723e0898b590302d830414c"
+    },
+    {
+      "spec": {
+        "id": "H01",
+        "type": "gas",
+        "gain": 250,
+        "flow": 0.24,
+        "pressure": 200,
+        "fan_eff": 0.6,
+        "eff": 0.83,
+        "outside": -4,
+        "inside": 21
+      },
+      "oracle": {
+        "expected_power_W": {
+          "Fans:Electricity": "80",
+          "InteriorEquipment:Electricity": "250",
+          "Heating:NaturalGas": "1939000/1411"
+        },
+        "expected_24h_kWh": {
+          "Fans:Electricity": "48/25",
+          "InteriorEquipment:Electricity": "6",
+          "Heating:NaturalGas": "46536/1411"
+        },
+        "absolute_W": 1.0,
+        "relative": 0.005,
+        "equations": "Fan=q*deltaP/total_eff; cooling=(gain+fan)/COP with unit performance curves and PLF=1; heating=(110*(Ti-To)/(1.73+.1+.04)-gain-fan)/eff; plant gas=(load-pump_power*motor_eff)/boiler_eff. All schedules constant; ideal zone separate thermal load."
+      },
+      "model_sha256": "04d0b5fce7ebc6d5848be5f3aad5699846bfcd55294ecf359b6b57a63f7fa7a7"
+    },
+    {
+      "spec": {
+        "id": "H02",
+        "type": "electric",
+        "gain": 170,
+        "flow": 0.27,
+        "pressure": 210,
+        "fan_eff": 0.63,
+        "eff": 0.95,
+        "outside": -8,
+        "inside": 22
+      },
+      "oracle": {
+        "expected_power_W": {
+          "Fans:Electricity": "90",
+          "InteriorEquipment:Electricity": "170",
+          "Heating:Electricity": "511600/323"
+        },
+        "expected_24h_kWh": {
+          "Fans:Electricity": "54/25",
+          "InteriorEquipment:Electricity": "102/25",
+          "Heating:Electricity": "61392/1615"
+        },
+        "absolute_W": 1.0,
+        "relative": 0.005,
+        "equations": "Fan=q*deltaP/total_eff; cooling=(gain+fan)/COP with unit performance curves and PLF=1; heating=(110*(Ti-To)/(1.73+.1+.04)-gain-fan)/eff; plant gas=(load-pump_power*motor_eff)/boiler_eff. All schedules constant; ideal zone separate thermal load."
+      },
+      "model_sha256": "80c3a1c06e811a97ec62c62e3fae13e5c4ee4e602269d6fec7942d321d806384"
+    },
+    {
+      "spec": {
+        "id": "P01",
+        "type": "plant",
+        "load": 5000,
+        "flow": 0.001,
+        "power": 150,
+        "motor": 0.85,
+        "eff": 0.8,
+        "outside": 20
+      },
+      "oracle": {
+        "expected_power_W": {
+          "Pumps:Electricity": "150",
+          "Heating:NaturalGas": "48725/8"
+        },
+        "expected_24h_kWh": {
+          "Pumps:Electricity": "18/5",
+          "Heating:NaturalGas": "5847/40"
+        },
+        "absolute_W": 1.0,
+        "relative": 0.005,
+        "equations": "Fan=q*deltaP/total_eff; cooling=(gain+fan)/COP with unit performance curves and PLF=1; heating=(110*(Ti-To)/(1.73+.1+.04)-gain-fan)/eff; plant gas=(load-pump_power*motor_eff)/boiler_eff. All schedules constant; ideal zone separate thermal load."
+      },
+      "model_sha256": "2ba3c2a13038c59e04a1e11b131b3219b0137caedac1edd11ddde5ac1a3d5454"
+    },
+    {
+      "spec": {
+        "id": "P02",
+        "type": "plant",
+        "load": 8300,
+        "flow": 0.0018,
+        "power": 290,
+        "motor": 0.9,
+        "eff": 0.91,
+        "outside": 20
+      },
+      "oracle": {
+        "expected_power_W": {
+          "Pumps:Electricity": "290",
+          "Heating:NaturalGas": "803900/91"
+        },
+        "expected_24h_kWh": {
+          "Pumps:Electricity": "174/25",
+          "Heating:NaturalGas": "96468/455"
+        },
+        "absolute_W": 1.0,
+        "relative": 0.005,
+        "equations": "Fan=q*deltaP/total_eff; cooling=(gain+fan)/COP with unit performance curves and PLF=1; heating=(110*(Ti-To)/(1.73+.1+.04)-gain-fan)/eff; plant gas=(load-pump_power*motor_eff)/boiler_eff. All schedules constant; ideal zone separate thermal load."
+      },
+      "model_sha256": "a759b848db2bcbca7f9b6fef3ba8af34c35519f2cfae8abb26ddbba76271cb5c"
+    },
+    {
+      "spec": {
+        "id": "Z01",
+        "type": "off",
+        "gain": 0,
+        "flow": 0.25,
+        "pressure": 180,
+        "fan_eff": 0.6,
+        "cop": 3.0,
+        "outside": 20,
+        "inside": 24
+      },
+      "oracle": {
+        "expected_power_W": {
+          "Fans:Electricity": "0",
+          "InteriorEquipment:Electricity": "0",
+          "Cooling:Electricity": "0",
+          "Heating:Electricity": "0"
+        },
+        "expected_24h_kWh": {
+          "Fans:Electricity": "0",
+          "InteriorEquipment:Electricity": "0",
+          "Cooling:Electricity": "0",
+          "Heating:Electricity": "0"
+        },
+        "absolute_W": 1.0,
+        "relative": 0.005,
+        "equations": "Fan=q*deltaP/total_eff; cooling=(gain+fan)/COP with unit performance curves and PLF=1; heating=(110*(Ti-To)/(1.73+.1+.04)-gain-fan)/eff; plant gas=(load-pump_power*motor_eff)/boiler_eff. All schedules constant; ideal zone separate thermal load."
+      },
+      "model_sha256": "dc7fe30e83f7e96149ebb5133326cee87c358faa87648428c8aaf1f6185f01e9"
+    },
+    {
+      "spec": {
+        "id": "M01",
+        "type": "mixed",
+        "gain": 1110,
+        "flow": 0.28,
+        "pressure": 170,
+        "fan_eff": 0.68,
+        "cop": 3.4,
+        "outside": 24,
+        "inside": 24,
+        "ideal_gain": 1730
+      },
+      "oracle": {
+        "expected_power_W": {
+          "Fans:Electricity": "70",
+          "InteriorEquipment:Electricity": "1110",
+          "Cooling:Electricity": "5900/17",
+          "Cooling:DistrictCooling": "1730"
+        },
+        "expected_24h_kWh": {
+          "Fans:Electricity": "42/25",
+          "InteriorEquipment:Electricity": "666/25",
+          "Cooling:Electricity": "708/85",
+          "Cooling:DistrictCooling": "1038/25"
+        },
+        "absolute_W": 1.0,
+        "relative": 0.005,
+        "equations": "Fan=q*deltaP/total_eff; cooling=(gain+fan)/COP with unit performance curves and PLF=1; heating=(110*(Ti-To)/(1.73+.1+.04)-gain-fan)/eff; plant gas=(load-pump_power*motor_eff)/boiler_eff. All schedules constant; ideal zone separate thermal load."
+      },
+      "model_sha256": "286ad093a3ecbbf3682f8e77ca5441404c73ab446a27cefd1ed8fcac0c203e0b"
+    }
+  ],
+  "script_sha256": "45273ca2f4b27070d664779dc779464db05906e556ba39c64c2817b5893263e0",
+  "scope": "Eight new synthetic controlled design days; no annual claim; performance curves fixed by declaration, no measured efficiency."
+}

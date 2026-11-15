@@ -71,7 +71,9 @@ def process(image, options, directory):
     import numpy as np
     from PIL import Image, ImageFilter
     options=options or {'deskew_mode':'none','angle_degrees':0.,'median_filter':False}
-    if set(options)!={'deskew_mode','angle_degrees','median_filter'} or options['deskew_mode'] not in {'none','manual','auto'} or type(options['median_filter']) is not bool:
+    if (set(options) not in ({'deskew_mode','angle_degrees','median_filter'}, {'deskew_mode','angle_degrees','median_filter','line_analysis'})
+            or options['deskew_mode'] not in {'none','manual','auto'} or type(options['median_filter']) is not bool
+            or type(options.get('line_analysis', False)) is not bool):
         raise ValueError('Invalid drawing processing options')
     requested=options['angle_degrees']
     rotation(image.width,image.height,requested)  # same finite/range contract inside the isolated worker

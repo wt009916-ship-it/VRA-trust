@@ -1,0 +1,116 @@
+{
+  "request": {
+    "model": "vra-nine-b-tools",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Use only observed values. Choose an actual read or a clarification. Never invent results."
+      },
+      {
+        "role": "user",
+        "content": "读取温度。不要直接解释、不要猜数值。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read_metric",
+          "description": "Read actual data; select only a requested known metric.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "fact": {
+                "type": "string",
+                "enum": [
+                  "temperature",
+                  "power"
+                ]
+              }
+            },
+            "required": [
+              "fact"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "defer_request",
+          "description": "Requested metric is unclear or unavailable in this catalogue; ask for clarification without inventing numbers.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "needs_clarification"
+                ]
+              }
+            },
+            "required": [
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    ],
+    "tool_choice": "required",
+    "max_tokens": 1400,
+    "temperature": 0,
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "stream": false
+  },
+  "status": 200,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "tool_calls",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "",
+          "tool_calls": [
+            {
+              "type": "function",
+              "function": {
+                "name": "read_metric",
+                "arguments": "{\"fact\":\"temperature\"}"
+              },
+              "id": "zEvImsXH6KxfggrINUmHlcWi4kKfkjZ1"
+            }
+          ]
+        }
+      }
+    ],
+    "created": 1794509859,
+    "model": "vra-nine-b-tools",
+    "system_fingerprint": "b12110-cd959bae9",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 26,
+      "prompt_tokens": 399,
+      "total_tokens": 425,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-bdd7vo9q569XJ146Zi335eVhc71kfKwJ",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 399,
+      "prompt_ms": 349.028,
+      "prompt_per_token_ms": 0.8747568922305765,
+      "prompt_per_second": 1143.1747596181394,
+      "predicted_n": 26,
+      "predicted_ms": 522.665,
+      "predicted_per_token_ms": 20.906599999999997,
+      "predicted_per_second": 47.83178517788641
+    }
+  }
+}

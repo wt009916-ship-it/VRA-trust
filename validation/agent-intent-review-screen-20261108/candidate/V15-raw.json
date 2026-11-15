@@ -1,0 +1,564 @@
+{
+  "case": {
+    "id": "V15",
+    "question": "设备部分只列CSV样本总数及单位。碳部分只解释核算期间，不列任何碳排放数值。",
+    "wants": [
+      {
+        "key": "device",
+        "kind": "operation",
+        "facts": [
+          "sample_count"
+        ],
+        "topics": []
+      },
+      {
+        "key": "carbon",
+        "kind": "lifecycle",
+        "facts": [],
+        "topics": [
+          "period"
+        ]
+      }
+    ]
+  },
+  "records": {
+    "device": {
+      "operation_id": "operation_5aacce24be34412497021b597cd45d60",
+      "project_id": "project_244c60fa92764619b522f61181584b6e",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh data quality window",
+        "file_id": "file_63317b4f102a429f95c44c5e349a096d",
+        "equipment": "Synthetic FCU",
+        "data_nature": "synthetic",
+        "source": "New independent synthetic CSV",
+        "time_column": "time",
+        "time_format": "iso8601",
+        "clock_basis": "offset_aware",
+        "clock_source": "Explicit UTC",
+        "expected_interval_seconds": 60.0,
+        "maximum_gap_seconds": 90.0,
+        "channels": [
+          {
+            "channel_id": "t",
+            "column": "t",
+            "name": "Temperature",
+            "unit": "degC",
+            "source": "Declared synthetic units"
+          }
+        ],
+        "rules": [
+          {
+            "rule_id": "hot",
+            "name": "Upper band",
+            "kind": "range",
+            "channel_id": "t",
+            "other_channel_id": null,
+            "unit": "degC",
+            "lower": null,
+            "upper": 22.0,
+            "threshold": null,
+            "minimum_duration_seconds": 60.0,
+            "gate_channel_id": null,
+            "gate_minimum": null,
+            "gate_unit": null,
+            "source": "Synthetic threshold, not a fault diagnosis"
+          }
+        ],
+        "evidence_ids": []
+      },
+      "result": {
+        "status": "events_detected",
+        "quality": {
+          "sample_count": 7,
+          "cell_issue_count": 1,
+          "cell_issues": [
+            {
+              "line": 5,
+              "channel_id": "t",
+              "reason": "missing"
+            }
+          ],
+          "cell_issues_truncated": false,
+          "gap_count": 1,
+          "gaps": [
+            {
+              "before_line": 6,
+              "seconds": 120.0
+            }
+          ],
+          "gaps_truncated": false,
+          "irregular_intervals": 1,
+          "first_time": "2026-07-12T00:00:00+00:00",
+          "last_time": "2026-07-12T00:07:00+00:00"
+        },
+        "channels": [
+          {
+            "channel_id": "t",
+            "name": "Temperature",
+            "input_unit": "degC",
+            "unit": "degC",
+            "valid_samples": 6,
+            "missing_or_invalid": 1,
+            "minimum": 20.0,
+            "maximum": 28.0,
+            "sample_mean": 24.0
+          }
+        ],
+        "rules": [
+          {
+            "rule_id": "hot",
+            "name": "Upper band",
+            "kind": "range",
+            "unit": "degC",
+            "evaluated_samples": 6,
+            "excluded_by_gate_samples": 0,
+            "unknown_samples": 1,
+            "violating_samples": 4,
+            "event_count": 2,
+            "events": [
+              {
+                "first_line": 3,
+                "last_line": 4,
+                "start": "2026-07-12T00:01:00+00:00",
+                "end": "2026-07-12T00:02:00+00:00",
+                "observed_span_seconds": 60.0,
+                "samples": 2
+              },
+              {
+                "first_line": 6,
+                "last_line": 7,
+                "start": "2026-07-12T00:05:00+00:00",
+                "end": "2026-07-12T00:06:00+00:00",
+                "observed_span_seconds": 60.0,
+                "samples": 2
+              }
+            ],
+            "events_truncated": false,
+            "state": "events_detected",
+            "recommended_checks": [
+              "复核对应行、采样时钟、单位和传感器校准；确认规则适用于当前工况。",
+              "核查设定值和运行边界，比较独立测点；不能仅凭越限判断故障部件。"
+            ],
+            "cause_confirmed": false
+          }
+        ],
+        "series_preview": [
+          {
+            "line": 2,
+            "timestamp": "2026-07-12T00:00:00+00:00",
+            "values": {
+              "t": 20.0
+            }
+          },
+          {
+            "line": 3,
+            "timestamp": "2026-07-12T00:01:00+00:00",
+            "values": {
+              "t": 24.0
+            }
+          },
+          {
+            "line": 4,
+            "timestamp": "2026-07-12T00:02:00+00:00",
+            "values": {
+              "t": 25.0
+            }
+          },
+          {
+            "line": 5,
+            "timestamp": "2026-07-12T00:03:00+00:00",
+            "values": {
+              "t": null
+            }
+          },
+          {
+            "line": 6,
+            "timestamp": "2026-07-12T00:05:00+00:00",
+            "values": {
+              "t": 27.0
+            }
+          },
+          {
+            "line": 7,
+            "timestamp": "2026-07-12T00:06:00+00:00",
+            "values": {
+              "t": 28.0
+            }
+          },
+          {
+            "line": 8,
+            "timestamp": "2026-07-12T00:07:00+00:00",
+            "values": {
+              "t": 20.0
+            }
+          }
+        ],
+        "preview_downsampled": false,
+        "source_status": "USER_DECLARED",
+        "data_nature": "synthetic",
+        "equipment": "Synthetic FCU",
+        "diagnosis": "NOT_CONFIRMED",
+        "control_action": "NONE",
+        "limitations": [
+          "仅检测声明规则，不把无告警当作设备健康；故障原因及维修措施需专业复核。",
+          "持续时间是首末异常样本间跨度；缺测或超出最大间隔会断开事件，不外推最后一个样本后的持续时间。",
+          "样本间连续性为明确采样假设，无法证明两次采样之间没有变化。均值是样本均值，不是时间加权均值或能耗积分。",
+          "本地时钟不自动推断时区或夏令时；预览最多200个抽样点，完整数据以原件和事件行号为准。",
+          "事件判断用原始十进制有理数计算；数值单元限128字符、40位有效数字和±100十进制指数。汇总与预览转为浮点显示。"
+        ]
+      },
+      "file_snapshot": {
+        "file_id": "file_63317b4f102a429f95c44c5e349a096d",
+        "project_id": "project_244c60fa92764619b522f61181584b6e",
+        "name": "fresh.csv",
+        "path": "files/file_63317b4f102a429f95c44c5e349a096d.csv",
+        "hash": "16dfa4464973aa08b1c4da6c42dd8e856e5645caa960fe0a6fe499ea6e94b791",
+        "size": 173,
+        "timestamp": "2026-11-08T08:42:45.289714+00:00",
+        "revision": 1
+      },
+      "source_snapshot": [],
+      "calculator_hash": "802d4864cdca672a9eae52e83e2537a662f83f897a2b6358e8a11c0f1699f0a3",
+      "created_at": "2026-11-08T08:42:45.312258+00:00",
+      "hash": "ec00710fb9d15beba997c7bf70800f52aacd596d140f6e313ea06f644b16f6c2",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "events_detected"
+    },
+    "carbon": {
+      "lifecycle_id": "lifecycle_ea6e9e0eea204903af88a4121eba984d",
+      "project_id": "project_244c60fa92764619b522f61181584b6e",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh twelve-year inventory",
+        "area_m2": 960.0,
+        "study_years": 12,
+        "region": "US-CO",
+        "method": "Synthetic GWP arithmetic",
+        "functional_unit": "960 declared square metres over twelve years",
+        "import_file_id": null,
+        "boundaries": [
+          {
+            "stage": "production",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "transport",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "construction",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "operation",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          },
+          {
+            "stage": "end_of_life",
+            "included": true,
+            "reason": "Explicit synthetic scope"
+          }
+        ],
+        "activities": [
+          {
+            "activity_id": "production",
+            "name": "production",
+            "stage": "production",
+            "quantity": 2.4,
+            "unit": "t",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "production-fixed",
+              "value": 0.6,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "production",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "transport",
+            "name": "transport",
+            "stage": "transport",
+            "quantity": 210.0,
+            "unit": "tkm",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "transport-fixed",
+              "value": 0.09,
+              "denominator": "tkm",
+              "numerator": "kgCO2e",
+              "stage": "transport",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "construction",
+            "name": "construction",
+            "stage": "construction",
+            "quantity": 150.0,
+            "unit": "kWh",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "construction-fixed",
+              "value": 0.37,
+              "denominator": "kWh",
+              "numerator": "kgCO2e",
+              "stage": "construction",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "operation",
+            "name": "operation",
+            "stage": "operation",
+            "quantity": 510.0,
+            "unit": "kWh",
+            "period": "annual",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "operation-fixed",
+              "value": 0.31,
+              "denominator": "kWh",
+              "numerator": "kgCO2e",
+              "stage": "operation",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          },
+          {
+            "activity_id": "end_of_life",
+            "name": "end_of_life",
+            "stage": "end_of_life",
+            "quantity": 40.0,
+            "unit": "kg",
+            "period": "whole_period",
+            "source": "Independent synthetic activity",
+            "factor": {
+              "factor_id": "end_of_life-fixed",
+              "value": 0.06,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "end_of_life",
+              "source": "Synthetic test factor only",
+              "publisher": "Application comparison",
+              "version": "fixed-next-20261108",
+              "year": 2026,
+              "region": "*",
+              "method": "Synthetic GWP arithmetic",
+              "evidence_id": null
+            }
+          }
+        ]
+      },
+      "result": {
+        "status": "calculated",
+        "rows": [
+          {
+            "activity_id": "production",
+            "stage": "production",
+            "quantity_in_factor_unit": 2400.0,
+            "factor_unit": "kgCO2e/kg",
+            "period_multiplier": 1,
+            "kgco2e": 1440.0,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "transport",
+            "stage": "transport",
+            "quantity_in_factor_unit": 210.0,
+            "factor_unit": "kgCO2e/tkm",
+            "period_multiplier": 1,
+            "kgco2e": 18.9,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "construction",
+            "stage": "construction",
+            "quantity_in_factor_unit": 150.0,
+            "factor_unit": "kgCO2e/kWh",
+            "period_multiplier": 1,
+            "kgco2e": 55.5,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "operation",
+            "stage": "operation",
+            "quantity_in_factor_unit": 6120.0,
+            "factor_unit": "kgCO2e/kWh",
+            "period_multiplier": 12,
+            "kgco2e": 1897.2,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          },
+          {
+            "activity_id": "end_of_life",
+            "stage": "end_of_life",
+            "quantity_in_factor_unit": 40.0,
+            "factor_unit": "kgCO2e/kg",
+            "period_multiplier": 1,
+            "kgco2e": 2.4,
+            "formula": "quantity * unit_conversion * period_multiplier * factor"
+          }
+        ],
+        "stages": {
+          "production": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 1440.0
+          },
+          "transport": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 18.9
+          },
+          "construction": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 55.5
+          },
+          "operation": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 1897.2
+          },
+          "end_of_life": {
+            "included": true,
+            "reason": "Explicit synthetic scope",
+            "status": "calculated",
+            "kgco2e": 2.4
+          }
+        },
+        "missing": [],
+        "boundary_total_kgco2e": 3414.0,
+        "kgco2e_m2_over_study_period": 3.55625,
+        "all_five_stages_entered": true,
+        "source_status": "USER_DECLARED",
+        "certification": "NOT_ASSESSED",
+        "issued_credits_t": null,
+        "limitations": [
+          "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+          "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+          "年运行量仅按评估年限线性重复；不预测电网因子变化、设备衰减或替换周期。",
+          "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+        ]
+      },
+      "source_snapshot": [],
+      "import_source": null,
+      "calculator_hash": "6d0b613ba5293b782a40d0b9580f1e66710ed941ca595a44ca5475b9c5cd4e3e",
+      "created_at": "2026-11-08T08:42:45.330390+00:00",
+      "hash": "91e9dc6b04a7dcba5cf5220c4241b1454bbf243a35d379127e8f98cb136135b9",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "calculated"
+    }
+  },
+  "task": {
+    "agent_id": "agent_7e0f17718362412c8bac5df8f47e4594",
+    "project_id": "project_244c60fa92764619b522f61181584b6e",
+    "question": "设备部分只列CSV样本总数及单位。碳部分只解释核算期间，不列任何碳排放数值。",
+    "mode": "local_model",
+    "status": "failed",
+    "events": [
+      {
+        "tool": "llm.request",
+        "status": "failed",
+        "started_at": "2026-11-08T08:42:45.353281+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "error": "服务商调用失败；不会降级为假成功",
+        "duration_ms": 20765,
+        "finished_at": "2026-11-08T08:43:06.133779+00:00"
+      }
+    ],
+    "answer": null,
+    "created_at": "2026-11-08T08:42:45.348279+00:00",
+    "llm_commentary": null,
+    "error": "本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果",
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 0,
+    "provider_recovery_attempts": 0,
+    "professional_deliveries": [],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "device",
+        "kind": "operation",
+        "purpose": "results",
+        "record_id": "operation_5aacce24be34412497021b597cd45d60"
+      },
+      {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_ea6e9e0eea204903af88a4121eba984d"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "review_intent": true,
+    "revision": 4,
+    "read_request_progress": [
+      {
+        "request_key": "device",
+        "kind": "operation",
+        "purpose": "results",
+        "record_id": "operation_5aacce24be34412497021b597cd45d60",
+        "state": "output_plan_missing"
+      },
+      {
+        "request_key": "carbon",
+        "kind": "lifecycle",
+        "purpose": "results",
+        "record_id": "lifecycle_ea6e9e0eea204903af88a4121eba984d",
+        "state": "output_plan_missing"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T08:43:06.141859+00:00"
+  }
+}

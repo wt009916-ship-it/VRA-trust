@@ -167,6 +167,12 @@ def measure_layers(path, product_id, *, mesh_sink=None, _document=None):
     def refuse(reason):
         result.update(reason=reason,layers=[],total_layer_envelope_m3=None)
         return result
+    if element.is_a('IfcBeam') or element.is_a('IfcColumn'):
+        try:
+            from .ifc_member_quantities import measure_member
+        except ImportError:
+            from ifc_member_quantities import measure_member
+        return measure_member(doc, element, mesh_sink=mesh_sink)
     wall = element.is_a('IfcWall')
     if not (wall or element.is_a('IfcSlab') or element.is_a('IfcPlate')):
         return refuse('element_layer_reference_not_supported')

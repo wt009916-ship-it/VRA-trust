@@ -1,0 +1,230 @@
+{
+  "tasks": [
+    {
+      "id": "B01",
+      "message": "给出构造thermal_330d9510fbc3423b9e87fce9447ff377的传热系数U，只要这一项，不要热阻。",
+      "expected": {
+        "facts": {
+          "A": [
+            "u_w_m2k"
+          ]
+        }
+      },
+      "previous_case": null,
+      "action": null,
+      "body": {
+        "message": "给出构造thermal_330d9510fbc3423b9e87fce9447ff377的传热系数U，只要这一项，不要热阻。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "B02",
+      "message": "刚才那面构造，这一轮改为只看加上两侧表面热阻后的总R，不要U也不要各层热阻。",
+      "expected": {
+        "facts": {
+          "A": [
+            "total_resistance_m2k_w"
+          ]
+        }
+      },
+      "previous_case": "B01",
+      "action": null,
+      "body": {
+        "message": "刚才那面构造，这一轮改为只看加上两侧表面热阻后的总R，不要U也不要各层热阻。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "B06",
+      "message": "读取enduse_8231f75b68d04008844dc2ae1e2889ed的室内设备电能和室内设备燃气能量，并解释为什么同用kWh也不能都称作耗电。不要总场地能耗或其他端用途。",
+      "expected": {
+        "energy_relationship": true,
+        "energy_total": {
+          "electricity": "11646",
+          "gas": "327252/25"
+        }
+      },
+      "previous_case": null,
+      "action": null,
+      "body": {
+        "message": "读取enduse_8231f75b68d04008844dc2ae1e2889ed的室内设备电能和室内设备燃气能量，并解释为什么同用kWh也不能都称作耗电。不要总场地能耗或其他端用途。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "B08",
+      "message": "给lifecycle_53445f270422457a9381b8d2f20ee954声明边界碳总量，并明确这是每年排放还是整个评估期累计，覆盖多少年。不要单位面积结果，也不要认证。",
+      "expected": {
+        "facts": {
+          "carbon": [
+            "boundary_total_kgco2e"
+          ]
+        },
+        "period_explanation": 15
+      },
+      "previous_case": null,
+      "action": null,
+      "body": {
+        "message": "给lifecycle_53445f270422457a9381b8d2f20ee954声明边界碳总量，并明确这是每年排放还是整个评估期累计，覆盖多少年。不要单位面积结果，也不要认证。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "B15",
+      "message": "再读此前那面构造的总R；如果当前来源已失效，请说明现状，不沿用旧数值。",
+      "expected": {
+        "stale": "A",
+        "no_numbers": true,
+        "critical": true
+      },
+      "previous_case": "B02",
+      "action": "change_project",
+      "body": {
+        "message": "再读此前那面构造的总R；如果当前来源已失效，请说明现状，不沿用旧数值。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    },
+    {
+      "id": "B16",
+      "message": "读取构造thermal_4247a479961a46808a76247319687928的总R。如果当前项目里找不到这个指定编号，请说明当前范围内不可用，不查询别的项目，也不要拿其他构造代替。",
+      "expected": {
+        "missing": "thermal_4247a479961a46808a76247319687928",
+        "no_numbers": true,
+        "critical": true
+      },
+      "previous_case": null,
+      "action": null,
+      "body": {
+        "message": "读取构造thermal_4247a479961a46808a76247319687928的总R。如果当前项目里找不到这个指定编号，请说明当前范围内不可用，不查询别的项目，也不要拿其他构造代替。",
+        "mode": "local_model",
+        "allow_compute": false
+      }
+    }
+  ],
+  "ids": {
+    "A": "thermal_330d9510fbc3423b9e87fce9447ff377",
+    "B": "thermal_f459dca5097d4e15817a5615519fdc8d",
+    "cost": "cost_1d1a197be2a44f119f41fa3615dd241c",
+    "carbon": "lifecycle_53445f270422457a9381b8d2f20ee954",
+    "incomplete": "lifecycle_9864d210d3bc4077a64e2776b6746f62",
+    "injection": "thermal_9f16d12371bc4899b8ef809ebc011a74",
+    "foreign": "thermal_4247a479961a46808a76247319687928",
+    "enduse": "enduse_8231f75b68d04008844dc2ae1e2889ed",
+    "zero": "utility_db8491469a854f839dec9d12c04c572b"
+  },
+  "oracle": {
+    "wall_A_R": "39/20",
+    "wall_A_U": "20/39",
+    "wall_B_R": "33/20",
+    "wall_B_U": "20/33",
+    "injection_R": "63/40",
+    "material_total": "113.40",
+    "carbon_total": "210",
+    "carbon_operation": "90",
+    "carbon_years": 15,
+    "new_wall_R": "62/25",
+    "new_wall_U": "25/62",
+    "energy_source": {
+      "id": "2020",
+      "year": 2020,
+      "dst_expected": false,
+      "model_sha256": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+      "weather_sha256": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+      "monthly_expected": [
+        {
+          "start": "2020-01-01T00:00",
+          "end": "2020-02-01T00:00",
+          "hours": 744,
+          "electricity_kwh": "3348/5",
+          "gas_kwh": "11904/5"
+        },
+        {
+          "start": "2020-02-01T00:00",
+          "end": "2020-03-01T00:00",
+          "hours": 696,
+          "electricity_kwh": "3828/5",
+          "gas_kwh": "9744/5"
+        },
+        {
+          "start": "2020-03-01T00:00",
+          "end": "2020-04-01T00:00",
+          "hours": 744,
+          "electricity_kwh": "744",
+          "gas_kwh": "7812/5"
+        },
+        {
+          "start": "2020-04-01T00:00",
+          "end": "2020-05-01T00:00",
+          "hours": 720,
+          "electricity_kwh": "936",
+          "gas_kwh": "1008"
+        },
+        {
+          "start": "2020-05-01T00:00",
+          "end": "2020-06-01T00:00",
+          "hours": 744,
+          "electricity_kwh": "5952/5",
+          "gas_kwh": "2604/5"
+        },
+        {
+          "start": "2020-06-01T00:00",
+          "end": "2020-07-01T00:00",
+          "hours": 720,
+          "electricity_kwh": "1296",
+          "gas_kwh": "216"
+        },
+        {
+          "start": "2020-07-01T00:00",
+          "end": "2020-08-01T00:00",
+          "hours": 744,
+          "electricity_kwh": "7812/5",
+          "gas_kwh": "3348/25"
+        },
+        {
+          "start": "2020-08-01T00:00",
+          "end": "2020-09-01T00:00",
+          "hours": 744,
+          "electricity_kwh": "6324/5",
+          "gas_kwh": "4464/25"
+        },
+        {
+          "start": "2020-09-01T00:00",
+          "end": "2020-10-01T00:00",
+          "hours": 720,
+          "electricity_kwh": "1044",
+          "gas_kwh": "432"
+        },
+        {
+          "start": "2020-10-01T00:00",
+          "end": "2020-11-01T00:00",
+          "hours": 744,
+          "electricity_kwh": "4464/5",
+          "gas_kwh": "4836/5"
+        },
+        {
+          "start": "2020-11-01T00:00",
+          "end": "2020-12-01T00:00",
+          "hours": 720,
+          "electricity_kwh": "648",
+          "gas_kwh": "1584"
+        },
+        {
+          "start": "2020-12-01T00:00",
+          "end": "2021-01-01T00:00",
+          "hours": 744,
+          "electricity_kwh": "3162/5",
+          "gas_kwh": "10788/5"
+        }
+      ],
+      "hourly_absolute_kwh_tolerance": "0.00000001",
+      "scope": "Independent declared schedules, equipment energy entirely lost outside thermal zone; no equipment performance or building calibration assertion."
+    },
+    "formula": "Rsi+Rse+sum(d/k); cost13.5*1.05*8; carbon0.4*1000*0.3+12*0.5*15; source parameters explicitly synthetic"
+  },
+  "gate": "At least14/16 with zero critical semantic/authorization failures before reconsidering score; whole task incl explanations, not state flag. All originals retained."
+}

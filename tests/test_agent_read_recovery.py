@@ -56,15 +56,20 @@ def test_one_absence_delivery_does_not_erase_other_selected_missing_target(clien
 
 
 @pytest.mark.parametrize('foreign_first',[False,True])
-def test_foreign_target_refuses_whole_batch_without_partial_metadata(client,monkeypatch,foreign_first):
+def test_foreign_target_is_scoped_unavailable_without_partial_metadata(client,monkeypatch,foreign_first):
     pid=create_project(client)['project_id'];other=create_project(client)['project_id'];a=client.app.state.agent
     foreign=create_record(client,other,'thermal')['thermal_id'];absent='operation_'+'9'*32
     ids=[foreign,absent] if foreign_first else [absent,foreign]
-    history=scripted(a,monkeypatch,[tool('professional_read_many',{'record_ids':ids})])
+    history=scripted(a,monkeypatch,[tool('professional_read_many',{'record_ids':ids}),
+        tool('professional_missing',{'missing':{'kinds':['thermal'],'record_id':foreign,'finish':False}}),
+        tool('professional_missing',{'missing':{'kinds':['operation'],'record_id':absent,'finish':True}})])
     t=a.start(pid,Chat(message='Read '+', '.join(ids),mode='provider'),background=False)
-    assert t['status']=='failed' and 'Cross-project' in t['error']
-    assert len(history)==1 and not t['recovery_attempts']
-    assert not any(e.get('recovery') or e.get('parent_event') is not None for e in t['events'])
+    assert t['status']=='succeeded',t.get('error')
+    recovery=tool_reply(history[1])
+    assert recovery['unavailable_record_ids']==ids and recovery['present_record_ids']==[]
+    assert 'Cross-project' not in json.dumps(recovery) and other not in json.dumps(t)
+    assert {r['record_id'] for r in t['answer']['checked_missing']}==set(ids)
+    assert not any(e['tool']=='thermal_read' or e.get('parent_event') is not None for e in t['events'])
 
 
 def test_internal_read_key_error_is_not_evidence_of_absence(client,monkeypatch):

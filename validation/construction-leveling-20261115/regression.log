@@ -1,0 +1,79 @@
+........................................................................ [ 43%]
+...........................................F.....F.................F.... [ 86%]
+......................                                                   [100%]
+================================== FAILURES ===================================
+_ test_revision_during_calculation_refuses_direct_service_write[project-schedule] _
+
+client = <starlette.testclient.TestClient object at 0x0000019A8D98B1A0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000019A8D78AF30>
+kind = 'schedule', change = 'project'
+
+    @pytest.mark.parametrize('kind', KINDS)
+    @pytest.mark.parametrize('change', ['project', 'evidence'])
+    def test_revision_during_calculation_refuses_direct_service_write(client, monkeypatch, kind, change):
+        domain, pid, p = setup_plan(client, kind)
+        p, ev = with_evidence(client, domain, pid, p)
+        service = inspection(kind).service(domain)
+        module = importlib.import_module(service.__module__)
+        function = 'analyze' if kind == 'operation' else 'calculate'
+>       original = getattr(module, function)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backend.construction_records' has no attribute 'calculate'
+
+tests\test_calculation_provenance.py:104: AttributeError
+_ test_revision_during_calculation_refuses_direct_service_write[evidence-schedule] _
+
+client = <starlette.testclient.TestClient object at 0x0000019A8AF54500>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000019A8B290710>
+kind = 'schedule', change = 'evidence'
+
+    @pytest.mark.parametrize('kind', KINDS)
+    @pytest.mark.parametrize('change', ['project', 'evidence'])
+    def test_revision_during_calculation_refuses_direct_service_write(client, monkeypatch, kind, change):
+        domain, pid, p = setup_plan(client, kind)
+        p, ev = with_evidence(client, domain, pid, p)
+        service = inspection(kind).service(domain)
+        module = importlib.import_module(service.__module__)
+        function = 'analyze' if kind == 'operation' else 'calculate'
+>       original = getattr(module, function)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'backend.construction_records' has no attribute 'calculate'
+
+tests\test_calculation_provenance.py:104: AttributeError
+______ test_exact_stale_cause_and_no_current_values[calculator-schedule] ______
+
+client = <starlette.testclient.TestClient object at 0x0000019A8AD51250>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000019A8CFBBA70>
+kind = 'schedule', change = 'calculator'
+
+    @pytest.mark.parametrize('kind', KINDS)
+    @pytest.mark.parametrize('change', ['rejected', 'revision', 'calculator'])
+    def test_exact_stale_cause_and_no_current_values(client, monkeypatch, kind, change):
+        domain, pid, p = setup_plan(client, kind)
+        p, ev = with_evidence(client, domain, pid, p)
+        spec = inspection(kind); service = spec.service(domain)
+        record = service.save(pid, p.input)
+        if change == 'calculator':
+            module = importlib.import_module(service.__module__)
+            monkeypatch.setattr(module, 'provenance_version', lambda path: 'changed-test-version')
+        else:
+            domain.store.put('evidence', {**ev, 'review_state':'rejected' if change == 'rejected' else 'confirmed'}, ev['revision'])
+        current = service.view(pid, record[spec.record_key])
+>       assert current['status'] == 'stale' and current['result'] is None
+E       AssertionError: assert ('calculated' == 'stale'
+E         
+E         - stale
+E         + calculated)
+
+tests\test_calculation_provenance.py:131: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_calculation_provenance.py::test_revision_during_calculation_refuses_direct_service_write[project-schedule]
+FAILED tests/test_calculation_provenance.py::test_revision_during_calculation_refuses_direct_service_write[evidence-schedule]
+FAILED tests/test_calculation_provenance.py::test_exact_stale_cause_and_no_current_values[calculator-schedule]
+3 failed, 163 passed, 1 warning in 164.06s (0:02:44)

@@ -48,3 +48,15 @@ test('OCR-assisted citations never claim text-layer verification and retain audi
  assert.match(html,/OCR辅助摘录 · 人工修订复核/);assert.ok(!html.includes('文字层位置已核对'));
  assert.match(html,/standard-ocr\/normocr_test/);assert.match(html,/Compare &lt;original&gt;/);
 });
+
+
+test('semantic selection stays explicit and never renders a confidence or verified relevance claim',()=>{
+ const body=standardQueryBody({mode:'semantic',text:' 房间有回声 ',as_of:'2022-04-01'});
+ assert.equal(body.retrieval,'semantic');assert.equal(body.text,'房间有回声');
+ const r=group('TEST A','2.2.4');r.status='RELEVANCE_REVIEW_REQUIRED';r.retrieval={method:'semantic',confidence:null};
+ r.citations[0].relevance_verified=false;r.citations[0].score=.98;
+ const html=standardResultMarkup(r,'project_a');
+ assert.match(html,/相关性待核对/);assert.match(html,/相似度不是置信度/);
+ assert.ok(!html.includes('98%')&&!html.includes('找到已复核引文'));
+ assert.match(html,/参与排序/);assert.match(html,/source.pdf#page=2/);
+});

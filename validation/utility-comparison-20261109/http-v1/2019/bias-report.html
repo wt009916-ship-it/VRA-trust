@@ -1,0 +1,357 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>账单与模拟比较</title><style>body{font:15px/1.7 system-ui;margin:32px auto;max-width:1200px;padding:20px}td,th{border:1px solid #bbb;padding:6px}table{border-collapse:collapse}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>Synthetic 2019 bias</h1><p>Compare declared independent interval reference; never real-building calibration</p><p>账单性质：synthetic；配对：exact_calendar；原生年份：2019；气象年份：[2019]。本地标准时，开始含、结束不含。</p><p>bill_is_reference_or_synthetic</p><p>MBE%：10.000000000000004；CV(RMSE)%：10.442384935122586；RMSE kWh：91.92146666072</p><p>声明阈值内：False。此判定不是实楼校准或合规认证。</p><table><tr><th>原行</th><th>账期开始（含）</th><th>账期结束（不含）</th><th>账单kWh</th><th>模拟kWh</th><th>模拟−账单kWh</th></tr><tr><td>2</td><td>2019-01-01T00:00</td><td>2019-02-01T00:00</td><td>608.7272727272727</td><td>669.6</td><td>60.8727272727273</td></tr><tr><td>3</td><td>2019-02-01T00:00</td><td>2019-03-01T00:00</td><td>672.0</td><td>739.2</td><td>67.2</td></tr><tr><td>4</td><td>2019-03-01T00:00</td><td>2019-04-01T00:00</td><td>676.3636363636364</td><td>744.0</td><td>67.6363636363636</td></tr><tr><td>5</td><td>2019-04-01T00:00</td><td>2019-05-01T00:00</td><td>850.9090909090909</td><td>936.0</td><td>85.0909090909091</td></tr><tr><td>6</td><td>2019-05-01T00:00</td><td>2019-06-01T00:00</td><td>1082.1818181818182</td><td>1190.4</td><td>108.2181818181818</td></tr><tr><td>7</td><td>2019-06-01T00:00</td><td>2019-07-01T00:00</td><td>1178.1818181818182</td><td>1296.0</td><td>117.8181818181818</td></tr><tr><td>8</td><td>2019-07-01T00:00</td><td>2019-08-01T00:00</td><td>1420.3636363636363</td><td>1562.4</td><td>142.0363636363637</td></tr><tr><td>9</td><td>2019-08-01T00:00</td><td>2019-09-01T00:00</td><td>1149.8181818181818</td><td>1264.8000000000002</td><td>114.98181818181841</td></tr><tr><td>10</td><td>2019-09-01T00:00</td><td>2019-10-01T00:00</td><td>949.0909090909091</td><td>1044.0</td><td>94.9090909090909</td></tr><tr><td>11</td><td>2019-10-01T00:00</td><td>2019-11-01T00:00</td><td>811.6363636363636</td><td>892.8</td><td>81.1636363636364</td></tr><tr><td>12</td><td>2019-11-01T00:00</td><td>2019-12-01T00:00</td><td>589.0909090909091</td><td>648.0</td><td>58.9090909090909</td></tr><tr><td>13</td><td>2019-12-01T00:00</td><td>2020-01-01T00:00</td><td>574.9090909090909</td><td>632.4000000000001</td><td>57.490909090909206</td></tr></table><ul><li>仅比较声明账期与原生模拟能量，不自动校准模型，不证明实楼预测准确性或节能合规。</li><li>数据性质、计量边界、来源与时间基准须人工复核；来源确认不使参考数据变成实测。</li><li>误差按账期数等权计算，分母为n；不是按天加权，不采用n−p，不把月数据按小时阈值评价。</li><li>仅支持本地标准时整点、完整单年度原生计量；夏令时、净负能量及跨多年度不支持。</li><li>参考日历映射只对齐月日小时，不证明同年天气、运行条件或建筑一致。</li><li>阈值是使用者声明的比较目标，满足阈值不等于获得任何认证。</li></ul><details><summary>时间映射、边界和完整来源回执</summary><pre>{
+  &quot;utility_id&quot;: &quot;utility_0242936df2ed40bea9d335c4bcdd9da4&quot;,
+  &quot;project_id&quot;: &quot;project_8d074b6f4f384b549f9116ba2c52b2bb&quot;,
+  &quot;project_revision&quot;: 1,
+  &quot;input&quot;: {
+    &quot;name&quot;: &quot;Synthetic 2019 bias&quot;,
+    &quot;purpose&quot;: &quot;Compare declared independent interval reference; never real-building calibration&quot;,
+    &quot;run_id&quot;: &quot;run_31de0499b6a04569a8d74c1056d5b769&quot;,
+    &quot;bill_evidence_id&quot;: &quot;evidence_9b2e0ca66c544876af7185beab95cab1&quot;,
+    &quot;meter&quot;: &quot;Electricity:Facility&quot;,
+    &quot;bill_nature&quot;: &quot;synthetic&quot;,
+    &quot;alignment&quot;: &quot;exact_calendar&quot;,
+    &quot;period_kind&quot;: &quot;calendar_month&quot;,
+    &quot;clock_source&quot;: &quot;Frozen declared local standard time; no DST&quot;,
+    &quot;boundary_note&quot;: &quot;All declared electric equipment and no other consumption; synthetic original bill&quot;,
+    &quot;max_abs_mbe_percent&quot;: 5.0,
+    &quot;max_cvrmse_percent&quot;: 5.0,
+    &quot;threshold_source&quot;: &quot;Explicit synthetic test goal, not a compliance certification&quot;
+  },
+  &quot;actor_user_id&quot;: &quot;user_09dc8878106a4b0c98441e139830f031&quot;,
+  &quot;created_at&quot;: &quot;2026-11-08T18:47:43.787883+00:00&quot;,
+  &quot;calculator_version&quot;: &quot;4c6d5dcbe6fd82ea2aa3d5c3219b4687803eca401737411d62dc2ed9a86c65f3&quot;,
+  &quot;source_run&quot;: {
+    &quot;run_id&quot;: &quot;run_31de0499b6a04569a8d74c1056d5b769&quot;,
+    &quot;scheme_id&quot;: &quot;baseline&quot;,
+    &quot;model_sha256&quot;: &quot;c87e32d055906aa4855c841e76740a6f18c5bf76053fb88d66c42e33c5de0f9f&quot;,
+    &quot;weather_sha256&quot;: &quot;651f8790bc674a4b45e265810dbca8ede2fbbe828cc691f94f41bb989c8b3744&quot;,
+    &quot;engine_sha256&quot;: &quot;9d2d3c621381c310260be195cec2a43ef29c73aefcf76f85e57e7cecee823015&quot;,
+    &quot;idd_sha256&quot;: &quot;fb46468aa8ec9136dc9372c9289ffbb2a5b5a952c6ed3c16234cb44ff05e2355&quot;,
+    &quot;code_sha256&quot;: &quot;cc6f9c8c1ec3f9208b92aa4deff262f38820ebbe59b6785c93ebd732394cadcf&quot;,
+    &quot;sql_sha256&quot;: &quot;fdcf9923e3119a32e75af29ac646fa79cdf927625fab6a5fb3f5cb6c9e8fbbcb&quot;,
+    &quot;mtd_sha256&quot;: &quot;7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1&quot;
+  },
+  &quot;file_snapshot&quot;: {
+    &quot;file_id&quot;: &quot;file_cb3332e8ddfb4292ba21adce29fd9f17&quot;,
+    &quot;project_id&quot;: &quot;project_8d074b6f4f384b549f9116ba2c52b2bb&quot;,
+    &quot;name&quot;: &quot;bias.csv&quot;,
+    &quot;path&quot;: &quot;files/file_cb3332e8ddfb4292ba21adce29fd9f17.csv&quot;,
+    &quot;hash&quot;: &quot;8b4015c274c433270ceeff78a897996a82ffce4c2c79c2ba5e92ffabdf13df4b&quot;,
+    &quot;size&quot;: 838,
+    &quot;timestamp&quot;: &quot;2026-11-08T18:47:35.513620+00:00&quot;,
+    &quot;revision&quot;: 1
+  },
+  &quot;evidence_snapshot&quot;: [
+    {
+      &quot;type&quot;: &quot;bill&quot;,
+      &quot;name&quot;: &quot;bias.csv&quot;,
+      &quot;source_file&quot;: &quot;file_cb3332e8ddfb4292ba21adce29fd9f17&quot;,
+      &quot;source_locator&quot;: &quot;Frozen independent synthetic reference, original bytes retained&quot;,
+      &quot;value&quot;: null,
+      &quot;unit&quot;: null,
+      &quot;authority&quot;: &quot;Reference author&quot;,
+      &quot;permission&quot;: &quot;Local public-reference verification&quot;,
+      &quot;uncertainty&quot;: null,
+      &quot;confidence&quot;: null,
+      &quot;acquisition_method&quot;: &quot;Declared schedules, not measured building&quot;,
+      &quot;responsible_person&quot;: &quot;Acceptance author&quot;,
+      &quot;status&quot;: &quot;ASSUMED&quot;,
+      &quot;scheme_id&quot;: null,
+      &quot;evidence_id&quot;: &quot;evidence_9b2e0ca66c544876af7185beab95cab1&quot;,
+      &quot;project_id&quot;: &quot;project_8d074b6f4f384b549f9116ba2c52b2bb&quot;,
+      &quot;revision&quot;: 2,
+      &quot;timestamp&quot;: &quot;2026-11-08T18:47:35.547217+00:00&quot;,
+      &quot;hash&quot;: &quot;8b4015c274c433270ceeff78a897996a82ffce4c2c79c2ba5e92ffabdf13df4b&quot;,
+      &quot;review_state&quot;: &quot;confirmed&quot;,
+      &quot;review_note&quot;: &quot;Synthetic source reviewed for arithmetic only, not real-building data&quot;
+    }
+  ],
+  &quot;result&quot;: {
+    &quot;status&quot;: &quot;compared_reference&quot;,
+    &quot;calibration_status&quot;: &quot;not_certified_or_automatically_calibrated&quot;,
+    &quot;rows&quot;: [
+      {
+        &quot;source_line&quot;: 2,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-01-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-02-01T00:00&quot;,
+          &quot;energy&quot;: &quot;608.7272727272727&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-01-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-02-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 0,
+        &quot;native_hour_end_exclusive_index&quot;: 744,
+        &quot;hours&quot;: 744,
+        &quot;bill_kwh&quot;: 608.7272727272727,
+        &quot;native_kwh&quot;: 669.6,
+        &quot;difference_kwh&quot;: 60.8727272727273
+      },
+      {
+        &quot;source_line&quot;: 3,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-02-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-03-01T00:00&quot;,
+          &quot;energy&quot;: &quot;672.0&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-02-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-03-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 744,
+        &quot;native_hour_end_exclusive_index&quot;: 1416,
+        &quot;hours&quot;: 672,
+        &quot;bill_kwh&quot;: 672.0,
+        &quot;native_kwh&quot;: 739.2,
+        &quot;difference_kwh&quot;: 67.2
+      },
+      {
+        &quot;source_line&quot;: 4,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-03-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-04-01T00:00&quot;,
+          &quot;energy&quot;: &quot;676.3636363636364&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-03-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-04-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 1416,
+        &quot;native_hour_end_exclusive_index&quot;: 2160,
+        &quot;hours&quot;: 744,
+        &quot;bill_kwh&quot;: 676.3636363636364,
+        &quot;native_kwh&quot;: 744.0,
+        &quot;difference_kwh&quot;: 67.6363636363636
+      },
+      {
+        &quot;source_line&quot;: 5,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-04-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-05-01T00:00&quot;,
+          &quot;energy&quot;: &quot;850.9090909090909&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-04-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-05-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 2160,
+        &quot;native_hour_end_exclusive_index&quot;: 2880,
+        &quot;hours&quot;: 720,
+        &quot;bill_kwh&quot;: 850.9090909090909,
+        &quot;native_kwh&quot;: 936.0,
+        &quot;difference_kwh&quot;: 85.0909090909091
+      },
+      {
+        &quot;source_line&quot;: 6,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-05-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-06-01T00:00&quot;,
+          &quot;energy&quot;: &quot;1082.1818181818182&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-05-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-06-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 2880,
+        &quot;native_hour_end_exclusive_index&quot;: 3624,
+        &quot;hours&quot;: 744,
+        &quot;bill_kwh&quot;: 1082.1818181818182,
+        &quot;native_kwh&quot;: 1190.4,
+        &quot;difference_kwh&quot;: 108.2181818181818
+      },
+      {
+        &quot;source_line&quot;: 7,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-06-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-07-01T00:00&quot;,
+          &quot;energy&quot;: &quot;1178.1818181818182&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-06-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-07-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 3624,
+        &quot;native_hour_end_exclusive_index&quot;: 4344,
+        &quot;hours&quot;: 720,
+        &quot;bill_kwh&quot;: 1178.1818181818182,
+        &quot;native_kwh&quot;: 1296.0,
+        &quot;difference_kwh&quot;: 117.8181818181818
+      },
+      {
+        &quot;source_line&quot;: 8,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-07-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-08-01T00:00&quot;,
+          &quot;energy&quot;: &quot;1420.3636363636363&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-07-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-08-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 4344,
+        &quot;native_hour_end_exclusive_index&quot;: 5088,
+        &quot;hours&quot;: 744,
+        &quot;bill_kwh&quot;: 1420.3636363636363,
+        &quot;native_kwh&quot;: 1562.4,
+        &quot;difference_kwh&quot;: 142.0363636363637
+      },
+      {
+        &quot;source_line&quot;: 9,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-08-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-09-01T00:00&quot;,
+          &quot;energy&quot;: &quot;1149.8181818181818&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-08-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-09-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 5088,
+        &quot;native_hour_end_exclusive_index&quot;: 5832,
+        &quot;hours&quot;: 744,
+        &quot;bill_kwh&quot;: 1149.8181818181818,
+        &quot;native_kwh&quot;: 1264.8000000000002,
+        &quot;difference_kwh&quot;: 114.98181818181841
+      },
+      {
+        &quot;source_line&quot;: 10,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-09-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-10-01T00:00&quot;,
+          &quot;energy&quot;: &quot;949.0909090909091&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-09-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-10-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 5832,
+        &quot;native_hour_end_exclusive_index&quot;: 6552,
+        &quot;hours&quot;: 720,
+        &quot;bill_kwh&quot;: 949.0909090909091,
+        &quot;native_kwh&quot;: 1044.0,
+        &quot;difference_kwh&quot;: 94.9090909090909
+      },
+      {
+        &quot;source_line&quot;: 11,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-10-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-11-01T00:00&quot;,
+          &quot;energy&quot;: &quot;811.6363636363636&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-10-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-11-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 6552,
+        &quot;native_hour_end_exclusive_index&quot;: 7296,
+        &quot;hours&quot;: 744,
+        &quot;bill_kwh&quot;: 811.6363636363636,
+        &quot;native_kwh&quot;: 892.8,
+        &quot;difference_kwh&quot;: 81.1636363636364
+      },
+      {
+        &quot;source_line&quot;: 12,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-11-01T00:00&quot;,
+          &quot;end&quot;: &quot;2019-12-01T00:00&quot;,
+          &quot;energy&quot;: &quot;589.0909090909091&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-11-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2019-12-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 7296,
+        &quot;native_hour_end_exclusive_index&quot;: 8016,
+        &quot;hours&quot;: 720,
+        &quot;bill_kwh&quot;: 589.0909090909091,
+        &quot;native_kwh&quot;: 648.0,
+        &quot;difference_kwh&quot;: 58.9090909090909
+      },
+      {
+        &quot;source_line&quot;: 13,
+        &quot;original&quot;: {
+          &quot;start&quot;: &quot;2019-12-01T00:00&quot;,
+          &quot;end&quot;: &quot;2020-01-01T00:00&quot;,
+          &quot;energy&quot;: &quot;574.9090909090909&quot;,
+          &quot;unit&quot;: &quot;kWh&quot;,
+          &quot;carrier&quot;: &quot;Electricity&quot;
+        },
+        &quot;mapped_start&quot;: &quot;2019-12-01T00:00&quot;,
+        &quot;mapped_end&quot;: &quot;2020-01-01T00:00&quot;,
+        &quot;native_hour_start_index&quot;: 8016,
+        &quot;native_hour_end_exclusive_index&quot;: 8760,
+        &quot;hours&quot;: 744,
+        &quot;bill_kwh&quot;: 574.9090909090909,
+        &quot;native_kwh&quot;: 632.4000000000001,
+        &quot;difference_kwh&quot;: 57.490909090909206
+      }
+    ],
+    &quot;statistics&quot;: {
+      &quot;method&quot;: &quot;FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator&quot;,
+      &quot;interval_count&quot;: 12,
+      &quot;denominator&quot;: 12,
+      &quot;bill_total_kwh&quot;: 10563.272727272728,
+      &quot;native_total_kwh&quot;: 11619.6,
+      &quot;mbe_percent&quot;: 10.000000000000004,
+      &quot;rmse_kwh&quot;: 91.92146666072,
+      &quot;cvrmse_percent&quot;: 10.442384935122586,
+      &quot;not_evaluable_reason&quot;: null
+    },
+    &quot;within_declared_tolerances&quot;: false,
+    &quot;context_reasons&quot;: [
+      &quot;bill_is_reference_or_synthetic&quot;
+    ],
+    &quot;native&quot;: {
+      &quot;version&quot;: &quot;EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.09 02:47&quot;,
+      &quot;year&quot;: 2019,
+      &quot;hours&quot;: 8760,
+      &quot;clock_basis&quot;: &quot;local_standard_time&quot;,
+      &quot;weather_years&quot;: [
+        2019
+      ],
+      &quot;weather_calendar_matches_native&quot;: true,
+      &quot;ideal_systems&quot;: [],
+      &quot;selected_meter&quot;: {
+        &quot;name&quot;: &quot;Electricity:Facility&quot;,
+        &quot;resource&quot;: &quot;Electricity&quot;,
+        &quot;dictionary_index&quot;: 9,
+        &quot;native_unit&quot;: &quot;J&quot;,
+        &quot;reporting_frequency&quot;: &quot;Hourly&quot;,
+        &quot;component_sources&quot;: [
+          {
+            &quot;native_variable_index&quot;: 7,
+            &quot;variable&quot;: &quot;METERED ELECTRIC:Electric Equipment Electric Energy&quot;,
+            &quot;unit&quot;: &quot;J&quot;,
+            &quot;line&quot;: 2
+          }
+        ]
+      },
+      &quot;source_hashes&quot;: {
+        &quot;sql&quot;: &quot;fdcf9923e3119a32e75af29ac646fa79cdf927625fab6a5fb3f5cb6c9e8fbbcb&quot;,
+        &quot;model&quot;: &quot;c87e32d055906aa4855c841e76740a6f18c5bf76053fb88d66c42e33c5de0f9f&quot;,
+        &quot;weather&quot;: &quot;651f8790bc674a4b45e265810dbca8ede2fbbe828cc691f94f41bb989c8b3744&quot;,
+        &quot;mtd&quot;: &quot;7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1&quot;
+      }
+    },
+    &quot;coverage&quot;: {
+      &quot;compared_hours&quot;: 8760,
+      &quot;native_year_hours&quot;: 8760,
+      &quot;complete_year&quot;: true,
+      &quot;period_kind&quot;: &quot;calendar_month&quot;
+    },
+    &quot;limitations&quot;: [
+      &quot;仅比较声明账期与原生模拟能量，不自动校准模型，不证明实楼预测准确性或节能合规。&quot;,
+      &quot;数据性质、计量边界、来源与时间基准须人工复核；来源确认不使参考数据变成实测。&quot;,
+      &quot;误差按账期数等权计算，分母为n；不是按天加权，不采用n−p，不把月数据按小时阈值评价。&quot;,
+      &quot;仅支持本地标准时整点、完整单年度原生计量；夏令时、净负能量及跨多年度不支持。&quot;,
+      &quot;参考日历映射只对齐月日小时，不证明同年天气、运行条件或建筑一致。&quot;,
+      &quot;阈值是使用者声明的比较目标，满足阈值不等于获得任何认证。&quot;
+    ]
+  },
+  &quot;hash&quot;: &quot;0840f997a4da4a39f3e90095b48de0bf025b79cc2516d630e6593033f0351c6d&quot;,
+  &quot;revision&quot;: 1,
+  &quot;stale_reasons&quot;: [],
+  &quot;stale_details&quot;: [],
+  &quot;status&quot;: &quot;compared_reference&quot;
+}</pre></details></html>

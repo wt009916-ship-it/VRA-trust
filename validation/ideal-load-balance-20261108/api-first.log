@@ -1,0 +1,24 @@
+.F............................ssssss...........................    [100%]
+================================== FAILURES ===================================
+_______ test_missing_outputs_are_appended_without_physical_model_edits ________
+
+    def test_missing_outputs_are_appended_without_physical_model_edits():
+        raw=b'\n'.join(line for line in source().splitlines() if not line.startswith(b'Output:Variable,'))
+        result,count=diagnostic_model(raw)
+        assert result[:len(raw)]==raw and count==len(VARIABLES)
+        assert result.count(b'Output:Variable,')==len(VARIABLES)
+>       assert result.count(b'ZoneHVAC:IdealLoadsAirSystem,')==1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = <built-in method count of bytes object at 0x000002798D6CD0A0>(b'ZoneHVAC:IdealLoadsAirSystem,')
+E        +    where <built-in method count of bytes object at 0x000002798D6CD0A0> = b'Version,9.0;\nTimestep,6;\nBuilding,Synthetic steady box,0,Suburbs,0.0001,0.0001,MinimalShadowing,100,10;\nHeatBalan...Ideal Loads Outdoor Air Mass Flow Rate,Hourly;\nOutput:Variable,*,Zone Ideal Loads Supply Air Mass Flow Rate,Hourly;\n'.count
+
+tests\test_ideal_output_api.py:39: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_ideal_output_api.py::test_missing_outputs_are_appended_without_physical_model_edits
+1 failed, 56 passed, 6 skipped, 1 warning, 6 subtests passed in 43.92s

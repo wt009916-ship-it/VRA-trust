@@ -1,0 +1,170 @@
+{
+  "run_id": "run_a07be8f8dbc043ebb4b4cb5b576e3b97",
+  "case_id": "project_5d643229e2fa48d2b5d63e4a1a284a21",
+  "scheme_id": "baseline",
+  "status": "succeeded",
+  "started_at": "2026-11-12T18:40:01.296385+00:00",
+  "data_nature": "user_project",
+  "finished_at": "2026-11-12T18:40:04.045685+00:00",
+  "scheme_name": "baseline",
+  "metrics": {
+    "annual_energy_kwh": 24641.666666666664,
+    "area_m2": 25.0,
+    "eui_kwh_m2a": 985.6666666666665,
+    "energy_by_carrier_kwh": {
+      "Electricity": 11619.444444444443,
+      "Natural Gas": 13022.222222222223,
+      "Additional Fuel": 0.0,
+      "District Cooling": 0.0,
+      "District Heating": 0.0
+    },
+    "annual_days": 365,
+    "engine_sql_version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.13 02:40",
+    "locators": {
+      "total_energy": {
+        "table": "Site and Source Energy",
+        "row": "Total Site Energy",
+        "column": "Total Energy",
+        "unit": "GJ",
+        "raw_value": "88.71"
+      },
+      "area": {
+        "table": "Building Area",
+        "row": "Total Building Area",
+        "column": "Area",
+        "unit": "m2",
+        "raw_value": "25.00"
+      },
+      "Electricity": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "Electricity",
+        "unit": "GJ",
+        "raw_value": "41.83"
+      },
+      "Natural Gas": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "Natural Gas",
+        "unit": "GJ",
+        "raw_value": "46.88"
+      },
+      "Additional Fuel": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "Additional Fuel",
+        "unit": "GJ",
+        "raw_value": "0.00"
+      },
+      "District Cooling": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "District Cooling",
+        "unit": "GJ",
+        "raw_value": "0.00"
+      },
+      "District Heating": {
+        "table": "End Uses",
+        "row": "Total End Uses",
+        "column": "District Heating",
+        "unit": "GJ",
+        "raw_value": "0.00"
+      }
+    },
+    "comfort_hours": {
+      "Time Setpoint Not Met During Occupied Heating / Facility": 0.0,
+      "Time Setpoint Not Met During Occupied Cooling / Facility": 0.0,
+      "Time Not Comfortable Based on Simple ASHRAE 55-2004 / Facility": 0.0
+    },
+    "scope": "annual_site_energy_not_source_energy",
+    "parser_version": "native-sql-0.3.0",
+    "zone_design_loads": {
+      "policy_version": "zone-sensible-sizing-9.0.1-v1",
+      "parser_sha256": "ce823df8d3adb62aec3e0fefd5a286226f4154046df95603893c81f3350c904d",
+      "source_reference": "https://github.com/NatLabRockies/EnergyPlus/blob/v9.0.1/src/EnergyPlus/SizingManager.cc#L4008",
+      "status": "unavailable",
+      "rows": null,
+      "building_coincident_peak_W": null,
+      "limitations": [
+        "仅为输入模型设计工况下的分区显热负荷；不代表当地规范设计、实楼校准或设备选型结论。",
+        "计算负荷与用户调整后负荷分开；原生数值已包含分区倍率，不再次相乘。",
+        "各分区峰值发生时刻可能不同，不提供全楼同时峰值或将分区峰值求和冒充全楼负荷。",
+        "不包含潜热总冷负荷、完整设备容量与系统输配损失核验；未输出的分区不能计为零。",
+        "设计日名称不是资料来源证明；地理坐标相符也不等于设计日统计来源、版本或适用性已审核。"
+      ],
+      "model_sha256": "c87e32d055906aa4855c841e76740a6f18c5bf76053fb88d66c42e33c5de0f9f",
+      "sql_sha256": "0cc56bd8fbbc9227bdfd8d461582c9e7ec8046da8514d2b213fb69218a74c791",
+      "basis": null,
+      "site_comparison": "not_assessed",
+      "weather_station": null,
+      "weather_sha256": null,
+      "site_applicability": "requires_professional_review",
+      "reason": "Zone sizing calculation is not explicitly enabled"
+    },
+    "hourly_thermal": {
+      "status": "unavailable",
+      "policy_version": "native-hourly-sensible-9.0.1-v1",
+      "parser_sha256": "9ae5917ebf0e5a441a0cbd1a3d52e068442a9cdb09ee61855c526e6989a4e801",
+      "model_sha256": "c87e32d055906aa4855c841e76740a6f18c5bf76053fb88d66c42e33c5de0f9f",
+      "sql_sha256": "0cc56bd8fbbc9227bdfd8d461582c9e7ec8046da8514d2b213fb69218a74c791",
+      "summary": null,
+      "limitations": [
+        "逐时值是该小时的原生平均值；峰值为所选环境内的小时平均峰值，不是瞬时峰值、设计容量或设备选型结果。",
+        "显热交付量不等于电耗、燃料消耗或含潜热的总冷热量；不能据此直接核算能耗或碳排放。",
+        "全楼同时峰值按同一原生时刻汇总；分区倍率和分组倍率仅对负荷应用一次，不放大温度。",
+        "完整覆盖要求所有模型分区都具备三个逐时变量；缺测、未请求或不支持的数据不计为零。",
+        "时钟沿用原生月、日、小时及 DST 标志；未转换为 UTC，设计日与天气运行期分别处理。",
+        "只代表输入模型情景；未验证实楼校准、当地规范符合性、逐时舒适性达标或时间步独立性。"
+      ],
+      "reason": "Missing requested hourly temperature/heating/cooling variables"
+    },
+    "ideal_loads": {
+      "status": "not_applicable",
+      "policy_version": "native-ideal-load-boundaries-9.0.1-v1",
+      "parser_sha256": "133065d0226aa88575fbab76e1eaf26b4ea2492566c82df62a1e6dabbca60318",
+      "clock_parser_sha256": "9ae5917ebf0e5a441a0cbd1a3d52e068442a9cdb09ee61855c526e6989a4e801",
+      "model_sha256": "c87e32d055906aa4855c841e76740a6f18c5bf76053fb88d66c42e33c5de0f9f",
+      "sql_sha256": "0cc56bd8fbbc9227bdfd8d461582c9e7ec8046da8514d2b213fb69218a74c791",
+      "summary": null,
+      "limitations": [
+        "仅覆盖模型明确连接的理想空调系统；区内交付、供风处理、新风和热回收是不同边界，不能相加冒充全楼总耗能。",
+        "原生负荷与流量已经包含分区及分组倍率，本工具不再次相乘；温度、湿度也不能按倍率放大。",
+        "单位为逐时平均W、期间kWh热量和kg/s空气流量；不是耗电、实际设备容量、当地规范设计或实楼校准。",
+        "新风方向负荷受原生运行状态和正负截断影响；零值不证明全天无新风负荷，分项之间不强制伪造一般能量守恒。",
+        "显热/潜热按原生焓口径分解；潜热交付不一定等于输入散湿功率。不同边界的单项峰值也可能不同时发生。",
+        "每个环境全部小时及全部声明理想系统必须完整；缺变量或单位/绑定错误不填零，不自动替代为仅显热。"
+      ],
+      "reason": "Model contains no declared ideal loads air systems"
+    }
+  },
+  "carbon": {
+    "status": "incomplete",
+    "operating_carbon_kg": null,
+    "covered_carbon_kg": null,
+    "missing_carriers": [
+      "Electricity",
+      "Natural Gas"
+    ],
+    "coverage": "positive site-energy carriers only; direct and electricity CO2, not full lifecycle or all GHG",
+    "profile_id": "none",
+    "profile_hash": "3c38414d4d062543c0e5224513e86bd75c970d9f96c959fea83b9d8544463b70",
+    "scenario": false,
+    "rows": [],
+    "lca_total_kg": null,
+    "ccer_issued_t": null
+  },
+  "cost": null,
+  "limitations": [
+    "通过准入仅允许仿真，不证明模型代表真实建筑。",
+    "结构化建筑字段是核对声明，当前不会自动修改 IDF。",
+    "运行时继续核验 SQL、ERR、全年范围、面积和文件版本。",
+    "费用、舒适性、校准及稳定性尚需独立证据，不能给出确定最优建议。"
+  ],
+  "warnings_count": 3,
+  "geometry_status": "not_reconstructed",
+  "ccer": {
+    "status": "not_assessed",
+    "issued_credits_t": null,
+    "reason": "参考算例无真实业主、合规历史监测及开发核证证据。"
+  }
+}

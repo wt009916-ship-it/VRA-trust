@@ -1,0 +1,326 @@
+{
+  "case": {
+    "id": "V14",
+    "question": "不是不要施工日期，而是只要当前预测完工对应的第几天；原计划工期和偏差都不用报，不加解释。",
+    "wants": [
+      {
+        "key": "build",
+        "kind": "schedule",
+        "facts": [
+          "forecast_finish_day"
+        ],
+        "topics": []
+      }
+    ]
+  },
+  "records": {
+    "build": {
+      "schedule_id": "schedule_5b94aa32110d49299dec0baf6faa9a68",
+      "project_id": "project_807998fbff4e40dbb7194fa94828d932",
+      "project_revision": 1,
+      "input": {
+        "name": "Fresh progress network",
+        "scope": "Synthetic network, not site instructions",
+        "calendar": "continuous_elapsed_days",
+        "time_origin": "Synthetic day zero",
+        "tasks": [
+          {
+            "task_id": "A",
+            "name": "Task A",
+            "duration_days": 2.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [],
+            "demands": []
+          },
+          {
+            "task_id": "B",
+            "name": "Task B",
+            "duration_days": 5.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "A",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          },
+          {
+            "task_id": "C",
+            "name": "Task C",
+            "duration_days": 3.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "A",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          },
+          {
+            "task_id": "D",
+            "name": "Task D",
+            "duration_days": 2.0,
+            "duration_source": "Synthetic duration",
+            "predecessors": [
+              {
+                "task_id": "B",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              },
+              {
+                "task_id": "C",
+                "lag_days": 0.0,
+                "source": "Synthetic precedence"
+              }
+            ],
+            "demands": []
+          }
+        ],
+        "resources": [],
+        "evidence_ids": [],
+        "progress": {
+          "as_of_day": 4.0,
+          "source": "Synthetic progress",
+          "observations": [
+            {
+              "task_id": "A",
+              "state": "completed",
+              "actual_start_day": 0.0,
+              "actual_finish_day": 2.0,
+              "remaining_days": null,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "B",
+              "state": "in_progress",
+              "actual_start_day": 2.0,
+              "actual_finish_day": null,
+              "remaining_days": 6.0,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "C",
+              "state": "in_progress",
+              "actual_start_day": 2.0,
+              "actual_finish_day": null,
+              "remaining_days": 1.0,
+              "source": "Synthetic observation"
+            },
+            {
+              "task_id": "D",
+              "state": "not_started",
+              "actual_start_day": null,
+              "actual_finish_day": null,
+              "remaining_days": null,
+              "source": "Synthetic observation"
+            }
+          ]
+        },
+        "import_file_id": null
+      },
+      "result": {
+        "calendar": "continuous_elapsed_days",
+        "time_origin": "Synthetic day zero",
+        "scope": "Synthetic network, not site instructions",
+        "missing_duration_tasks": [],
+        "source_status": "USER_DECLARED",
+        "site_safety": "NOT_ASSESSED",
+        "resource_leveling": "NOT_IMPLEMENTED",
+        "limitations": [
+          "连续经过日，从声明的第0天起算；不自动跳过周末、节假日、天气或夜间。",
+          "只支持完成到开始FS及非负间隔；零工期表示里程碑。关键路径基于声明工期，不代表施工安全或履约保证。",
+          "预测使用显式剩余工期；不按完成百分比推测，不自动补齐未报告工序。资源冲突未自动调平。"
+        ],
+        "status": "calculated",
+        "planned": {
+          "duration_days": "9",
+          "rows": [
+            {
+              "task_id": "A",
+              "name": "Task A",
+              "start_day": "0",
+              "finish_day": "2",
+              "latest_start_day": "0",
+              "latest_finish_day": "2",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            },
+            {
+              "task_id": "B",
+              "name": "Task B",
+              "start_day": "2",
+              "finish_day": "7",
+              "latest_start_day": "2",
+              "latest_finish_day": "7",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            },
+            {
+              "task_id": "C",
+              "name": "Task C",
+              "start_day": "2",
+              "finish_day": "5",
+              "latest_start_day": "4",
+              "latest_finish_day": "7",
+              "total_float_days": "2",
+              "free_float_days": "2",
+              "critical": false
+            },
+            {
+              "task_id": "D",
+              "name": "Task D",
+              "start_day": "7",
+              "finish_day": "9",
+              "latest_start_day": "7",
+              "latest_finish_day": "9",
+              "total_float_days": "0",
+              "free_float_days": "0",
+              "critical": true
+            }
+          ],
+          "critical_tasks": [
+            "A",
+            "B",
+            "D"
+          ],
+          "critical_dependencies": [
+            {
+              "from": "A",
+              "to": "B",
+              "lag_days": "0"
+            },
+            {
+              "from": "B",
+              "to": "D",
+              "lag_days": "0"
+            }
+          ],
+          "resources": {
+            "status": "not_assessed",
+            "conflicts": [],
+            "unknown": [],
+            "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+          },
+          "formulas": [
+            "ES=max(EF predecessor + FS lag), EF=ES+duration",
+            "LF=min(LS successor - lag), LS=LF-duration",
+            "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+          ]
+        },
+        "forecast": {
+          "status": "scenario",
+          "as_of_day": "4",
+          "finish_day": "12",
+          "finish_variance_days": "3",
+          "missing": [],
+          "unverified_actual_dependencies": [],
+          "rows": [
+            {
+              "task_id": "A",
+              "state": "completed",
+              "start_day": "0",
+              "finish_day": "2"
+            },
+            {
+              "task_id": "B",
+              "state": "in_progress",
+              "start_day": "2",
+              "finish_day": "10"
+            },
+            {
+              "task_id": "C",
+              "state": "in_progress",
+              "start_day": "2",
+              "finish_day": "5"
+            },
+            {
+              "task_id": "D",
+              "state": "not_started",
+              "start_day": "10",
+              "finish_day": "12"
+            }
+          ],
+          "resources": {
+            "status": "not_assessed",
+            "conflicts": [],
+            "unknown": [],
+            "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+          }
+        }
+      },
+      "source_snapshot": [],
+      "import_source": null,
+      "calculator_hash": "ddcb7730d511001cb6bcd6c2d026826e900a5c559fa31d0a223bfc2b0a33afbf",
+      "created_at": "2026-11-08T08:42:25.664628+00:00",
+      "hash": "fd96005707ed547cdc7cbe0debcbf64ec4e32af00147d0074a3d6e2aced3f461",
+      "revision": 1,
+      "stale_reasons": [],
+      "stale_details": [],
+      "status": "calculated"
+    }
+  },
+  "task": {
+    "agent_id": "agent_ea1f3e6fe62c4f3ca2355a996def896c",
+    "project_id": "project_807998fbff4e40dbb7194fa94828d932",
+    "question": "不是不要施工日期，而是只要当前预测完工对应的第几天；原计划工期和偏差都不用报，不加解释。",
+    "mode": "local_model",
+    "status": "failed",
+    "events": [
+      {
+        "tool": "llm.request",
+        "status": "failed",
+        "started_at": "2026-11-08T08:42:25.680658+00:00",
+        "arguments": {
+          "provider": "local_model"
+        },
+        "error": "服务商调用失败；不会降级为假成功",
+        "duration_ms": 19375,
+        "finished_at": "2026-11-08T08:42:45.068587+00:00"
+      }
+    ],
+    "answer": null,
+    "created_at": "2026-11-08T08:42:25.674141+00:00",
+    "llm_commentary": null,
+    "error": "本地模型不可用或响应不完整；请检查本机服务与配置，未生成工程结果",
+    "objective": "open_ended",
+    "target_run_id": null,
+    "previous_agent_id": null,
+    "context_snapshot": [],
+    "recovery_attempts": 0,
+    "provider_recovery_attempts": 0,
+    "professional_deliveries": [],
+    "professional_reviews": [],
+    "missing_deliveries": [],
+    "llm_commentary_policy": "audit_only",
+    "read_requests": [
+      {
+        "request_key": "build",
+        "kind": "schedule",
+        "purpose": "results",
+        "record_id": "schedule_5b94aa32110d49299dec0baf6faa9a68"
+      }
+    ],
+    "availability_deliveries": [],
+    "infer_outputs": true,
+    "read_execution": "application",
+    "review_intent": true,
+    "revision": 4,
+    "read_request_progress": [
+      {
+        "request_key": "build",
+        "kind": "schedule",
+        "purpose": "results",
+        "record_id": "schedule_5b94aa32110d49299dec0baf6faa9a68",
+        "state": "output_plan_missing"
+      }
+    ],
+    "unresolved_selected_reads": [],
+    "finished_at": "2026-11-08T08:42:45.071097+00:00"
+  }
+}

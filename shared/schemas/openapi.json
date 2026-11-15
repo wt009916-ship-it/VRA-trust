@@ -1474,6 +1474,2052 @@
         ]
       }
     },
+    "/api/projects/{project_id}/thermal-bridges": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__thermal_bridges_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Section"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__thermal_bridges_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/thermal-bridges/{thermalbridge_id}": {
+      "get": {
+        "summary": "View",
+        "operationId": "view_api_projects__project_id__thermal_bridges__thermalbridge_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "thermalbridge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thermalbridge Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/thermal-bridges/{thermalbridge_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__thermal_bridges__thermalbridge_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "thermalbridge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thermalbridge Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/thermal-bridges/{thermalbridge_id}/temperatures.csv": {
+      "get": {
+        "summary": "Temperature Csv",
+        "operationId": "temperature_csv_api_projects__project_id__thermal_bridges__thermalbridge_id__temperatures_csv_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "thermalbridge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thermalbridge Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/files/{file_id}/ideal-load-output.idf": {
+      "get": {
+        "summary": "Download",
+        "operationId": "download_api_projects__project_id__files__file_id__ideal_load_output_idf_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          },
+          {
+            "name": "expected_source_hash",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Expected Source Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/files/{file_id}/timestep.idf": {
+      "get": {
+        "summary": "Download",
+        "operationId": "download_api_projects__project_id__files__file_id__timestep_idf_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          },
+          {
+            "name": "steps",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 60,
+              "minimum": 1,
+              "title": "Steps"
+            }
+          },
+          {
+            "name": "expected_source_hash",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Expected Source Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/timestep-studies": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__timestep_studies_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__timestep_studies_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/timestep-studies/{timestep_id}": {
+      "get": {
+        "summary": "View",
+        "operationId": "view_api_projects__project_id__timestep_studies__timestep_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "timestep_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Timestep Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/timestep-studies/{timestep_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__timestep_studies__timestep_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "timestep_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Timestep Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/end-use-ledgers": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__end_use_ledgers_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LedgerInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__end_use_ledgers_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 9007199254740991,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/end-use-ledgers/{enduse_id}": {
+      "get": {
+        "summary": "View",
+        "operationId": "view_api_projects__project_id__end_use_ledgers__enduse_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "enduse_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Enduse Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/end-use-ledgers/{enduse_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__end_use_ledgers__enduse_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "enduse_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Enduse Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-meters/{run_id}": {
+      "get": {
+        "summary": "Catalog",
+        "operationId": "catalog_api_projects__project_id__utility_meters__run_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-comparisons": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__utility_comparisons_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComparisonInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__utility_comparisons_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 9007199254740991,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-comparisons/{utility_id}": {
+      "get": {
+        "summary": "View",
+        "operationId": "view_api_projects__project_id__utility_comparisons__utility_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "utility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Utility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-comparisons/{utility_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__utility_comparisons__utility_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "utility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Utility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/utility-comparisons/{utility_id}/comparison.csv": {
+      "get": {
+        "summary": "Download",
+        "operationId": "download_api_projects__project_id__utility_comparisons__utility_id__comparison_csv_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "utility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Utility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/retrofit-models": {
+      "get": {
+        "summary": "Sources",
+        "operationId": "sources_api_projects__project_id__retrofit_models_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/retrofit-models/{evidence_id}": {
+      "get": {
+        "summary": "Catalog",
+        "operationId": "catalog_api_projects__project_id__retrofit_models__evidence_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "evidence_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Evidence Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/retrofit-previews": {
+      "post": {
+        "summary": "Preview",
+        "operationId": "preview_api_projects__project_id__retrofit_previews_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelPlan"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/retrofits": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__retrofits_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Generate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Listing",
+        "operationId": "listing_api_projects__project_id__retrofits_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/retrofits/{retrofit_id}": {
+      "get": {
+        "summary": "Get",
+        "operationId": "get_api_projects__project_id__retrofits__retrofit_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "retrofit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Retrofit Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/retrofits/{retrofit_id}/model.idf": {
+      "get": {
+        "summary": "Download",
+        "operationId": "download_api_projects__project_id__retrofits__retrofit_id__model_idf_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "retrofit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Retrofit Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/retrofits/{retrofit_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__retrofits__retrofit_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "retrofit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Retrofit Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/retrofits/{retrofit_id}/comparison": {
+      "post": {
+        "summary": "Compare",
+        "operationId": "compare_api_projects__project_id__retrofits__retrofit_id__comparison_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "retrofit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Retrofit Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComparisonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/ifc-beam-profile-inputs": {
+      "get": {
+        "summary": "Inputs",
+        "operationId": "inputs_api_projects__project_id__ifc_beam_profile_inputs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/ifc-beam-profiles": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__ifc_beam_profiles_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Listing",
+        "operationId": "listing_api_projects__project_id__ifc_beam_profiles_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/ifc-beam-profiles/{profile_id}": {
+      "get": {
+        "summary": "Get",
+        "operationId": "get_api_projects__project_id__ifc_beam_profiles__profile_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Profile Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/ifc-beam-profiles/{profile_id}/analyses": {
+      "post": {
+        "summary": "Handoff",
+        "operationId": "handoff_api_projects__project_id__ifc_beam_profiles__profile_id__analyses_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Profile Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewedBeam"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/material-scenarios": {
       "post": {
         "summary": "Create",
@@ -2494,6 +4540,295 @@
         ]
       }
     },
+    "/api/projects/{project_id}/maintenance-orders": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_projects__project_id__maintenance_orders_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenOrder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_projects__project_id__maintenance_orders_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/maintenance-orders/{maintenance_id}": {
+      "get": {
+        "summary": "View",
+        "operationId": "view_api_projects__project_id__maintenance_orders__maintenance_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "maintenance_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Maintenance Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/maintenance-orders/{maintenance_id}/actions": {
+      "post": {
+        "summary": "Action",
+        "operationId": "action_api_projects__project_id__maintenance_orders__maintenance_id__actions_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "maintenance_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Maintenance Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/maintenance-orders/{maintenance_id}/report.html": {
+      "get": {
+        "summary": "Html Report",
+        "operationId": "html_report_api_projects__project_id__maintenance_orders__maintenance_id__report_html_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "maintenance_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Maintenance Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/drawing-associations": {
       "post": {
         "summary": "Create",
@@ -2814,6 +5149,129 @@
               "application/json": {
                 "schema": {}
               }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawings/{drawing_id}/line-review": {
+      "post": {
+        "summary": "Line Review",
+        "operationId": "line_review_api_projects__project_id__drawings__drawing_id__line_review_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LineReview"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/drawings/{drawing_id}/line-overlay.svg": {
+      "get": {
+        "summary": "Line Overlay",
+        "operationId": "line_overlay_api_projects__project_id__drawings__drawing_id__line_overlay_svg_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "drawing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Drawing Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/svg+xml": {}
             }
           },
           "422": {
@@ -4514,6 +6972,74 @@
         ]
       }
     },
+    "/api/projects/{project_id}/schedules/{schedule_id}/resource-levelings": {
+      "post": {
+        "summary": "Schedule Level",
+        "operationId": "schedule_level_api_projects__project_id__schedules__schedule_id__resource_levelings_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "schedule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Schedule Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LevelingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfHeader": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/schedules/{schedule_id}": {
       "get": {
         "summary": "Schedule Get",
@@ -5991,6 +8517,111 @@
         ]
       }
     },
+    "/api/projects/{project_id}/dwg-capability": {
+      "get": {
+        "summary": "Dwg Capability",
+        "operationId": "dwg_capability_api_projects__project_id__dwg_capability_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/cad-inspections/{cad_id}/converted.dxf": {
+      "get": {
+        "summary": "Dwg Download",
+        "operationId": "dwg_download_api_projects__project_id__cad_inspections__cad_id__converted_dxf_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "cad_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cad Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/projects/{project_id}/cad-current-states": {
       "post": {
         "summary": "Cad Current States",
@@ -6119,6 +8750,102 @@
             "schema": {
               "type": "string",
               "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "CSRF or origin rejected"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{project_id}/cad-inspection-page": {
+      "get": {
+        "summary": "Cad Page",
+        "operationId": "cad_page_api_projects__project_id__cad_inspection_page_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 9007199254740991,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          },
+          {
+            "name": "snapshot",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 9007199254740991,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Snapshot"
             }
           }
         ],
@@ -7977,6 +10704,16 @@
             ],
             "title": "Period"
           },
+          "replacement_overlap": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "excluded",
+              "included"
+            ],
+            "title": "Replacement Overlap",
+            "default": "unknown"
+          },
           "source": {
             "type": "string",
             "maxLength": 2000,
@@ -8230,6 +10967,52 @@
         ],
         "title": "Assembly"
       },
+      "Assignment": {
+        "properties": {
+          "thermal_id": {
+            "type": "string",
+            "pattern": "^thermal_[a-f0-9]{32}$",
+            "title": "Thermal Id"
+          },
+          "surface_names": {
+            "items": {
+              "type": "string",
+              "maxLength": 2000,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Surface Names"
+          },
+          "layer_order": {
+            "type": "string",
+            "enum": [
+              "outside_to_inside",
+              "inside_to_outside"
+            ],
+            "title": "Layer Order"
+          },
+          "properties": {
+            "items": {
+              "$ref": "#/components/schemas/Properties"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Properties"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "thermal_id",
+          "surface_names",
+          "layer_order",
+          "properties"
+        ],
+        "title": "Assignment"
+      },
       "AssociationInput": {
         "properties": {
           "name": {
@@ -8411,6 +11194,16 @@
             ],
             "title": "Section Unit"
           },
+          "section_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SectionProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "elastic_modulus": {
             "anyOf": [
               {
@@ -8519,38 +11312,30 @@
         ],
         "title": "Body_upload_api_projects__project_id__files_post"
       },
-      "Boundary": {
+      "Boundaries": {
         "properties": {
-          "stage": {
-            "type": "string",
-            "enum": [
-              "production",
-              "transport",
-              "construction",
-              "operation",
-              "end_of_life"
-            ],
-            "title": "Stage"
+          "left": {
+            "$ref": "#/components/schemas/backend__thermal_bridge__Boundary"
           },
-          "included": {
-            "type": "boolean",
-            "title": "Included"
+          "right": {
+            "$ref": "#/components/schemas/backend__thermal_bridge__Boundary"
           },
-          "reason": {
-            "type": "string",
-            "maxLength": 1000,
-            "minLength": 5,
-            "title": "Reason"
+          "bottom": {
+            "$ref": "#/components/schemas/backend__thermal_bridge__Boundary"
+          },
+          "top": {
+            "$ref": "#/components/schemas/backend__thermal_bridge__Boundary"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "stage",
-          "included",
-          "reason"
+          "left",
+          "right",
+          "bottom",
+          "top"
         ],
-        "title": "Boundary"
+        "title": "Boundaries"
       },
       "Building": {
         "properties": {
@@ -8868,7 +11653,9 @@
               "inspect_engineering",
               "inspect_schedule",
               "inspect_operations",
-              "inspect_material_scenarios"
+              "inspect_material_scenarios",
+              "inspect_enduse",
+              "inspect_utility"
             ],
             "title": "Objective",
             "default": "open_ended"
@@ -8967,6 +11754,30 @@
               }
             ],
             "title": "Target Scenario Id"
+          },
+          "target_enduse_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^enduse_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Enduse Id"
+          },
+          "target_utility_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^utility_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Utility Id"
           },
           "previous_agent_id": {
             "anyOf": [
@@ -9297,7 +12108,7 @@
           },
           "boundaries": {
             "items": {
-              "$ref": "#/components/schemas/Boundary"
+              "$ref": "#/components/schemas/backend__lifecycle__Boundary"
             },
             "type": "array",
             "maxItems": 5,
@@ -9343,6 +12154,112 @@
           "alternatives"
         ],
         "title": "CollectionScenarioRequest"
+      },
+      "ComparisonInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "purpose": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 15,
+            "title": "Purpose"
+          },
+          "run_id": {
+            "type": "string",
+            "pattern": "^run_[a-f0-9]{32}$",
+            "title": "Run Id"
+          },
+          "bill_evidence_id": {
+            "type": "string",
+            "pattern": "^evidence_[a-f0-9]{32}$",
+            "title": "Bill Evidence Id"
+          },
+          "meter": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Meter"
+          },
+          "bill_nature": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "published_reference",
+              "synthetic"
+            ],
+            "title": "Bill Nature"
+          },
+          "alignment": {
+            "type": "string",
+            "enum": [
+              "exact_calendar",
+              "calendar_pattern"
+            ],
+            "title": "Alignment"
+          },
+          "period_kind": {
+            "type": "string",
+            "enum": [
+              "calendar_month",
+              "hour",
+              "custom"
+            ],
+            "title": "Period Kind"
+          },
+          "clock_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Clock Source"
+          },
+          "boundary_note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 15,
+            "title": "Boundary Note"
+          },
+          "max_abs_mbe_percent": {
+            "type": "number",
+            "maximum": 1000000.0,
+            "minimum": 0.0,
+            "title": "Max Abs Mbe Percent"
+          },
+          "max_cvrmse_percent": {
+            "type": "number",
+            "maximum": 1000000.0,
+            "minimum": 0.0,
+            "title": "Max Cvrmse Percent"
+          },
+          "threshold_source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Threshold Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "purpose",
+          "run_id",
+          "bill_evidence_id",
+          "meter",
+          "bill_nature",
+          "alignment",
+          "period_kind",
+          "clock_source",
+          "boundary_note",
+          "max_abs_mbe_percent",
+          "max_cvrmse_percent",
+          "threshold_source"
+        ],
+        "title": "ComparisonInput"
       },
       "ComparisonRequest": {
         "properties": {
@@ -9538,6 +12455,11 @@
           "median_filter": {
             "type": "boolean",
             "title": "Median Filter",
+            "default": false
+          },
+          "line_analysis": {
+            "type": "boolean",
+            "title": "Line Analysis",
             "default": false
           }
         },
@@ -10249,6 +13171,39 @@
         ],
         "title": "ExactTarget"
       },
+      "ExplicitOutput": {
+        "properties": {
+          "fact_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Fact Keys"
+          },
+          "explanation_topics": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "meaning",
+                "area",
+                "period",
+                "scope",
+                "status",
+                "history",
+                "energy_relationship"
+              ]
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Explanation Topics"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ExplicitOutput",
+        "description": "User-selected obligations; never synthesized from model or source text."
+      },
       "Factor": {
         "properties": {
           "value": {
@@ -10391,6 +13346,72 @@
         ],
         "title": "FactorUpdate"
       },
+      "Generate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "source_evidence_id": {
+            "type": "string",
+            "pattern": "^evidence_[a-f0-9]{32}$",
+            "title": "Source Evidence Id"
+          },
+          "scheme_id": {
+            "type": "string",
+            "enum": [
+              "R1",
+              "R2"
+            ],
+            "title": "Scheme Id"
+          },
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/Assignment"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Assignments"
+          },
+          "responsible_person": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Responsible Person"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          },
+          "expected_preview_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Preview Hash"
+          },
+          "acknowledge_scope": {
+            "type": "boolean",
+            "title": "Acknowledge Scope"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "source_evidence_id",
+          "scheme_id",
+          "assignments",
+          "responsible_person",
+          "basis",
+          "expected_preview_hash",
+          "acknowledge_scope"
+        ],
+        "title": "Generate"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -10471,7 +13492,7 @@
           },
           "boundaries": {
             "items": {
-              "$ref": "#/components/schemas/Boundary"
+              "$ref": "#/components/schemas/backend__lifecycle__Boundary"
             },
             "type": "array",
             "maxItems": 5,
@@ -10485,6 +13506,24 @@
             "type": "array",
             "maxItems": 500,
             "title": "Activities"
+          },
+          "replacement_scope": {
+            "type": "string",
+            "enum": [
+              "not_assessed",
+              "included_in_activities",
+              "separate_ledger"
+            ],
+            "title": "Replacement Scope",
+            "default": "not_assessed"
+          },
+          "replacements": {
+            "items": {
+              "$ref": "#/components/schemas/ReplacementComponent"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Replacements"
           }
         },
         "additionalProperties": false,
@@ -10750,6 +13789,35 @@
         ],
         "title": "LayerRequest"
       },
+      "LedgerInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "purpose": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 15,
+            "title": "Purpose"
+          },
+          "run_id": {
+            "type": "string",
+            "pattern": "^run_[a-f0-9]{32}$",
+            "title": "Run Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "purpose",
+          "run_id"
+        ],
+        "title": "LedgerInput"
+      },
       "LengthInput": {
         "properties": {
           "start": {
@@ -10775,6 +13843,50 @@
           "coordinates"
         ],
         "title": "LengthInput"
+      },
+      "LevelingRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Source Hash"
+          },
+          "priority": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 250,
+            "minItems": 1,
+            "title": "Priority"
+          },
+          "resource_demands_complete": {
+            "type": "boolean",
+            "title": "Resource Demands Complete"
+          },
+          "demand_basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 20,
+            "title": "Demand Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "source_hash",
+          "priority",
+          "resource_demands_complete",
+          "demand_basis"
+        ],
+        "title": "LevelingRequest"
       },
       "LifecyclePlan": {
         "properties": {
@@ -10806,6 +13918,44 @@
           "input"
         ],
         "title": "LifecyclePlan"
+      },
+      "LineReview": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^gap_[1-9][0-9]{0,2}$",
+            "title": "Candidate Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "keep_unknown",
+              "reject_hypothesis",
+              "retain_hypothesis"
+            ],
+            "title": "Decision"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "candidate_id",
+          "decision",
+          "basis"
+        ],
+        "title": "LineReview"
       },
       "LocalModelSettings": {
         "properties": {
@@ -11254,6 +14404,61 @@
         ],
         "title": "Measure"
       },
+      "ModelPlan": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "source_evidence_id": {
+            "type": "string",
+            "pattern": "^evidence_[a-f0-9]{32}$",
+            "title": "Source Evidence Id"
+          },
+          "scheme_id": {
+            "type": "string",
+            "enum": [
+              "R1",
+              "R2"
+            ],
+            "title": "Scheme Id"
+          },
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/Assignment"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Assignments"
+          },
+          "responsible_person": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Responsible Person"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "source_evidence_id",
+          "scheme_id",
+          "assignments",
+          "responsible_person",
+          "basis"
+        ],
+        "title": "ModelPlan"
+      },
       "Observation": {
         "properties": {
           "task_id": {
@@ -11326,6 +14531,63 @@
         ],
         "title": "Observation"
       },
+      "OpenOrder": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "operation_id": {
+            "type": "string",
+            "pattern": "^operation_[a-f0-9]{32}$",
+            "title": "Operation Id"
+          },
+          "rule_id": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "event_index": {
+            "type": "integer",
+            "maximum": 199.0,
+            "minimum": 0.0,
+            "title": "Event Index"
+          },
+          "minimum_observation_seconds": {
+            "type": "number",
+            "maximum": 604800.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Minimum Observation Seconds"
+          },
+          "observation_basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 20,
+            "title": "Observation Basis"
+          },
+          "responsible_person": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Responsible Person"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "operation_id",
+          "rule_id",
+          "event_index",
+          "minimum_observation_seconds",
+          "observation_basis",
+          "responsible_person"
+        ],
+        "title": "OpenOrder"
+      },
       "OperationPlan": {
         "properties": {
           "execution_authorized": {
@@ -11356,6 +14618,84 @@
           "input"
         ],
         "title": "OperationPlan"
+      },
+      "OrderAction": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "triage",
+              "record_work",
+              "recheck",
+              "close",
+              "reopen"
+            ],
+            "title": "Action"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 20,
+            "title": "Note"
+          },
+          "responsible_person": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Responsible Person"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Evidence Ids"
+          },
+          "work_completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Completed At"
+          },
+          "after_operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^operation_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Operation Id"
+          },
+          "same_equipment_and_conditions": {
+            "type": "boolean",
+            "title": "Same Equipment And Conditions",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "action",
+          "note",
+          "responsible_person"
+        ],
+        "title": "OrderAction"
       },
       "PageOCR": {
         "properties": {
@@ -11514,6 +14854,56 @@
         ],
         "title": "Preview"
       },
+      "Probe": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Y"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "x",
+          "y"
+        ],
+        "title": "Probe"
+      },
+      "ProfileRequest": {
+        "properties": {
+          "cad_id": {
+            "type": "string",
+            "pattern": "^cad_[a-f0-9]{32}$",
+            "title": "Cad Id"
+          },
+          "product_id": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Product Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cad_id",
+          "product_id"
+        ],
+        "title": "ProfileRequest"
+      },
       "Progress": {
         "properties": {
           "as_of_day": {
@@ -11623,6 +15013,70 @@
           "building"
         ],
         "title": "ProjectCreate"
+      },
+      "Properties": {
+        "properties": {
+          "density_kg_m3": {
+            "type": "number",
+            "maximum": 30000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Density Kg M3"
+          },
+          "specific_heat_j_kg_k": {
+            "type": "number",
+            "maximum": 100000.0,
+            "minimum": 100.0,
+            "title": "Specific Heat J Kg K"
+          },
+          "roughness": {
+            "type": "string",
+            "enum": [
+              "VeryRough",
+              "Rough",
+              "MediumRough",
+              "MediumSmooth",
+              "Smooth",
+              "VerySmooth"
+            ],
+            "title": "Roughness"
+          },
+          "thermal_absorptance": {
+            "type": "number",
+            "maximum": 0.99999,
+            "exclusiveMinimum": 0.0,
+            "title": "Thermal Absorptance"
+          },
+          "solar_absorptance": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Solar Absorptance"
+          },
+          "visible_absorptance": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Visible Absorptance"
+          },
+          "property_source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Property Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "density_kg_m3",
+          "specific_heat_j_kg_k",
+          "roughness",
+          "thermal_absorptance",
+          "solar_absorptance",
+          "visible_absorptance",
+          "property_source"
+        ],
+        "title": "Properties"
       },
       "Provenance": {
         "properties": {
@@ -11790,6 +15244,9 @@
               },
               "clause_id": {
                 "type": "null"
+              },
+              "retrieval": {
+                "const": "lexical"
               }
             },
             "required": [
@@ -11842,6 +15299,15 @@
               }
             ],
             "title": "Clause Id"
+          },
+          "retrieval": {
+            "type": "string",
+            "enum": [
+              "lexical",
+              "semantic"
+            ],
+            "title": "Retrieval",
+            "default": "lexical"
           },
           "as_of": {
             "type": "string",
@@ -11984,7 +15450,9 @@
               "engineering",
               "schedule",
               "operation",
-              "scenario"
+              "scenario",
+              "enduse",
+              "utility"
             ],
             "title": "Kind"
           },
@@ -12000,13 +15468,23 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$"
+                "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$"
               },
               {
                 "type": "null"
               }
             ],
             "title": "Record Id"
+          },
+          "output_contract": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExplicitOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -12071,6 +15549,75 @@
         ],
         "title": "Reconstruction"
       },
+      "Region": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "x0": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "X0"
+          },
+          "x1": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "X1"
+          },
+          "y0": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Y0"
+          },
+          "y1": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Y1"
+          },
+          "conductivity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conductivity"
+          },
+          "conductivity_unit": {
+            "type": "string",
+            "enum": [
+              "W/(m K)",
+              "mW/(m K)"
+            ],
+            "title": "Conductivity Unit"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 3,
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "x0",
+          "x1",
+          "y0",
+          "y1",
+          "conductivity_unit",
+          "source"
+        ],
+        "title": "Region"
+      },
       "Registration": {
         "properties": {
           "username": {
@@ -12101,6 +15648,154 @@
           "display_name"
         ],
         "title": "Registration"
+      },
+      "ReplacementComponent": {
+        "properties": {
+          "component_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Component Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "condition": {
+            "type": "string",
+            "enum": [
+              "new",
+              "existing"
+            ],
+            "title": "Condition"
+          },
+          "service_life_years": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Life Years"
+          },
+          "remaining_life_years": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Life Years"
+          },
+          "life_source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Life Source"
+          },
+          "life_evidence_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^evidence_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Evidence Id"
+          },
+          "endpoint": {
+            "type": "string",
+            "const": "strictly_before_horizon",
+            "title": "Endpoint"
+          },
+          "scope": {
+            "type": "string",
+            "const": "same_function_replacements_only",
+            "title": "Scope"
+          },
+          "overlap_review": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 20,
+            "title": "Overlap Review"
+          },
+          "processes": {
+            "items": {
+              "$ref": "#/components/schemas/ReplacementProcess"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Processes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "component_id",
+          "name",
+          "condition",
+          "life_source",
+          "endpoint",
+          "scope",
+          "overlap_review",
+          "processes"
+        ],
+        "title": "ReplacementComponent"
+      },
+      "ReplacementProcess": {
+        "properties": {
+          "process": {
+            "type": "string",
+            "enum": [
+              "production",
+              "transport",
+              "installation",
+              "removal"
+            ],
+            "title": "Process"
+          },
+          "included": {
+            "type": "boolean",
+            "title": "Included"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Reason"
+          },
+          "activity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Activity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "process",
+          "included",
+          "reason"
+        ],
+        "title": "ReplacementProcess"
       },
       "Resource": {
         "properties": {
@@ -12151,6 +15846,46 @@
           "source"
         ],
         "title": "Resource"
+      },
+      "ReviewedBeam": {
+        "properties": {
+          "expected_profile_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Profile Hash"
+          },
+          "bending_axis": {
+            "type": "string",
+            "enum": [
+              "x",
+              "y"
+            ],
+            "title": "Bending Axis"
+          },
+          "geometry_reviewed": {
+            "type": "boolean",
+            "title": "Geometry Reviewed"
+          },
+          "review_basis": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 20,
+            "title": "Review Basis"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/BeamInput"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_profile_hash",
+          "bending_axis",
+          "geometry_reviewed",
+          "review_basis",
+          "analysis"
+        ],
+        "title": "ReviewedBeam"
       },
       "Rule": {
         "properties": {
@@ -12645,6 +16380,16 @@
             ],
             "title": "Period"
           },
+          "replacement_overlap": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "excluded",
+              "included"
+            ],
+            "title": "Replacement Overlap",
+            "default": "unknown"
+          },
           "source": {
             "type": "string",
             "maxLength": 2000,
@@ -12735,7 +16480,7 @@
           },
           "boundaries": {
             "items": {
-              "$ref": "#/components/schemas/Boundary"
+              "$ref": "#/components/schemas/backend__lifecycle__Boundary"
             },
             "type": "array",
             "maxItems": 5,
@@ -12939,6 +16684,153 @@
           "budget"
         ],
         "title": "Search"
+      },
+      "Section": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width"
+          },
+          "height": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Height"
+          },
+          "length_unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "cm",
+              "mm"
+            ],
+            "title": "Length Unit"
+          },
+          "geometry_source": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Geometry Source"
+          },
+          "application": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Application"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Regions"
+          },
+          "boundaries": {
+            "$ref": "#/components/schemas/Boundaries"
+          },
+          "cell_size": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Cell Size"
+          },
+          "mesh_strategy": {
+            "type": "string",
+            "enum": [
+              "uniform_interface_aligned",
+              "graded_interface_aligned"
+            ],
+            "title": "Mesh Strategy",
+            "default": "uniform_interface_aligned"
+          },
+          "probes": {
+            "items": {
+              "$ref": "#/components/schemas/Probe"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Probes"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "width",
+          "height",
+          "length_unit",
+          "geometry_source",
+          "application",
+          "regions",
+          "boundaries",
+          "cell_size"
+        ],
+        "title": "Section"
+      },
+      "SectionProfile": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "rectangle",
+              "circle",
+              "rectangular_hollow",
+              "circular_hollow",
+              "i_section"
+            ],
+            "title": "Kind"
+          },
+          "dimensions": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "maxProperties": 5,
+            "minProperties": 1,
+            "title": "Dimensions"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "cm",
+              "mm"
+            ],
+            "title": "Unit"
+          },
+          "bending_axis": {
+            "type": "string",
+            "enum": [
+              "x",
+              "y"
+            ],
+            "title": "Bending Axis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "dimensions",
+          "unit",
+          "bending_axis"
+        ],
+        "title": "SectionProfile"
       },
       "Sheet": {
         "properties": {
@@ -13189,6 +17081,49 @@
         ],
         "title": "StandardInput"
       },
+      "StudyInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "purpose": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 15,
+            "title": "Purpose"
+          },
+          "run_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^run_[a-f0-9]{32}$"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 2,
+            "title": "Run Ids"
+          },
+          "include_ideal": {
+            "type": "boolean",
+            "title": "Include Ideal"
+          },
+          "thresholds": {
+            "$ref": "#/components/schemas/Thresholds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "purpose",
+          "run_ids",
+          "include_ideal",
+          "thresholds"
+        ],
+        "title": "StudyInput"
+      },
       "Task": {
         "properties": {
           "task_id": {
@@ -13298,6 +17233,43 @@
           "input"
         ],
         "title": "ThermalPlan"
+      },
+      "Thresholds": {
+        "properties": {
+          "temperature_absolute_K": {
+            "type": "number",
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "title": "Temperature Absolute K"
+          },
+          "load_absolute_W": {
+            "type": "number",
+            "maximum": 1000000000000.0,
+            "minimum": 0.0,
+            "title": "Load Absolute W"
+          },
+          "load_relative_pct": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Load Relative Pct"
+          },
+          "near_zero_W": {
+            "type": "number",
+            "maximum": 1000000000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Near Zero W"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "temperature_absolute_K",
+          "load_absolute_W",
+          "load_relative_pct",
+          "near_zero_W"
+        ],
+        "title": "Thresholds"
       },
       "TransportLeg": {
         "properties": {
@@ -13674,6 +17646,39 @@
         ],
         "title": "Review"
       },
+      "backend__lifecycle__Boundary": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": [
+              "production",
+              "transport",
+              "construction",
+              "operation",
+              "end_of_life"
+            ],
+            "title": "Stage"
+          },
+          "included": {
+            "type": "boolean",
+            "title": "Included"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "stage",
+          "included",
+          "reason"
+        ],
+        "title": "Boundary"
+      },
       "backend__lifecycle__Comparison": {
         "properties": {
           "lifecycle_ids": {
@@ -13742,6 +17747,58 @@
           "basis"
         ],
         "title": "Review"
+      },
+      "backend__thermal_bridge__Boundary": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "adiabatic",
+              "fixed_temperature",
+              "film"
+            ],
+            "title": "Mode"
+          },
+          "temperature_c": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 200.0,
+                "minimum": -100.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature C"
+          },
+          "resistance_m2k_w": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resistance M2K W"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 3,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "basis"
+        ],
+        "title": "Boundary"
       }
     },
     "securitySchemes": {

@@ -15,6 +15,7 @@ export function weatherQualityMarkup(quality) {
   const conditions = quality.conditions || [];
   return `<section class="weather-quality" aria-label="天气输入检查"><h3>天气输入检查</h3>
     <p>${esc(quality.station?.city)} · ${esc(quality.hours)} 小时 · ${conditions.length ? '存在缺测或推导条件' : '字段筛查通过'}</p>
+    ${quality.record_field_count === 32 ? '<p>旧版32列气象文件：反照率、液态降水量和累计时长未提供。仿真使用原文件，缺项仍需补证。</p>' : ''}
     <p class="subtle">${esc(quality.scope)}</p>
     <details><summary>${conditions.length ? `${conditions.length} 类缺测或推导条件，需复核` : '查看气象来源与校验范围'}</summary>
       ${conditions.length ? '<ul class="gap-list">' + conditions.map(item => `<li><strong>${esc(fieldNames[item.field] || item.field)} · ${esc(item.count)} 小时</strong><span>${esc(item.message)}（源文件第 ${esc(item.first_line)} 至 ${esc(item.last_line)} 行内，并非每行均缺测）</span></li>`).join('') + '</ul>' : ''}

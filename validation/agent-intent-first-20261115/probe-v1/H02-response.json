@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"actions\": [\n    {\n      \"tool\": \"task_plan\",\n      \"arguments\": {\n        \"items\": [\n          {\n            \"item_key\": \"verify_old_status\",\n            \"question_fragment_ids\": [\"q1\", \"q2\", \"q3\"],\n            \"operation\": \"read_record\",\n            \"record_id\": \"thermal_1e84cfdc0a384058addcb5141d72a18b\",\n            \"fact_keys\": [\"total_resistance_m2k_w\", \"layer_resistance_m2k_w\", \"u_w_m2k\"],\n            \"explanation_topics\": [\"status\", \"meaning\"]\n          },\n          {\n            \"item_key\": \"verify_new_total_r\",\n            \"question_fragment_ids\": [\"q1\", \"q2\", \"q4\"],\n            \"operation\": \"read_record\",\n            \"record_id\": \"thermal_078497e951bb4a9db527000351835572\",\n            \"fact_keys\": [\"total_resistance_m2k_w\"],\n            \"explanation_topics\": [\"status\", \"meaning\"]\n          },\n          {\n            \"item_key\": \"compare_resistance_change\",\n            \"question_fragment_ids\": [\"q1\", \"q2\", \"q3\", \"q4\"],\n            \"operation\": \"compare_records\",\n            \"baseline_id\": \"thermal_1e84cfdc0a384058addcb5141d72a18b\",\n            \"candidate_id\": \"thermal_078497e951bb4a9db527000351835572\",\n            \"fact_key\": \"total_resistance_m2k_w\",\n            \"outputs\": [\"difference\", \"relative_change_percent\"]\n          }\n        ],\n        \"constraint_fragment_ids\": [],\n        \"unassigned_fragment_ids\": []\n      }\n    }\n  ]\n}"
+      }
+    }
+  ],
+  "created": 1794755836,
+  "model": "vra-nine-b-tools",
+  "system_fingerprint": "b12110-cd959bae9",
+  "object": "chat.completion",
+  "usage": {
+    "completion_tokens": 458,
+    "prompt_tokens": 4135,
+    "total_tokens": 4593,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "id": "chatcmpl-DessYVCgIjINQlLAos5Pui0lwIO8ZiOi",
+  "timings": {
+    "cache_n": 0,
+    "prompt_n": 4135,
+    "prompt_ms": 1969.533,
+    "prompt_per_token_ms": 0.4763078597339782,
+    "prompt_per_second": 2099.4824661480666,
+    "predicted_n": 458,
+    "predicted_ms": 8730.982,
+    "predicted_per_token_ms": 19.104993435448577,
+    "predicted_per_second": 52.34233674974934
+  }
+}

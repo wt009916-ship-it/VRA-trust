@@ -72,8 +72,8 @@ def test_real_service_reads_after_fragment_plan_and_no_free_text_copy(client,mon
         {'request_key':'site','question_fragment_ids':['q2'],'fact_keys':[],'explanation_topics':[]}]
     calls=scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':plan})])
     definitions=[];original=a.gateway.complete
-    def capture(messages,tools):
-        definitions.extend(copy.deepcopy(tools));return original(messages,tools)
+    def capture(messages,tools, **response_options):
+        definitions.extend(copy.deepcopy(tools));return original(messages,tools, **response_options)
     monkeypatch.setattr(a.gateway,'complete',capture)
     task=a.start(pid,Chat(message=question,mode='provider',read_requests=[
         {'request_key':'wall','kind':'thermal','purpose':'results','record_id':r['thermal_id']},
@@ -93,3 +93,18 @@ def test_six_scope_schema_remains_bounded_with_dense_punctuation(client):
               for k in outputs.FACTS]  # Schema size bound, not a legal six-result Chat.
     tool_schema=outputs.constrain_tool(a.tools({'requested_output_plan'})[0],requests,'墙；'*2000)
     assert len(json.dumps(tool_schema,ensure_ascii=False))<20000
+
+
+def test_energy_schema_keeps_every_metric_and_factored_scope(client):
+    requests = [{'request_key':k,'kind':k,'purpose':'results','record_id':k+'_'+'b'*32}
+                for k in ('enduse','utility')]
+    schema=outputs.constrain_tool(client.app.state.agent.tools({'requested_output_plan'})[0],requests,'读取风机电耗和账单偏差。')
+    variants=schema['function']['parameters']['properties']['output_plan']['items']['oneOf']
+    for kind,variant in zip(('enduse','utility'),variants):
+        facts=variant['properties']['fact_keys']
+        assert facts['items']['enum']==outputs.FACTS[kind]
+    meaning=variants[0]['properties']['fact_keys']['description']
+    for key in catalog.agent_energy.USES.values():assert key+'=' in meaning
+    for key in catalog.agent_energy.CARRIERS.values():assert key+'=' in meaning
+    for term in ('energy_context.basis','原表舍入','原生时钟','不是耗电','不是外购电','实测或校准'):
+        assert term in meaning

@@ -1,0 +1,245 @@
+{
+  "pr": 79,
+  "head": "205e9fdbd05eb6d2d277a615cb35f377ca736522",
+  "source": "GitHub connector decoded job logs; stored LF, not raw download archive byte identity",
+  "runs": [
+    {
+      "id": 43704671203,
+      "name": "Frontend",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 365,
+      "jobs_url": "https://api.github.com/repos/wt009916-ship-it/VRA-trust/actions/runs/43704671203/jobs",
+      "logs_url": "https://api.github.com/repos/wt009916-ship-it/VRA-trust/actions/runs/43704671203/logs",
+      "workflow_id": 367201701
+    },
+    {
+      "id": 43704670964,
+      "name": "Integration contract",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 365,
+      "jobs_url": "https://api.github.com/repos/wt009916-ship-it/VRA-trust/actions/runs/43704670964/jobs",
+      "logs_url": "https://api.github.com/repos/wt009916-ship-it/VRA-trust/actions/runs/43704670964/logs",
+      "workflow_id": 367201700
+    },
+    {
+      "id": 43704671206,
+      "name": "Backend",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 365,
+      "jobs_url": "https://api.github.com/repos/wt009916-ship-it/VRA-trust/actions/runs/43704671206/jobs",
+      "logs_url": "https://api.github.com/repos/wt009916-ship-it/VRA-trust/actions/runs/43704671206/logs",
+      "workflow_id": 367201699
+    }
+  ],
+  "jobs": [
+    {
+      "id": 132783075038,
+      "name": "backend",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 43704671206,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Run pip install -r backend/requirements-dev.txt",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run python -m ruff check backend tests scripts/golden_path.py scripts/replay.py scripts/verify_trust_slice.py",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Run python -m pytest -q",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Run python scripts/export_contract.py",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Run git diff --exit-code -- shared/schemas",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        }
+      ]
+    },
+    {
+      "id": 132783074824,
+      "name": "frontend",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 43704671203,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Run npm ci",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run npm run lint",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Run npm test",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Run npm run build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        }
+      ]
+    },
+    {
+      "id": 132783074426,
+      "name": "api-parser-contract",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 43704670964,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Run pip install -r backend/requirements-dev.txt",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run python -m pytest tests/test_api.py tests/test_parser_contract.py -q",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    }
+  ],
+  "merged": false,
+  "browser": "deferred by user"
+}

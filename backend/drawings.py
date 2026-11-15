@@ -18,6 +18,7 @@ class DrawingProcessing(Contract):
     deskew_mode: Literal['none','manual','auto'] = 'none'
     angle_degrees: StrictFloat = Field(default=0.,ge=-15,le=15)
     median_filter: StrictBool = False
+    line_analysis: StrictBool = False
 
     @model_validator(mode='after')
     def manual_angle(self):
@@ -50,6 +51,7 @@ def parser_hash():
     model_paths()
     return core.hash_json({'worker':core.sha(Path(__file__).with_name('drawing_worker.py')),
                           'processing':core.sha(Path(__file__).with_name('drawing_processing.py')),
+                          'linework':core.sha(Path(__file__).with_name('drawing_linework.py')),
                           'isolated_runtime':parser_runtime.identity('drawing'),
                           'resource_policy':core.sha(Path(__file__).with_name('worker_limits.py')),
                           'model_contract':core.sha(Path(__file__).with_name('drawing_models.py')),
@@ -94,6 +96,8 @@ class Drawings:
                 expected={'source-preview.png':result['processing']['source_preview_sha256']}
                 if result['processing']['filter_difference']:
                     expected['filter-difference.png']=result['processing']['filter_difference']['mask_sha256']
+                if result.get('linework'):
+                    expected['linework-preview.png']=result['linework']['preview_sha256']
                 for name,digest in expected.items():
                     produced=scope['work']/name
                     if not produced.is_file() or produced.stat().st_size>40*1024*1024 or core.sha(produced)!=digest:
@@ -130,6 +134,7 @@ class Drawings:
             stale=True
         view={**obj,'status':'stale' if stale else 'review_required',
                 'result':None if stale else obj['result'],'reviews':None if stale else obj['reviews'],
+                'line_reviews': None if stale else obj.get('line_reviews', {}),
                 'assessment':'OCR_AND_HUMAN_TRANSCRIPTION_NOT_ENGINEERING_APPROVAL'}
         view['geometry_basis_hash']=geometry_basis(view) if not stale and 'processing' in obj['result'] else None
         return view
@@ -166,4 +171,5 @@ class Drawings:
 
     def history(self,pid,did):
         self._record(pid,did)
-        return [{'revision':r['revision'],'hash':r['hash'],'last_review':r['last_review']} for r in self.store.history('drawing',did)]
+        return [{'revision':r['revision'],'hash':r['hash'],'last_review':r['last_review'],
+                 'last_line_review': r.get('last_line_review')} for r in self.store.history('drawing',did)]

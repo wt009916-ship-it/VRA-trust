@@ -11,7 +11,7 @@ from pydantic import Field, HttpUrl, StrictInt, model_validator
 from . import core
 from .domain import identifier
 from .schema import Contract
-from . import parser_runtime
+from . import parser_runtime, semantic_runtime
 
 
 def normalized(value):
@@ -100,18 +100,23 @@ class Query(Contract):
         {'properties': {'targets': {'maxItems': 0}}},
         {'required': ['targets'], 'properties': {
             'targets': {'minItems': 1}, 'text': {'const': ''},
-            'standard_code': {'type': 'null'}, 'edition': {'type': 'null'}, 'clause_id': {'type': 'null'}}}
+            'standard_code': {'type': 'null'}, 'edition': {'type': 'null'}, 'clause_id': {'type': 'null'}, 'retrieval': {'const': 'lexical'}}}
     ]}}
     text: str = Field(default='', max_length=1000)
     standard_code: str | None = Field(default=None, min_length=2, max_length=80)
     edition: str | None = Field(default=None, min_length=1, max_length=40)
     clause_id: str | None = Field(default=None, min_length=1, max_length=60)
+    retrieval: Literal['lexical', 'semantic'] = 'lexical'
     as_of: date
     limit: StrictInt = Field(default=10, ge=1, le=20)
     targets: list[ExactTarget] = Field(default_factory=list, max_length=8, description='Exact batch; leave text and single-query fields empty. Each target is resolved separately.')
 
     @model_validator(mode='after')
     def bounded(self):
+        if self.targets and self.retrieval != 'lexical':
+            raise ValueError('Exact batches do not use semantic ranking')
+        if self.retrieval == 'semantic' and not self.text.strip() and not self.clause_id:
+            raise ValueError('Semantic retrieval needs a natural-language query')
         if self.targets:
             if self.text or self.standard_code or self.edition or self.clause_id:
                 raise ValueError('Batch targets cannot be mixed with text or single-query fields')
@@ -238,7 +243,10 @@ class Standards:
     def search(self, pid, body):
         records = self.catalog(pid)
         if not body.targets:
-            return self._search(records, body)
+            result = self._search(records, body)
+            if result.get('retrieval', {}).get('method') == 'semantic' and core.hash_json(self.catalog(pid)) != result['catalog_hash']:
+                raise core.ValidationError('Standard sources changed during semantic retrieval; query again')
+            return result
         # One verified catalog snapshot for the whole batch, never a Cartesian
         # product of all standard codes and all clause identifiers.
         results = []
@@ -297,30 +305,62 @@ class Standards:
         conflicts = sorted(k for k,v in counts.items() if v > 1)
         hits = []
         terms = tokens(body.text)
+        semantic = body.retrieval == 'semantic' and not clause_id
         for r in candidates:
             b = r['input']
             if normalized(b['standard_code']) in conflicts or (edition and edition != b['edition']): continue
             for c in b['clauses']:
                 if clause_id and clause_id != c['clause_id']: continue
-                score = 1.0 if clause_id else len(terms & tokens(c['topic']+' '+c['text']))/max(1,len(terms))
+                score = 1.0 if clause_id or semantic else len(terms & tokens(c['topic']+' '+c['text']))/max(1,len(terms))
                 if score == 0: continue
                 hits.append({'standard_id':r['standard_id'], 'revision':r['revision'], 'standard_code':b['standard_code'],
                     'edition':b['edition'], 'title':b['title'], 'jurisdiction':b['jurisdiction'], 'scope':b['scope'],
                     **c, 'score':round(score,6), 'source_url':b['source_url'], 'file_id':b['file_id'],
                     'source_hash':r['source']['hash'], 'quote_hash':core.hash_json(c), 'review':r['review'],
                     'validity': 'USER_REVIEWED_AS_OF_DATE_NOT_AUTOMATIC_AUTHORITY_CHECK'})
+        retrieval = {'method': 'exact' if clause_id else 'lexical', 'relevance_verified': False}
+        if semantic:
+            # Relevance is separate from the exact origin/version checks above.
+            retrieval = {'method': 'semantic', 'relevance_verified': False,
+                         'score_kind': 'cosine_ranking_not_probability', 'confidence': None}
+            if hits:
+                documents = [{'key': str(i), 'text': h['text']} for i, h in enumerate(hits)]
+                ranked = semantic_runtime.rank(body.text, documents)
+                retrieval.update({k: ranked[k] for k in ('model', 'revision', 'runtime_hash', 'documents', 'chunks', 'truncated', 'resource_limits')})
+                for row in ranked['rankings']:
+                    hit = hits[int(row['key'])]
+                    hit.update(score=row['score'], relevance_verified=False,
+                               matched_source_span=row['span'], confidence=None)
+            else:
+                # No eligible source needs no inference or installed model.
+                retrieval.update(documents=0, chunks=0, truncated=False)
         hits.sort(key=lambda h:(-h['score'],h['standard_code'],h['edition'],h['clause_id']))
-        return {'status':'VERSION_CONFLICT' if conflicts else 'CITATIONS_FOUND' if hits else 'NOT_FOUND_IN_REVIEWED_INDEX',
+        result = {'status':'VERSION_CONFLICT' if conflicts else 'CITATIONS_FOUND' if hits else 'NOT_FOUND_IN_REVIEWED_INDEX',
             'citations':hits[:body.limit], 'total_matches':len(hits), 'conflicts':conflicts, 'excluded':excluded,
             'query':body.model_dump(mode='json'), 'catalog_hash':core.hash_json(records), 'retriever_hash':core.sha(Path(__file__)),
             'notice':'只检索本项目已复核条款索引；未命中不证明条款不存在。摘录不等于完整条文。有效期和适用范围仍需工程师核对，不生成合规结论。'}
+        result['retrieval'] = retrieval
+        if semantic and hits:
+            if not conflicts:
+                result['status'] = 'RELEVANCE_REVIEW_REQUIRED'
+            result['notice'] = '以下为本地语义排序候选，仅来源与声明版本经过核验；是否回答本问题仍需对照原文确认。相似度不是置信度，未自动作答或判定合规；片段可能不含表格及完整条件。'
+            result['retriever_hash'] = query_identity(result)
+        return result
+
 
     def query(self, pid, body):
         result = self.search(pid, body)
         obj = {'normquery_id':identifier('normquery'), 'project_id':pid, 'result':result, 'created_at':core.now(),
-               'retriever_hash':core.sha(Path(__file__))}
+               'retriever_hash':result['retriever_hash']}
         obj['hash'] = core.hash_json(obj)
-        self.store.put('normquery', obj)
+        if result.get('retrieval', {}).get('method') == 'semantic':
+            with self.store.connect() as con:
+                con.execute('BEGIN IMMEDIATE')
+                if result['catalog_hash'] != core.hash_json(self.catalog(pid)) or result['retriever_hash'] != query_identity(result):
+                    raise core.ValidationError('Standard source or semantic runtime changed before saving')
+                self.store.put_in(con, 'normquery', obj)
+        else:
+            self.store.put('normquery', obj)
         return obj
 
     def query_view(self, pid, qid):
@@ -328,5 +368,20 @@ class Standards:
         if obj['project_id'] != pid: raise core.ValidationError('Cross-project query rejected')
         if core.hash_json({k:v for k,v in obj.items() if k not in {'hash','revision'}}) != obj['hash']:
             raise core.ValidationError('Query integrity failed')
-        stale = obj['retriever_hash'] != core.sha(Path(__file__)) or obj['result']['catalog_hash'] != core.hash_json(self.catalog(pid))
+        try:
+            current = query_identity(obj['result'])
+        except core.ValidationError:
+            current = None
+        stale = obj['retriever_hash'] != current or obj['result']['catalog_hash'] != core.hash_json(self.catalog(pid))
         return {**obj, 'status':'stale' if stale else 'current', 'result':None if stale else obj['result']}
+
+
+def query_identity(result):
+    retrieval = result.get('retrieval') or {}
+    service = core.sha(Path(__file__))
+    if retrieval.get('method') == 'semantic' and retrieval.get('runtime_hash'):
+        current = semantic_runtime.identity()
+        if current != retrieval['runtime_hash']:
+            raise core.ValidationError('Semantic model or runtime changed; query again')
+        return core.hash_json({'service': service, 'semantic': current})
+    return service

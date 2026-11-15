@@ -9,9 +9,10 @@ from pydantic.json_schema import SkipJsonSchema
 from . import core, agent_intent_catalog as intent_catalog
 from .schema import Contract
 from .agent_scenarios import FACTS as SCENARIO_FACTS
-from . import agent_scenarios, agent_reviews
+from . import agent_scenarios, agent_reviews, agent_energy
 
 FACTS = {
+    'enduse':list(agent_energy.END_FACTS),'utility':list(agent_energy.UTILITY_FACTS),
     'scenario': SCENARIO_FACTS,
     'thermal': ['total_resistance_m2k_w', 'layer_resistance_m2k_w', 'u_w_m2k'],
     'lifecycle': ['boundary_total_kgco2e', 'kgco2e_m2_over_study_period'] +
@@ -20,10 +21,24 @@ FACTS = {
     'engineering': ['max_abs_moment_nm', 'max_abs_shear_n', 'max_deflection_m',
                     'max_elastic_bending_stress_pa', 'left_reaction_n', 'right_reaction_n',
                     'left_reaction_moment_nm'],
-    'schedule': ['planned_duration_days', 'forecast_as_of_day', 'forecast_finish_day', 'forecast_finish_variance_days'],
+    'schedule': ['planned_duration_days', 'forecast_as_of_day', 'forecast_finish_day', 'forecast_finish_variance_days', 'leveled_duration_days', 'leveled_delay_days', 'leveled_lower_bound_days'],
     'operation': ['sample_count', 'cell_issue_count', 'gap_count', 'rule_event_sum', 'rule_unknown_sample_sum'],
 }
-Topic = Literal['meaning', 'area', 'period', 'scope', 'status', 'history']
+Topic = Literal['meaning', 'area', 'period', 'scope', 'status', 'history', 'energy_relationship']
+
+
+class ExplicitOutput(Contract):
+    """User-selected obligations; never synthesized from model or source text."""
+    fact_keys: list[str] = Field(default_factory=list, max_length=12)
+    explanation_topics: list[Topic] = Field(default_factory=list, max_length=6)
+
+    @model_validator(mode='after')
+    def distinct(self):
+        if not (self.fact_keys or self.explanation_topics):
+            raise ValueError('Select an explicit metric or explanation')
+        if len(set(self.fact_keys)) != len(self.fact_keys) or len(set(self.explanation_topics)) != len(self.explanation_topics):
+            raise ValueError('Explicit outputs must be distinct')
+        return self
 
 
 class OutputItem(Contract):
@@ -33,11 +48,11 @@ class OutputItem(Contract):
         description='Select IDs from the application-provided original question fragments. Do not copy, rewrite or invent text.')
     clarification_reason: Literal['metric_not_available', 'ambiguous_request', 'conflicting_request'] | None = None
     clarification_question: str | None = Field(default=None, min_length=1, max_length=400,
-        description='Ask the user to resolve an unavailable, ambiguous or conflicting output request. Use empty facts and topics; this is an unresolved model interpretation, not a capability certification.')
+        description='指标不可用、含义不明或冲突时向用户澄清；facts和topics置空。疑问不证明能力缺失。')
     fact_keys: list[str] = Field(max_length=12,
         description='Exact numeric fact keys requested by the user. Availability requests use []. Total R is total_resistance_m2k_w, not layer resistance.')
     explanation_topics: list[Topic] = Field(max_length=6,
-        description='Requested explanation topics: meaning, area, period, scope, status, history. Availability supports history/status only.')
+        description='Requested topics: meaning, area, period, scope, status, history, energy_relationship (compare two or more requested energy facts by unit/carrier/period). Availability supports history/status only.')
 
 
     @model_validator(mode='after')
@@ -54,15 +69,22 @@ class OutputItem(Contract):
 
 
 def version():
-    return core.hash_json([core.sha(Path(__file__)), core.sha(Path(__file__).with_name('agent_semantics.py')), core.sha(Path(intent_catalog.__file__)), core.sha(Path(agent_scenarios.__file__)), core.sha(Path(agent_reviews.__file__))])
+    return core.hash_json([core.sha(Path(__file__)), core.sha(Path(__file__).with_name('agent_semantics.py')), core.sha(Path(intent_catalog.__file__)), core.sha(Path(agent_scenarios.__file__)), core.sha(Path(agent_reviews.__file__)), core.sha(Path(agent_energy.__file__))])
 
 
 def catalog(requests):
     return [{'request_key': r['request_key'], 'kind': r['kind'], 'purpose': r['purpose'],
+             'user_output_contract': r.get('output_contract'),
              'available_fact_keys': FACTS[r['kind']] if r['purpose'] == 'results' else [],
              'available_explanation_topics': ['history', 'status'] if r['purpose'] == 'availability' else
-                 ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle', 'scenario'} else [])}
+                 ['meaning', 'scope', 'status', 'history'] + (['area', 'period'] if r['kind'] in {'thermal', 'lifecycle', 'scenario'} else ['period', 'energy_relationship'] if r['kind'] in agent_energy.KINDS else [])}
             for r in requests]
+
+
+def public_catalog():
+    return {kind: {'facts': [{'key': key, 'label': intent_catalog.MEANINGS[kind][key]} for key in keys],
+                   'topics': catalog([{'request_key':'catalog', 'kind':kind, 'purpose':'results'}])[0]['available_explanation_topics']}
+            for kind, keys in FACTS.items()}
 
 
 def constrain_tool(tool, requests, question):
@@ -76,7 +98,7 @@ def constrain_tool(tool, requests, question):
         props['request_key'] = {'type': 'string', 'const': entry['request_key']}
         props['question_fragment_ids'] = {'type':'array','minItems':1,'maxItems':16,'uniqueItems':True,
             'items':{'type':'string','enum':[f['fragment_id'] for f in intent_catalog.fragments(question)]},
-            'description':'Select original question fragment IDs supporting this request. The application retains their exact text.'}
+            'description':'引用支撑此请求的原问题片段编号；原文由应用保留。'}
         item['required'] = ['request_key','question_fragment_ids','fact_keys','explanation_topics']
         props['fact_keys'] = ({'type': 'array', 'minItems': 0, 'maxItems': 12, 'uniqueItems': True,
                                'items': {'type': 'string', 'enum': entry['available_fact_keys']},
@@ -84,7 +106,13 @@ def constrain_tool(tool, requests, question):
                               if entry['purpose'] == 'results' else {'type': 'array', 'maxItems': 0})
         props['explanation_topics'] = {'type': 'array', 'maxItems': 6, 'uniqueItems': True,
                                        'items': {'type': 'string', 'enum': entry['available_explanation_topics']},
-                                       'description': 'Select only explanations requested by the user; allowed options are not requirements.'}
+                                       'description': '仅选用户要求的解释；可选项并非必选项。'}
+        explicit = entry.get('user_output_contract')
+        if explicit:
+            for field in ('fact_keys', 'explanation_topics'):
+                props[field] = {'type':'array', 'const':explicit[field]}
+            props['clarification_reason'] = {'type':'null'}
+            props['clarification_question'] = {'type':'null'}
         variants.append(item)
     parameters.pop('$defs')
     parameters['properties']['output_plan'] = {'type': 'array', 'minItems': len(requests),
@@ -108,6 +136,7 @@ def planning_instruction(record):
         '只请求状态、范围或指标口径时，fact_keys为空并选择明确所问主题；无需用数值占位。'
         '请求不在只读字段目录中的指标、含义不明确或存在矛盾时，填写clarification_reason和clarification_question，'
         'fact_keys和explanation_topics均为空；先问用户，不选择相近字段、不自行计算，不把模型疑问当作已证实的应用能力结论。'
+        'user_output_contract非空时，指标和解释是用户逐项选定的硬约束，必须原样覆盖，不增删、不以相近字段替代。原文有其他要求或冲突仍未获核验，不宣称整个问题完成。'
         '当前计划只表达模型的理解，不证明意图已验证或用户任务已完成。'
         '原问题片段：' + json.dumps(intent_catalog.fragments(record['question']), ensure_ascii=False) +
         '。本轮允许的请求与输出目录：' + json.dumps(catalog(record['read_requests']), ensure_ascii=False)
@@ -127,7 +156,14 @@ def freeze(record, items):
     normalized = []
     for item in items:
         entry = allowed[item.request_key]
+        explicit = requests[item.request_key].get('output_contract')
+        if explicit and (item.clarification_question or any(
+                set(getattr(item, field)) != set(explicit[field])
+                for field in ('fact_keys', 'explanation_topics'))):
+            raise core.ValidationError('Model plan cannot replace, omit or expand user-selected outputs')
         saved = item.model_dump(mode='json', exclude_none=True)
+        saved['requirement_origin'] = 'user_selected' if explicit else 'model_inferred'
+        saved['user_contract_hash'] = core.hash_json(explicit) if explicit else None
         if item.question_fragment_ids is not None:
             if not set(item.question_fragment_ids) <= set(anchors):
                 raise core.ValidationError('Question fragment IDs must belong to this original question')
@@ -136,6 +172,8 @@ def freeze(record, items):
             saved['question_excerpt'] = '\n'.join(f['text'] for f in selected)
         elif item.question_excerpt not in record['question']:
             raise core.ValidationError('Quote an exact substring of the current user question, not source data')
+        if 'energy_relationship' in item.explanation_topics and len(item.fact_keys) < 2:
+            raise core.ValidationError('Energy relationships require at least two selected energy facts')
         normalized.append(saved)
         if len(set(item.fact_keys)) != len(item.fact_keys) or not set(item.fact_keys) <= set(entry['available_fact_keys']):
             raise core.ValidationError('Unknown, duplicate or out-of-scope fact keys')
@@ -165,6 +203,9 @@ def missing_facts(record, request, deliveries):
 
 def explain(topic, request, facts, state, artifact):
     """Application text from validated current facts; no model prose or source-name instructions."""
+    if topic == 'energy_relationship':
+        relation = agent_energy.relationship(facts)
+        return relation['text'] if relation else '等待至少两个已核验的能耗字段及来源上下文。'
     if topic == 'history':
         return '这里只核验当前项目、指定范围的记录。记录缺失不能证明从未计算；记录存在也不是完整历史执行审计。'
     if state == 'fields_unavailable' and topic == 'status':
@@ -191,6 +232,7 @@ def explain(topic, request, facts, state, artifact):
         if area_facts:
             return '碳总量不以面积作分母；单位面积指标使用声明面积' + str(area_facts[0]['area_m2']) + ' m²作分母。总量字段的area_m2为空不表示建筑面积未知。'
         return '本次交付的是未按面积归一化的碳总量，area_m2为空不表示建筑面积未知；单位面积结果需另行交付相应事实。'
+    if topic == 'period' and request['kind'] in agent_energy.KINDS:return agent_energy.explanation(topic,artifact)
     if topic == 'period':
         if request['kind']=='scenario':
             return '材料金额对应声明报价日期；碳量与碳比例覆盖声明的'+str(artifact.get('input',{}).get('study_years','未知'))+'年评估期，不是年量。排除阶段不记零；功能等效及清单完整性未核证。'
@@ -209,7 +251,11 @@ def attach(answer, record):
     answer['output_contract_coverage'] = 'plan_missing'
     if not plan:
         return answer
-    if plan['version'] != version() or plan['question_hash'] != core.hash_json(record['question']):
+    contracts_current = all(
+        item.get('user_contract_hash') == (core.hash_json(r['output_contract']) if r.get('output_contract') else None)
+        for r in record['read_requests']
+        for item in plan['items'] if item['request_key'] == r['request_key'])
+    if not contracts_current or plan['version'] != version() or plan['question_hash'] != core.hash_json(record['question']):
         answer['output_contract_coverage'] = 'contract_changed'
         return answer
     progress = {r['request_key']: r for r in answer.get('read_request_progress', [])}
@@ -232,7 +278,9 @@ def attach(answer, record):
         facts = [f for f in values.get(r['record_id'], []) if f['fact'] in needed['fact_keys']]
         missing = sorted(set(needed['fact_keys']) - {f['fact'] for f in facts})
         blocked = state in {'record_unavailable', 'limitation_verified', 'fields_unavailable'}
-        ready = state in {'result_verified', 'availability_verified', 'source_review_verified'} and not missing
+        relationship_missing = ('energy_relationship' in needed['explanation_topics']
+                                and agent_energy.relationship(facts) is None)
+        ready = state in {'result_verified', 'availability_verified', 'source_review_verified'} and not missing and not relationship_missing
         artifact = artifacts.get(r['record_id']) or limits.get(r['record_id']) or {}
         source_hash = artifact.get('record_hash')
         if r['purpose'] == 'availability' and ready:
@@ -258,5 +306,7 @@ def attach(answer, record):
         answer['output_contract_coverage'] = 'needs_clarification'
         answer['summary'] = '仍有输出要求需要用户澄清；已明确部分单独列出，未明确项没有数值交付。'
         answer['task_completion'] = 'partial' if answer.get('checked_statements') or answer.get('checked_reviews') else 'incomplete'
+    answer['user_selected_output_keys'] = [r['request_key'] for r in record['read_requests'] if r.get('output_contract')]
+    answer['free_question_coverage'] = 'not_verified'
     answer['output_contract_notice'] = '仅检查模型解析计划中的指标和解释主题是否交付；计划对原始问题的理解仍需核对。解释由应用按当前来源生成，模型自由原文未获语义认证。'
     return answer

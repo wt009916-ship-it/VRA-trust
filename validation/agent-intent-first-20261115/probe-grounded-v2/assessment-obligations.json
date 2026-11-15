@@ -1,0 +1,90 @@
+{
+  "scope": "Planner-only operations, sources and numeric-output obligations; optional explanation verbosity recorded separately. Not task execution or app score.",
+  "passed": 3,
+  "total": 8,
+  "cases": [
+    {
+      "id": "H01",
+      "passed": false,
+      "checks": {
+        "valid_frozen_plan": false
+      }
+    },
+    {
+      "id": "H02",
+      "passed": false,
+      "checks": {
+        "valid_frozen_plan": false
+      }
+    },
+    {
+      "id": "H03",
+      "passed": true,
+      "checks": {
+        "no_unassigned_fragments": true,
+        "no_duplicate_numeric_obligations": true,
+        "current_reference": true,
+        "new_task_preserved_with_gap": true
+      },
+      "additional_explanation_topics_for_review": []
+    },
+    {
+      "id": "H04",
+      "passed": true,
+      "checks": {
+        "no_unassigned_fragments": true,
+        "no_duplicate_numeric_obligations": true,
+        "new_cost_not_old_record": true
+      },
+      "additional_explanation_topics_for_review": []
+    },
+    {
+      "id": "H05",
+      "passed": false,
+      "checks": {
+        "no_unassigned_fragments": false,
+        "no_duplicate_numeric_obligations": true,
+        "current_U": true,
+        "scoped_availability": true
+      },
+      "additional_explanation_topics_for_review": []
+    },
+    {
+      "id": "H06",
+      "passed": true,
+      "checks": {
+        "no_unassigned_fragments": true,
+        "no_duplicate_numeric_obligations": true,
+        "only_two_energy_fields": true,
+        "relationship_obligation": true
+      },
+      "additional_explanation_topics_for_review": []
+    },
+    {
+      "id": "I07",
+      "passed": false,
+      "checks": {
+        "no_unassigned_fragments": true,
+        "no_duplicate_numeric_obligations": true,
+        "negation_preserved": false
+      },
+      "additional_explanation_topics_for_review": []
+    },
+    {
+      "id": "I08",
+      "passed": false,
+      "checks": {
+        "no_unassigned_fragments": true,
+        "no_duplicate_numeric_obligations": true,
+        "contradiction_preserved": false
+      },
+      "additional_explanation_topics_for_review": []
+    }
+  ],
+  "score_delta": 0,
+  "normalization": "Read-only output items grouped by identical source ID; duplicate numeric obligations still fail. Original item-shape checker kept separately.",
+  "cases_H": "Known tasks reused for a new planning-stage regression",
+  "cases_I": "Two new planning-only probes",
+  "source_planner_sha256": "e5c18303806a93d84d08173706c259e0dfb5fcac45a2cf4f46faca984b58c4f7",
+  "frozen_sha256": "0a9178a9a561b806a95b7e232877d985195446d80565a7cc21fac3189774ae37"
+}

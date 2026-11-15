@@ -1,0 +1,100 @@
+.....................................FF................................. [ 72%]
+....F......................                                              [100%]
+================================== FAILURES ===================================
+_ test_native_catalog_selection_does_not_leak_all_facts_into_pending_context __
+
+client = <starlette.testclient.TestClient object at 0x00000266E86D3B00>
+native_template = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-phase-tests-20261113-a/enduse-native0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266919D6F30>
+
+    def test_native_catalog_selection_does_not_leak_all_facts_into_pending_context(client,native_template,monkeypatch):
+        import json
+        from backend import agent_requests
+        pid=create_project(client)['project_id'];rid='run_'+'4'*32
+        source={'run_id':rid,'sql_sha256':core.sha(native_template/'output/eplusout.sql'),'mtd_sha256':core.sha(native_template/'output/eplusout.mtd')}
+        monkeypatch.setattr(end_use_records.Ledgers,'source',lambda self,p,r:(source.copy(),native_template))
+        ledger=end_use_records.Ledgers(client.app.state.domain).create(pid,end_use_records.LedgerInput(name='Selection regression',purpose='Exercise catalog then selective delivery with full native ledger',run_id=rid),'test')
+        current=agent_energy.EndUseReads(client.app.state.domain).view(pid,ledger['enduse_id']);agent=client.app.state.agent
+        scripted(agent,monkeypatch,[tool('end_use_read',{'enduse_id':ledger['enduse_id']}),
+            tool('end_use_read',{'enduse_id':ledger['enduse_id'],'fact_keys':['native_hours']}),
+            tool('professional_deliver',{'delivery':{**claim(current,'enduse',['native_hours']),'finish':True}})])
+        original=agent.gateway.complete;seen=[]
+        def capture(messages,tools, **response_options):
+            seen.append((copy.deepcopy(messages),copy.deepcopy(tools)));return original(messages,tools, **response_options)
+        monkeypatch.setattr(agent.gateway,'complete',capture)
+        task=agent.start(pid,Chat(message='Read native hours',mode='provider',infer_outputs=False,read_execution='model',read_requests=[{'request_key':'hours','kind':'enduse','purpose':'results','record_id':ledger['enduse_id']}]),background=False)
+        assert task['status']=='succeeded',task.get('error')
+        assert len(seen)==3 and all(len(json.dumps(m,ensure_ascii=False))<64000 for m,_ in seen)
+        assert 'professional_deliver' not in [t['function']['name'] for t in seen[1][1]]
+        assert 'professional_deliver' in [t['function']['name'] for t in seen[2][1]]
+        request=task['read_requests'][0]
+        reads=[e for e in task['events'] if e['tool']=='end_use_read' and e['status']=='succeeded']
+        record={'read_requests':[request],'events':[reads[0]],'professional_deliveries':[]}
+        first=agent_requests.next_actions(record)[0]
+        assert first['tool']=='end_use_read' and 'available_facts' not in first
+        record['events']=[reads[1]];second=agent_requests.next_actions(record)[0]
+>       assert [f['fact'] for f in second['available_facts']]==['native_hours']
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'available_facts'
+
+tests\test_agent_energy.py:146: KeyError
+_______ test_energy_delivery_schema_requires_context_after_actual_read ________
+
+client = <starlette.testclient.TestClient object at 0x0000026691AE2540>
+native = WindowsPath('C:/Users/18483/AppData/Local/Temp/vra-phase-tests-20261113-a/test_energy_delivery_schema_re0/native')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026691E7ECC0>
+
+    def test_energy_delivery_schema_requires_context_after_actual_read(client,native,monkeypatch):
+        pid,r,_=create_utility(client,native,monkeypatch);agent=client.app.state.agent
+        scripted(agent,monkeypatch,[tool('utility_comparison_read',{'utility_id':r['utility_id'],'fact_keys':['interval_count']}),tool('professional_deliver',{'delivery':{**claim(r,'utility',['interval_count']),'finish':True}})])
+        original=agent.gateway.complete;seen=[]
+        def captured(messages,tools, **response_options):
+            seen.append(copy.deepcopy(tools));return original(messages,tools, **response_options)
+        monkeypatch.setattr(agent.gateway,'complete',captured)
+        task=agent.start(pid,Chat(message='Read interval count',mode='provider',infer_outputs=False,read_requests=[{'request_key':'r','kind':'utility','purpose':'results','record_id':r['utility_id']}]),background=False)
+        assert task['status']=='succeeded',task.get('error')
+        schema=next(t['function']['parameters'] for t in seen[-1] if t['function']['name']=='professional_deliver')
+>       statement=schema['$defs']['Statement']
+                  ^^^^^^^^^^^^^^^
+E       KeyError: '$defs'
+
+tests\test_agent_energy.py:161: KeyError
+_ test_finished_metric_tools_leave_remaining_goal_and_stop_without_extra_prose _
+
+client = <starlette.testclient.TestClient object at 0x0000026698A767B0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266923B7A10>
+
+    def test_finished_metric_tools_leave_remaining_goal_and_stop_without_extra_prose(client,monkeypatch):
+        pid=create_project(client)['project_id'];a=client.app.state.agent;r=create_record(client,pid,'thermal')
+        request={'request_key':'ops','kind':'operation','purpose':'availability','record_id':None}
+        message='Give total R and explain area. Check operation history.'
+        numeric=claim(r);args=json.loads(numeric['tool_calls'][0]['function']['arguments']);args['delivery']['finish']=False
+        scripted(a,monkeypatch,[tool('requested_output_plan',{'output_plan':[plan(),plan('ops','Check operation history.',[],['history'])]}),
+            tool('thermal_read',{'thermal_id':r['thermal_id']}),tool('professional_deliver',args),
+            tool('requested_availability',{'request_keys':['ops'],'finish':False})])
+        original=a.gateway.complete;definitions=[]
+        def capture(messages,tools, **response_options):
+            definitions.append({t['function']['name'] for t in tools})
+            return original(messages,tools, **response_options)
+        monkeypatch.setattr(a.gateway,'complete',capture)
+        t=a.start(pid,Chat(read_execution='model', message=message,mode='provider',read_requests=[scope(r),request]),background=False)
+        assert t['status']=='succeeded',t.get('error')
+>       assert definitions[-1]=={'project_get','requested_availability'}
+E       AssertionError: assert {'project_get...uested_defer'} == {'project_get...availability'}
+E         
+E         Extra items in the left set:
+E         'requested_defer'
+E         Use -v to get more diff
+
+tests\test_agent_outputs.py:163: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_energy.py::test_native_catalog_selection_does_not_leak_all_facts_into_pending_context
+FAILED tests/test_agent_energy.py::test_energy_delivery_schema_requires_context_after_actual_read
+FAILED tests/test_agent_outputs.py::test_finished_metric_tools_leave_remaining_goal_and_stop_without_extra_prose
+3 failed, 96 passed, 1 warning in 93.23s (0:01:33)

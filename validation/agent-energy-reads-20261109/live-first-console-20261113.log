@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "C:\Users\18483\AppData\Local\Temp\vra-timestep-reliability-20261108\validation\agent-energy-reads-20261109\live_acceptance.py", line 155, in <module>
+    else:run()
+         ^^^^^
+  File "C:\Users\18483\AppData\Local\Temp\vra-timestep-reliability-20261108\validation\agent-energy-reads-20261109\live_acceptance.py", line 69, in run
+    run=request('POST','/api/runs',{'project_id':pid,'scheme_id':'baseline','factor_profile_id':'none'});rid=run['run_id'];until=time.monotonic()+600
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\18483\AppData\Local\Temp\vra-timestep-reliability-20261108\validation\agent-energy-reads-20261109\live_acceptance.py", line 59, in request
+    if x.status_code>=400:save(out/'setup-error.json',{'method':method,'path':url,'status':x.status_code,'response':x.text});x.raise_for_status()
+                                                                                                                             ^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '409 Conflict' for url 'http://127.0.0.1:62788/api/runs'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409

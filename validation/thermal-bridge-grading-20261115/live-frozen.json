@@ -1,0 +1,853 @@
+{
+  "script_sha256": "403241595e9651a79c5bc98a7ec70b45788101ff1e6bed4f42493a0989ff5732",
+  "source_sha256": {
+    "composite-reference-frozen.json": "73abf79f982622e3790e56a7e29194b71be9581a45bc13e6747bb6f1a45985e2",
+    "analytical-reference-frozen.json": "f2c29b659b7c2b4e9b1d805ffe53cd36d13094ed9da548891cdb3c40c3bdb1a4"
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "input": {
+        "name": "Public heterogeneous reference",
+        "width": 500.0,
+        "height": 47.5,
+        "length_unit": "mm",
+        "geometry_source": "WUFI public benchmark case2. Coordinates transcribed with H=(0,0); AB=500, AC=6, CF=5, CD=15, EM=40, aluminium=1.5 mm.",
+        "application": "Independent numerical reference only; not a real building or certification",
+        "regions": [
+          {
+            "name": "Concrete",
+            "x0": 0.0,
+            "x1": 500.0,
+            "y0": 41.5,
+            "y1": 47.5,
+            "conductivity": 1.15,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Wood",
+            "x0": 0.0,
+            "x1": 15.0,
+            "y0": 36.5,
+            "y1": 41.5,
+            "conductivity": 0.12,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Insulation right",
+            "x0": 15.0,
+            "x1": 500.0,
+            "y0": 1.5,
+            "y1": 41.5,
+            "conductivity": 0.029,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Insulation left",
+            "x0": 1.5,
+            "x1": 15.0,
+            "y0": 1.5,
+            "y1": 35.0,
+            "conductivity": 0.029,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Aluminium vertical",
+            "x0": 0.0,
+            "x1": 1.5,
+            "y0": 1.5,
+            "y1": 36.5,
+            "conductivity": 230.0,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Aluminium upper",
+            "x0": 1.5,
+            "x1": 15.0,
+            "y0": 35.0,
+            "y1": 36.5,
+            "conductivity": 230.0,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Aluminium lower",
+            "x0": 0.0,
+            "x1": 500.0,
+            "y0": 0.0,
+            "y1": 1.5,
+            "conductivity": 230.0,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          }
+        ],
+        "boundaries": {
+          "left": {
+            "mode": "adiabatic",
+            "basis": "Public benchmark insulated cut boundary"
+          },
+          "right": {
+            "mode": "adiabatic",
+            "basis": "Public benchmark insulated cut boundary"
+          },
+          "bottom": {
+            "mode": "film",
+            "temperature_c": 20.0,
+            "resistance_m2k_w": 0.11,
+            "basis": "Public reference internal air film"
+          },
+          "top": {
+            "mode": "film",
+            "temperature_c": 0.0,
+            "resistance_m2k_w": 0.06,
+            "basis": "Public reference external air film"
+          }
+        },
+        "cell_size": 4.0,
+        "probes": [
+          {
+            "name": "A",
+            "x": 0.0,
+            "y": 47.5
+          },
+          {
+            "name": "B",
+            "x": 500.0,
+            "y": 47.5
+          },
+          {
+            "name": "C",
+            "x": 0.0,
+            "y": 41.5
+          },
+          {
+            "name": "D",
+            "x": 15.0,
+            "y": 41.5
+          },
+          {
+            "name": "E",
+            "x": 500.0,
+            "y": 41.5
+          },
+          {
+            "name": "F",
+            "x": 0.0,
+            "y": 36.5
+          },
+          {
+            "name": "G",
+            "x": 15.0,
+            "y": 36.5
+          },
+          {
+            "name": "H",
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "name": "I",
+            "x": 500.0,
+            "y": 0.0
+          }
+        ],
+        "mesh_strategy": "graded_interface_aligned"
+      },
+      "expected": {
+        "temperature_c": {
+          "A": 7.1,
+          "B": 0.8,
+          "C": 7.9,
+          "D": 6.3,
+          "E": 0.8,
+          "F": 16.4,
+          "G": 16.3,
+          "H": 16.8,
+          "I": 18.3
+        },
+        "absolute_temperature_tolerance_k": 0.1,
+        "heat_w_per_m": 9.5,
+        "absolute_heat_tolerance_w_per_m": 0.1
+      },
+      "status": "calculated"
+    },
+    {
+      "id": "P02",
+      "input": {
+        "name": "Public heterogeneous reference",
+        "width": 500.0,
+        "height": 47.5,
+        "length_unit": "mm",
+        "geometry_source": "WUFI public benchmark case2. Coordinates transcribed with H=(0,0); AB=500, AC=6, CF=5, CD=15, EM=40, aluminium=1.5 mm.",
+        "application": "Independent numerical reference only; not a real building or certification",
+        "regions": [
+          {
+            "name": "Concrete",
+            "x0": 0.0,
+            "x1": 500.0,
+            "y0": 41.5,
+            "y1": 47.5,
+            "conductivity": 1.15,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Wood",
+            "x0": 0.0,
+            "x1": 15.0,
+            "y0": 36.5,
+            "y1": 41.5,
+            "conductivity": 0.12,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Insulation right",
+            "x0": 15.0,
+            "x1": 500.0,
+            "y0": 1.5,
+            "y1": 41.5,
+            "conductivity": 0.029,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Insulation left",
+            "x0": 1.5,
+            "x1": 15.0,
+            "y0": 1.5,
+            "y1": 35.0,
+            "conductivity": 0.029,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Aluminium vertical",
+            "x0": 0.0,
+            "x1": 1.5,
+            "y0": 1.5,
+            "y1": 36.5,
+            "conductivity": 230.0,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Aluminium upper",
+            "x0": 1.5,
+            "x1": 15.0,
+            "y0": 35.0,
+            "y1": 36.5,
+            "conductivity": 230.0,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          },
+          {
+            "name": "Aluminium lower",
+            "x0": 0.0,
+            "x1": 500.0,
+            "y0": 0.0,
+            "y1": 1.5,
+            "conductivity": 230.0,
+            "conductivity_unit": "W/(m K)",
+            "source": "Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry"
+          }
+        ],
+        "boundaries": {
+          "left": {
+            "mode": "adiabatic",
+            "basis": "Public benchmark insulated cut boundary"
+          },
+          "right": {
+            "mode": "adiabatic",
+            "basis": "Public benchmark insulated cut boundary"
+          },
+          "bottom": {
+            "mode": "film",
+            "temperature_c": 20.0,
+            "resistance_m2k_w": 0.11,
+            "basis": "Public reference internal air film"
+          },
+          "top": {
+            "mode": "film",
+            "temperature_c": 0.0,
+            "resistance_m2k_w": 0.06,
+            "basis": "Public reference external air film"
+          }
+        },
+        "cell_size": 2.0,
+        "probes": [
+          {
+            "name": "A",
+            "x": 0.0,
+            "y": 47.5
+          },
+          {
+            "name": "B",
+            "x": 500.0,
+            "y": 47.5
+          },
+          {
+            "name": "C",
+            "x": 0.0,
+            "y": 41.5
+          },
+          {
+            "name": "D",
+            "x": 15.0,
+            "y": 41.5
+          },
+          {
+            "name": "E",
+            "x": 500.0,
+            "y": 41.5
+          },
+          {
+            "name": "F",
+            "x": 0.0,
+            "y": 36.5
+          },
+          {
+            "name": "G",
+            "x": 15.0,
+            "y": 36.5
+          },
+          {
+            "name": "H",
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "name": "I",
+            "x": 500.0,
+            "y": 0.0
+          }
+        ],
+        "mesh_strategy": "graded_interface_aligned"
+      },
+      "expected": {
+        "temperature_c": {
+          "A": 7.1,
+          "B": 0.8,
+          "C": 7.9,
+          "D": 6.3,
+          "E": 0.8,
+          "F": 16.4,
+          "G": 16.3,
+          "H": 16.8,
+          "I": 18.3
+        },
+        "absolute_temperature_tolerance_k": 0.1,
+        "heat_w_per_m": 9.5,
+        "absolute_heat_tolerance_w_per_m": 0.1
+      },
+      "status": "calculated"
+    },
+    {
+      "id": "H01",
+      "expected": {
+        "heat_w_per_m": 13.2425068119891,
+        "exact_heat_fraction": "4860/367",
+        "absolute_heat_tolerance_w_per_m": 1e-07
+      },
+      "status": "calculated",
+      "input": {
+        "name": "Independent layered strip 0",
+        "width": 0.15,
+        "height": 1.2,
+        "length_unit": "m",
+        "cell_size": 0.04,
+        "mesh_strategy": "graded_interface_aligned",
+        "geometry_source": "Synthetic two-layer rectangle",
+        "application": "Independent series resistance cross-check, not building data",
+        "regions": [
+          {
+            "name": "Dense",
+            "x0": 0.0,
+            "x1": 0.08,
+            "y0": 0.0,
+            "y1": 1.2,
+            "conductivity": 0.3,
+            "conductivity_unit": "W/(m K)",
+            "source": "Independent synthetic material value; not measured"
+          },
+          {
+            "name": "Light",
+            "x0": 0.08,
+            "x1": 0.15,
+            "y0": 0.0,
+            "y1": 1.2,
+            "conductivity": 0.035,
+            "conductivity_unit": "W/(m K)",
+            "source": "Independent synthetic material value; not measured"
+          }
+        ],
+        "boundaries": {
+          "left": {
+            "mode": "film",
+            "temperature_c": 22.0,
+            "resistance_m2k_w": 0.14,
+            "basis": "Independent reference boundary"
+          },
+          "right": {
+            "mode": "film",
+            "temperature_c": -5.0,
+            "resistance_m2k_w": 0.04,
+            "basis": "Independent reference boundary"
+          },
+          "bottom": {
+            "mode": "adiabatic",
+            "temperature_c": null,
+            "resistance_m2k_w": null,
+            "basis": "Independent reference boundary"
+          },
+          "top": {
+            "mode": "adiabatic",
+            "temperature_c": null,
+            "resistance_m2k_w": null,
+            "basis": "Independent reference boundary"
+          }
+        },
+        "probes": []
+      }
+    },
+    {
+      "id": "H02",
+      "expected": {
+        "heat_w_per_m": 22.3963133640553,
+        "exact_heat_fraction": "4860/217",
+        "absolute_heat_tolerance_w_per_m": 1e-07
+      },
+      "status": "calculated",
+      "input": {
+        "name": "Independent layered strip 1",
+        "width": 0.15,
+        "height": 1.2,
+        "length_unit": "m",
+        "cell_size": 0.04,
+        "mesh_strategy": "graded_interface_aligned",
+        "geometry_source": "Synthetic two-layer rectangle",
+        "application": "Independent series resistance cross-check, not building data",
+        "regions": [
+          {
+            "name": "Dense",
+            "x0": 0.0,
+            "x1": 0.08,
+            "y0": 0.0,
+            "y1": 1.2,
+            "conductivity": 0.3,
+            "conductivity_unit": "W/(m K)",
+            "source": "Independent synthetic material value; not measured"
+          },
+          {
+            "name": "Light",
+            "x0": 0.08,
+            "x1": 0.15,
+            "y0": 0.0,
+            "y1": 1.2,
+            "conductivity": 0.07,
+            "conductivity_unit": "W/(m K)",
+            "source": "Independent synthetic material value; not measured"
+          }
+        ],
+        "boundaries": {
+          "left": {
+            "mode": "film",
+            "temperature_c": 22.0,
+            "resistance_m2k_w": 0.14,
+            "basis": "Independent reference boundary"
+          },
+          "right": {
+            "mode": "film",
+            "temperature_c": -5.0,
+            "resistance_m2k_w": 0.04,
+            "basis": "Independent reference boundary"
+          },
+          "bottom": {
+            "mode": "adiabatic",
+            "temperature_c": null,
+            "resistance_m2k_w": null,
+            "basis": "Independent reference boundary"
+          },
+          "top": {
+            "mode": "adiabatic",
+            "temperature_c": null,
+            "resistance_m2k_w": null,
+            "basis": "Independent reference boundary"
+          }
+        },
+        "probes": []
+      }
+    },
+    {
+      "id": "A01",
+      "input": {
+        "name": "Analytic two-dimensional column",
+        "width": 1.0,
+        "height": 2.0,
+        "length_unit": "m",
+        "cell_size": 0.02,
+        "mesh_strategy": "graded_interface_aligned",
+        "geometry_source": "Synthetic two-layer rectangle",
+        "application": "Independent series resistance cross-check, not building data",
+        "regions": [
+          {
+            "name": "Uniform",
+            "x0": 0.0,
+            "x1": 1.0,
+            "y0": 0.0,
+            "y1": 2.0,
+            "conductivity": 1.0,
+            "conductivity_unit": "W/(m K)",
+            "source": "Independent synthetic material value; not measured"
+          }
+        ],
+        "boundaries": {
+          "left": {
+            "mode": "fixed_temperature",
+            "temperature_c": 0.0,
+            "resistance_m2k_w": null,
+            "basis": "Independent reference boundary"
+          },
+          "right": {
+            "mode": "adiabatic",
+            "temperature_c": null,
+            "resistance_m2k_w": null,
+            "basis": "Independent reference boundary"
+          },
+          "bottom": {
+            "mode": "fixed_temperature",
+            "temperature_c": 0.0,
+            "resistance_m2k_w": null,
+            "basis": "Independent reference boundary"
+          },
+          "top": {
+            "mode": "fixed_temperature",
+            "temperature_c": 20.0,
+            "resistance_m2k_w": null,
+            "basis": "Independent reference boundary"
+          }
+        },
+        "probes": [
+          {
+            "name": "0",
+            "x": 0.25,
+            "y": 0.25
+          },
+          {
+            "name": "1",
+            "x": 0.5,
+            "y": 0.25
+          },
+          {
+            "name": "2",
+            "x": 0.75,
+            "y": 0.25
+          },
+          {
+            "name": "3",
+            "x": 1.0,
+            "y": 0.25
+          },
+          {
+            "name": "4",
+            "x": 0.25,
+            "y": 0.5
+          },
+          {
+            "name": "5",
+            "x": 0.5,
+            "y": 0.5
+          },
+          {
+            "name": "6",
+            "x": 0.75,
+            "y": 0.5
+          },
+          {
+            "name": "7",
+            "x": 1.0,
+            "y": 0.5
+          },
+          {
+            "name": "8",
+            "x": 0.25,
+            "y": 0.75
+          },
+          {
+            "name": "9",
+            "x": 0.5,
+            "y": 0.75
+          },
+          {
+            "name": "10",
+            "x": 0.75,
+            "y": 0.75
+          },
+          {
+            "name": "11",
+            "x": 1.0,
+            "y": 0.75
+          },
+          {
+            "name": "12",
+            "x": 0.25,
+            "y": 1.0
+          },
+          {
+            "name": "13",
+            "x": 0.5,
+            "y": 1.0
+          },
+          {
+            "name": "14",
+            "x": 0.75,
+            "y": 1.0
+          },
+          {
+            "name": "15",
+            "x": 1.0,
+            "y": 1.0
+          },
+          {
+            "name": "16",
+            "x": 0.25,
+            "y": 1.25
+          },
+          {
+            "name": "17",
+            "x": 0.5,
+            "y": 1.25
+          },
+          {
+            "name": "18",
+            "x": 0.75,
+            "y": 1.25
+          },
+          {
+            "name": "19",
+            "x": 1.0,
+            "y": 1.25
+          },
+          {
+            "name": "20",
+            "x": 0.25,
+            "y": 1.5
+          },
+          {
+            "name": "21",
+            "x": 0.5,
+            "y": 1.5
+          },
+          {
+            "name": "22",
+            "x": 0.75,
+            "y": 1.5
+          },
+          {
+            "name": "23",
+            "x": 1.0,
+            "y": 1.5
+          },
+          {
+            "name": "24",
+            "x": 0.25,
+            "y": 1.75
+          },
+          {
+            "name": "25",
+            "x": 0.5,
+            "y": 1.75
+          },
+          {
+            "name": "26",
+            "x": 0.75,
+            "y": 1.75
+          },
+          {
+            "name": "27",
+            "x": 1.0,
+            "y": 1.75
+          }
+        ]
+      },
+      "expected": {
+        "width_m": 1,
+        "height_m": 2,
+        "conductivity_w_mk": 1,
+        "boundaries": {
+          "left": {
+            "temperature_c": 0
+          },
+          "bottom": {
+            "temperature_c": 0
+          },
+          "top": {
+            "temperature_c": 20
+          },
+          "right": {
+            "adiabatic": true
+          }
+        },
+        "oracle": "sum n>=0: 40/wave*sin(wave*x)*sinh(wave*y)/sinh(2*wave), wave=(n+0.5)*pi",
+        "max_abs_temperature_error_k": 0.1,
+        "points": [
+          {
+            "x_m": 0.25,
+            "y_m": 0.25,
+            "temperature_c": 0.34181223043705034
+          },
+          {
+            "x_m": 0.5,
+            "y_m": 0.25,
+            "temperature_c": 0.6295595659329477
+          },
+          {
+            "x_m": 0.75,
+            "y_m": 0.25,
+            "temperature_c": 0.8199305709730431
+          },
+          {
+            "x_m": 1.0,
+            "y_m": 0.25,
+            "temperature_c": 0.8863141603545089
+          },
+          {
+            "x_m": 0.25,
+            "y_m": 0.5,
+            "temperature_c": 0.7396473145060664
+          },
+          {
+            "x_m": 0.5,
+            "y_m": 0.5,
+            "temperature_c": 1.3594333622612333
+          },
+          {
+            "x_m": 0.75,
+            "y_m": 0.5,
+            "temperature_c": 1.7668488094050232
+          },
+          {
+            "x_m": 1.0,
+            "y_m": 0.5,
+            "temperature_c": 1.9082823593322684
+          },
+          {
+            "x_m": 0.25,
+            "y_m": 0.75,
+            "temperature_c": 1.2624666852017148
+          },
+          {
+            "x_m": 0.5,
+            "y_m": 0.75,
+            "temperature_c": 2.308603415585997
+          },
+          {
+            "x_m": 0.75,
+            "y_m": 0.75,
+            "temperature_c": 2.9858470337268996
+          },
+          {
+            "x_m": 1.0,
+            "y_m": 0.75,
+            "temperature_c": 3.2185024482870657
+          },
+          {
+            "x_m": 0.25,
+            "y_m": 1.0,
+            "temperature_c": 2.014152966273101
+          },
+          {
+            "x_m": 0.5,
+            "y_m": 1.0,
+            "temperature_c": 3.640566637738768
+          },
+          {
+            "x_m": 0.75,
+            "y_m": 1.0,
+            "temperature_c": 4.65818776956295
+          },
+          {
+            "x_m": 1.0,
+            "y_m": 1.0,
+            "temperature_c": 5.000000000000001
+          },
+          {
+            "x_m": 0.25,
+            "y_m": 1.25,
+            "temperature_c": 3.1886843177272506
+          },
+          {
+            "x_m": 0.5,
+            "y_m": 1.25,
+            "temperature_c": 5.608999328239247
+          },
+          {
+            "x_m": 0.75,
+            "y_m": 1.25,
+            "temperature_c": 7.014152966273101
+          },
+          {
+            "x_m": 1.0,
+            "y_m": 1.25,
+            "temperature_c": 7.4651220125870354
+          },
+          {
+            "x_m": 0.25,
+            "y_m": 1.5,
+            "temperature_c": 5.251737796793642
+          },
+          {
+            "x_m": 0.5,
+            "y_m": 1.5,
+            "temperature_c": 8.64056663773877
+          },
+          {
+            "x_m": 0.75,
+            "y_m": 1.5,
+            "temperature_c": 10.315548446769734
+          },
+          {
+            "x_m": 1.0,
+            "y_m": 1.5,
+            "temperature_c": 10.810584365190198
+          },
+          {
+            "x_m": 0.25,
+            "y_m": 1.75,
+            "temperature_c": 9.658187769562952
+          },
+          {
+            "x_m": 0.5,
+            "y_m": 1.75,
+            "temperature_c": 13.37905532276735
+          },
+          {
+            "x_m": 0.75,
+            "y_m": 1.75,
+            "temperature_c": 14.728918426097996
+          },
+          {
+            "x_m": 1.0,
+            "y_m": 1.75,
+            "temperature_c": 15.085379907099297
+          }
+        ],
+        "heat_flow_validation": "NOT_APPLICABLE: discontinuous corner boundary can yield singular total flux; temperature agreement is not a heat-flow convergence claim."
+      },
+      "status": "needs_refinement"
+    }
+  ],
+  "original_gates": {
+    "two_grid_temperature_k": 0.1,
+    "edge_heat_relative": 0.01,
+    "max_cells": 160000,
+    "seconds": 25,
+    "iterations": 6000
+  },
+  "scope": "Declared reference cases; no certified compliance or real-building validation; not independent held-out testing"
+}

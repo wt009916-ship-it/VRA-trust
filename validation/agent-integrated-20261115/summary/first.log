@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "D:\稀土agent-稀土制暖全流程\outputs\agent-integrated-20261115\live.py", line 150, in <module>
+    if __name__=='__main__':serve() if len(sys.argv)>1 and sys.argv[1]=='serve' else run()
+                                                                                     ^^^^^
+  File "D:\稀土agent-稀土制暖全流程\outputs\agent-integrated-20261115\live.py", line 71, in run
+    records={'A':request('POST',base+'/thermal',wall()),'B':request('POST',base+'/thermal',wall(.045,'Declared assembly B')),'cost':request('POST',base+'/material-costs',cost()),'carbon':request('POST',base+'/lifecycle',carbon()),'incomplete':request('POST',base+'/lifecycle',carbon(True))}
+                                                                                                                                                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\outputs\agent-integrated-20261115\live.py", line 67, in request
+    if r.status_code>=400:save(out/'setup-error.json',{'method':method,'path':path,'status':r.status_code,'body':r.json()});r.raise_for_status()
+                                                                                                                            ^^^^^^^^^^^^^^^^^^^^
+  File "D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '422 Unprocessable Entity' for url 'http://127.0.0.1:57516/api/projects/project_5bb036cb025649dea723d528aa4fac01/lifecycle'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422

@@ -1,0 +1,1572 @@
+{
+  "agent_id": "agent_ed0bc4fe62374797a8bc689c1870b31b",
+  "project_id": "project_4af9447016654d71a5f9fd6ac6031348",
+  "question": "在记录utility_7bec14b197664a55beff719215ff2416中取CV(RMSE)百分比，同时从墙体thermal_949d0643fdf24fc8982360193a939f7c取U值。只交付这两个指标，保留单位和来源。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:12.798549+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Agent energy synthetic screen",
+        "building": {
+          "use": "reference",
+          "location": "Synthetic public reference, no surveyed building",
+          "region": "TEST",
+          "area_m2": 25.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_4af9447016654d71a5f9fd6ac6031348",
+        "revision": 1,
+        "created_at": "2026-11-14T03:05:43.000110+00:00",
+        "updated_at": "2026-11-14T03:05:43.000110+00:00"
+      },
+      "result_hash": "1465e59dcf7b357d1c4cd40ba4534b883112f1c32c04714dcc60e8a444e260f6",
+      "duration_ms": 0,
+      "finished_at": "2026-11-14T03:06:12.818804+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:12.821599+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"utility_comparison_read\", \"arguments\": {\"utility_id\": \"utility_7bec14b197664a55beff719215ff2416\", \"fact_keys\": null}}, {\"tool\": \"thermal_read\", \"arguments\": {\"thermal_id\": \"thermal_949d0643fdf24fc8982360193a939f7c\"}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 2,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 5234,
+      "finished_at": "2026-11-14T03:06:18.063568+00:00"
+    },
+    {
+      "tool": "utility_comparison_read",
+      "arguments": {
+        "utility_id": "utility_7bec14b197664a55beff719215ff2416",
+        "fact_keys": null
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:18.075005+00:00",
+      "origin": "model",
+      "result": {
+        "utility_id": "utility_7bec14b197664a55beff719215ff2416",
+        "project_id": "project_4af9447016654d71a5f9fd6ac6031348",
+        "project_revision": 1,
+        "input": {
+          "name": "Energy bias",
+          "purpose": "Independent synthetic Agent reading acceptance, never calibration",
+          "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+          "bill_evidence_id": "evidence_2b1553115d7a4ad49bb2a6b4d3184726",
+          "meter": "Electricity:Facility",
+          "bill_nature": "synthetic",
+          "alignment": "exact_calendar",
+          "period_kind": "calendar_month",
+          "clock_source": "Frozen local standard time, no DST",
+          "boundary_note": "Whole facility electricity, excluding gas; synthetic source",
+          "max_abs_mbe_percent": 5.0,
+          "max_cvrmse_percent": 5.0,
+          "threshold_source": "Test declaration only, no certification"
+        },
+        "actor_user_id": "user_d286969032864fe89bfec72707e65e5e",
+        "created_at": "2026-11-14T03:05:50.038978+00:00",
+        "calculator_version": "a78fe021f5c989333496c85decf797ad485fb562b1fd0e5a9ed59b276c5e28d6",
+        "source_run": {
+          "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+          "scheme_id": "baseline",
+          "model_sha256": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+          "weather_sha256": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+          "engine_sha256": "9d2d3c621381c310260be195cec2a43ef29c73aefcf76f85e57e7cecee823015",
+          "idd_sha256": "fb46468aa8ec9136dc9372c9289ffbb2a5b5a952c6ed3c16234cb44ff05e2355",
+          "code_sha256": "cc6f9c8c1ec3f9208b92aa4deff262f38820ebbe59b6785c93ebd732394cadcf",
+          "sql_sha256": "03559e0e2c0ff1ef32a658c8136d3ab8cd5c36f061eb7fd891e9447bd097069f",
+          "mtd_sha256": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+        },
+        "file_snapshot": {
+          "file_id": "file_3176a3b518214251be0f793dfc9eb303",
+          "project_id": "project_4af9447016654d71a5f9fd6ac6031348",
+          "name": "bias.csv",
+          "path": "files/file_3176a3b518214251be0f793dfc9eb303.csv",
+          "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+          "size": 838,
+          "timestamp": "2026-11-14T03:05:43.451836+00:00",
+          "revision": 1
+        },
+        "evidence_snapshot": [
+          {
+            "type": "bill",
+            "name": "bias.csv",
+            "source_file": "file_3176a3b518214251be0f793dfc9eb303",
+            "source_locator": "Existing frozen independent synthetic input, new actual run",
+            "value": null,
+            "unit": null,
+            "authority": "Reference author",
+            "permission": "Public reference local verification",
+            "uncertainty": null,
+            "confidence": null,
+            "acquisition_method": "Declared synthetic schedules, not measurements",
+            "responsible_person": "Independent acceptance",
+            "status": "ASSUMED",
+            "scheme_id": null,
+            "evidence_id": "evidence_2b1553115d7a4ad49bb2a6b4d3184726",
+            "project_id": "project_4af9447016654d71a5f9fd6ac6031348",
+            "revision": 2,
+            "timestamp": "2026-11-14T03:05:43.510985+00:00",
+            "hash": "53c7623746029cf48f478e224bbcf645f4c675efbc95ae4bfa2d726c46b89c96",
+            "review_state": "confirmed",
+            "review_note": "Synthetic arithmetic context, no real building certification"
+          }
+        ],
+        "result": {
+          "status": "compared_reference",
+          "calibration_status": "not_certified_or_automatically_calibrated",
+          "rows": [
+            {
+              "source_line": 2,
+              "original": {
+                "start": "2020-01-01T00:00",
+                "end": "2020-02-01T00:00",
+                "energy": "608.7272727272727",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-01-01T00:00",
+              "mapped_end": "2020-02-01T00:00",
+              "native_hour_start_index": 0,
+              "native_hour_end_exclusive_index": 744,
+              "hours": 744,
+              "bill_kwh": 608.7272727272727,
+              "native_kwh": 669.6,
+              "difference_kwh": 60.8727272727273
+            },
+            {
+              "source_line": 3,
+              "original": {
+                "start": "2020-02-01T00:00",
+                "end": "2020-03-01T00:00",
+                "energy": "696.0",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-02-01T00:00",
+              "mapped_end": "2020-03-01T00:00",
+              "native_hour_start_index": 744,
+              "native_hour_end_exclusive_index": 1440,
+              "hours": 696,
+              "bill_kwh": 696.0,
+              "native_kwh": 765.6,
+              "difference_kwh": 69.6
+            },
+            {
+              "source_line": 4,
+              "original": {
+                "start": "2020-03-01T00:00",
+                "end": "2020-04-01T00:00",
+                "energy": "676.3636363636364",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-03-01T00:00",
+              "mapped_end": "2020-04-01T00:00",
+              "native_hour_start_index": 1440,
+              "native_hour_end_exclusive_index": 2184,
+              "hours": 744,
+              "bill_kwh": 676.3636363636364,
+              "native_kwh": 744.0,
+              "difference_kwh": 67.6363636363636
+            },
+            {
+              "source_line": 5,
+              "original": {
+                "start": "2020-04-01T00:00",
+                "end": "2020-05-01T00:00",
+                "energy": "850.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-04-01T00:00",
+              "mapped_end": "2020-05-01T00:00",
+              "native_hour_start_index": 2184,
+              "native_hour_end_exclusive_index": 2904,
+              "hours": 720,
+              "bill_kwh": 850.9090909090909,
+              "native_kwh": 936.0,
+              "difference_kwh": 85.0909090909091
+            },
+            {
+              "source_line": 6,
+              "original": {
+                "start": "2020-05-01T00:00",
+                "end": "2020-06-01T00:00",
+                "energy": "1082.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-05-01T00:00",
+              "mapped_end": "2020-06-01T00:00",
+              "native_hour_start_index": 2904,
+              "native_hour_end_exclusive_index": 3648,
+              "hours": 744,
+              "bill_kwh": 1082.1818181818182,
+              "native_kwh": 1190.4,
+              "difference_kwh": 108.2181818181818
+            },
+            {
+              "source_line": 7,
+              "original": {
+                "start": "2020-06-01T00:00",
+                "end": "2020-07-01T00:00",
+                "energy": "1178.1818181818182",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-06-01T00:00",
+              "mapped_end": "2020-07-01T00:00",
+              "native_hour_start_index": 3648,
+              "native_hour_end_exclusive_index": 4368,
+              "hours": 720,
+              "bill_kwh": 1178.1818181818182,
+              "native_kwh": 1296.0,
+              "difference_kwh": 117.8181818181818
+            },
+            {
+              "source_line": 8,
+              "original": {
+                "start": "2020-07-01T00:00",
+                "end": "2020-08-01T00:00",
+                "energy": "1420.3636363636363",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-07-01T00:00",
+              "mapped_end": "2020-08-01T00:00",
+              "native_hour_start_index": 4368,
+              "native_hour_end_exclusive_index": 5112,
+              "hours": 744,
+              "bill_kwh": 1420.3636363636363,
+              "native_kwh": 1562.4,
+              "difference_kwh": 142.0363636363637
+            },
+            {
+              "source_line": 9,
+              "original": {
+                "start": "2020-08-01T00:00",
+                "end": "2020-09-01T00:00",
+                "energy": "1149.8181818181818",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-08-01T00:00",
+              "mapped_end": "2020-09-01T00:00",
+              "native_hour_start_index": 5112,
+              "native_hour_end_exclusive_index": 5856,
+              "hours": 744,
+              "bill_kwh": 1149.8181818181818,
+              "native_kwh": 1264.8000000000002,
+              "difference_kwh": 114.98181818181841
+            },
+            {
+              "source_line": 10,
+              "original": {
+                "start": "2020-09-01T00:00",
+                "end": "2020-10-01T00:00",
+                "energy": "949.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-09-01T00:00",
+              "mapped_end": "2020-10-01T00:00",
+              "native_hour_start_index": 5856,
+              "native_hour_end_exclusive_index": 6576,
+              "hours": 720,
+              "bill_kwh": 949.0909090909091,
+              "native_kwh": 1044.0,
+              "difference_kwh": 94.9090909090909
+            },
+            {
+              "source_line": 11,
+              "original": {
+                "start": "2020-10-01T00:00",
+                "end": "2020-11-01T00:00",
+                "energy": "811.6363636363636",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-10-01T00:00",
+              "mapped_end": "2020-11-01T00:00",
+              "native_hour_start_index": 6576,
+              "native_hour_end_exclusive_index": 7320,
+              "hours": 744,
+              "bill_kwh": 811.6363636363636,
+              "native_kwh": 892.8,
+              "difference_kwh": 81.1636363636364
+            },
+            {
+              "source_line": 12,
+              "original": {
+                "start": "2020-11-01T00:00",
+                "end": "2020-12-01T00:00",
+                "energy": "589.0909090909091",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-11-01T00:00",
+              "mapped_end": "2020-12-01T00:00",
+              "native_hour_start_index": 7320,
+              "native_hour_end_exclusive_index": 8040,
+              "hours": 720,
+              "bill_kwh": 589.0909090909091,
+              "native_kwh": 648.0,
+              "difference_kwh": 58.9090909090909
+            },
+            {
+              "source_line": 13,
+              "original": {
+                "start": "2020-12-01T00:00",
+                "end": "2021-01-01T00:00",
+                "energy": "574.9090909090909",
+                "unit": "kWh",
+                "carrier": "Electricity"
+              },
+              "mapped_start": "2020-12-01T00:00",
+              "mapped_end": "2021-01-01T00:00",
+              "native_hour_start_index": 8040,
+              "native_hour_end_exclusive_index": 8784,
+              "hours": 744,
+              "bill_kwh": 574.9090909090909,
+              "native_kwh": 632.4000000000001,
+              "difference_kwh": 57.490909090909206
+            }
+          ],
+          "statistics": {
+            "method": "FEMP-5.0-2024-equations-4-1-to-4-4-n-denominator",
+            "interval_count": 12,
+            "denominator": 12,
+            "bill_total_kwh": 10587.272727272728,
+            "native_total_kwh": 11646.0,
+            "mbe_percent": 10.000000000000004,
+            "rmse_kwh": 92.07016907260385,
+            "cvrmse_percent": 10.435567849548091,
+            "not_evaluable_reason": null
+          },
+          "within_declared_tolerances": false,
+          "context_reasons": [
+            "bill_is_reference_or_synthetic"
+          ],
+          "native": {
+            "version": "EnergyPlus, Version 9.0.1-bb7ca4f0da, YMD=2026.11.14 11:05",
+            "year": 2020,
+            "hours": 8784,
+            "clock_basis": "local_standard_time",
+            "weather_years": [
+              2020
+            ],
+            "weather_calendar_matches_native": true,
+            "ideal_systems": [],
+            "selected_meter": {
+              "name": "Electricity:Facility",
+              "resource": "Electricity",
+              "dictionary_index": 9,
+              "native_unit": "J",
+              "reporting_frequency": "Hourly",
+              "component_sources": [
+                {
+                  "native_variable_index": 7,
+                  "variable": "METERED ELECTRIC:Electric Equipment Electric Energy",
+                  "unit": "J",
+                  "line": 2
+                }
+              ]
+            },
+            "source_hashes": {
+              "sql": "03559e0e2c0ff1ef32a658c8136d3ab8cd5c36f061eb7fd891e9447bd097069f",
+              "model": "c776c210a42e8e51e4e38b23089113791ae12cfae6de636b85b0bd810513dd60",
+              "weather": "6e8435ffea778919d6d03925c84a275f3054f961de92fdc075bdec088733965a",
+              "mtd": "7fb0c849ca30198ce288f3a16b7053f831a62817ffe44698d672b513857739a1"
+            }
+          },
+          "coverage": {
+            "compared_hours": 8784,
+            "native_year_hours": 8784,
+            "complete_year": true,
+            "period_kind": "calendar_month"
+          },
+          "limitations": [
+            "仅比较声明账期与原生模拟能量，不自动校准模型，不证明实楼预测准确性或节能合规。",
+            "数据性质、计量边界、来源与时间基准须人工复核；来源确认不使参考数据变成实测。",
+            "误差按账期数等权计算，分母为n；不是按天加权，不采用n−p，不把月数据按小时阈值评价。",
+            "仅支持本地标准时整点、完整单年度原生计量；夏令时、净负能量及跨多年度不支持。",
+            "参考日历映射只对齐月日小时，不证明同年天气、运行条件或建筑一致。",
+            "阈值是使用者声明的比较目标，满足阈值不等于获得任何认证。"
+          ]
+        },
+        "hash": "9d52f7a5b81899b2535262d859dd27b4faaf93dd35c14c837638eb7654fd22b8",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "compared_reference",
+        "nonnumeric_review_reference": {
+          "kind": "utility",
+          "record_id": "utility_7bec14b197664a55beff719215ff2416",
+          "record_hash": "9d52f7a5b81899b2535262d859dd27b4faaf93dd35c14c837638eb7654fd22b8",
+          "view_hash": "9949b65e017a2487aff349122af18a3268fa9de79ee33b627597bb1635011e2b",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "bill_total_kwh",
+            "label": "账单覆盖期间能量总和kWh，不是费用或功率",
+            "value": "10587.2727273",
+            "source_value": "10587.272727272728",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/bill_total_kwh",
+            "energy_context": {
+              "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_total_kwh",
+            "label": "同一映射期间的模拟能量总和kWh，不一定全年",
+            "value": "11646",
+            "source_value": "11646.0",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/native_total_kwh",
+            "energy_context": {
+              "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "mbe_percent",
+            "label": "100Σ(模拟−账单)/Σ账单；全年抵消不能证明逐期误差小；百分比",
+            "value": "10",
+            "source_value": "10.000000000000004",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/mbe_percent",
+            "energy_context": {
+              "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "rmse_kwh",
+            "label": "等权账期能量差的均方根kWh；分母n",
+            "value": "92.0701690726",
+            "source_value": "92.07016907260385",
+            "value_policy": "12_significant_digits_display",
+            "unit": "kWh",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/rmse_kwh",
+            "energy_context": {
+              "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "cvrmse_percent",
+            "label": "100RMSE/账单平均期间能量；百分比，零账单总量时无定义",
+            "value": "10.4355678495",
+            "source_value": "10.435567849548091",
+            "value_policy": "12_significant_digits_display",
+            "unit": "%",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/cvrmse_percent",
+            "energy_context": {
+              "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "interval_count",
+            "label": "比较账期数，不是月数或独立建筑数",
+            "value": "12",
+            "source_value": "12",
+            "value_policy": "exact_decimal",
+            "unit": "count",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/statistics/interval_count",
+            "energy_context": {
+              "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "compared_hours",
+            "label": "实际覆盖模拟小时数，不是全年小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/compared_hours",
+            "energy_context": {
+              "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          },
+          {
+            "fact": "native_year_hours",
+            "label": "完整原生年度小时数，不是比较覆盖小时数",
+            "value": "8784",
+            "source_value": "8784",
+            "value_policy": "exact_decimal",
+            "unit": "hour",
+            "period": "utility_periods",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/coverage/native_year_hours",
+            "energy_context": {
+              "run_id": "run_1ae13b09e38c4af7b9d2ea027a9d4d26",
+              "native_year": 2020,
+              "native_start": "2020-01-01T00:00",
+              "native_end": "2021-01-01T00:00",
+              "bill_start": "2020-01-01T00:00",
+              "bill_end": "2021-01-01T00:00",
+              "alignment": "exact_calendar",
+              "clock_basis": "local_standard_time",
+              "uses_daylight_saving": false,
+              "weather_calendar_matches_native": true,
+              "carrier": "Electricity",
+              "boundary": "Electricity:Facility",
+              "data_nature": "synthetic",
+              "basis": "bill_interval_statistics"
+            }
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_energy_fact_keys": []
+      },
+      "result_hash": "c9b323eb2a81f6dcd602aed05e0e2894bd64ff8174c0f341161ef03958b15e4e",
+      "duration_ms": 421,
+      "finished_at": "2026-11-14T03:06:18.497897+00:00"
+    },
+    {
+      "tool": "thermal_read",
+      "arguments": {
+        "thermal_id": "thermal_949d0643fdf24fc8982360193a939f7c"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:18.501108+00:00",
+      "origin": "model",
+      "result": {
+        "thermal_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "project_id": "project_4af9447016654d71a5f9fd6ac6031348",
+        "project_revision": 1,
+        "input": {
+          "name": "Independent 20261113 wall",
+          "layers": [
+            {
+              "name": "Mineral A",
+              "thickness": 160.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.8,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1.0,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null
+            },
+            {
+              "name": "Insulation B",
+              "thickness": 6.0,
+              "thickness_unit": "cm",
+              "conductivity": 40.0,
+              "conductivity_unit": "mW/(m K)",
+              "correction_factor": 1.2,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.11,
+          "rse_m2k_w": 0.06,
+          "surface_basis": "Declared reference films, not compliance defaults",
+          "application": "Steady opaque wall reference"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "Mineral A",
+              "thickness": 160.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.8,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1.0,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null,
+              "thickness_m": 0.16,
+              "conductivity_w_mk": 0.8,
+              "effective_conductivity_w_mk": 0.8,
+              "resistance_m2k_w": 0.19999999999999998,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            },
+            {
+              "name": "Insulation B",
+              "thickness": 6.0,
+              "thickness_unit": "cm",
+              "conductivity": 40.0,
+              "conductivity_unit": "mW/(m K)",
+              "correction_factor": 1.2,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null,
+              "thickness_m": 0.06,
+              "conductivity_w_mk": 0.04,
+              "effective_conductivity_w_mk": 0.048,
+              "resistance_m2k_w": 1.25,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 1.45,
+          "total_resistance_m2k_w": 1.62,
+          "u_w_m2k": 0.6172839506172839,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "calculator_version": "3785df0fa9c842fd852718efe8170f464d3c417ec226676df58b0d0014da0c5d",
+        "evidence_snapshot": [],
+        "created_at": "2026-11-14T03:05:54.146353+00:00",
+        "hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+        "revision": 1,
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "nonnumeric_review_reference": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "view_hash": "519e762a03f72fb1ed615bf96e17fc7c84bcc3f34151dea01a81edfcac25d9a0",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "1.62",
+            "source_value": "1.62",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/total_resistance_m2k_w",
+            "energy_context": null
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "1.45",
+            "source_value": "1.45",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/layer_resistance_m2k_w",
+            "energy_context": null
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.617283950617",
+            "source_value": "0.6172839506172839",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "f560e6636e13891a11e3ca4ed54eb02570760552050d81211389ec7c90ab5eba",
+      "duration_ms": 16,
+      "finished_at": "2026-11-14T03:06:18.517628+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:18.521627+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_949d0643fdf24fc8982360193a939f7c\", \"record_hash\": \"8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb\", \"fact_keys\": [\"u_w_m2k\"], \"finish\": true}}}, {\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_949d0643fdf24fc8982360193a939f7c\", \"record_hash\": \"8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb\", \"fact_keys\": [\"total_resistance_m2k_w\", \"layer_resistance_m2k_w\"], \"finish\": false}}}, {\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_949d0643fdf24fc8982360193a939f7c\", \"record_hash\": \"8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb\", \"fact_keys\": [\"u_w_m2k\"], \"finish\": false}}}, {\"tool\": \"professional_deliver\", \"arguments\": {\"delivery\": {\"kind\": \"thermal\", \"record_id\": \"thermal_949d0643fdf24fc8982360193a939f7c\", \"record_hash\": \"8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb\", \"fact_keys\": [\"u_w_m2k\"], \"finish\": false}}}]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 4,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 16343,
+      "finished_at": "2026-11-14T03:06:34.880423+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "fact_keys": [
+            "u_w_m2k"
+          ],
+          "finish": true
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:34.883580+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 3,
+        "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+        "fact_keys": [
+          "u_w_m2k"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "u_w_m2k",
+              "value": "0.617283950617",
+              "unit": "W/(m2 K)",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": true
+        },
+        "statements": [
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.617283950617",
+            "source_value": "0.6172839506172839",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "ddfbe3f13e560eadc016b67d921d850784e146085a4a67a7674912bc009d42dc",
+      "duration_ms": 0,
+      "finished_at": "2026-11-14T03:06:34.899018+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "fact_keys": [
+            "total_resistance_m2k_w",
+            "layer_resistance_m2k_w"
+          ],
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:34.903016+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 3,
+        "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+        "fact_keys": [
+          "total_resistance_m2k_w",
+          "layer_resistance_m2k_w"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "total_resistance_m2k_w",
+              "value": "1.62",
+              "unit": "m2 K/W",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            },
+            {
+              "energy_context": null,
+              "fact": "layer_resistance_m2k_w",
+              "value": "1.45",
+              "unit": "m2 K/W",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": false
+        },
+        "statements": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "1.62",
+            "source_value": "1.62",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/total_resistance_m2k_w",
+            "energy_context": null
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "1.45",
+            "source_value": "1.45",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/layer_resistance_m2k_w",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "e16e2f6c7cbf8f57007cfb0fc5a2bdfca8f6849c4d5ac958991be0e62748fa35",
+      "duration_ms": 15,
+      "finished_at": "2026-11-14T03:06:34.924849+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "fact_keys": [
+            "u_w_m2k"
+          ],
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:34.928773+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 3,
+        "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+        "fact_keys": [
+          "u_w_m2k"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "u_w_m2k",
+              "value": "0.617283950617",
+              "unit": "W/(m2 K)",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": false
+        },
+        "statements": [
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.617283950617",
+            "source_value": "0.6172839506172839",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "f65af272053b3058a3d6098f9b093adeeb50575b1232a3ab52d17f9de75f246f",
+      "duration_ms": 0,
+      "finished_at": "2026-11-14T03:06:34.944578+00:00"
+    },
+    {
+      "tool": "professional_deliver",
+      "arguments": {
+        "delivery": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "fact_keys": [
+            "u_w_m2k"
+          ],
+          "finish": false
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:34.948410+00:00",
+      "origin": "model",
+      "selection_receipt": {
+        "origin": "application_from_current_task_read",
+        "read_event_index": 3,
+        "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+        "fact_keys": [
+          "u_w_m2k"
+        ],
+        "current_source_recheck_required": true
+      },
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "statements": [
+            {
+              "energy_context": null,
+              "fact": "u_w_m2k",
+              "value": "0.617283950617",
+              "unit": "W/(m2 K)",
+              "period": "steady_state",
+              "study_years": null,
+              "area_m2": null
+            }
+          ],
+          "limitation_status": null,
+          "finish": false
+        },
+        "statements": [
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.617283950617",
+            "source_value": "0.6172839506172839",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k",
+            "energy_context": null
+          }
+        ],
+        "notice": "仅核验指定字段与当前记录一致；未验证自由文字、问题覆盖度、来源真实性或工程合规。"
+      },
+      "result_hash": "f65af272053b3058a3d6098f9b093adeeb50575b1232a3ab52d17f9de75f246f",
+      "duration_ms": 0,
+      "finished_at": "2026-11-14T03:06:34.964174+00:00"
+    },
+    {
+      "tool": "thermal_read",
+      "arguments": {
+        "thermal_id": "thermal_949d0643fdf24fc8982360193a939f7c"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-14T03:06:34.967737+00:00",
+      "origin": "controller",
+      "result": {
+        "thermal_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "project_id": "project_4af9447016654d71a5f9fd6ac6031348",
+        "project_revision": 1,
+        "input": {
+          "name": "Independent 20261113 wall",
+          "layers": [
+            {
+              "name": "Mineral A",
+              "thickness": 160.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.8,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1.0,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null
+            },
+            {
+              "name": "Insulation B",
+              "thickness": 6.0,
+              "thickness_unit": "cm",
+              "conductivity": 40.0,
+              "conductivity_unit": "mW/(m K)",
+              "correction_factor": 1.2,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.11,
+          "rse_m2k_w": 0.06,
+          "surface_basis": "Declared reference films, not compliance defaults",
+          "application": "Steady opaque wall reference"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "Mineral A",
+              "thickness": 160.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.8,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1.0,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null,
+              "thickness_m": 0.16,
+              "conductivity_w_mk": 0.8,
+              "effective_conductivity_w_mk": 0.8,
+              "resistance_m2k_w": 0.19999999999999998,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            },
+            {
+              "name": "Insulation B",
+              "thickness": 6.0,
+              "thickness_unit": "cm",
+              "conductivity": 40.0,
+              "conductivity_unit": "mW/(m K)",
+              "correction_factor": 1.2,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null,
+              "thickness_m": 0.06,
+              "conductivity_w_mk": 0.04,
+              "effective_conductivity_w_mk": 0.048,
+              "resistance_m2k_w": 1.25,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 1.45,
+          "total_resistance_m2k_w": 1.62,
+          "u_w_m2k": 0.6172839506172839,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "calculator_version": "3785df0fa9c842fd852718efe8170f464d3c417ec226676df58b0d0014da0c5d",
+        "evidence_snapshot": [],
+        "created_at": "2026-11-14T03:05:54.146353+00:00",
+        "hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+        "revision": 1,
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "nonnumeric_review_reference": {
+          "kind": "thermal",
+          "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+          "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+          "view_hash": "519e762a03f72fb1ed615bf96e17fc7c84bcc3f34151dea01a81edfcac25d9a0",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "1.62",
+            "source_value": "1.62",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/total_resistance_m2k_w",
+            "energy_context": null
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "1.45",
+            "source_value": "1.45",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/layer_resistance_m2k_w",
+            "energy_context": null
+          },
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.617283950617",
+            "source_value": "0.6172839506172839",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "f560e6636e13891a11e3ca4ed54eb02570760552050d81211389ec7c90ab5eba",
+      "duration_ms": 16,
+      "finished_at": "2026-11-14T03:06:34.983089+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "partial",
+    "execution_scope": "checked_professional_deliveries",
+    "artifacts": [
+      {
+        "kind": "thermal_review",
+        "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "project_id": "project_4af9447016654d71a5f9fd6ac6031348",
+        "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+        "name": "Independent 20261113 wall",
+        "status": "calculated",
+        "stale_reasons": [],
+        "stale_details": [],
+        "checked_at": "2026-11-14T03:06:35.051464+00:00",
+        "source_status": "USER_DECLARED",
+        "source_notice": "来源人工复核不代表材料性能实测或法定认证。",
+        "input": {
+          "name": "Independent 20261113 wall",
+          "layers": [
+            {
+              "name": "Mineral A",
+              "thickness": 160.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.8,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1.0,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null
+            },
+            {
+              "name": "Insulation B",
+              "thickness": 6.0,
+              "thickness_unit": "cm",
+              "conductivity": 40.0,
+              "conductivity_unit": "mW/(m K)",
+              "correction_factor": 1.2,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null
+            }
+          ],
+          "rsi_m2k_w": 0.11,
+          "rse_m2k_w": 0.06,
+          "surface_basis": "Declared reference films, not compliance defaults",
+          "application": "Steady opaque wall reference"
+        },
+        "result": {
+          "status": "calculated",
+          "layers": [
+            {
+              "name": "Mineral A",
+              "thickness": 160.0,
+              "thickness_unit": "mm",
+              "conductivity": 0.8,
+              "conductivity_unit": "W/(m K)",
+              "correction_factor": 1.0,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null,
+              "thickness_m": 0.16,
+              "conductivity_w_mk": 0.8,
+              "effective_conductivity_w_mk": 0.8,
+              "resistance_m2k_w": 0.19999999999999998,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            },
+            {
+              "name": "Insulation B",
+              "thickness": 6.0,
+              "thickness_unit": "cm",
+              "conductivity": 40.0,
+              "conductivity_unit": "mW/(m K)",
+              "correction_factor": 1.2,
+              "correction_basis": "Declared synthetic adjustment",
+              "source": "Public synthetic acceptance input",
+              "evidence_id": null,
+              "thickness_m": 0.06,
+              "conductivity_w_mk": 0.04,
+              "effective_conductivity_w_mk": 0.048,
+              "resistance_m2k_w": 1.25,
+              "formula": "R = thickness_m / (conductivity_w_mk * correction_factor)"
+            }
+          ],
+          "missing": [],
+          "layer_resistance_m2k_w": 1.45,
+          "total_resistance_m2k_w": 1.62,
+          "u_w_m2k": 0.6172839506172839,
+          "formula": "R_total = Rsi + sum(d / lambda_effective) + Rse; U = 1 / R_total",
+          "compliance_status": "NOT_ASSESSED",
+          "energy_saving_rate": null,
+          "limitations": [
+            "一维稳态、均匀连续不透明材料层；不包含热桥、窗框、空气层辐射/对流或结露校核。",
+            "导热系数与修正系数由用户提供；含湿、温度、老化影响未自动推断。",
+            "表面热阻必须按实际工况提供；本工具不默认套用规范限值，也不证明节能合规。",
+            "U值下降不等于建筑全年节能率；未自动修改IDF或联动年度仿真。"
+          ]
+        },
+        "verified": true,
+        "scope": "一维稳态不透明构造；不含热桥、结露或全年节能预测，不判定规范合规。",
+        "report_path": "/api/projects/project_4af9447016654d71a5f9fd6ac6031348/thermal/thermal_949d0643fdf24fc8982360193a939f7c/report.html"
+      }
+    ],
+    "checked_statements": [
+      {
+        "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "name": "Independent 20261113 wall",
+        "facts": [
+          {
+            "fact": "u_w_m2k",
+            "label": "传热系数 U",
+            "value": "0.617283950617",
+            "source_value": "0.6172839506172839",
+            "value_policy": "12_significant_digits_display",
+            "unit": "W/(m2 K)",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/u_w_m2k",
+            "energy_context": null
+          },
+          {
+            "fact": "total_resistance_m2k_w",
+            "label": "总热阻 R",
+            "value": "1.62",
+            "source_value": "1.62",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/total_resistance_m2k_w",
+            "energy_context": null
+          },
+          {
+            "fact": "layer_resistance_m2k_w",
+            "label": "材料层热阻合计",
+            "value": "1.45",
+            "source_value": "1.45",
+            "value_policy": "12_significant_digits_display",
+            "unit": "m2 K/W",
+            "period": "steady_state",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "intrinsic_area_normalized_property",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/layer_resistance_m2k_w",
+            "energy_context": null
+          }
+        ]
+      }
+    ],
+    "checked_limitations": [],
+    "verification": [
+      {
+        "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+        "passed": true,
+        "meaning": "结构化数值、单位与期间对照当前记录"
+      }
+    ],
+    "summary": "已核验所选结果或限制；自由问题的完整覆盖度仍未评估。",
+    "task_notice": "模型选择记录与事实，应用核对字段；这不是对模型自由解释或整个复杂任务的认证。",
+    "gaps": [],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-14T03:06:35.051464+00:00",
+    "checked_reviews": [],
+    "review_failures": [],
+    "basis": [
+      "project_get",
+      "utility_comparison_read",
+      "thermal_read",
+      "professional_deliver",
+      "professional_deliver",
+      "professional_deliver",
+      "professional_deliver",
+      "thermal_read"
+    ]
+  },
+  "created_at": "2026-11-14T03:06:12.783258+00:00",
+  "llm_commentary": null,
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [
+    {
+      "kind": "thermal",
+      "record_id": "thermal_949d0643fdf24fc8982360193a939f7c",
+      "record_hash": "8fa89fb0264e2d87d15de6a57ad0b7489f80c06733c0456940245b489d04aeeb",
+      "statements": [
+        {
+          "energy_context": null,
+          "fact": "u_w_m2k",
+          "value": "0.617283950617",
+          "unit": "W/(m2 K)",
+          "period": "steady_state",
+          "study_years": null,
+          "area_m2": null
+        },
+        {
+          "energy_context": null,
+          "fact": "total_resistance_m2k_w",
+          "value": "1.62",
+          "unit": "m2 K/W",
+          "period": "steady_state",
+          "study_years": null,
+          "area_m2": null
+        },
+        {
+          "energy_context": null,
+          "fact": "layer_resistance_m2k_w",
+          "value": "1.45",
+          "unit": "m2 K/W",
+          "period": "steady_state",
+          "study_years": null,
+          "area_m2": null
+        }
+      ],
+      "limitation_status": null,
+      "finish": false
+    }
+  ],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "revision": 22,
+  "model_finished_delivery": true,
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-14T03:06:34.986498+00:00",
+  "read_request_progress": [],
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-14T03:06:35.051464+00:00",
+  "historical_task_completion": "partial",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}

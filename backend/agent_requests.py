@@ -5,16 +5,18 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from . import core, agent_missing, agent_outputs
+from . import core, agent_missing, agent_outputs, agent_energy
 from .schema import Contract
 from .agent_semantics import inspection, can_deliver_requested_facts
 
 
 class ReadRequest(Contract):
     request_key: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
-    kind: Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario']
+    kind: Literal['thermal','lifecycle','cost','engineering','schedule','operation','scenario', 'enduse', 'utility']
     purpose: Literal['availability','results']
-    record_id: str | None = Field(default=None,pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[a-f0-9]{32}$')
+    record_id: str | None = Field(default=None,pattern=r'^(thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$')
+
+    output_contract: agent_outputs.ExplicitOutput | None = None
 
     @model_validator(mode='after')
     def scope(self):
@@ -22,6 +24,12 @@ class ReadRequest(Contract):
             raise ValueError('Record ID must match the requested professional kind')
         if self.purpose=='results' and not self.record_id:
             raise ValueError('Result inspection requires an explicit record ID; no silent latest-record substitution')
+        if self.output_contract:
+            entry = agent_outputs.catalog([self.model_dump(mode='json')])[0]
+            if not set(self.output_contract.fact_keys) <= set(entry['available_fact_keys']):
+                raise ValueError('Explicit metrics must belong to the selected kind and purpose')
+            if not set(self.output_contract.explanation_topics) <= set(entry['available_explanation_topics']):
+                raise ValueError('Explicit explanation is unsupported for this scope')
         return self
 
 
@@ -67,7 +75,7 @@ def pending(record):
     available={r['request']['request_key'] for r in record.get('availability_deliveries',[])}
     results={r['record_id'] for r in record.get('professional_deliveries',[])}
     reviewed={r['record_id'] for r in record.get('professional_reviews',[])}
-    unresolved={i['request_key'] for i in (record.get('output_plan') or {}).get('items',[]) if i.get('clarification_question')}
+    unresolved=set(record.get('read_deferrals',[])) | {i['request_key'] for i in (record.get('output_plan') or {}).get('items',[]) if i.get('clarification_question')}
     absent={r['request'].get('record_id') for r in record.get('missing_deliveries',[])}
     return [r['request_key'] for r in record.get('read_requests',[]) if r['request_key'] not in unresolved and
             (r['request_key'] not in available if r['purpose']=='availability' else
@@ -91,7 +99,7 @@ def progress(record,answer):
             state=('result_verified' if r['record_id'] in values else 'limitation_verified' if r['record_id'] in limited
                    else 'record_unavailable' if r['record_id'] in absent else state)
         wanted = agent_outputs.requirement(record, r['request_key']) or {}
-        if wanted.get('clarification_question'):
+        if wanted.get('clarification_question') or r['request_key'] in record.get('read_deferrals',[]):
             state='needs_clarification'
         elif r['record_id'] in reviewed and not wanted.get('fact_keys'):
             state='source_review_verified'
@@ -110,6 +118,10 @@ def progress(record,answer):
 
 
 def attach(answer,domain,pid,record,reader=None):
+    if record.get('question_deferral'):
+        from .agent_task_exit import deferral_summary
+        answer={**answer,'task_completion':'partial' if answer.get('checked_statements') else 'incomplete',
+                'question_deferral':record['question_deferral'],'summary':deferral_summary(record['question_deferral'])}
     if not record.get('read_requests'):return answer
     answer={**answer,'verification':list(answer.get('verification',[])),'gaps':list(answer.get('gaps',[]))}
     answer['read_execution'] = record.get('read_execution', 'model')
@@ -140,7 +152,12 @@ def attach(answer,domain,pid,record,reader=None):
             answer['gaps'].append({'request_key':row['request_key'],'message':'声明读取目标尚未形成当前有效交付：'+row['request_key'],
                                   'action':'按本次声明范围查询并交付，不替换编号或新增计算。'})
     answer['task_notice']='只按用户明确声明的读取范围跟踪交付；存在记录不证明当前结果有效，缺失不等于零或从未计算。自由问题的其他要求未获完整覆盖核验。'
-    return agent_outputs.attach(answer, record)
+    answer=agent_outputs.attach(answer, record)
+    if record.get('read_deferrals'):
+        answer['task_completion']='partial' if answer.get('checked_statements') else 'incomplete'
+        answer['read_deferrals']=[{'request_key':key,'state':'needs_clarification','notice':'模型尚不能确定所需指标，请明确指标。不是资料缺失、应用不支持或任务完成的证明。'} for key in record['read_deferrals']]
+        answer['summary']='仍有读取目标需要明确指标；已交付部分单独核验，未明确项未作数值交付。'
+    return answer
 
 def next_actions(record):
     """Suggestions from declared scopes and observed reads; never execute or infer scope."""
@@ -177,16 +194,26 @@ def next_actions(record):
                     'kind': kind, 'record_id': ident, 'record_hash': current['hash'],
                     'status': current['status'], 'finish': False}})
             else:
-                action.update(tool='professional_deliver', arguments={'delivery': {
-                    'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
-                    required_fields=['delivery.statements'],
-                    available_facts=current.get('explanation_facts', []),
-                    output_requirement=agent_outputs.requirement(record, request['request_key']))
+                facts = current.get('explanation_facts', [])
+                if kind in agent_energy.KINDS:
+                    facts = [f for f in facts if f['fact'] in (current.get('selected_energy_fact_keys') or [])]
+                if kind in agent_energy.KINDS and not facts:
+                    arguments = {spec.argument:ident}
+                    if wanted.get('fact_keys'):arguments['fact_keys'] = wanted['fact_keys']
+                    action.update(tool=spec.read_tool, arguments=arguments, required_fields=['fact_keys'],
+                                  notice='Select needed keys from the read result available_fact_catalog; no numeric facts were selected yet.')
+                else:
+                    action.update(tool='professional_deliver', arguments={'delivery': {
+                        'kind': kind, 'record_id': ident, 'record_hash': current['hash'], 'finish': False}},
+                        required_fields=['delivery.fact_keys'], available_fact_keys=[f['fact'] for f in facts],
+                        output_requirement=agent_outputs.requirement(record, request['request_key']))
         elif ident in unavailable:
             action.update(tool='professional_missing', arguments={'missing': {
                 'kinds': [kind], 'record_id': ident, 'finish': False}})
         else:
-            action.update(tool=spec.read_tool, arguments={spec.argument: ident})
+            arguments={spec.argument:ident};wanted=agent_outputs.requirement(record,request['request_key']) or {}
+            if kind in agent_energy.KINDS and wanted.get('fact_keys'):arguments['fact_keys']=wanted['fact_keys']
+            action.update(tool=spec.read_tool, arguments=arguments)
         actions.append(action)
     if availability_keys:
         actions.append({'tool': 'requested_availability',
@@ -198,7 +225,7 @@ def commentary_review(record, text):
     """Exact identifier membership only, not validation of numerical or semantic prose."""
     allowed = {r['record_id'] for r in record.get('read_requests', []) if r.get('record_id')}
     mentioned = set(re.findall(
-        r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario)_[A-Za-z0-9_-]+\b', text or ''))
+        r'\b(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[A-Za-z0-9_-]+\b', text or ''))
     unknown = sorted(mentioned - allowed)
     return {'status': 'reference_mismatch' if unknown else 'references_match',
             'unknown_record_ids': unknown, 'allowed_record_ids': sorted(allowed),

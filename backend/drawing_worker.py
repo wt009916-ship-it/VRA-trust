@@ -72,11 +72,14 @@ def parse(path, page_number, preview_path, options=None):
     if __package__:
         from .drawing_models import model_paths, MODELS
         from .drawing_processing import process, point
+        from .drawing_linework import analyse
     else:
         from drawing_models import model_paths, MODELS
         from drawing_processing import process, point
+        from drawing_linework import analyse
     paths = model_paths()
     image, info = load_page(path,page_number)
+    source_image = image
     image, processing = process(image,options,preview_path.parent)
     import onnxruntime
     from rapidocr import RapidOCR
@@ -112,7 +115,10 @@ def parse(path, page_number, preview_path, options=None):
                                'polygon_source_px':source_polygon,'source_polygon_inside_raster':inside,
                                'recognition_score':score,'review_required':True,'source_kind':'AI_INFERRED'})
     image.save(preview_path,format='PNG')
+    linework = analyse(source_image, [c['polygon_source_px'] for c in candidates if c['source_polygon_inside_raster']],
+                       preview_path=preview_path.parent/'linework-preview.png') if (options or {}).get('line_analysis') else None
     return {'page':info,'width':image.width,'height':image.height,'candidates':candidates,'processing':processing,
+            'linework': linework,
             'state':'candidates_require_review' if candidates else 'no_text_detected_not_proof_of_absence',
             'preview_sha256':hashlib.sha256(preview_path.read_bytes()).hexdigest(),
             'models':{kind:{'name':name,'sha256':digest} for kind,(name,digest) in MODELS.items()},

@@ -1,0 +1,224 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>二维导热记录</title><style>body{font:16px/1.7 system-ui;max-width:1100px;margin:32px auto;padding:20px}pre{white-space:pre-wrap;overflow-wrap:anywhere}table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:8px}</style><h1>Public heterogeneous reference</h1><p>状态：calculated。二维恒定物性数值计算；不是完整热桥标准验证或节能合规结论。needs_refinement 表示网格未通过，数值仅作诊断。</p><p>网格方式：材料界面附近加密网格。两网格差异是数值估计，不是连续体误差保证。</p><h2>边界热流（W/m 延伸长度，正值进入截面）</h2><table><tr><th>边界</th><th>热流</th></tr><tr><td>left</td><td>0.0</td></tr><tr><td>right</td><td>0.0</td></tr><tr><td>bottom</td><td>9.488361</td></tr><tr><td>top</td><td>-9.488361</td></tr></table><p>热平衡残差：1.1191048088221578e-13 W/m</p><h2>指定位置温度（°C）</h2><table><tr><th>位置</th><th>x / m</th><th>y / m</th><th>温度 / °C</th></tr><tr><td>A</td><td>0.0</td><td>0.0475</td><td>7.0616082499673</td></tr><tr><td>B</td><td>0.5</td><td>0.0475</td><td>0.761303934211674</td></tr><tr><td>C</td><td>0.0</td><td>0.0415</td><td>7.8947346325553855</td></tr><tr><td>D</td><td>0.015</td><td>0.0415</td><td>6.268774495831212</td></tr><tr><td>E</td><td>0.5</td><td>0.0415</td><td>0.827509854382211</td></tr><tr><td>F</td><td>0.0</td><td>0.0365</td><td>16.409409969779276</td></tr><tr><td>G</td><td>0.015</td><td>0.0365</td><td>16.33510337258023</td></tr><tr><td>H</td><td>0.0</td><td>0.0</td><td>16.768762133255247</td></tr><tr><td>I</td><td>0.5</td><td>0.0</td><td>18.33391171133498</td></tr></table><h2>网格与线性求解检查</h2><pre>{
+  &quot;mesh_check&quot;: {
+    &quot;strategy&quot;: &quot;graded_interface_aligned&quot;,
+    &quot;grading&quot;: {
+      &quot;initial_edge_fraction&quot;: 0.125,
+      &quot;growth_within_each_half_strip&quot;: 1.5,
+      &quot;notice&quot;: &quot;Each material-cut strip is symmetrically graded and scaled to fit; no global adjacent-cell ratio or adaptive error guarantee.&quot;
+    },
+    &quot;coarse_cells&quot;: 5840,
+    &quot;fine_cells&quot;: 15120,
+    &quot;max_temperature_difference_k&quot;: 0.05649382394696367,
+    &quot;max_edge_heat_difference_relative&quot;: 0.00028389215617134685,
+    &quot;temperature_limit_k&quot;: 0.1,
+    &quot;relative_heat_limit&quot;: 0.01,
+    &quot;passed&quot;: true,
+    &quot;fixed_temperature_corner_discontinuities&quot;: [],
+    &quot;notice&quot;: &quot;Two-grid difference is an estimate, not a rigorous continuum error bound. Corner temperature discontinuities may have singular total heat flow.&quot;
+  },
+  &quot;linear_solver&quot;: {
+    &quot;coarse_iterations&quot;: 1927,
+    &quot;fine_iterations&quot;: 2945,
+    &quot;coarse_residual_restarts&quot;: 0,
+    &quot;fine_residual_restarts&quot;: 1,
+    &quot;residual_l2_w_per_m&quot;: 1.5238041107146459e-10,
+    &quot;rhs_l2_w_per_m&quot;: 5.93003579795669,
+    &quot;residual_is_not_discretization_error&quot;: true
+  }
+}</pre><h2>输入、来源及版本</h2><pre>{
+  &quot;thermalbridge_id&quot;: &quot;thermalbridge_4a65e066a0fd4170958bf21d207eaf1f&quot;,
+  &quot;project_id&quot;: &quot;project_eea9711068b7465db1ec711184cc7bf6&quot;,
+  &quot;project_revision&quot;: 1,
+  &quot;input&quot;: {
+    &quot;name&quot;: &quot;Public heterogeneous reference&quot;,
+    &quot;width&quot;: 500.0,
+    &quot;height&quot;: 47.5,
+    &quot;length_unit&quot;: &quot;mm&quot;,
+    &quot;geometry_source&quot;: &quot;WUFI public benchmark case2. Coordinates transcribed with H=(0,0); AB=500, AC=6, CF=5, CD=15, EM=40, aluminium=1.5 mm.&quot;,
+    &quot;application&quot;: &quot;Independent numerical reference only; not a real building or certification&quot;,
+    &quot;regions&quot;: [
+      {
+        &quot;name&quot;: &quot;Concrete&quot;,
+        &quot;x0&quot;: 0.0,
+        &quot;x1&quot;: 500.0,
+        &quot;y0&quot;: 41.5,
+        &quot;y1&quot;: 47.5,
+        &quot;conductivity&quot;: 1.15,
+        &quot;conductivity_unit&quot;: &quot;W/(m K)&quot;,
+        &quot;source&quot;: &quot;Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry&quot;
+      },
+      {
+        &quot;name&quot;: &quot;Wood&quot;,
+        &quot;x0&quot;: 0.0,
+        &quot;x1&quot;: 15.0,
+        &quot;y0&quot;: 36.5,
+        &quot;y1&quot;: 41.5,
+        &quot;conductivity&quot;: 0.12,
+        &quot;conductivity_unit&quot;: &quot;W/(m K)&quot;,
+        &quot;source&quot;: &quot;Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry&quot;
+      },
+      {
+        &quot;name&quot;: &quot;Insulation right&quot;,
+        &quot;x0&quot;: 15.0,
+        &quot;x1&quot;: 500.0,
+        &quot;y0&quot;: 1.5,
+        &quot;y1&quot;: 41.5,
+        &quot;conductivity&quot;: 0.029,
+        &quot;conductivity_unit&quot;: &quot;W/(m K)&quot;,
+        &quot;source&quot;: &quot;Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry&quot;
+      },
+      {
+        &quot;name&quot;: &quot;Insulation left&quot;,
+        &quot;x0&quot;: 1.5,
+        &quot;x1&quot;: 15.0,
+        &quot;y0&quot;: 1.5,
+        &quot;y1&quot;: 35.0,
+        &quot;conductivity&quot;: 0.029,
+        &quot;conductivity_unit&quot;: &quot;W/(m K)&quot;,
+        &quot;source&quot;: &quot;Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry&quot;
+      },
+      {
+        &quot;name&quot;: &quot;Aluminium vertical&quot;,
+        &quot;x0&quot;: 0.0,
+        &quot;x1&quot;: 1.5,
+        &quot;y0&quot;: 1.5,
+        &quot;y1&quot;: 36.5,
+        &quot;conductivity&quot;: 230.0,
+        &quot;conductivity_unit&quot;: &quot;W/(m K)&quot;,
+        &quot;source&quot;: &quot;Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry&quot;
+      },
+      {
+        &quot;name&quot;: &quot;Aluminium upper&quot;,
+        &quot;x0&quot;: 1.5,
+        &quot;x1&quot;: 15.0,
+        &quot;y0&quot;: 35.0,
+        &quot;y1&quot;: 36.5,
+        &quot;conductivity&quot;: 230.0,
+        &quot;conductivity_unit&quot;: &quot;W/(m K)&quot;,
+        &quot;source&quot;: &quot;Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry&quot;
+      },
+      {
+        &quot;name&quot;: &quot;Aluminium lower&quot;,
+        &quot;x0&quot;: 0.0,
+        &quot;x1&quot;: 500.0,
+        &quot;y0&quot;: 0.0,
+        &quot;y1&quot;: 1.5,
+        &quot;conductivity&quot;: 230.0,
+        &quot;conductivity_unit&quot;: &quot;W/(m K)&quot;,
+        &quot;source&quot;: &quot;Fraunhofer WUFI public thermal benchmark, fixed transcribed geometry&quot;
+      }
+    ],
+    &quot;boundaries&quot;: {
+      &quot;left&quot;: {
+        &quot;mode&quot;: &quot;adiabatic&quot;,
+        &quot;temperature_c&quot;: null,
+        &quot;resistance_m2k_w&quot;: null,
+        &quot;basis&quot;: &quot;Public benchmark insulated cut boundary&quot;
+      },
+      &quot;right&quot;: {
+        &quot;mode&quot;: &quot;adiabatic&quot;,
+        &quot;temperature_c&quot;: null,
+        &quot;resistance_m2k_w&quot;: null,
+        &quot;basis&quot;: &quot;Public benchmark insulated cut boundary&quot;
+      },
+      &quot;bottom&quot;: {
+        &quot;mode&quot;: &quot;film&quot;,
+        &quot;temperature_c&quot;: 20.0,
+        &quot;resistance_m2k_w&quot;: 0.11,
+        &quot;basis&quot;: &quot;Public reference internal air film&quot;
+      },
+      &quot;top&quot;: {
+        &quot;mode&quot;: &quot;film&quot;,
+        &quot;temperature_c&quot;: 0.0,
+        &quot;resistance_m2k_w&quot;: 0.06,
+        &quot;basis&quot;: &quot;Public reference external air film&quot;
+      }
+    },
+    &quot;cell_size&quot;: 4.0,
+    &quot;mesh_strategy&quot;: &quot;graded_interface_aligned&quot;,
+    &quot;probes&quot;: [
+      {
+        &quot;name&quot;: &quot;A&quot;,
+        &quot;x&quot;: 0.0,
+        &quot;y&quot;: 47.5
+      },
+      {
+        &quot;name&quot;: &quot;B&quot;,
+        &quot;x&quot;: 500.0,
+        &quot;y&quot;: 47.5
+      },
+      {
+        &quot;name&quot;: &quot;C&quot;,
+        &quot;x&quot;: 0.0,
+        &quot;y&quot;: 41.5
+      },
+      {
+        &quot;name&quot;: &quot;D&quot;,
+        &quot;x&quot;: 15.0,
+        &quot;y&quot;: 41.5
+      },
+      {
+        &quot;name&quot;: &quot;E&quot;,
+        &quot;x&quot;: 500.0,
+        &quot;y&quot;: 41.5
+      },
+      {
+        &quot;name&quot;: &quot;F&quot;,
+        &quot;x&quot;: 0.0,
+        &quot;y&quot;: 36.5
+      },
+      {
+        &quot;name&quot;: &quot;G&quot;,
+        &quot;x&quot;: 15.0,
+        &quot;y&quot;: 36.5
+      },
+      {
+        &quot;name&quot;: &quot;H&quot;,
+        &quot;x&quot;: 0.0,
+        &quot;y&quot;: 0.0
+      },
+      {
+        &quot;name&quot;: &quot;I&quot;,
+        &quot;x&quot;: 500.0,
+        &quot;y&quot;: 0.0
+      }
+    ],
+    &quot;evidence_ids&quot;: [
+      &quot;evidence_0732b5940be34600ae8c3958512dd654&quot;
+    ]
+  },
+  &quot;calculator_version&quot;: &quot;8fae3fb5d16057cf2b021d60805b7812022857e07825ad43a5b4ce0f1c853f55&quot;,
+  &quot;evidence_snapshot&quot;: [
+    {
+      &quot;type&quot;: &quot;manual_input&quot;,
+      &quot;name&quot;: &quot;Declared public/synthetic thermal reference&quot;,
+      &quot;source_file&quot;: null,
+      &quot;source_locator&quot;: &quot;Frozen input references&quot;,
+      &quot;value&quot;: null,
+      &quot;unit&quot;: null,
+      &quot;authority&quot;: &quot;Independent public benchmark and rational resistance equations&quot;,
+      &quot;permission&quot;: &quot;Public numerical references and synthetic tests&quot;,
+      &quot;uncertainty&quot;: null,
+      &quot;confidence&quot;: null,
+      &quot;acquisition_method&quot;: &quot;Reference transcription&quot;,
+      &quot;responsible_person&quot;: &quot;Test harness&quot;,
+      &quot;status&quot;: &quot;ASSUMED&quot;,
+      &quot;scheme_id&quot;: null,
+      &quot;evidence_id&quot;: &quot;evidence_0732b5940be34600ae8c3958512dd654&quot;,
+      &quot;project_id&quot;: &quot;project_eea9711068b7465db1ec711184cc7bf6&quot;,
+      &quot;revision&quot;: 1,
+      &quot;timestamp&quot;: &quot;2026-11-15T13:19:03.164290+00:00&quot;,
+      &quot;hash&quot;: &quot;9dd214895c683325e0fa337fefdf25afbcf3384c3be893dabd0905e283dc2015&quot;,
+      &quot;review_state&quot;: &quot;pending&quot;,
+      &quot;review_note&quot;: null
+    }
+  ],
+  &quot;created_at&quot;: &quot;2026-11-15T13:19:03.810145+00:00&quot;,
+  &quot;hash&quot;: &quot;6fd02bab891bc75be2bbf7729a8f49d79bfebfa9940ed3acba633be43783ba52&quot;,
+  &quot;revision&quot;: 1,
+  &quot;stale_reasons&quot;: [],
+  &quot;stale_details&quot;: [],
+  &quot;status&quot;: &quot;calculated&quot;,
+  &quot;source_status&quot;: &quot;USER_DECLARED&quot;,
+  &quot;source_notice&quot;: &quot;来源绑定及人工复核不自动证明截面、材料或边界工况真实；没有标准认证。&quot;
+}</pre></html>

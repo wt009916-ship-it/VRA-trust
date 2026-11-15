@@ -1,0 +1,30 @@
+diff --git a/backend/utility_comparison.py b/backend/utility_comparison.py
+index c9a81b9..9e5efda 100644
+--- a/backend/utility_comparison.py
++++ b/backend/utility_comparison.py
+@@ -75,7 +75,8 @@ def parse_bill(path,resource,kind):
+             if row['unit'] not in SCALES:raise core.ValidationError('Unsupported energy unit; power, volume and price are not energy')
+             if kind=='hour' and end-start!=timedelta(hours=1):raise core.ValidationError('Hourly comparison requires one-hour intervals')
+             if kind=='calendar_month':
+-                expected=datetime(start.year+1,1,1) if start.month==12 else datetime(start.year,start.month+1,1)
++                try:expected=datetime(start.year+1,1,1) if start.month==12 else datetime(start.year,start.month+1,1)
++                except ValueError:raise core.ValidationError('Utility month boundary exceeds the supported date range') from None
+                 if start.day!=1 or start.hour or end!=expected:raise core.ValidationError('Monthly comparison requires complete calendar months')
+             result.append({'line':reader.line_num,'start':start,'end':end,'raw':row,'kwh':quantity(row['energy'])*SCALES[row['unit']]})
+     except (UnicodeError,csv.Error) as exc:raise core.ValidationError('Malformed utility CSV: '+str(exc)) from None
+diff --git a/tests/test_utility_comparison.py b/tests/test_utility_comparison.py
+index 36b057f..60a5a5e 100644
+--- a/tests/test_utility_comparison.py
++++ b/tests/test_utility_comparison.py
+@@ -182,3 +182,11 @@ def test_excessive_native_energy_is_a_controlled_error(native):
+ 
+ def test_thirteen_decimal_bill_values_are_preserved():
+     assert calc.quantity('608.7272727272727')==F('608.7272727272727')
++
++
++def test_calendar_upper_bound_is_controlled_api_rejection(client,native,monkeypatch):
++    p=native/'matched.csv';p.write_text('start,end,energy,unit,carrier\n9999-12-01,9999-12-02,1,kWh,Electricity\n9999-12-02,9999-12-03,1,kWh,Electricity\n')
++    pid,ev,service,_=prepare(client,native,monkeypatch)
++    response=client.post('/api/projects/'+pid+'/utility-comparisons',json=body(bill_evidence_id=ev['evidence_id']).model_dump())
++    assert response.status_code==409 and 'supported date range' in response.text
++    assert service.store.list('utility',pid)==[]

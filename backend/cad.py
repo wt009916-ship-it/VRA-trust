@@ -43,6 +43,9 @@ class Cad:
 
     def inspect(self, pid, body):
         source, path = self.domain.file_record(pid, body.file_id)
+        if path.suffix.lower() == '.dwg':
+            from .dwg import inspect as inspect_dwg
+            return inspect_dwg(self,pid,body)
         if path.suffix.lower() not in {'.dxf', '.ifc'} or source['size'] > 10*1024*1024:
             raise core.ValidationError('Only DXF/IFC up to 10 MiB can be inspected')
         if not self.capacity.acquire(False):
@@ -76,7 +79,7 @@ class Cad:
             raise core.ValidationError('Inspection record integrity failed')
         return obj
 
-    def _state(self, pid, obj, current_parser, source_cache):
+    def _state(self, pid, obj, current_parser, source_cache, converter_cache=None):
         reasons = []
         if current_parser is None:
             reasons.append('parser_unavailable')
@@ -93,6 +96,12 @@ class Cad:
             reasons.append('source_unavailable')
         elif source_cache[fid] != obj['source']['hash']:
             reasons.append('source_binding_changed')
+        if obj.get('conversion'):
+            from . import dwg, dwg_runtime
+            converter_cache = converter_cache if converter_cache is not None else {}
+            if 'runtime' not in converter_cache:
+                converter_cache['runtime'] = dwg_runtime.current()
+            reasons.extend(dwg.state(self,obj,converter_cache['runtime']))
         status = 'unverified' if current_parser is None else ('stale' if reasons else 'parsed')
         return {'cad_id': obj['cad_id'], 'status': status, 'reasons': reasons,
                 'inspection_hash': obj['hash'], 'source_hash': obj['source']['hash'],
@@ -110,7 +119,8 @@ class Cad:
         # source data; no partial cross-project replies and no record mutations.
         objects = [self._record(pid, cid) for cid in body.cad_ids]
         current_parser, source_cache = self._current_parser(), {}
-        states = [self._state(pid, obj, current_parser, source_cache) for obj in objects]
+        converter_cache = {}
+        states = [self._state(pid, obj, current_parser, source_cache, converter_cache) for obj in objects]
         return {'checked_at': core.now(), 'states': states, 'poll_after_ms': 5000}
 
     def view(self, pid, cid):

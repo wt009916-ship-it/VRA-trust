@@ -1,0 +1,27 @@
+...............F.                                                        [100%]
+================================== FAILURES ===================================
+________ test_six_scope_schema_remains_bounded_with_dense_punctuation _________
+
+client = <starlette.testclient.TestClient object at 0x00000289BE99FE30>
+
+    def test_six_scope_schema_remains_bounded_with_dense_punctuation(client):
+        a=client.app.state.agent
+        requests=[{'request_key':k,'kind':k,'purpose':'results','record_id':k+'_'+'b'*32}
+                  for k in outputs.FACTS]  # Schema size bound, not a legal six-result Chat.
+        tool_schema=outputs.constrain_tool(a.tools({'requested_output_plan'})[0],requests,'墙；'*2000)
+>       assert len(json.dumps(tool_schema,ensure_ascii=False))<20000
+E       assert 20062 < 20000
+E        +  where 20062 = len('{"type": "function", "function": {"name": "requested_output_plan", "description": "先根据原用户问题为每个request_key选择所问fact_key...only explanations requested by the user; allowed options are not requirements."}}}]}}}, "required": ["output_plan"]}}}')
+E        +    where '{"type": "function", "function": {"name": "requested_output_plan", "description": "先根据原用户问题为每个request_key选择所问fact_key...only explanations requested by the user; allowed options are not requirements."}}}]}}}, "required": ["output_plan"]}}}' = <function dumps at 0x00000289B9BB8900>({'type': 'function', 'function': {'name': 'requested_output_plan', 'description': '先根据原用户问题为每个request_key选择所问fact_keys...tput_plan': {'type': 'array', 'minItems': 9, 'maxItems': 9, 'items': {'oneOf': [...]}}}, 'required': ['output_plan']}}}, ensure_ascii=False)
+E        +      where <function dumps at 0x00000289B9BB8900> = json.dumps
+
+tests\test_agent_intent_catalog.py:95: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_intent_catalog.py::test_six_scope_schema_remains_bounded_with_dense_punctuation
+1 failed, 16 passed, 1 warning in 4.33s

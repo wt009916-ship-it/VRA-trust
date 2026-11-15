@@ -27,7 +27,8 @@ def test_thermal_area_normalization_is_intrinsic_not_missing_floor_area(client, 
     projected = model_projection(readable(r, 'thermal'), 'thermal')
     assert projected['calculation_context']['area_basis'] == 'intrinsic_area_normalized_property'
     assert projected['calculation_context']['resistance_definition'] == 'R=sum(d/lambda_effective)+Rsi+Rse; m2 K/W'
-    assert Statement.model_json_schema()['properties']['area_m2']['description'].find('not totals') >= 0
+    description = Statement.model_json_schema()['properties']['area_m2']['description']
+    assert '不是总量' in description and '面积分母' in description and 'area_basis' in description
 
 
 def test_lifecycle_total_and_area_intensity_share_period_but_not_denominator(client):

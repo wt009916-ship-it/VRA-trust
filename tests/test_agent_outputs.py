@@ -129,7 +129,7 @@ def test_planning_schema_requires_every_scope_and_forbids_availability_numbers(c
     requests=[scope(r),{'request_key':'presence','kind':'operation','purpose':'availability','record_id':None}]
     definitions=[]
     monkeypatch.setattr(a.gateway,'public',lambda:{'enabled':True,'key_configured':True})
-    def capture(messages,tools):
+    def capture(messages,tools, **response_options):
         definitions.extend(tools)
         return {'role':'assistant','content':'Unable to plan.'}
     monkeypatch.setattr(a.gateway,'complete',capture)
@@ -154,9 +154,9 @@ def test_finished_metric_tools_leave_remaining_goal_and_stop_without_extra_prose
         tool('thermal_read',{'thermal_id':r['thermal_id']}),tool('professional_deliver',args),
         tool('requested_availability',{'request_keys':['ops'],'finish':False})])
     original=a.gateway.complete;definitions=[]
-    def capture(messages,tools):
+    def capture(messages,tools, **response_options):
         definitions.append({t['function']['name'] for t in tools})
-        return original(messages,tools)
+        return original(messages,tools, **response_options)
     monkeypatch.setattr(a.gateway,'complete',capture)
     t=a.start(pid,Chat(read_execution='model', message=message,mode='provider',read_requests=[scope(r),request]),background=False)
     assert t['status']=='succeeded',t.get('error')

@@ -18,7 +18,7 @@ def test_mixed_scope_missing_schema_cannot_offer_availability_kind(client, monke
         tool('requested_availability', {'request_keys': ['equipment'], 'finish': True}),
     ])
 
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         seen.append({t['function']['name']: t['function'] for t in tools})
         return next(responses)
 
@@ -51,7 +51,7 @@ def test_unread_second_result_still_has_missing_route(client, monkeypatch):
         tool('professional_missing', {'missing': {'kinds': ['cost'], 'record_id': absent, 'finish': True}}),
     ])
 
-    def complete(messages, tools):
+    def complete(messages, tools, **response_options):
         seen.append({t['function']['name']: t['function'] for t in tools})
         return next(responses)
 

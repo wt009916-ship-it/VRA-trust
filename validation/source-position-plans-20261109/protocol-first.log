@@ -1,0 +1,15 @@
+.......F.                                                                [100%]
+================================== FAILURES ===================================
+____________ test_numeric_invalidity_stays_visible_and_is_rejected ____________
+
+    def test_numeric_invalidity_stays_visible_and_is_rejected():
+     case=fixture.CASES[0];text=case['message'].replace('21 mm','-21 mm');d=case['gold_draft']
+     r=protocol.review(text,json.dumps(d))
+     assert r['outcome']=='reject' and r['issue']=='invalid_parameter' and not r['tasks']
+>    assert '-21' in r['guard']
+E    AssertionError: assert '-21' in 'Existing calculator input validator: 1 validation error for Assembly\nlayers.0.thickness\n  Input should be greater t...put_value=-0.021, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/greater_than'
+
+validation\source-position-plans-20261109\test_positions.py:42: AssertionError
+=========================== short test summary info ===========================
+FAILED validation/source-position-plans-20261109/test_positions.py::test_numeric_invalidity_stays_visible_and_is_rejected
+1 failed, 8 passed in 0.43s

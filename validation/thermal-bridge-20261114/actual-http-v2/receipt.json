@@ -1,0 +1,151 @@
+{
+  "utc": "2026-11-14T05:21:36.312332+00:00",
+  "transport": "real loopback HTTP / uvicorn; no browser",
+  "isolated_data_only": true,
+  "checks": [
+    {
+      "name": "smooth_2d_created",
+      "passed": true,
+      "actual": 201
+    },
+    {
+      "name": "smooth_field_converged",
+      "passed": true,
+      "actual": {
+        "coarse_cells": 400,
+        "fine_cells": 1600,
+        "max_temperature_difference_k": 0.007453266694945171,
+        "max_edge_heat_difference_relative": 0.0013562477206772888,
+        "temperature_limit_k": 0.1,
+        "relative_heat_limit": 0.01,
+        "passed": true,
+        "fixed_temperature_corner_discontinuities": [],
+        "notice": "Two-grid difference is an estimate, not a rigorous continuum error bound. Corner temperature discontinuities may have singular total heat flow."
+      }
+    },
+    {
+      "name": "independent_symmetry_centre_10c",
+      "passed": true,
+      "actual": 10.0
+    },
+    {
+      "name": "html_report",
+      "passed": true,
+      "actual": 200
+    },
+    {
+      "name": "csv_cells",
+      "passed": true,
+      "actual": 1600
+    },
+    {
+      "name": "public_composite_created",
+      "passed": true,
+      "actual": {
+        "status_code": 201,
+        "seconds": 0.625
+      }
+    },
+    {
+      "name": "public_nine_temperature_points",
+      "passed": true,
+      "actual": {
+        "A": 0.04089533409292834,
+        "B": 0.038687978301716885,
+        "C": 0.007818026854634397,
+        "D": 0.03422375557144797,
+        "E": 0.02751864148101757,
+        "F": 0.008232927310508842,
+        "G": 0.03311769320501767,
+        "H": 0.03082604348001894,
+        "I": 0.03410150740058526
+      }
+    },
+    {
+      "name": "public_heat_flow",
+      "passed": true,
+      "actual": 9.486114847082067
+    },
+    {
+      "name": "unresolved_mesh_not_promoted",
+      "passed": true,
+      "actual": {
+        "coarse_cells": 6275,
+        "fine_cells": 25050,
+        "max_temperature_difference_k": 0.27809743232877615,
+        "max_edge_heat_difference_relative": 0.0010779138076550188,
+        "temperature_limit_k": 0.1,
+        "relative_heat_limit": 0.01,
+        "passed": false,
+        "fixed_temperature_corner_discontinuities": [],
+        "notice": "Two-grid difference is an estimate, not a rigorous continuum error bound. Corner temperature discontinuities may have singular total heat flow."
+      }
+    },
+    {
+      "name": "zero_conductivity",
+      "passed": true,
+      "actual": 422
+    },
+    {
+      "name": "wrong_unit",
+      "passed": true,
+      "actual": 422
+    },
+    {
+      "name": "negative_width",
+      "passed": true,
+      "actual": 422
+    },
+    {
+      "name": "missing_data_null",
+      "passed": true,
+      "actual": "incomplete"
+    },
+    {
+      "name": "csrf_refusal",
+      "passed": true,
+      "actual": 403
+    },
+    {
+      "name": "withdrawal_saved",
+      "passed": true,
+      "actual": 200
+    },
+    {
+      "name": "stale_hides_field",
+      "passed": true,
+      "actual": "stale"
+    },
+    {
+      "name": "stale_csv_refused",
+      "passed": true,
+      "actual": 409
+    },
+    {
+      "name": "withdrawn_source_recalculation_refused",
+      "passed": true,
+      "actual": 409
+    },
+    {
+      "name": "anonymous_report_refused",
+      "passed": true,
+      "actual": 401
+    }
+  ],
+  "passed": 19,
+  "failed": 0,
+  "source_sha256": {
+    "backend/thermal_bridge.py": "a400fe45bbd29a09f4151c3159accb3513fdf11b3fe4ec0a04de0f217483e4d0",
+    "backend/thermal_bridge_solver.py": "2f4155fc77e641068447533a26a21ddd7b5683418f0e2843f061b24321d70020",
+    "backend/thermal_bridge_routes.py": "5205b666757f46832abd8ecc836e563bf868e0f21cc0cc5df22a7158450338c0",
+    "backend/calculation_provenance.py": "ceb8f32d002f180a8d98a1452193299372e9187d3050ce61a5266a154d5a1ee0",
+    "backend/extensions.py": "09e3dfc0971191e8d742c2c5c4cd1c91533362ba2aa5a5ffb66e8120d8e15995",
+    "backend/schema.py": "88cc6a701808738cc86ad80e6b21344cb580f514e4624960f95c3cd6574cb9ad",
+    "backend/requirements.txt": "6dab4bc78d0232999da2ef1b849ca367aec634dfe44ffe9b3450ec5deb1e0efd",
+    "frontend/src/thermal-bridge-ui.js": "7a5ff31a74d935c1e07b503e87f34181a494d73f149089c42285a7ff72395416",
+    "frontend/src/thermal-bridge-view.js": "904f97cd4c40d526ab1260fb4a497de34f1ee8ea82543ee9e6ce1c2e9095c777",
+    "frontend/src/thermal-bridge.css": "e4dea271a2a1aa77bb9ed1176063bbc6fff2f7f5d6c6dae8442f168a0beb829a",
+    "frontend/src/thermal-ui.js": "cb6a335e93c769607942aff0a7ff9fc3ddec9951836651644c61b5edd737326b"
+  },
+  "scope": "Synthetic smooth 2D case plus frozen public composite; not real-building or full ISO validation"
+}

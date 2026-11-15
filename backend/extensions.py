@@ -2,8 +2,9 @@
 import json
 import zipfile
 from fastapi.responses import FileResponse, HTMLResponse
-from fastapi import HTTPException, Request
-from .agent import Agent, Chat
+from fastapi import HTTPException, Request, Query
+from .agent import Agent, Chat, TOOLS
+from . import agent_outputs
 from .gateway import Gateway, ProviderSettings
 from .local_model import LocalModelSettings
 from .trust import FactorUpdate, FactorReview, Trust
@@ -16,7 +17,8 @@ from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, 
 from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
 from .engineering import Engineering, BeamInput, report as engineering_report
 from .material_cost import Costs, Estimate, Comparison as CostComparison, compare as cost_compare, report as cost_report
-from .construction import Schedules, ScheduleInput, report as schedule_report
+from .construction import ScheduleInput
+from .construction_records import ScheduleRecords as Schedules, LevelingRequest, report as schedule_report
 from .operations import Operations, AnalysisInput, report as operations_report
 from .drawings import Drawings, DrawingInput, DrawingReview
 from .drawing_scale import DrawingScales, ScaleInput, LengthInput
@@ -29,7 +31,21 @@ def register_extensions(app, domain, auth):
     app.state.robustness = robustness
     domain.robustness = robustness
     thermal = Thermal(domain)
+    from .thermal_bridge_routes import register as register_thermal_bridge
+    register_thermal_bridge(app, domain)
+    from .ideal_loads import register_diagnostics
+    register_diagnostics(app, domain)
+    from .timestep_studies import register as register_timestep_studies
+    register_timestep_studies(app,domain)
+    from .end_use_records import register as register_end_use
+    register_end_use(app,domain)
+    from .utility_records import register as register_utility
+    register_utility(app,domain)
+    from .retrofit_models import register as register_retrofit_models
+    register_retrofit_models(app,domain)
     cad = Cad(domain)
+    from .ifc_beam_handoff import register as register_ifc_beam_handoff
+    register_ifc_beam_handoff(app, cad)
     from .material_takeoff import register as register_material_takeoff
     register_material_takeoff(app, cad)
     lifecycle = Lifecycle(domain)
@@ -40,10 +56,14 @@ def register_extensions(app, domain, auth):
     costs = Costs(domain)
     schedules = Schedules(domain)
     operations = Operations(domain)
+    from .maintenance import register as register_maintenance
+    register_maintenance(app, domain)
     drawings = Drawings(domain)
     drawing_scales = DrawingScales(drawings)
     from .drawing_associations import register as register_drawing_associations
     register_drawing_associations(app, drawings)
+    from .drawing_line_reviews import register as register_line_reviews
+    register_line_reviews(app, drawings)
     from .design_conditions import register as register_design_conditions
     register_design_conditions(app, domain)
 
@@ -123,6 +143,10 @@ def register_extensions(app, domain, auth):
     @app.post('/api/projects/{project_id}/schedules', status_code=201)
     def schedule_create(project_id: str, body: ScheduleInput):
         return schedules.save(project_id,body)
+
+    @app.post('/api/projects/{project_id}/schedules/{schedule_id}/resource-levelings', status_code=201)
+    def schedule_level(project_id: str, schedule_id: str, body: LevelingRequest):
+        return schedules.level(project_id, schedule_id, body)
 
     @app.get('/api/projects/{project_id}/schedules')
     def schedule_list(project_id: str):
@@ -235,6 +259,18 @@ def register_extensions(app, domain, auth):
     def lifecycle_html(project_id: str, lifecycle_id: str):
         return lifecycle_report(lifecycle.view(project_id, lifecycle_id))
 
+    @app.get('/api/projects/{project_id}/dwg-capability')
+    def dwg_capability(project_id: str):
+        from . import dwg_runtime
+        return {'available':dwg_runtime.current() is not None,'coverage':'partial_not_lossless',
+                'platform':'windows','max_bytes':10*1024**2}
+
+    @app.get('/api/projects/{project_id}/cad-inspections/{cad_id}/converted.dxf')
+    def dwg_download(project_id: str, cad_id: str):
+        from .dwg import download
+        return FileResponse(download(cad,project_id,cad_id),media_type='application/dxf',
+                            filename='converted-partial.dxf',headers={'X-Content-Type-Options':'nosniff'})
+
     @app.post('/api/projects/{project_id}/cad-current-states')
     def cad_current_states(project_id: str, body: CurrentStates):
         return cad.current_states(project_id, body)
@@ -246,6 +282,13 @@ def register_extensions(app, domain, auth):
     @app.get('/api/projects/{project_id}/cad-inspections')
     def cad_history(project_id: str):
         return [cad.view(project_id, r['cad_id']) for r in domain.store.list('cad', project_id)]
+
+    @app.get('/api/projects/{project_id}/cad-inspection-page')
+    def cad_page(project_id: str, limit: int = Query(default=20, ge=1, le=20),
+                 before: int | None = Query(default=None, ge=0, le=2**53-1),
+                 snapshot: int | None = Query(default=None, ge=0, le=2**53-1)):
+        from .cad_history import page
+        return page(cad, project_id, limit=limit, before=before, snapshot=snapshot)
 
     @app.get('/api/projects/{project_id}/cad-inspections/{cad_id}')
     def cad_record(project_id: str, cad_id: str):
@@ -318,7 +361,9 @@ def register_extensions(app, domain, auth):
         local = agent.local_model.public()
         return {'provider_ready': config['enabled'] and config['key_configured'], 'model': config['model'],
                 'local_model_ready': local['enabled'] and local['key_configured'], 'local_model': local['model'],
-                'readiness_notice': '配置就绪不等于服务连通或能力验收通过', 'tools': agent.tools()}
+                'readiness_notice': '配置就绪不等于服务连通或能力验收通过', 'tools': agent.tools(),
+                'output_catalog': agent_outputs.public_catalog(),
+                'tool_catalog_scope':'default_read_only', 'installed_tool_names':sorted(TOOLS)}
 
     @app.get('/api/developer/local-model')
     def local_model_settings(request: Request):
