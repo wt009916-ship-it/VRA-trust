@@ -42,11 +42,11 @@ function bindCadSelection(article,record,scenarioHost,scenarioHistory){
   const button=event.target.closest('[data-layer-product]');
   if(!button||!article.contains(button))return;
   const target=button.nextElementSibling,base='/projects/'+record.project_id;
-  button.disabled=true;target.textContent='正在核验材料层与模型几何…';
+  button.disabled=true;target.textContent='正在核验材料归属与模型几何…';
   try{
    const takeoff=await post(base+'/ifc-layer-takeoffs',{cad_id:record.cad_id,product_id:Number(button.dataset.layerProduct)});
    if(!target.isConnected||!article.contains(target))return;
-   target.innerHTML=`<p>已保存本次分层计量回执。打开报告时会重新核验来源和计算规则；材料层包络不能直接当作采购材料量。</p><p><a target="_blank" rel="noopener" href="/api${base}/ifc-layer-takeoffs/${takeoff.takeoff_id}/report.html">查看当前计量结果、口径与来源</a></p>`;
+   target.innerHTML=`<p>已保存本次构件材料计量回执。打开报告时会重新核验来源和计算规则；材料层包络不能直接当作采购材料量。</p><p><a target="_blank" rel="noopener" href="/api${base}/ifc-layer-takeoffs/${takeoff.takeoff_id}/report.html">查看当前计量结果、口径与来源</a></p>`;
    if(takeoff.status==='measured'){
     const launch=document.createElement('button');launch.type='button';launch.textContent='用此计量比较两套材料方案';
     launch.onclick=()=>mountMaterialScenario(scenarioHost,base,takeoff,scenarioHistory).catch(error=>{scenarioHost.textContent=error.message;});
