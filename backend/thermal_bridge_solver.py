@@ -8,17 +8,50 @@ MAX_CELLS = 160000
 MAX_ITERATIONS = 6000
 
 
-def edges(length, regions, axis, step):
+def graded_segment(a, b, step, remaining):
+    """Mirror a bounded geometric grid within one interval of material cuts.
+
+    Scale both halves equally to land exactly on their midpoint. Growth is 1.5
+    within each half interval; it is not a bound across distinct material cuts.
+    """
+    widths = []
+    total, width = 0., step / 8
+    half = (b - a) / 2
+    while total < half:
+        if 2 * (len(widths) + 1) > remaining:
+            raise ValueError('Graded mesh axis exceeds supported budget')
+        widths.append(width)
+        total += width
+        width = min(step, width * 1.5)
+    left = np.concatenate([[a], a + np.cumsum(np.asarray(widths) * (half / total))])
+    left[-1] = (a + b) / 2
+    return np.concatenate([left, b - (left[-2::-1] - a)])
+
+
+def edges(length, regions, axis, step, strategy='uniform_interface_aligned'):
     cuts = sorted({0., length, *(r[axis + '0'] for r in regions), *(r[axis + '1'] for r in regions)})
     counts = [math.ceil((b - a) / step) for a, b in zip(cuts, cuts[1:])]
     if any(b - a < 1e-8 for a, b in zip(cuts, cuts[1:])) or sum(counts) > MAX_CELLS:
         raise ValueError('Geometry spacing or mesh exceeds supported budget')
+    if strategy == 'graded_interface_aligned':
+        segments, used = [], 0
+        for a, b in zip(cuts, cuts[1:]):
+            local = graded_segment(a, b, step, MAX_CELLS - used)
+            used += len(local) - 1
+            segments.append(local[:-1])
+        result = np.concatenate([*segments, np.array([length])])
+        if np.any(np.diff(result) <= 0):
+            raise ValueError('Graded mesh has unresolved coordinate spacing')
+        return result
+    if strategy != 'uniform_interface_aligned':
+        raise ValueError('Unsupported mesh strategy')
     return np.concatenate([np.linspace(a, b, n + 1)[:-1] for a, b, n in zip(cuts, cuts[1:], counts)] + [np.array([length])])
 
 
 def mesh(data, step):
-    xe = edges(data['width'], data['regions'], 'x', step)
-    ye = edges(data['height'], data['regions'], 'y', step)
+    strategy = data.get('mesh_strategy', 'uniform_interface_aligned')
+    xe = edges(data['width'], data['regions'], 'x', step, strategy)
+    ye = edges(data['height'], data['regions'], 'y', step, strategy)
     nx, ny = len(xe) - 1, len(ye) - 1
     if nx * ny > MAX_CELLS:
         raise ValueError('Mesh exceeds 160000 cells; select a coarser grid or smaller domain')
@@ -221,7 +254,11 @@ def calculate(data):
             'boundary_heat_into_domain_w_per_m': fine['flux'], 'boundary_samples': fine['surfaces'],
             'total_positive_heat_in_w_per_m': fine['positive_heat_in'], 'energy_balance_w_per_m': fine['balance'],
             'probes': probes(data, fine),
-            'mesh_check': {'coarse_cells': coarse['cells'], 'fine_cells': fine['cells'],
+            'mesh_check': {'strategy': data.get('mesh_strategy', 'uniform_interface_aligned'),
+                           'grading': {'initial_edge_fraction': .125, 'growth_within_each_half_strip': 1.5,
+                                       'notice': 'Each material-cut strip is symmetrically graded and scaled to fit; no global adjacent-cell ratio or adaptive error guarantee.'}
+                                      if data.get('mesh_strategy') == 'graded_interface_aligned' else None,
+                           'coarse_cells': coarse['cells'], 'fine_cells': fine['cells'],
                            'max_temperature_difference_k': temperature_difference,
                            'max_edge_heat_difference_relative': flux_difference,
                            'temperature_limit_k': .1, 'relative_heat_limit': .01, 'passed': converged,

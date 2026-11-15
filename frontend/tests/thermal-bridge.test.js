@@ -37,3 +37,11 @@ test('heat map uses true nonuniform cell geometry with bottom row at bottom',()=
   assert.deepEqual(fieldBounds(field),{low:0,high:30});assert.equal(fieldBounds(null),null);
   assert.equal(heatColor(18,18,18),'hsl(120 65% 46%)');
 });
+
+test('graded result reports its method without overriding diagnostics or stale state',()=>{
+  const graded={...record,result:{...field,mesh_check:{...field.mesh_check,strategy:'graded_interface_aligned'}}};
+  const html=resultMarkup(graded,'/projects/test/thermal-bridges');
+  assert.match(html,/材料界面附近加密网格/);assert.match(html,/仍需通过两级网格检查/);
+  assert.match(html,/仅用于检查模型/);
+  assert.ok(!resultMarkup({...graded,status:'stale'},'/projects/test/thermal-bridges').includes('网格方式：'));
+});
