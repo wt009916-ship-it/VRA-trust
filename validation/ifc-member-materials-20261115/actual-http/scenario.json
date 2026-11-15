@@ -1,0 +1,717 @@
+{
+  "scenario_id": "scenario_630ebb4f2da04ce19919f1f764348c8d",
+  "project_id": "project_9b6b55f5460e4c0db85be7570ccfcaf8",
+  "project_revision": 1,
+  "takeoff_id": "takeoff_dcff083e2c83454f9022d89566b2adad",
+  "takeoff_hash": "f8eed62711fd8f5b902640d8dffe6ccec9947df578d5ede10eea8c6cea591099",
+  "calculator_hash": "0b6a43afefd72f0c0d064bfdedcd44f3ecc72617684c4189086ddd8c791bbefe",
+  "input": {
+    "functional_scope": "Selected synthetic column, same envelope, explicit assumptions",
+    "region": "US-CO",
+    "currency": "USD",
+    "tax_basis": "excluded",
+    "as_of": "2026-11-08",
+    "exclusions": [
+      "Labour, machinery and taxes are not in material cost"
+    ],
+    "study_years": 30,
+    "method": "QA arithmetic",
+    "boundaries": [
+      {
+        "stage": "production",
+        "included": true,
+        "reason": "Production only in this reference comparison"
+      },
+      {
+        "stage": "transport",
+        "included": false,
+        "reason": "Excluded explicitly in this reference comparison"
+      },
+      {
+        "stage": "construction",
+        "included": false,
+        "reason": "Excluded explicitly in this reference comparison"
+      },
+      {
+        "stage": "operation",
+        "included": false,
+        "reason": "Excluded explicitly in this reference comparison"
+      },
+      {
+        "stage": "end_of_life",
+        "included": false,
+        "reason": "Excluded explicitly in this reference comparison"
+      }
+    ],
+    "takeoff_id": "takeoff_dcff083e2c83454f9022d89566b2adad",
+    "excluded_layers": [],
+    "alternatives": [
+      {
+        "name": "Baseline",
+        "layers": [
+          {
+            "material_id": "Baseline29",
+            "name": "Baseline material 29",
+            "solid_fraction": 0.5,
+            "fraction_source": "Synthetic reference: half of layer envelope",
+            "waste_ratio": 0.1,
+            "waste_basis": "Synthetic reference: ten percent procurement waste",
+            "density_kg_m3": 1000.0,
+            "density_source": "Synthetic reference density, not a manufacturer declaration",
+            "quote": {
+              "quote_id": "Baseline29",
+              "unit_price": 100.0,
+              "per_unit": "t",
+              "currency": "USD",
+              "tax_basis": "excluded",
+              "region": "US-CO",
+              "valid_from": "2026-01-01",
+              "valid_until": "2026-12-31",
+              "source": "Synthetic reference quote, not market data",
+              "version": "reference-v1"
+            },
+            "factor": {
+              "factor_id": "Baseline29",
+              "value": 2.0,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "production",
+              "source": "Synthetic reference factor, not an EPD",
+              "publisher": "QA reference",
+              "version": "reference-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic",
+              "evidence_id": null
+            },
+            "evidence_ids": [
+              "evidence_327e4283c5394508a02f775b617be05c"
+            ],
+            "layer_id": 29
+          }
+        ],
+        "other_activities": [],
+        "transport_legs": []
+      },
+      {
+        "name": "Replacement",
+        "layers": [
+          {
+            "material_id": "Replacement29",
+            "name": "Replacement material 29",
+            "solid_fraction": 0.5,
+            "fraction_source": "Synthetic reference: half of layer envelope",
+            "waste_ratio": 0.1,
+            "waste_basis": "Synthetic reference: ten percent procurement waste",
+            "density_kg_m3": 1000.0,
+            "density_source": "Synthetic reference density, not a manufacturer declaration",
+            "quote": {
+              "quote_id": "Replacement29",
+              "unit_price": 80.0,
+              "per_unit": "t",
+              "currency": "USD",
+              "tax_basis": "excluded",
+              "region": "US-CO",
+              "valid_from": "2026-01-01",
+              "valid_until": "2026-12-31",
+              "source": "Synthetic reference quote, not market data",
+              "version": "reference-v1"
+            },
+            "factor": {
+              "factor_id": "Replacement29",
+              "value": 1.5,
+              "denominator": "kg",
+              "numerator": "kgCO2e",
+              "stage": "production",
+              "source": "Synthetic reference factor, not an EPD",
+              "publisher": "QA reference",
+              "version": "reference-v1",
+              "year": 2026,
+              "region": "US-CO",
+              "method": "QA arithmetic",
+              "evidence_id": null
+            },
+            "evidence_ids": [
+              "evidence_327e4283c5394508a02f775b617be05c"
+            ],
+            "layer_id": 29
+          }
+        ],
+        "other_activities": [],
+        "transport_legs": []
+      }
+    ]
+  },
+  "result": {
+    "status": "calculated",
+    "alternatives": [
+      {
+        "name": "Baseline",
+        "derivations": [
+          {
+            "layer_id": 29,
+            "source_material_id": 29,
+            "source_material_name": "Declared material <not measured>",
+            "proposed_material_id": "Baseline29",
+            "envelope_volume_m3": "22.0",
+            "solid_fraction": 0.5,
+            "net_material_volume_m3": "11.00",
+            "purchase_volume_m3": "12.100",
+            "production_quantity": "12100.0000",
+            "production_unit": "kg",
+            "source_locator": "takeoff_dcff083e2c83454f9022d89566b2adad / IFC #28 / layer #29 / f8eed62711fd8f5b902640d8dffe6ccec9947df578d5ede10eea8c6cea591099",
+            "formula": "envelope * declared solid_fraction; purchase = net * (1+waste); mass = purchase * density",
+            "source_status": "MODEL_GEOMETRY_WITH_USER_DECLARED_MAPPING"
+          }
+        ],
+        "transport": [],
+        "cost": {
+          "status": "calculated",
+          "rows": [
+            {
+              "line_id": "layer_29",
+              "material_id": "Baseline29",
+              "name": "Baseline material 29",
+              "unit": "m3",
+              "net_quantity": "11.0",
+              "purchase_quantity": "12.10",
+              "quantity_in_quote_unit": "12.10000",
+              "quote_unit": "t",
+              "amount": "1210.00",
+              "quantity_formula": "declared net quantity",
+              "cost_formula": "net*(1+waste), ceil for item; dimensional conversion; *unit_price; round HALF_UP to 0.01 per line",
+              "missing": []
+            }
+          ],
+          "materials": [
+            {
+              "material_id": "Baseline29",
+              "unit": "m3",
+              "net": "11.0",
+              "purchase": "12.10"
+            }
+          ],
+          "missing_lines": [],
+          "material_total": "1210.00",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-08",
+          "source_status": "USER_DECLARED",
+          "tender_certification": "NOT_ASSESSED",
+          "functional_equivalence": "NOT_ASSESSED",
+          "rounding": "Decimal, HALF_UP 0.01 per line then sum; item procurement rounded upward per line",
+          "limitations": [
+            "只计算声明材料清单；不自动加入人工、机械、运输、管理费、税额、汇率或碳收益。",
+            "价格有效期、地区及来源由用户声明；未验证市场报价真实性或材料功能等效性。",
+            "几何量为矩形/长方体显式参数估算；扣减使用输出单位m²或m³，不是CAD自动算量或计量规范认证。",
+            "未计损耗填写0，未知留空；按件采购逐行向上取整。金额为十进制字符串，避免JSON浮点金额失真。"
+          ]
+        },
+        "carbon": {
+          "status": "calculated",
+          "replacement": {
+            "scope": "not_assessed",
+            "components": [],
+            "missing": [],
+            "total_kgco2e": null,
+            "status": "not_separately_assessed",
+            "aggregation": "Replacement ledger is added to operation stage; initial installation and horizon disposal remain in base activities."
+          },
+          "rows": [
+            {
+              "activity_id": "layer_29",
+              "stage": "production",
+              "quantity_in_factor_unit": 12100.0,
+              "factor_unit": "kgCO2e/kg",
+              "period_multiplier": 1,
+              "kgco2e": 24200.0,
+              "formula": "quantity * unit_conversion * period_multiplier * factor"
+            }
+          ],
+          "stages": {
+            "production": {
+              "included": true,
+              "reason": "Production only in this reference comparison",
+              "base_activity_kgco2e": 24200.0,
+              "replacement_kgco2e": null,
+              "status": "calculated",
+              "kgco2e": 24200.0
+            },
+            "transport": {
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "construction": {
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "operation": {
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "end_of_life": {
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            }
+          },
+          "missing": [],
+          "boundary_total_kgco2e": 24200.0,
+          "kgco2e_m2_over_study_period": 242.0,
+          "all_five_stages_entered": false,
+          "source_status": "USER_DECLARED",
+          "certification": "NOT_ASSESSED",
+          "issued_credits_t": null,
+          "limitations": [
+            "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+            "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+            "年运行量线性累计；替换仅按声明寿命离散发生，因子按当前版本固定，不预测电网、衰减或未来技术。",
+            "替换账列入使用阶段，逐项排除初次安装和评估终点处置；声明不重叠不等于独立证明没有重复计数。",
+            "replacement_scope=not_assessed 表示未评估替换；即使五阶段有值也不代表完整生命周期。",
+            "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+          ]
+        },
+        "cost_input": {
+          "name": "Baseline",
+          "region": "US-CO",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-08",
+          "functional_scope": "Selected synthetic column, same envelope, explicit assumptions",
+          "exclusions": [
+            "Labour, machinery and taxes are not in material cost"
+          ],
+          "import_file_id": null,
+          "lines": [
+            {
+              "line_id": "layer_29",
+              "material_id": "Baseline29",
+              "name": "Baseline material 29",
+              "measure": {
+                "mode": "direct",
+                "unit": "m3",
+                "quantity": 11.0,
+                "length": null,
+                "width": null,
+                "height": null,
+                "dimension_unit": null,
+                "count": null,
+                "deduction": null,
+                "source": "takeoff_dcff083e2c83454f9022d89566b2adad / IFC #28 / layer #29 / f8eed62711fd8f5b902640d8dffe6ccec9947df578d5ede10eea8c6cea591099"
+              },
+              "waste_ratio": 0.1,
+              "waste_basis": "Synthetic reference: ten percent procurement waste",
+              "density_kg_m3": 1000.0,
+              "density_source": "Synthetic reference density, not a manufacturer declaration",
+              "quote": {
+                "quote_id": "Baseline29",
+                "unit_price": 100.0,
+                "per_unit": "t",
+                "currency": "USD",
+                "tax_basis": "excluded",
+                "region": "US-CO",
+                "valid_from": "2026-01-01",
+                "valid_until": "2026-12-31",
+                "source": "Synthetic reference quote, not market data",
+                "version": "reference-v1"
+              },
+              "evidence_ids": []
+            }
+          ]
+        },
+        "carbon_input": {
+          "name": "Baseline",
+          "area_m2": 100.0,
+          "study_years": 30,
+          "region": "US-CO",
+          "method": "QA arithmetic",
+          "functional_unit": "Selected synthetic column, same envelope, explicit assumptions",
+          "import_file_id": null,
+          "boundaries": [
+            {
+              "stage": "production",
+              "included": true,
+              "reason": "Production only in this reference comparison"
+            },
+            {
+              "stage": "transport",
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison"
+            },
+            {
+              "stage": "construction",
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison"
+            },
+            {
+              "stage": "operation",
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison"
+            },
+            {
+              "stage": "end_of_life",
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison"
+            }
+          ],
+          "activities": [
+            {
+              "activity_id": "layer_29",
+              "name": "Baseline material 29",
+              "stage": "production",
+              "quantity": 12100.0,
+              "unit": "kg",
+              "period": "whole_period",
+              "replacement_overlap": "unknown",
+              "source": "takeoff_dcff083e2c83454f9022d89566b2adad / IFC #28 / layer #29 / f8eed62711fd8f5b902640d8dffe6ccec9947df578d5ede10eea8c6cea591099",
+              "factor": {
+                "factor_id": "Baseline29",
+                "value": 2.0,
+                "denominator": "kg",
+                "numerator": "kgCO2e",
+                "stage": "production",
+                "source": "Synthetic reference factor, not an EPD",
+                "publisher": "QA reference",
+                "version": "reference-v1",
+                "year": 2026,
+                "region": "US-CO",
+                "method": "QA arithmetic",
+                "evidence_id": null
+              }
+            }
+          ],
+          "replacement_scope": "not_assessed",
+          "replacements": []
+        }
+      },
+      {
+        "name": "Replacement",
+        "derivations": [
+          {
+            "layer_id": 29,
+            "source_material_id": 29,
+            "source_material_name": "Declared material <not measured>",
+            "proposed_material_id": "Replacement29",
+            "envelope_volume_m3": "22.0",
+            "solid_fraction": 0.5,
+            "net_material_volume_m3": "11.00",
+            "purchase_volume_m3": "12.100",
+            "production_quantity": "12100.0000",
+            "production_unit": "kg",
+            "source_locator": "takeoff_dcff083e2c83454f9022d89566b2adad / IFC #28 / layer #29 / f8eed62711fd8f5b902640d8dffe6ccec9947df578d5ede10eea8c6cea591099",
+            "formula": "envelope * declared solid_fraction; purchase = net * (1+waste); mass = purchase * density",
+            "source_status": "MODEL_GEOMETRY_WITH_USER_DECLARED_MAPPING"
+          }
+        ],
+        "transport": [],
+        "cost": {
+          "status": "calculated",
+          "rows": [
+            {
+              "line_id": "layer_29",
+              "material_id": "Replacement29",
+              "name": "Replacement material 29",
+              "unit": "m3",
+              "net_quantity": "11.0",
+              "purchase_quantity": "12.10",
+              "quantity_in_quote_unit": "12.10000",
+              "quote_unit": "t",
+              "amount": "968.00",
+              "quantity_formula": "declared net quantity",
+              "cost_formula": "net*(1+waste), ceil for item; dimensional conversion; *unit_price; round HALF_UP to 0.01 per line",
+              "missing": []
+            }
+          ],
+          "materials": [
+            {
+              "material_id": "Replacement29",
+              "unit": "m3",
+              "net": "11.0",
+              "purchase": "12.10"
+            }
+          ],
+          "missing_lines": [],
+          "material_total": "968.00",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-08",
+          "source_status": "USER_DECLARED",
+          "tender_certification": "NOT_ASSESSED",
+          "functional_equivalence": "NOT_ASSESSED",
+          "rounding": "Decimal, HALF_UP 0.01 per line then sum; item procurement rounded upward per line",
+          "limitations": [
+            "只计算声明材料清单；不自动加入人工、机械、运输、管理费、税额、汇率或碳收益。",
+            "价格有效期、地区及来源由用户声明；未验证市场报价真实性或材料功能等效性。",
+            "几何量为矩形/长方体显式参数估算；扣减使用输出单位m²或m³，不是CAD自动算量或计量规范认证。",
+            "未计损耗填写0，未知留空；按件采购逐行向上取整。金额为十进制字符串，避免JSON浮点金额失真。"
+          ]
+        },
+        "carbon": {
+          "status": "calculated",
+          "replacement": {
+            "scope": "not_assessed",
+            "components": [],
+            "missing": [],
+            "total_kgco2e": null,
+            "status": "not_separately_assessed",
+            "aggregation": "Replacement ledger is added to operation stage; initial installation and horizon disposal remain in base activities."
+          },
+          "rows": [
+            {
+              "activity_id": "layer_29",
+              "stage": "production",
+              "quantity_in_factor_unit": 12100.0,
+              "factor_unit": "kgCO2e/kg",
+              "period_multiplier": 1,
+              "kgco2e": 18150.0,
+              "formula": "quantity * unit_conversion * period_multiplier * factor"
+            }
+          ],
+          "stages": {
+            "production": {
+              "included": true,
+              "reason": "Production only in this reference comparison",
+              "base_activity_kgco2e": 18150.0,
+              "replacement_kgco2e": null,
+              "status": "calculated",
+              "kgco2e": 18150.0
+            },
+            "transport": {
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "construction": {
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "operation": {
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            },
+            "end_of_life": {
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison",
+              "base_activity_kgco2e": null,
+              "replacement_kgco2e": null,
+              "status": "excluded",
+              "kgco2e": null
+            }
+          },
+          "missing": [],
+          "boundary_total_kgco2e": 18150.0,
+          "kgco2e_m2_over_study_period": 181.5,
+          "all_five_stages_entered": false,
+          "source_status": "USER_DECLARED",
+          "certification": "NOT_ASSESSED",
+          "issued_credits_t": null,
+          "limitations": [
+            "五阶段通用活动清单，不自动证明符合某项LCA标准；阶段覆盖完整也不证明清单无遗漏。",
+            "CO2e因子需方法、版本、地区一致；人工填写来源不等于独立核证。",
+            "年运行量线性累计；替换仅按声明寿命离散发生，因子按当前版本固定，不预测电网、衰减或未来技术。",
+            "替换账列入使用阶段，逐项排除初次安装和评估终点处置；声明不重叠不等于独立证明没有重复计数。",
+            "replacement_scope=not_assessed 表示未评估替换；即使五阶段有值也不代表完整生命周期。",
+            "不支持负排放、抵扣或边界外收益合并；核算结果不能直接作为可交易碳资产。"
+          ]
+        },
+        "cost_input": {
+          "name": "Replacement",
+          "region": "US-CO",
+          "currency": "USD",
+          "tax_basis": "excluded",
+          "as_of": "2026-11-08",
+          "functional_scope": "Selected synthetic column, same envelope, explicit assumptions",
+          "exclusions": [
+            "Labour, machinery and taxes are not in material cost"
+          ],
+          "import_file_id": null,
+          "lines": [
+            {
+              "line_id": "layer_29",
+              "material_id": "Replacement29",
+              "name": "Replacement material 29",
+              "measure": {
+                "mode": "direct",
+                "unit": "m3",
+                "quantity": 11.0,
+                "length": null,
+                "width": null,
+                "height": null,
+                "dimension_unit": null,
+                "count": null,
+                "deduction": null,
+                "source": "takeoff_dcff083e2c83454f9022d89566b2adad / IFC #28 / layer #29 / f8eed62711fd8f5b902640d8dffe6ccec9947df578d5ede10eea8c6cea591099"
+              },
+              "waste_ratio": 0.1,
+              "waste_basis": "Synthetic reference: ten percent procurement waste",
+              "density_kg_m3": 1000.0,
+              "density_source": "Synthetic reference density, not a manufacturer declaration",
+              "quote": {
+                "quote_id": "Replacement29",
+                "unit_price": 80.0,
+                "per_unit": "t",
+                "currency": "USD",
+                "tax_basis": "excluded",
+                "region": "US-CO",
+                "valid_from": "2026-01-01",
+                "valid_until": "2026-12-31",
+                "source": "Synthetic reference quote, not market data",
+                "version": "reference-v1"
+              },
+              "evidence_ids": []
+            }
+          ]
+        },
+        "carbon_input": {
+          "name": "Replacement",
+          "area_m2": 100.0,
+          "study_years": 30,
+          "region": "US-CO",
+          "method": "QA arithmetic",
+          "functional_unit": "Selected synthetic column, same envelope, explicit assumptions",
+          "import_file_id": null,
+          "boundaries": [
+            {
+              "stage": "production",
+              "included": true,
+              "reason": "Production only in this reference comparison"
+            },
+            {
+              "stage": "transport",
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison"
+            },
+            {
+              "stage": "construction",
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison"
+            },
+            {
+              "stage": "operation",
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison"
+            },
+            {
+              "stage": "end_of_life",
+              "included": false,
+              "reason": "Excluded explicitly in this reference comparison"
+            }
+          ],
+          "activities": [
+            {
+              "activity_id": "layer_29",
+              "name": "Replacement material 29",
+              "stage": "production",
+              "quantity": 12100.0,
+              "unit": "kg",
+              "period": "whole_period",
+              "replacement_overlap": "unknown",
+              "source": "takeoff_dcff083e2c83454f9022d89566b2adad / IFC #28 / layer #29 / f8eed62711fd8f5b902640d8dffe6ccec9947df578d5ede10eea8c6cea591099",
+              "factor": {
+                "factor_id": "Replacement29",
+                "value": 1.5,
+                "denominator": "kg",
+                "numerator": "kgCO2e",
+                "stage": "production",
+                "source": "Synthetic reference factor, not an EPD",
+                "publisher": "QA reference",
+                "version": "reference-v1",
+                "year": 2026,
+                "region": "US-CO",
+                "method": "QA arithmetic",
+                "evidence_id": null
+              }
+            }
+          ],
+          "replacement_scope": "not_assessed",
+          "replacements": []
+        }
+      }
+    ],
+    "comparison": {
+      "baseline": "Baseline",
+      "alternative": "Replacement",
+      "cost_difference": "-242.00",
+      "currency": "USD",
+      "carbon_reduction_kgco2e": "6050.0",
+      "cost_reduction_pct": "20.0",
+      "carbon_reduction_pct": "25.00"
+    },
+    "functional_equivalence": "NOT_ASSESSED",
+    "certification": "NOT_ASSESSED",
+    "issued_credits_t": null,
+    "limitations": [
+      "限定同一构件及相同声明边界；材料功能等效、耐火、结构和节能效果未验证。",
+      "层包络乘显式实体比例得到条件材料量；比例、密度、损耗、价格和因子来源仍需专业复核。",
+      "生产碳按含损耗采购量计；材料运输由采购质量、分批比例、附加质量和距离派生，其他活动须显式录入。阶段齐全不证明清单无遗漏或符合LCA标准。",
+      "单位面积分母来自项目建筑面积，不是所选构件面积；材料成本不等于工程总造价。"
+    ]
+  },
+  "source_snapshot": [
+    {
+      "type": "manual_input",
+      "name": "Declared synthetic material assumptions",
+      "source_file": null,
+      "source_locator": "QA arithmetic",
+      "value": null,
+      "unit": null,
+      "authority": "QA",
+      "permission": "Test only",
+      "uncertainty": null,
+      "confidence": null,
+      "acquisition_method": "Manual",
+      "responsible_person": "QA",
+      "status": "ASSUMED",
+      "scheme_id": null,
+      "evidence_id": "evidence_327e4283c5394508a02f775b617be05c",
+      "project_id": "project_9b6b55f5460e4c0db85be7570ccfcaf8",
+      "revision": 1,
+      "timestamp": "2026-11-15T10:29:47.176743+00:00",
+      "hash": "dc54d9567fdc920829d2b49dbca3d5c27b0bff9a3b90ccce102d9f2781abc87a",
+      "review_state": "pending",
+      "review_note": null
+    }
+  ],
+  "import_source": {
+    "file_id": "file_4774e6a7af2b4788bebc16f3a2770702",
+    "project_id": "project_9b6b55f5460e4c0db85be7570ccfcaf8",
+    "name": "column.ifc",
+    "path": "files/file_4774e6a7af2b4788bebc16f3a2770702.ifc",
+    "hash": "2379188489cb27c975cb020a22007b064a6a1ad93f8609a0a84673a630638b15",
+    "size": 1641,
+    "timestamp": "2026-11-15T10:29:27.114134+00:00",
+    "revision": 1
+  },
+  "created_at": "2026-11-15T10:29:47.435060+00:00",
+  "hash": "13437b14ef246740f9b9a90dc817d5a21022590a13bdc9cc56c65bb0b1ceb4f0",
+  "revision": 1,
+  "stale_reasons": [],
+  "stale_details": [],
+  "status": "calculated"
+}
