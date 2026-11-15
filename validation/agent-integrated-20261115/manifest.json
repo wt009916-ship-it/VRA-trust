@@ -2558,7 +2558,78 @@
       "original_sha256": "256456f54281dfae08d6496b2c1756e91659a26c23f15d61dedb2c8360cfdcce",
       "original_bytes": 40927,
       "stored_bytes": 40927
+    },
+    {
+      "path": "first-ci/backend-first-failed.log",
+      "sha256": "7723f4925ca56ef60d90f0acc71a316a54d4caacdeb06fb96ea0fcf0acdbd6d0",
+      "original_sha256": "7723f4925ca56ef60d90f0acc71a316a54d4caacdeb06fb96ea0fcf0acdbd6d0",
+      "original_bytes": 49236,
+      "stored_bytes": 49236
+    },
+    {
+      "path": "first-ci/frontend.log",
+      "sha256": "875c71025f409eed8b3b142902ede191e654a8544de2d57328d04ef3169d7480",
+      "original_sha256": "875c71025f409eed8b3b142902ede191e654a8544de2d57328d04ef3169d7480",
+      "original_bytes": 117188,
+      "stored_bytes": 117188
+    },
+    {
+      "path": "first-ci/api.log",
+      "sha256": "c02ecf24de29bb0e32c81677f8c7dbd587f4a99db20a628391a7387913b944f3",
+      "original_sha256": "c02ecf24de29bb0e32c81677f8c7dbd587f4a99db20a628391a7387913b944f3",
+      "original_bytes": 40928,
+      "stored_bytes": 40928
+    },
+    {
+      "path": "first-ci/first-ci-receipt.json",
+      "sha256": "cdba3072aafc5238ece7004638c3b066952e277ecda25f2b853449ed502b20b8",
+      "original_sha256": "cdba3072aafc5238ece7004638c3b066952e277ecda25f2b853449ed502b20b8",
+      "original_bytes": 830,
+      "stored_bytes": 830
+    },
+    {
+      "path": "summary/ci-scope-final.log",
+      "sha256": "0c4228f6b0807ab96c120c58b4581148b17832baebd469ceb18e4a5d7cd26940",
+      "original_sha256": "0c4228f6b0807ab96c120c58b4581148b17832baebd469ceb18e4a5d7cd26940",
+      "original_bytes": 703,
+      "stored_bytes": 703
     }
   ],
-  "reproduction": "Run harnesses from a separate output directory with ROOT/SOURCE/MODEL/EXE adjusted and the exact hash-verified reference inputs available. Windows llama flags and unmodified budgets are recorded. Each run uses a fresh random in-memory local token and isolated database. Decompress .json.gz to reconstruct raw JSON. Previous failures and code snapshots are retained."
+  "reproduction": "Run harnesses from a separate output directory with ROOT/SOURCE/MODEL/EXE adjusted and the exact hash-verified reference inputs available. Windows llama flags and unmodified budgets are recorded. Each run uses a fresh random in-memory local token and isolated database. Decompress .json.gz to reconstruct raw JSON. Previous failures and code snapshots are retained.",
+  "first_ci": {
+    "head": "9b97857e11718a8fe2658739616134c687a15517",
+    "pr": 85,
+    "all_success": false,
+    "backend": {
+      "run": 43728264666,
+      "job": 132854844789,
+      "passed": 2168,
+      "failed": 2,
+      "skipped": 22,
+      "subtests": 6,
+      "seconds": 735.57
+    },
+    "frontend": {
+      "run": 43728264705,
+      "job": 132854845774,
+      "passed": 258,
+      "build_ms": 287
+    },
+    "api": {
+      "run": 43728264682,
+      "job": 132854844883,
+      "passed": 30,
+      "seconds": 12.65
+    },
+    "failures": [
+      "Unspecified model-generated foreign target must remain terminal refusal",
+      "Explicit user-provided foreign ID old test expected terminal instead of scoped absence recovery"
+    ],
+    "local_followup": {
+      "passed": 99,
+      "seconds": 120.2
+    },
+    "final_ci": "pending_new_head",
+    "score_delta": 0
+  }
 }

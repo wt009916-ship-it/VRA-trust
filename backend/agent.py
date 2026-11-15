@@ -742,7 +742,7 @@ class Agent:
             try:stored=self.store.get(ds.kind,ident)
             except KeyError:raise read_recovery.RecordsUnavailable([ident]) from None
             if stored['project_id'] != record['project_id']:
-                if body.read_requests or body.calculation_plans:
+                if body.read_requests or body.calculation_plans or ident not in missing_targets():
                     raise ToolRefusal('Cross-project professional read rejected')
                 # Same scoped absence as an unknown ID; never reveal another project's existence.
                 raise read_recovery.RecordsUnavailable([ident])
