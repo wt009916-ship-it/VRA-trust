@@ -26,8 +26,8 @@ from . import agent_missing as missing_records
 from . import agent_recovery as read_recovery
 from . import agent_requests as requested_scopes
 from . import agent_simulation
-from . import agent_outputs, agent_actions, agent_selections, agent_metric_reads
-from . import agent_read_execution, agent_standards
+from . import agent_outputs, agent_actions, agent_selections, agent_metric_reads, agent_comparisons
+from . import agent_read_execution, agent_standards, agent_delivery_budget
 from . import agent_intent_catalog, agent_reviews, agent_energy
 
 
@@ -79,6 +79,7 @@ class Chat(Contract):
 
 
 class ToolArgs(Contract):
+    comparison: agent_comparisons.Comparison | None = None
     enduse_id: str | None = Field(default=None,pattern=r'^enduse_[a-f0-9]{32}$')
     utility_id: str | None = Field(default=None,pattern=r'^utility_[a-f0-9]{32}$')
     fact_keys: list[str] | None = Field(default=None,min_length=1,max_length=12)
@@ -134,6 +135,7 @@ class ToolArgs(Contract):
 
 
 TOOLS = {
+    'professional_compare': '比较本轮已读的两份热工/成本/碳清单同一指标。明确baseline基准与candidate对照，选择fact_key和所需outputs（difference=对照减基准；relative_change_percent=除基准的百分比）。只选来源与指标，不填数值。应用核对口径并计算；零基准百分比无定义，口径冲突正式返回不可比。不是全年节能、性能等效或认证。',
     'end_use_list':'列出设备用途账名称和编号；before使用next_before翻页，不读取或认证数值。',
     'end_use_read':'按enduse_id实际读取原生用途账，fact_keys最多12个；省略只返回事实目录及期间口径。年量不是实测，热量不是电量。',
     'utility_comparison_list':'列出账单比较名称和编号；before使用next_before翻页，不认证校准。',
@@ -187,6 +189,7 @@ TOOLS = {
 
 # Each tool accepts only relevant fields; unrelated fields cannot smuggle instructions or IDs.
 TOOL_FIELDS = {
+    'professional_compare': ('comparison',),
     'end_use_list':('before',),'end_use_read':('enduse_id','fact_keys'),
     'utility_comparison_list':('before',),'utility_comparison_read':('utility_id','fact_keys'),
     'requested_output_plan': ('output_plan',),
@@ -364,6 +367,7 @@ class Agent:
                 answer = capabilities.attach(answer, record['capability_delivery'])
             if record.get('missing_deliveries'):
                 answer = missing_records.attach(answer,self.domain,project_id,record['missing_deliveries'])
+            answer = agent_comparisons.attach(answer,record)
             answer = agent_reviews.attach(answer,self.domain,project_id,record)
             answer = read_recovery.attach(answer,record)
             answer = requested_scopes.attach(answer,self.domain,project_id,record)
@@ -400,7 +404,7 @@ class Agent:
             return missing_records.inventory(d,project_id,args.kinds)
         if name == 'professional_missing':
             return missing_records.assess(d,project_id,args.missing)
-        if name in {'calculation_prepare','professional_read_many','requested_availability'}:
+        if name in {'calculation_prepare','professional_read_many','requested_availability','professional_compare'}:
             raise ToolRefusal('Compound tools require the bounded task executor and its per-operation audit')
         if name == 'capability_lookup':
             return capabilities.catalog(args.capability_ids)
@@ -546,15 +550,15 @@ class Agent:
         if body.objective!='open_ended':offered.discard('requested_defer')
         if not spec:offered -= {s.list_tool for s in INSPECTIONS.values() if s.kind not in agent_energy.KINDS}
         if body.calculation_plans:
-            offered = {'project_get', 'calculation_execute', 'calculation_prepare', 'professional_read_many', 'professional_deliver','professional_limit'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
+            offered = {'project_get', 'calculation_execute', 'calculation_prepare', 'professional_read_many', 'professional_deliver','professional_limit','professional_compare'} | {inspection(p.kind).read_tool for p in body.calculation_plans}
         if body.read_requests:
             offered={'project_get','requested_defer'}
             if body.infer_outputs:offered.add('requested_output_plan')
             if any(r.purpose=='availability' for r in body.read_requests):offered.add('requested_availability')
             if any(r.purpose=='results' for r in body.read_requests):
-                offered|={'professional_read_many','professional_deliver','professional_limit','professional_missing','professional_review'}|{inspection(r.kind).read_tool for r in body.read_requests if r.purpose=='results'}
+                offered|={'professional_read_many','professional_deliver','professional_limit','professional_missing','professional_review','professional_compare'}|{inspection(r.kind).read_tool for r in body.read_requests if r.purpose=='results'}
         if not any(p.execution_authorized for p in body.calculation_plans):offered -= {'calculation_execute','calculation_prepare'}
-        if body.objective != 'open_ended':offered -= {'professional_deliver','professional_limit','professional_missing'}
+        if body.objective != 'open_ended':offered -= {'professional_deliver','professional_limit','professional_missing','professional_compare'}
         if body.objective != 'open_ended':offered -= {'capability_lookup', 'capability_explain'}
         def reserved_reads():
             return int(bool(spec and record.get(spec.target))) + len(record.get('professional_deliveries', [])) + len(record.get('professional_reviews', [])) + int(bool(record.get('missing_deliveries'))) + capabilities.read_count(record.get('capability_delivery')) + int(bool(record.get('availability_deliveries')))
@@ -633,9 +637,13 @@ class Agent:
                                     if r.purpose == 'results' and r.record_id in unavailable
                                     and r.record_id not in present | absent]
                 if not declared_missing:available.discard('professional_missing')
+            if not agent_comparisons.candidates(record):available.discard('professional_compare')
             result = self.tools(available)
             for tool in result:
                 name = tool['function']['name'];parameters = tool['function']['parameters']
+                if name == 'professional_compare':
+                    replacement=agent_comparisons.tool_schema(tool,record)
+                    tool.clear();tool.update(replacement)
                 if name in choices:
                     argument, ids = choices[name]
                     parameters['properties'][argument] = {'type':'string', 'enum':ids}
@@ -897,6 +905,13 @@ class Agent:
                     previous = record['professional_deliveries']
                     if len(previous) >= 3 and not any(x['record_id'] == delivery.record_id for x in previous):
                         raise ToolRefusal('At most three professional records per task')
+                if name == 'professional_compare':
+                    request=agent_comparisons.Comparison.model_validate(canonical['comparison'])
+                    for ident in (request.baseline_id, request.candidate_id):
+                        ensure_read_scope(inspection(ident.split('_')[0]),ident)
+                    result=agent_comparisons.evaluate(self.domain,record['project_id'],record,request)
+                    event.update(status='succeeded',result=result,result_hash=core.hash_json(result))
+                    return result
                 if name == 'professional_missing':
                     candidate = {'request':canonical['missing']}
                     if not candidate['request']:raise core.ValidationError('Provide missing request')
@@ -997,6 +1012,7 @@ class Agent:
                     'not_supported/outside_application_scope意味着应用本身不支持，资料齐全或存在计算记录也不能解锁；supported_with_limits/implemented_bounded_method只说明已实现有限方法，不证明项目输入或依赖就绪。'
                     '每批最多查询四项能力，更多要求分批查询；一次汇总提交全部所需claims（最多16项），新的说明替换此前说明。不得用查询能力替代用户要求的实际计算。'
                     'open_ended的热工/阶段碳/材料清单/梁分析/施工进度/设备规则任务：先自主选择对应list/read，再调用professional_deliver交付所问数值事实。'
+                    '需要两份记录同一指标差值时，先选字段并读取双方，再用professional_compare明确基准、对照与所需输出；应用计算并交付来源，不用自由文字替代。'
                     '记录不完整、模型不适用或stale时，用professional_limit提交实际读取的当前status，正式说明限制；该工具不提交数值或statements。核验通过不改变原记录状态。professional_deliver仅提交当前数值，不能包含limitation_status。'
                     '多专业目录用professional_inventory一次选齐kinds；多类缺失用一次professional_missing的missing.kinds数组，不逐类发多次调用。两者都读取完整目录；无明确编号则省略record_id。已有结果和缺失记录都须按原问题逐项交付，不能仅完成其中一类就结束。每轮最多4调用，缺失说明不完成计算、不授权写重试。'
                     + (statement_instruction() if body.objective!='open_ended' else '') +
@@ -1152,7 +1168,8 @@ class Agent:
                     if (record.get('read_execution') == 'application' and not record.get('output_plan')
                             and len(calls) != 1):
                         raise core.ValidationError('Application read execution requires one frozen plan call before source access')
-                    new_deliveries = sum(c['function']['name'] in {'professional_deliver','professional_limit','professional_missing','professional_review'} for c in calls)
+                    new_deliveries = agent_delivery_budget.additional_reads(record,calls)
+                    new_deliveries += sum(c['function']['name']=='professional_missing' for c in calls)
                     if not record.get('availability_deliveries') and any(c['function']['name']=='requested_availability' for c in calls):new_deliveries+=1
                     current_capability_reads = capabilities.read_count(record.get('capability_delivery'))
                     future_capability_reads = current_capability_reads
@@ -1174,6 +1191,8 @@ class Agent:
                         result = invoke(call['function']['name'], call['function']['arguments'], recoverable=True, origin='model')
                         batch_failed |= isinstance(result, dict) and result.get('status') == 'TOOL_ERROR'
                         if call['function']['name'] in {'professional_deliver','professional_limit','professional_review','capability_explain'} and result.get('status') == 'verified':
+                            finish_requested |= result['reference']['finish']
+                        if call['function']['name']=='professional_compare' and result.get('status') in {'verified','unavailable'}:
                             finish_requested |= result['reference']['finish']
                         if call['function']['name']=='professional_missing' and result.get('status')=='verified':
                             finish_requested |= any(r['request']['finish'] for r in missing_records.references(result))
@@ -1285,6 +1304,7 @@ class Agent:
                               'task_notice': '工具记录保留在时间线；自由文字和流程结束不代表任务完成。',
                               'gaps': [{'message': '本轮没有通过核验的专业交付', 'action': '读取所需记录并完成结构化交付，或选择明确的核验目标'}],
                               'limitations': ['不以能耗仿真准入替代其他专业任务结论。']}
+                answer = agent_comparisons.attach(answer,record)
                 if record.get('capability_delivery'):
                     answer = capabilities.attach(answer, record['capability_delivery'],
                         reader=lambda ids: invoke('capability_lookup', {'capability_ids':ids}))

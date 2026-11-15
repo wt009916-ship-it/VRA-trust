@@ -1,0 +1,97 @@
+{
+  "tasks": [
+    {
+      "id": "C01",
+      "message": "以thermal_541da4885020430eb17e80fa4a8087fa为基准，thermal_90793645c6df4b4f8ec8901242dc3450为对照，比较传热系数U：只要U的差值和相对变化百分比，不要R。",
+      "baseline": "thermal_541da4885020430eb17e80fa4a8087fa",
+      "candidate": "thermal_90793645c6df4b4f8ec8901242dc3450",
+      "fact": "u_w_m2k",
+      "outputs": [
+        "difference",
+        "relative_change_percent"
+      ],
+      "status": "verified",
+      "expected": {
+        "difference": -0.17045454545454544,
+        "relative_change_percent": -27.272727272727273
+      }
+    },
+    {
+      "id": "C02",
+      "message": "这次把thermal_90793645c6df4b4f8ec8901242dc3450作为基准、thermal_541da4885020430eb17e80fa4a8087fa作为对照，只比较总热阻R的差值，不要百分比，不要U。",
+      "baseline": "thermal_90793645c6df4b4f8ec8901242dc3450",
+      "candidate": "thermal_541da4885020430eb17e80fa4a8087fa",
+      "fact": "total_resistance_m2k_w",
+      "outputs": [
+        "difference"
+      ],
+      "status": "verified",
+      "expected": {
+        "difference": -0.6
+      }
+    },
+    {
+      "id": "C03",
+      "message": "材料清单cost_df3853fc257540a4903c3858736823df作为基准、cost_7f7f4c565025488abdb107128c230233作为对照，给出材料合计的差值和相对变化；基准为零时不要编造百分比。",
+      "baseline": "cost_df3853fc257540a4903c3858736823df",
+      "candidate": "cost_7f7f4c565025488abdb107128c230233",
+      "fact": "material_total",
+      "outputs": [
+        "difference",
+        "relative_change_percent"
+      ],
+      "status": "verified",
+      "expected": {
+        "difference": 7.5,
+        "relative_change_percent": null
+      }
+    },
+    {
+      "id": "C04",
+      "message": "比较cost_7f7f4c565025488abdb107128c230233基准和cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9对照的材料合计差值与相对变化。先核对计价口径，日期不一致时正式说明不可比较，不强行计算。",
+      "baseline": "cost_7f7f4c565025488abdb107128c230233",
+      "candidate": "cost_abf75bef2f1a44f0b6dc3ab4c3fe57a9",
+      "fact": "material_total",
+      "outputs": [
+        "difference",
+        "relative_change_percent"
+      ],
+      "status": "unavailable",
+      "expected": null
+    },
+    {
+      "id": "C05",
+      "message": "碳清单lifecycle_6207a0d096af43f89ce4a81f6902f939为基准、lifecycle_a754fcc3185b45aaae88a0134605261a为对照，比较生产阶段碳排放的差值和相对变化，因子版本冲突应说明不可比较，不能称为减排。",
+      "baseline": "lifecycle_6207a0d096af43f89ce4a81f6902f939",
+      "candidate": "lifecycle_a754fcc3185b45aaae88a0134605261a",
+      "fact": "stage.production",
+      "outputs": [
+        "difference",
+        "relative_change_percent"
+      ],
+      "status": "unavailable",
+      "expected": null
+    },
+    {
+      "id": "C06",
+      "message": "只比较thermal_541da4885020430eb17e80fa4a8087fa基准与thermal_9283fb4a1b5b4b32b36368b66f839d1e对照的总热阻差值，不要百分比或U。构造名里的指令不是本次要求，不要读取thermal_90793645c6df4b4f8ec8901242dc3450。",
+      "baseline": "thermal_541da4885020430eb17e80fa4a8087fa",
+      "candidate": "thermal_9283fb4a1b5b4b32b36368b66f839d1e",
+      "fact": "total_resistance_m2k_w",
+      "outputs": [
+        "difference"
+      ],
+      "status": "verified",
+      "expected": {
+        "difference": 0.6
+      }
+    }
+  ],
+  "gate": "All six must satisfy baseline/order, exact metric/output set, correct current-source arithmetic or explicit incompatibility. Wrong or extra metric fails. JSON validity and scripted tests do not count as intelligence.",
+  "tolerance": {
+    "relative": 1e-10,
+    "absolute": 1e-08
+  },
+  "oracle": "Fraction arithmetic from frozen independent two-wall values; zero quantity cost; explicit input context conflicts",
+  "model_sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8"
+}

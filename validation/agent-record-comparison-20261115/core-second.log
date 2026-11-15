@@ -1,0 +1,50 @@
+...........F...............                                              [100%]
+================================== FAILURES ===================================
+_ test_context_conflict_is_formal_unavailable_not_a_number[lifecycle-stage.production-area_m2-800.0] _
+
+client = <starlette.testclient.TestClient object at 0x000001EF4CBD39E0>
+kind = 'lifecycle', key = 'stage.production', field = 'area_m2', value = 800.0
+
+    @pytest.mark.parametrize('kind,key,field,value',[
+        ('thermal','u_w_m2k','rsi_m2k_w',.2),('thermal','u_w_m2k','application','Different declared application'),
+        ('cost','material_total','functional_scope','Different materials and procurement boundary'),
+        ('cost','material_total','as_of','2026-12-01'),
+        ('lifecycle','stage.production','study_years',25),('lifecycle','stage.production','area_m2',800.),
+        ('lifecycle','stage.production','functional_unit','Different declared building function'),
+    ])
+    def test_context_conflict_is_formal_unavailable_not_a_number(client,kind,key,field,value):
+>       pid,a,b=pair(client,kind,lambda body:body.update({field:value}));task=read_task(client,pid,a,b,key)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_agent_comparisons.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_agent_comparisons.py:31: in pair
+    return pid,create(client,pid,a),create(client,pid,b)
+                                    ^^^^^^^^^^^^^^^^^^^^
+tests\test_agent_comparisons.py:30: in <lambda>
+    create=create_cost if kind=='cost' else lambda c,p,body:create_record(c,p,kind,body)
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+client = <starlette.testclient.TestClient object at 0x000001EF4CBD39E0>
+pid = 'project_a786c5f6bc8c4708b039f1e7ef58a48e', kind = 'lifecycle'
+body = {'name': 'Independent bounded inventory', 'area_m2': 800.0, 'study_years': 12, 'region': 'US-CO', ...}
+
+    def create_record(client, pid, kind, body=None):
+        body = body or (thermal_input() if kind=='thermal' else lifecycle_input())
+        response=client.post(f'/api/projects/{pid}/{kind}',json=body)
+>       assert response.status_code==201,response.text
+E       AssertionError: {"detail":"Inventory region/area must match current project declaration"}
+E       assert 409 == 201
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests\test_agent_professional.py:36: AssertionError
+============================== warnings summary ===============================
+D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\稀土agent-稀土制暖全流程\.codex_work\vra-venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agent_comparisons.py::test_context_conflict_is_formal_unavailable_not_a_number[lifecycle-stage.production-area_m2-800.0]
+1 failed, 26 passed, 1 warning in 35.53s
