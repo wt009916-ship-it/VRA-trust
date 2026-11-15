@@ -147,4 +147,3 @@ def test_invalid_opening_ownership_and_missing_body_keep_quantity_unknown(tmp_pa
     assert r['status']=='unavailable' and r['host_volume_m3'] is None
     element.Representation=None;doc.write(str(path));r=measure_layers(path,element.id())
     assert r['status']=='unavailable' and not r['layers']
-
