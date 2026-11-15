@@ -28,6 +28,9 @@ MEANINGS = {
   'right_reaction_n': '右支座竖向反力；N',
   'left_reaction_moment_nm': '左端支座反力矩；N m；不是跨内最大弯矩'},
  'schedule': {
+  'leveled_duration_days': '声明资源受限方案的完成日；连续经过日day；不是原CPM或实际进度预测',
+  'leveled_delay_days': '资源受限方案完成日减原CPM完成日；day；正值为延后，不是节省',
+  'leveled_lower_bound_days': '声明约束的数学下界，显示向下保留6位小数；day；不是已实现方案或最优性认证',
   'planned_duration_days': '声明基准计划的总工期；连续经过日day；不是进度情景完工日',
   'forecast_as_of_day': '进度记录截至日；相对于声明时间零点的经过日day',
   'forecast_finish_day': '按明确剩余工期情景预测的完工日；相对时间零点day；不是工期偏差',

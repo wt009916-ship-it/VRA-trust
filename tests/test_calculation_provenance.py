@@ -99,7 +99,8 @@ def test_revision_during_calculation_refuses_direct_service_write(client, monkey
     domain, pid, p = setup_plan(client, kind)
     p, ev = with_evidence(client, domain, pid, p)
     service = inspection(kind).service(domain)
-    module = importlib.import_module(service.__module__)
+    # Fault injection follows the actual inherited calculation method, not its facade class.
+    module = importlib.import_module(service.save.__module__)
     function = 'analyze' if kind == 'operation' else 'calculate'
     original = getattr(module, function)
     def change_during_calculation(*args):
@@ -123,7 +124,7 @@ def test_exact_stale_cause_and_no_current_values(client, monkeypatch, kind, chan
     spec = inspection(kind); service = spec.service(domain)
     record = service.save(pid, p.input)
     if change == 'calculator':
-        module = importlib.import_module(service.__module__)
+        module = importlib.import_module(service.save.__module__)
         monkeypatch.setattr(module, 'provenance_version', lambda path: 'changed-test-version')
     else:
         domain.store.put('evidence', {**ev, 'review_state':'rejected' if change == 'rejected' else 'confirmed'}, ev['revision'])

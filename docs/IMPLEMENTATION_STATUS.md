@@ -1,3 +1,7 @@
+# 2026-11-15 施工资源受限方案（候选，精确CI待验）
+
+详[交付与反例](CONSTRUCTION_RESOURCE_LEVELING_DELIVERY.md)。本批完整链包含新方案、来源撤回、报告、Agent读取及公开独立约束验证；不声称全局最优、现场安全或浏览器验收。原CPM未改，历史条目不自动成为待办。
+
 > 调度提示（2026-11-09）：本文件保留各时点审计与历史更新，不是当前待办。开始新工作先读 [CURRENT_WORK_PLAN.md](CURRENT_WORK_PLAN.md) 和 [CURRENT_SCORE.json](CURRENT_SCORE.json)，再追踪代码确认缺口。下文旧“下一步”、旧分数及旧“未实现”不能覆盖当前入口；历史原文不删除。
 
 当前状态入口：CURRENT_WORK_PLAN.md；当前版本分数：CURRENT_SCORE.json。下方是原阶段记录，不以历史分数和待办覆盖当前结论。

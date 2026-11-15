@@ -17,7 +17,8 @@ from .lifecycle import Lifecycle, Inventory, Comparison as LifecycleComparison, 
 from .standards import Standards, StandardInput, Preview as StandardPreview, Review as StandardReview, Query as StandardQuery
 from .engineering import Engineering, BeamInput, report as engineering_report
 from .material_cost import Costs, Estimate, Comparison as CostComparison, compare as cost_compare, report as cost_report
-from .construction import Schedules, ScheduleInput, report as schedule_report
+from .construction import ScheduleInput
+from .construction_records import ScheduleRecords as Schedules, LevelingRequest, report as schedule_report
 from .operations import Operations, AnalysisInput, report as operations_report
 from .drawings import Drawings, DrawingInput, DrawingReview
 from .drawing_scale import DrawingScales, ScaleInput, LengthInput
@@ -140,6 +141,10 @@ def register_extensions(app, domain, auth):
     @app.post('/api/projects/{project_id}/schedules', status_code=201)
     def schedule_create(project_id: str, body: ScheduleInput):
         return schedules.save(project_id,body)
+
+    @app.post('/api/projects/{project_id}/schedules/{schedule_id}/resource-levelings', status_code=201)
+    def schedule_level(project_id: str, schedule_id: str, body: LevelingRequest):
+        return schedules.level(project_id, schedule_id, body)
 
     @app.get('/api/projects/{project_id}/schedules')
     def schedule_list(project_id: str):

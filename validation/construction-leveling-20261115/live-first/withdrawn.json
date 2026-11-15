@@ -1,0 +1,128 @@
+{
+  "schedule_id": "schedule_9f971bf7c9cd4c2a9e617b459624b123",
+  "project_id": "project_55030941c60244e6832aea6906e8588f",
+  "project_revision": 1,
+  "input": {
+    "name": "R03 fixed priority schedule",
+    "scope": "Synthetic independent resource case; not construction measurements",
+    "calendar": "continuous_elapsed_days",
+    "time_origin": "Synthetic reference elapsed day zero",
+    "tasks": [
+      {
+        "task_id": "A",
+        "name": "A",
+        "duration_days": 2.0,
+        "duration_source": "Independent frozen duration",
+        "predecessors": [],
+        "demands": [
+          {
+            "resource_id": "crew",
+            "units": 1.0
+          },
+          {
+            "resource_id": "crane",
+            "units": 1.0
+          }
+        ]
+      },
+      {
+        "task_id": "B",
+        "name": "B",
+        "duration_days": 3.0,
+        "duration_source": "Independent frozen duration",
+        "predecessors": [],
+        "demands": [
+          {
+            "resource_id": "crew",
+            "units": 1.0
+          }
+        ]
+      },
+      {
+        "task_id": "C",
+        "name": "C",
+        "duration_days": 1.0,
+        "duration_source": "Independent frozen duration",
+        "predecessors": [
+          {
+            "task_id": "A",
+            "lag_days": 0.5,
+            "source": "Independent frozen precedence"
+          }
+        ],
+        "demands": [
+          {
+            "resource_id": "crew",
+            "units": 2.0
+          },
+          {
+            "resource_id": "crane",
+            "units": 1.0
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "resource_id": "crew",
+        "name": "crew",
+        "capacity": 2.0,
+        "unit": "synthetic resource",
+        "source": "Independent fixed capacity"
+      },
+      {
+        "resource_id": "crane",
+        "name": "crane",
+        "capacity": 1.0,
+        "unit": "synthetic resource",
+        "source": "Independent fixed capacity"
+      }
+    ],
+    "evidence_ids": [],
+    "progress": null,
+    "import_file_id": null
+  },
+  "calculation_type": "resource_leveling",
+  "leveling_request": {
+    "name": "R03 fixed priority schedule",
+    "source_hash": "8ebf00204e5869e7940f7b73172747d12a0e0030ed848648570cdad0ad4b4a38",
+    "priority": [
+      "A",
+      "C",
+      "B"
+    ],
+    "resource_demands_complete": true,
+    "demand_basis": "Frozen independent benchmark specifies all declared renewable resource requirements"
+  },
+  "leveling_source": {
+    "schedule_id": "schedule_dd7a63f43017446490842ca4331fbf40",
+    "hash": "8ebf00204e5869e7940f7b73172747d12a0e0030ed848648570cdad0ad4b4a38",
+    "revision": 1
+  },
+  "source_snapshot": [],
+  "import_source": null,
+  "calculator_hash": "0f3549f82819a4a7c7ceaaa5696dea17cfd2245642f0e93d8f380f507ad22db3",
+  "created_at": "2026-11-15T12:22:51.026232+00:00",
+  "result": null,
+  "hash": "b84e8a147f67c14640ee3b111d24e607310b1da220889ffcc48608c4902a9672",
+  "revision": 1,
+  "stale_reasons": [
+    "project_revision",
+    "leveling_source_unavailable"
+  ],
+  "stale_details": [
+    {
+      "code": "project_revision",
+      "subject_id": "project_55030941c60244e6832aea6906e8588f",
+      "expected": 1,
+      "current": 2
+    },
+    {
+      "code": "leveling_source_unavailable",
+      "subject_id": "schedule_dd7a63f43017446490842ca4331fbf40",
+      "expected": "8ebf00204e5869e7940f7b73172747d12a0e0030ed848648570cdad0ad4b4a38",
+      "current": null
+    }
+  ],
+  "status": "stale"
+}

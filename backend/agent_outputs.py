@@ -21,7 +21,7 @@ FACTS = {
     'engineering': ['max_abs_moment_nm', 'max_abs_shear_n', 'max_deflection_m',
                     'max_elastic_bending_stress_pa', 'left_reaction_n', 'right_reaction_n',
                     'left_reaction_moment_nm'],
-    'schedule': ['planned_duration_days', 'forecast_as_of_day', 'forecast_finish_day', 'forecast_finish_variance_days'],
+    'schedule': ['planned_duration_days', 'forecast_as_of_day', 'forecast_finish_day', 'forecast_finish_variance_days', 'leveled_duration_days', 'leveled_delay_days', 'leveled_lower_bound_days'],
     'operation': ['sample_count', 'cell_issue_count', 'gap_count', 'rule_event_sum', 'rule_unknown_sample_sum'],
 }
 Topic = Literal['meaning', 'area', 'period', 'scope', 'status', 'history', 'energy_relationship']

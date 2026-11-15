@@ -7,7 +7,7 @@ from .material_cost import Costs
 from .thermal import Thermal
 from .lifecycle import Lifecycle
 from .engineering import Engineering
-from .construction import Schedules
+from .construction_records import ScheduleRecords as Schedules
 from .operations import Operations
 from .agent_scenarios import ScenarioReads, review as scenario_review, name as scenario_name
 
@@ -23,6 +23,7 @@ def engineering_review(record):
 
 def schedule_review(record):
     return bounded_review(record, 'schedule', 'schedule_id',
+        '连续经过日、声明容量下的独立资源受限方案；最优性须核对精确数学下界，不是施工安全审批或履约保证。' if record.get('calculation_type') == 'resource_leveling' else
         '连续经过日、FS关系的关键路径及显式剩余工期情景；资源冲突未调平，不是施工安全审批或履约保证。')
 
 

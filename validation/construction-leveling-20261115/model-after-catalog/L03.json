@@ -1,0 +1,902 @@
+{
+  "agent_id": "agent_11c79224ca0d47e59559f9bf0db07c9d",
+  "project_id": "project_231bc5ae189b46d6a06ae96b2bd12546",
+  "question": "读取schedule_6b3da3f4483549e4a8ee1b07ac88dbc3的资源受限方案完成日。若资源占用没有确认，正式说明不可用，不要用原CPM工期、零或者推测值替代。",
+  "mode": "local_model",
+  "status": "succeeded",
+  "events": [
+    {
+      "tool": "project_get",
+      "arguments": {},
+      "status": "succeeded",
+      "started_at": "2026-11-15T12:38:05.435505+00:00",
+      "origin": "controller",
+      "result": {
+        "name": "Synthetic resource model questions",
+        "building": {
+          "use": "reference",
+          "location": "Synthetic",
+          "region": "TEST",
+          "area_m2": 100.0,
+          "floors": null,
+          "floor_height_m": null,
+          "window_wall_ratio": null,
+          "envelope": null,
+          "hvac": null,
+          "schedules": null,
+          "notes": null
+        },
+        "data_nature": "user_project",
+        "project_id": "project_231bc5ae189b46d6a06ae96b2bd12546",
+        "revision": 1,
+        "created_at": "2026-11-15T12:37:46.964996+00:00",
+        "updated_at": "2026-11-15T12:37:46.964996+00:00"
+      },
+      "result_hash": "211987e2538ad4621c57509d3cfd0f61a7e17effa61bfefc2c850ff5d42a3873",
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T12:38:05.452530+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T12:38:05.455742+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"schedule_read\", \"arguments\": {\"schedule_id\": \"schedule_6b3da3f4483549e4a8ee1b07ac88dbc3\", \"fact_keys\": [\"leveled_duration_days\"]}}]}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 4312,
+      "finished_at": "2026-11-15T12:38:09.769000+00:00"
+    },
+    {
+      "tool": "schedule_read",
+      "arguments": {
+        "schedule_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+        "fact_keys": [
+          "leveled_duration_days"
+        ]
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T12:38:09.772008+00:00",
+      "origin": "model",
+      "result": {
+        "schedule_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+        "project_id": "project_231bc5ae189b46d6a06ae96b2bd12546",
+        "project_revision": 1,
+        "input": {
+          "name": "Unconfirmed source demand",
+          "scope": "Synthetic independent resource case; not construction measurements",
+          "calendar": "continuous_elapsed_days",
+          "time_origin": "Synthetic reference elapsed day zero",
+          "tasks": [
+            {
+              "task_id": "A",
+              "name": "A",
+              "duration_days": 2.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 1.0
+                },
+                {
+                  "resource_id": "crane",
+                  "units": 1.0
+                }
+              ]
+            },
+            {
+              "task_id": "B",
+              "name": "B",
+              "duration_days": 3.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 1.0
+                }
+              ]
+            },
+            {
+              "task_id": "C",
+              "name": "C",
+              "duration_days": 1.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [
+                {
+                  "task_id": "A",
+                  "lag_days": 0.5,
+                  "source": "Independent frozen precedence"
+                }
+              ],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 2.0
+                },
+                {
+                  "resource_id": "crane",
+                  "units": 1.0
+                }
+              ]
+            }
+          ],
+          "resources": [
+            {
+              "resource_id": "crew",
+              "name": "crew",
+              "capacity": 2.0,
+              "unit": "synthetic resource",
+              "source": "Independent fixed capacity"
+            },
+            {
+              "resource_id": "crane",
+              "name": "crane",
+              "capacity": 1.0,
+              "unit": "synthetic resource",
+              "source": "Independent fixed capacity"
+            }
+          ],
+          "evidence_ids": [],
+          "progress": null,
+          "import_file_id": null
+        },
+        "calculation_type": "resource_leveling",
+        "leveling_request": {
+          "name": "Unconfirmed source demand",
+          "source_hash": "05f037535fa1b1a125071c7491f9fc1a1c4be3af256fbd69ce090e67353ff83f",
+          "priority": [
+            "A",
+            "C",
+            "B"
+          ],
+          "resource_demands_complete": false,
+          "demand_basis": "Independent complete synthetic resource declarations, not measurements"
+        },
+        "leveling_source": {
+          "schedule_id": "schedule_e55d7277fe464cda9e71fc5589dede0a",
+          "hash": "05f037535fa1b1a125071c7491f9fc1a1c4be3af256fbd69ce090e67353ff83f",
+          "revision": 1
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "0f3549f82819a4a7c7ceaaa5696dea17cfd2245642f0e93d8f380f507ad22db3",
+        "created_at": "2026-11-15T12:37:47.051673+00:00",
+        "result": {
+          "status": "incomplete",
+          "planned": {
+            "duration_days": "3.5",
+            "rows": [
+              {
+                "task_id": "A",
+                "name": "A",
+                "start_day": "0",
+                "finish_day": "2",
+                "latest_start_day": "0",
+                "latest_finish_day": "2",
+                "total_float_days": "0",
+                "free_float_days": "0",
+                "critical": true
+              },
+              {
+                "task_id": "B",
+                "name": "B",
+                "start_day": "0",
+                "finish_day": "3",
+                "latest_start_day": "0.5",
+                "latest_finish_day": "3.5",
+                "total_float_days": "0.5",
+                "free_float_days": "0.5",
+                "critical": false
+              },
+              {
+                "task_id": "C",
+                "name": "C",
+                "start_day": "2.5",
+                "finish_day": "3.5",
+                "latest_start_day": "2.5",
+                "latest_finish_day": "3.5",
+                "total_float_days": "0",
+                "free_float_days": "0",
+                "critical": true
+              }
+            ],
+            "critical_tasks": [
+              "A",
+              "C"
+            ],
+            "critical_dependencies": [
+              {
+                "from": "A",
+                "to": "C",
+                "lag_days": "0.5"
+              }
+            ],
+            "resources": {
+              "status": "conflict",
+              "conflicts": [
+                {
+                  "resource_id": "crew",
+                  "from_day": "2.5",
+                  "until_day": "3",
+                  "demand": "3",
+                  "capacity": "2",
+                  "unit": "synthetic resource",
+                  "tasks": [
+                    "B",
+                    "C"
+                  ]
+                }
+              ],
+              "unknown": [],
+              "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+            },
+            "formulas": [
+              "ES=max(EF predecessor + FS lag), EF=ES+duration",
+              "LF=min(LS successor - lag), LS=LF-duration",
+              "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+            ]
+          },
+          "forecast": null,
+          "resource_leveling": "serial_sgs_insertion_v1",
+          "leveled": {
+            "method": "serial_sgs_insertion_v1",
+            "time_unit": "continuous_elapsed_day",
+            "precision_days": "0.000001",
+            "site_safety": "NOT_ASSESSED",
+            "optimality": "not_proven",
+            "schedule": null,
+            "lower_bound": null,
+            "limitations": [
+              "固定可再生资源容量、固定占用、非抢占工序、FS非负间隔；按连续经过日计算。",
+              "优先序决定符合前置条件的下一工序；允许插入已安排工序之前的空档。不是所有优先序的搜索。",
+              "只核对声明资料，不证明现场可施工、资源已落实、专业工序适用或履约保证。",
+              "零工期里程碑不占用资源；无占用工序必须由提交者明确确认，未声明资源不纳入约束。"
+            ],
+            "status": "incomplete",
+            "reasons": [
+              "resource_demands_not_confirmed"
+            ]
+          },
+          "site_safety": "NOT_ASSESSED",
+          "limitations": [
+            "固定可再生资源容量、固定占用、非抢占工序、FS非负间隔；按连续经过日计算。",
+            "优先序决定符合前置条件的下一工序；允许插入已安排工序之前的空档。不是所有优先序的搜索。",
+            "只核对声明资料，不证明现场可施工、资源已落实、专业工序适用或履约保证。",
+            "零工期里程碑不占用资源；无占用工序必须由提交者明确确认，未声明资源不纳入约束。"
+          ]
+        },
+        "hash": "df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "incomplete",
+        "nonnumeric_review_reference": {
+          "kind": "schedule",
+          "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+          "record_hash": "df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06",
+          "view_hash": "1dbed25fdac614efe161973c3822b76b33aefeeebacdbc60afe1b3bc854fde70",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "planned_duration_days",
+            "label": "声明计划总工期",
+            "value": "3.5",
+            "source_value": "3.5",
+            "value_policy": "exact_decimal",
+            "unit": "day",
+            "period": "elapsed_days",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/planned/duration_days",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。",
+        "selected_fact_keys": [
+          "leveled_duration_days"
+        ]
+      },
+      "result_hash": "cd9bb03fd3df3b630a4219cdf7eda5838b94ac818b775a32abc50a9653ca4b2b",
+      "duration_ms": 15,
+      "finished_at": "2026-11-15T12:38:09.794729+00:00"
+    },
+    {
+      "tool": "llm.request",
+      "status": "succeeded",
+      "started_at": "2026-11-15T12:38:09.797729+00:00",
+      "arguments": {
+        "provider": "local_model"
+      },
+      "response_protocol": "structured_actions",
+      "raw_action_response": {
+        "role": "assistant",
+        "content": "{\"actions\": [{\"tool\": \"professional_limit\", \"arguments\": {\"limitation\": {\"kind\": \"schedule\", \"record_id\": \"schedule_6b3da3f4483549e4a8ee1b07ac88dbc3\", \"record_hash\": \"df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06\", \"status\": \"incomplete\", \"finish\": false}}}, {\"tool\": \"professional_limit\", \"arguments\": {\"limitation\": {\"kind\": \"schedule\", \"record_id\": \"schedule_6b3da3f4483549e4a8ee1b07ac88dbc3\", \"record_hash\": \"df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06\", \"status\": \"incomplete\", \"finish\": true}}}]\n}"
+      },
+      "result": {
+        "tool_calls_returned": 1,
+        "engineering_values_accepted": false
+      },
+      "duration_ms": 9375,
+      "finished_at": "2026-11-15T12:38:19.188283+00:00"
+    },
+    {
+      "tool": "professional_limit",
+      "arguments": {
+        "limitation": {
+          "kind": "schedule",
+          "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+          "record_hash": "df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06",
+          "status": "incomplete",
+          "finish": true
+        }
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T12:38:19.196016+00:00",
+      "origin": "model",
+      "result": {
+        "status": "verified",
+        "reference": {
+          "kind": "schedule",
+          "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+          "record_hash": "df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06",
+          "statements": [],
+          "limitation_status": "incomplete",
+          "finish": true
+        },
+        "statements": [],
+        "limitation": {
+          "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+          "state": "incomplete",
+          "scope": "连续经过日、声明容量下的独立资源受限方案；最优性须核对精确数学下界，不是施工安全审批或履约保证。",
+          "stale_details": [],
+          "stale_reasons": []
+        },
+        "notice": "只核验当前结果不完整或不适用的状态，不把限制说明当作有效工程数值。"
+      },
+      "result_hash": "153d353799fd283f7f3c12b58e869c867867b3b4f2ce6737254a27b3bf5d6424",
+      "duration_ms": 15,
+      "finished_at": "2026-11-15T12:38:19.216555+00:00"
+    },
+    {
+      "tool": "schedule_read",
+      "arguments": {
+        "schedule_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3"
+      },
+      "status": "succeeded",
+      "started_at": "2026-11-15T12:38:19.220065+00:00",
+      "origin": "controller",
+      "result": {
+        "schedule_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+        "project_id": "project_231bc5ae189b46d6a06ae96b2bd12546",
+        "project_revision": 1,
+        "input": {
+          "name": "Unconfirmed source demand",
+          "scope": "Synthetic independent resource case; not construction measurements",
+          "calendar": "continuous_elapsed_days",
+          "time_origin": "Synthetic reference elapsed day zero",
+          "tasks": [
+            {
+              "task_id": "A",
+              "name": "A",
+              "duration_days": 2.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 1.0
+                },
+                {
+                  "resource_id": "crane",
+                  "units": 1.0
+                }
+              ]
+            },
+            {
+              "task_id": "B",
+              "name": "B",
+              "duration_days": 3.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 1.0
+                }
+              ]
+            },
+            {
+              "task_id": "C",
+              "name": "C",
+              "duration_days": 1.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [
+                {
+                  "task_id": "A",
+                  "lag_days": 0.5,
+                  "source": "Independent frozen precedence"
+                }
+              ],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 2.0
+                },
+                {
+                  "resource_id": "crane",
+                  "units": 1.0
+                }
+              ]
+            }
+          ],
+          "resources": [
+            {
+              "resource_id": "crew",
+              "name": "crew",
+              "capacity": 2.0,
+              "unit": "synthetic resource",
+              "source": "Independent fixed capacity"
+            },
+            {
+              "resource_id": "crane",
+              "name": "crane",
+              "capacity": 1.0,
+              "unit": "synthetic resource",
+              "source": "Independent fixed capacity"
+            }
+          ],
+          "evidence_ids": [],
+          "progress": null,
+          "import_file_id": null
+        },
+        "calculation_type": "resource_leveling",
+        "leveling_request": {
+          "name": "Unconfirmed source demand",
+          "source_hash": "05f037535fa1b1a125071c7491f9fc1a1c4be3af256fbd69ce090e67353ff83f",
+          "priority": [
+            "A",
+            "C",
+            "B"
+          ],
+          "resource_demands_complete": false,
+          "demand_basis": "Independent complete synthetic resource declarations, not measurements"
+        },
+        "leveling_source": {
+          "schedule_id": "schedule_e55d7277fe464cda9e71fc5589dede0a",
+          "hash": "05f037535fa1b1a125071c7491f9fc1a1c4be3af256fbd69ce090e67353ff83f",
+          "revision": 1
+        },
+        "source_snapshot": [],
+        "import_source": null,
+        "calculator_hash": "0f3549f82819a4a7c7ceaaa5696dea17cfd2245642f0e93d8f380f507ad22db3",
+        "created_at": "2026-11-15T12:37:47.051673+00:00",
+        "result": {
+          "status": "incomplete",
+          "planned": {
+            "duration_days": "3.5",
+            "rows": [
+              {
+                "task_id": "A",
+                "name": "A",
+                "start_day": "0",
+                "finish_day": "2",
+                "latest_start_day": "0",
+                "latest_finish_day": "2",
+                "total_float_days": "0",
+                "free_float_days": "0",
+                "critical": true
+              },
+              {
+                "task_id": "B",
+                "name": "B",
+                "start_day": "0",
+                "finish_day": "3",
+                "latest_start_day": "0.5",
+                "latest_finish_day": "3.5",
+                "total_float_days": "0.5",
+                "free_float_days": "0.5",
+                "critical": false
+              },
+              {
+                "task_id": "C",
+                "name": "C",
+                "start_day": "2.5",
+                "finish_day": "3.5",
+                "latest_start_day": "2.5",
+                "latest_finish_day": "3.5",
+                "total_float_days": "0",
+                "free_float_days": "0",
+                "critical": true
+              }
+            ],
+            "critical_tasks": [
+              "A",
+              "C"
+            ],
+            "critical_dependencies": [
+              {
+                "from": "A",
+                "to": "C",
+                "lag_days": "0.5"
+              }
+            ],
+            "resources": {
+              "status": "conflict",
+              "conflicts": [
+                {
+                  "resource_id": "crew",
+                  "from_day": "2.5",
+                  "until_day": "3",
+                  "demand": "3",
+                  "capacity": "2",
+                  "unit": "synthetic resource",
+                  "tasks": [
+                    "B",
+                    "C"
+                  ]
+                }
+              ],
+              "unknown": [],
+              "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+            },
+            "formulas": [
+              "ES=max(EF predecessor + FS lag), EF=ES+duration",
+              "LF=min(LS successor - lag), LS=LF-duration",
+              "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+            ]
+          },
+          "forecast": null,
+          "resource_leveling": "serial_sgs_insertion_v1",
+          "leveled": {
+            "method": "serial_sgs_insertion_v1",
+            "time_unit": "continuous_elapsed_day",
+            "precision_days": "0.000001",
+            "site_safety": "NOT_ASSESSED",
+            "optimality": "not_proven",
+            "schedule": null,
+            "lower_bound": null,
+            "limitations": [
+              "固定可再生资源容量、固定占用、非抢占工序、FS非负间隔；按连续经过日计算。",
+              "优先序决定符合前置条件的下一工序；允许插入已安排工序之前的空档。不是所有优先序的搜索。",
+              "只核对声明资料，不证明现场可施工、资源已落实、专业工序适用或履约保证。",
+              "零工期里程碑不占用资源；无占用工序必须由提交者明确确认，未声明资源不纳入约束。"
+            ],
+            "status": "incomplete",
+            "reasons": [
+              "resource_demands_not_confirmed"
+            ]
+          },
+          "site_safety": "NOT_ASSESSED",
+          "limitations": [
+            "固定可再生资源容量、固定占用、非抢占工序、FS非负间隔；按连续经过日计算。",
+            "优先序决定符合前置条件的下一工序；允许插入已安排工序之前的空档。不是所有优先序的搜索。",
+            "只核对声明资料，不证明现场可施工、资源已落实、专业工序适用或履约保证。",
+            "零工期里程碑不占用资源；无占用工序必须由提交者明确确认，未声明资源不纳入约束。"
+          ]
+        },
+        "hash": "df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06",
+        "revision": 1,
+        "stale_reasons": [],
+        "stale_details": [],
+        "status": "incomplete",
+        "nonnumeric_review_reference": {
+          "kind": "schedule",
+          "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+          "record_hash": "df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06",
+          "view_hash": "1dbed25fdac614efe161973c3822b76b33aefeeebacdbc60afe1b3bc854fde70",
+          "finish": false
+        },
+        "explanation_facts": [
+          {
+            "fact": "planned_duration_days",
+            "label": "声明计划总工期",
+            "value": "3.5",
+            "source_value": "3.5",
+            "value_policy": "exact_decimal",
+            "unit": "day",
+            "period": "elapsed_days",
+            "study_years": null,
+            "area_m2": null,
+            "area_basis": "no_area_normalization",
+            "time_basis": "not_a_study_duration",
+            "source_path": "/result/planned/duration_days",
+            "energy_context": null
+          }
+        ],
+        "explanation_instruction": "Copy every source fact field: energy_context, fact, value, unit, period, study_years, area_m2. Preserve nulls; energy_context is mandatory for energy facts. Source hash must match the read record.只核验这些结构化字段；没有的节能率、安全、合规、认证及信用不得作为事实交付。原记录未知值保持null。仅带unavailable_reason的明确无定义字段可照抄null并说明原因，不能视为数值答案；整条记录受限时用professional_limit。排除阶段没有事实项。"
+      },
+      "result_hash": "303ae1a11396cd7a7425715b20ac53e4b611229d8437acee108e2eb9f108152b",
+      "duration_ms": 16,
+      "finished_at": "2026-11-15T12:38:19.236442+00:00"
+    }
+  ],
+  "answer": {
+    "can_simulate": null,
+    "can_recommend": false,
+    "workflow_completed": true,
+    "task_completion": "partial",
+    "execution_scope": "checked_professional_deliveries",
+    "artifacts": [
+      {
+        "kind": "schedule_review",
+        "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+        "project_id": "project_231bc5ae189b46d6a06ae96b2bd12546",
+        "record_hash": "df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06",
+        "name": "Unconfirmed source demand",
+        "status": "incomplete",
+        "stale_reasons": [],
+        "stale_details": [],
+        "checked_at": "2026-11-15T12:38:19.339139+00:00",
+        "source_status": "USER_DECLARED",
+        "scope": "连续经过日、声明容量下的独立资源受限方案；最优性须核对精确数学下界，不是施工安全审批或履约保证。",
+        "input": {
+          "name": "Unconfirmed source demand",
+          "scope": "Synthetic independent resource case; not construction measurements",
+          "calendar": "continuous_elapsed_days",
+          "time_origin": "Synthetic reference elapsed day zero",
+          "tasks": [
+            {
+              "task_id": "A",
+              "name": "A",
+              "duration_days": 2.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 1.0
+                },
+                {
+                  "resource_id": "crane",
+                  "units": 1.0
+                }
+              ]
+            },
+            {
+              "task_id": "B",
+              "name": "B",
+              "duration_days": 3.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 1.0
+                }
+              ]
+            },
+            {
+              "task_id": "C",
+              "name": "C",
+              "duration_days": 1.0,
+              "duration_source": "Independent frozen duration",
+              "predecessors": [
+                {
+                  "task_id": "A",
+                  "lag_days": 0.5,
+                  "source": "Independent frozen precedence"
+                }
+              ],
+              "demands": [
+                {
+                  "resource_id": "crew",
+                  "units": 2.0
+                },
+                {
+                  "resource_id": "crane",
+                  "units": 1.0
+                }
+              ]
+            }
+          ],
+          "resources": [
+            {
+              "resource_id": "crew",
+              "name": "crew",
+              "capacity": 2.0,
+              "unit": "synthetic resource",
+              "source": "Independent fixed capacity"
+            },
+            {
+              "resource_id": "crane",
+              "name": "crane",
+              "capacity": 1.0,
+              "unit": "synthetic resource",
+              "source": "Independent fixed capacity"
+            }
+          ],
+          "evidence_ids": [],
+          "progress": null,
+          "import_file_id": null
+        },
+        "result": {
+          "status": "incomplete",
+          "planned": {
+            "duration_days": "3.5",
+            "rows": [
+              {
+                "task_id": "A",
+                "name": "A",
+                "start_day": "0",
+                "finish_day": "2",
+                "latest_start_day": "0",
+                "latest_finish_day": "2",
+                "total_float_days": "0",
+                "free_float_days": "0",
+                "critical": true
+              },
+              {
+                "task_id": "B",
+                "name": "B",
+                "start_day": "0",
+                "finish_day": "3",
+                "latest_start_day": "0.5",
+                "latest_finish_day": "3.5",
+                "total_float_days": "0.5",
+                "free_float_days": "0.5",
+                "critical": false
+              },
+              {
+                "task_id": "C",
+                "name": "C",
+                "start_day": "2.5",
+                "finish_day": "3.5",
+                "latest_start_day": "2.5",
+                "latest_finish_day": "3.5",
+                "total_float_days": "0",
+                "free_float_days": "0",
+                "critical": true
+              }
+            ],
+            "critical_tasks": [
+              "A",
+              "C"
+            ],
+            "critical_dependencies": [
+              {
+                "from": "A",
+                "to": "C",
+                "lag_days": "0.5"
+              }
+            ],
+            "resources": {
+              "status": "conflict",
+              "conflicts": [
+                {
+                  "resource_id": "crew",
+                  "from_day": "2.5",
+                  "until_day": "3",
+                  "demand": "3",
+                  "capacity": "2",
+                  "unit": "synthetic resource",
+                  "tasks": [
+                    "B",
+                    "C"
+                  ]
+                }
+              ],
+              "unknown": [],
+              "note": "仅检查声明资源在当前时间区间的重叠；不自动调平，不证明现场可施工。"
+            },
+            "formulas": [
+              "ES=max(EF predecessor + FS lag), EF=ES+duration",
+              "LF=min(LS successor - lag), LS=LF-duration",
+              "total_float=LS-ES; free_float=min(ES successor - lag)-EF"
+            ]
+          },
+          "forecast": null,
+          "resource_leveling": "serial_sgs_insertion_v1",
+          "leveled": {
+            "method": "serial_sgs_insertion_v1",
+            "time_unit": "continuous_elapsed_day",
+            "precision_days": "0.000001",
+            "site_safety": "NOT_ASSESSED",
+            "optimality": "not_proven",
+            "schedule": null,
+            "lower_bound": null,
+            "limitations": [
+              "固定可再生资源容量、固定占用、非抢占工序、FS非负间隔；按连续经过日计算。",
+              "优先序决定符合前置条件的下一工序；允许插入已安排工序之前的空档。不是所有优先序的搜索。",
+              "只核对声明资料，不证明现场可施工、资源已落实、专业工序适用或履约保证。",
+              "零工期里程碑不占用资源；无占用工序必须由提交者明确确认，未声明资源不纳入约束。"
+            ],
+            "status": "incomplete",
+            "reasons": [
+              "resource_demands_not_confirmed"
+            ]
+          },
+          "site_safety": "NOT_ASSESSED",
+          "limitations": [
+            "固定可再生资源容量、固定占用、非抢占工序、FS非负间隔；按连续经过日计算。",
+            "优先序决定符合前置条件的下一工序；允许插入已安排工序之前的空档。不是所有优先序的搜索。",
+            "只核对声明资料，不证明现场可施工、资源已落实、专业工序适用或履约保证。",
+            "零工期里程碑不占用资源；无占用工序必须由提交者明确确认，未声明资源不纳入约束。"
+          ]
+        },
+        "verified": false,
+        "report_path": "/api/projects/project_231bc5ae189b46d6a06ae96b2bd12546/schedules/schedule_6b3da3f4483549e4a8ee1b07ac88dbc3/report.html"
+      }
+    ],
+    "checked_statements": [],
+    "checked_limitations": [
+      {
+        "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+        "state": "incomplete",
+        "scope": "连续经过日、声明容量下的独立资源受限方案；最优性须核对精确数学下界，不是施工安全审批或履约保证。",
+        "stale_details": [],
+        "stale_reasons": []
+      }
+    ],
+    "verification": [
+      {
+        "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+        "passed": true,
+        "meaning": "当前记录限制已核对，不代表可用工程结果"
+      }
+    ],
+    "summary": "已核验所选结果或限制；自由问题的完整覆盖度仍未评估。",
+    "task_notice": "模型选择记录与事实，应用核对字段；这不是对模型自由解释或整个复杂任务的认证。",
+    "gaps": [],
+    "limitations": [
+      "未评估完整问题覆盖、来源真实性、规范合规、安全认证或可交易碳资产。"
+    ],
+    "checked_at": "2026-11-15T12:38:19.339139+00:00",
+    "checked_reviews": [],
+    "review_failures": [],
+    "basis": [
+      "project_get",
+      "schedule_read",
+      "professional_limit",
+      "schedule_read"
+    ]
+  },
+  "created_at": "2026-11-15T12:38:05.431998+00:00",
+  "llm_commentary": null,
+  "error": null,
+  "objective": "open_ended",
+  "target_run_id": null,
+  "previous_agent_id": null,
+  "context_snapshot": [],
+  "recovery_attempts": 0,
+  "provider_recovery_attempts": 0,
+  "professional_deliveries": [
+    {
+      "kind": "schedule",
+      "record_id": "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3",
+      "record_hash": "df61e68cdf496ad6003bf3be2a012f1153c47685da2b392f83169253a1cb2e06",
+      "statements": [],
+      "limitation_status": "incomplete",
+      "finish": true
+    }
+  ],
+  "professional_reviews": [],
+  "missing_deliveries": [],
+  "llm_commentary_policy": "audit_only",
+  "revision": 14,
+  "metric_read_selections": {
+    "schedule_6b3da3f4483549e4a8ee1b07ac88dbc3": [
+      "leveled_duration_days"
+    ]
+  },
+  "model_finished_delivery": true,
+  "unresolved_selected_reads": [],
+  "finished_at": "2026-11-15T12:38:19.239985+00:00",
+  "read_request_progress": [],
+  "calculation_progress": [],
+  "answer_checked_at": "2026-11-15T12:38:19.339139+00:00",
+  "historical_task_completion": "partial",
+  "event_snapshot_notice": "时间线是历史审计快照；正式事实按当前记录重新核验。"
+}

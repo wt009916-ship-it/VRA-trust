@@ -134,6 +134,13 @@ def facts(record, kind):
     elif kind == 'schedule':
         planned = result.get('planned') or {}
         add('planned_duration_days','声明计划总工期',planned.get('duration_days'),'day','elapsed_days',path='/result/planned/duration_days')
+        leveling = result.get('leveled') or {}
+        level = leveling.get('schedule') or {}
+        for key, label, value, path in [
+            ('leveled_duration_days', '声明资源受限方案完成日', level.get('duration_days'), '/result/leveled/schedule/duration_days'),
+            ('leveled_delay_days', '资源受限方案相对原CPM延后', level.get('delay_vs_cpm_days'), '/result/leveled/schedule/delay_vs_cpm_days'),
+            ('leveled_lower_bound_days', '数学下界向下显示6位小数（不是实际完工日）', (leveling.get('lower_bound') or {}).get('days_floor_6dp'), '/result/leveled/lower_bound/days_floor_6dp')]:
+            add(key, label, value, 'day', 'elapsed_days', path=path)
         if result.get('forecast'):
             for key,label in [('as_of_day','进度记录截至日'),('finish_day','显式情景完工日'),('finish_variance_days','情景相对计划的完工偏差')]:
                 add('forecast_'+key,label,result['forecast'][key],'day','elapsed_days',path='/result/forecast/'+key)
@@ -220,6 +227,10 @@ def calculation_context(record, kind):
                 'critical_tasks':(result.get('planned') or {}).get('critical_tasks'),
                 'resource_status':((result.get('planned') or {}).get('resources') or {}).get('status'),
                 'forecast_status':(result.get('forecast') or {}).get('status'),
+                'resource_leveling': (result.get('leveled') or {}).get('method'),
+                'leveling_status': (result.get('leveled') or {}).get('status'),
+                'leveling_optimality': (result.get('leveled') or {}).get('optimality'),
+                'leveling_reasons': (result.get('leveled') or {}).get('reasons', []),
                 'notice':'连续经过日；关键任务集合不等于唯一串行路径，情景不是履约保证。'}
     if kind == 'operation':
         quality = result.get('quality') or {}
