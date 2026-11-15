@@ -287,9 +287,9 @@ class Agent:
         schema = ToolArgs.model_json_schema()
         tools = []
         for name, desc in TOOLS.items():
-            # Unscoped probes/catalogs never advertise compute tools. Task execution
+            # Unscoped probes omit compute and comparisons requiring task read receipts. Task execution
             # always supplies its explicit authorized set below.
-            if allowed is None and name in WRITE_TOOLS | {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability', 'professional_review', 'requested_defer'}:continue
+            if allowed is None and name in WRITE_TOOLS | {s.list_tool for s in INSPECTIONS.values()} | {'requested_output_plan', 'requested_availability', 'professional_review', 'requested_defer', 'professional_compare'}:continue
             if allowed is not None and name not in allowed:
                 continue
             # The same root display title adds no constraint and repeats for every tool.

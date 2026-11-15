@@ -1,0 +1,2312 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "professional_compare",
+      "description": "比较本轮已读的两份热工/成本/碳清单同一指标。明确baseline基准与candidate对照，选择fact_key和所需outputs（difference=对照减基准；relative_change_percent=除基准的百分比）。只选来源与指标，不填数值。应用核对口径并计算；零基准百分比无定义，口径冲突正式返回不可比。不是全年节能、性能等效或认证。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "comparison": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Comparison"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "Comparison": {
+            "additionalProperties": false,
+            "required": [
+              "baseline_id",
+              "baseline_hash",
+              "candidate_id",
+              "candidate_hash",
+              "fact_key",
+              "outputs"
+            ],
+            "type": "object",
+            "properties": {
+              "baseline_id": {
+                "pattern": "^(thermal|cost|lifecycle)_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              "baseline_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "candidate_id": {
+                "pattern": "^(thermal|cost|lifecycle)_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              "candidate_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "fact_key": {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              "outputs": {
+                "items": {
+                  "enum": [
+                    "difference",
+                    "relative_change_percent"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "type": "array"
+              },
+              "finish": {
+                "default": false,
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "end_use_list",
+      "description": "列出设备用途账名称和编号；before使用next_before翻页，不读取或认证数值。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "before": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "end_use_read",
+      "description": "按enduse_id实际读取原生用途账，fact_keys最多12个；省略只返回事实目录及期间口径。年量不是实测，热量不是电量。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "enduse_id": {
+            "anyOf": [
+              {
+                "pattern": "^enduse_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "utility_comparison_list",
+      "description": "列出账单比较名称和编号；before使用next_before翻页，不认证校准。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "before": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "utility_comparison_read",
+      "description": "按utility_id实际读取账单比较，fact_keys最多12个；省略只返回事实目录。MBE会抵消；CV反映逐期误差；null不是0，声明阈值不等于认证。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "utility_id": {
+            "anyOf": [
+              {
+                "pattern": "^utility_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "professional_review",
+      "description": "实际读取后，提交review中的kind、record_id、record_hash与view_hash核验当前状态/范围；不交付任何数值，不认证整体工程有效性。仅用于已冻结的纯解释输出计划。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/SourceReview"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "SourceReview": {
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "record_id",
+              "record_hash",
+              "view_hash"
+            ],
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "thermal",
+                  "lifecycle",
+                  "cost",
+                  "engineering",
+                  "schedule",
+                  "operation",
+                  "scenario",
+                  "enduse",
+                  "utility"
+                ],
+                "type": "string"
+              },
+              "record_id": {
+                "pattern": "^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              "record_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "view_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "finish": {
+                "default": false,
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "requested_output_plan",
+      "description": "先根据原用户问题为每个request_key选择所问fact_keys和explanation_topics，并选择应用提供的原问题片段编号question_fragment_ids。只能用本轮计划目录；计划提交后冻结，不得根据资料名称或内容改写。此为模型解析，不是原问题已被完整理解的认证。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "output_plan": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/$defs/OutputItem"
+                },
+                "maxItems": 6,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "OutputItem": {
+            "additionalProperties": false,
+            "required": [
+              "request_key",
+              "fact_keys",
+              "explanation_topics"
+            ],
+            "type": "object",
+            "properties": {
+              "request_key": {
+                "pattern": "^[A-Za-z0-9_-]{1,40}$",
+                "type": "string"
+              },
+              "question_fragment_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Select IDs from the application-provided original question fragments. Do not copy, rewrite or invent text."
+              },
+              "clarification_reason": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "metric_not_available",
+                      "ambiguous_request",
+                      "conflicting_request"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "clarification_question": {
+                "anyOf": [
+                  {
+                    "maxLength": 400,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "指标不可用、含义不明或冲突时向用户澄清；facts和topics置空。疑问不证明能力缺失。"
+              },
+              "fact_keys": {
+                "description": "Exact numeric fact keys requested by the user. Availability requests use []. Total R is total_resistance_m2k_w, not layer resistance.",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "type": "array"
+              },
+              "explanation_topics": {
+                "description": "Requested topics: meaning, area, period, scope, status, history, energy_relationship (compare two or more requested energy facts by unit/carrier/period). Availability supports history/status only.",
+                "items": {
+                  "enum": [
+                    "meaning",
+                    "area",
+                    "period",
+                    "scope",
+                    "status",
+                    "history",
+                    "energy_relationship"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 6,
+                "type": "array"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "requested_availability",
+      "description": "按用户本轮声明的request_keys（1到6个）核验记录存在或缺失，同一目录快照逐项返回；只核查可用性，不读取工程数值，不替换编号。全部声明目标交付后可finish=true。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "request_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 6,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "finish": {
+            "default": false,
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "professional_inventory",
+      "description": "一次读取所选kinds（1到6类）的完整项目目录计数和最近记录，适合多专业可用性检查。空目录随后用professional_missing正式说明；存在记录则读取。不要逐轮分别查询六类而耗尽预算。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "thermal",
+                    "lifecycle",
+                    "cost",
+                    "engineering",
+                    "schedule",
+                    "operation",
+                    "scenario",
+                    "enduse",
+                    "utility"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 6,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "professional_missing",
+      "description": "正式核验记录缺失。missing.kinds必填数组（1到6类），同一完整目录快照逐类核验。指定编号时只选1类并填写用户明确的record_id；不能用整类空目录代替指定编号检查。发现任一所选记录存在则整批拒绝，不补造结果或重试计算。全部所需交付结束才finish=true。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "missing": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Missing"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "Missing": {
+            "additionalProperties": false,
+            "required": [
+              "kinds"
+            ],
+            "type": "object",
+            "properties": {
+              "kinds": {
+                "default": null,
+                "items": {
+                  "enum": [
+                    "thermal",
+                    "lifecycle",
+                    "cost",
+                    "engineering",
+                    "schedule",
+                    "operation",
+                    "scenario",
+                    "enduse",
+                    "utility"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 6,
+                "minItems": 1,
+                "type": "array"
+              },
+              "record_id": {
+                "anyOf": [
+                  {
+                    "pattern": "^(thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "finish": {
+                "default": false,
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculation_prepare",
+      "description": "选择本轮已冻结的plan_keys（1到2个）并逐项真实执行、保存、读取当前结果；适合用户要求的多份独立计划。返回每条记录的kind、ID、hash和当前事实/限制，随后仍须逐条professional_deliver或professional_limit。未选计划不会执行，参数不能更改；子操作逐项审计和计预算，失败保留已执行记录。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "plan_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "professional_read_many",
+      "description": "selections逐项给record_id、fact_keys。未知能耗目录先用null；已有目录或计划按原问题选字段并遵守排除项。逐项预检读取，不新建计算，随后正式交付。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "record_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 3,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "selections": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/$defs/ReadSelection"
+                },
+                "maxItems": 3,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "ReadSelection": {
+            "additionalProperties": false,
+            "required": [
+              "record_id"
+            ],
+            "type": "object",
+            "properties": {
+              "record_id": {
+                "pattern": "^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              "fact_keys": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 12,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "capability_lookup",
+      "description": "查询当前应用能做什么及明确边界，每批1到4个capability_ids；超过4项请分批查询，批次上限不是不支持剩余能力。分别核对用户要求的有限计算、资料检索与认证/确诊，不漏支持项，也不加无关项；不检查项目资料充分性。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "capability_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "thermal_resistance",
+                    "energy_simulation",
+                    "lifecycle_inventory",
+                    "beam_analysis",
+                    "material_cost",
+                    "schedule_cpm",
+                    "operations_rules",
+                    "standards_retrieval",
+                    "cad_bim_read",
+                    "drawing_ocr",
+                    "structural_safety_certification",
+                    "carbon_credit_issuance",
+                    "energy_compliance_certification",
+                    "drawing_structural_reconstruction",
+                    "equipment_fault_diagnosis",
+                    "site_safety_approval"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 4,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "capability_explain",
+      "description": "先分批capability_lookup，再按同一catalog_hash汇总全部所需claims（最多16项）：每项capability_id、assessment、reason_code必须与当前应用范围一致。不能只交付第一批，不以少量已查项代表整个需求完成。用于正式能力说明，不代表执行计算或取得认证。最后所需说明可finish=true。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "capability_explanation": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Explanation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "Explanation": {
+            "additionalProperties": false,
+            "required": [
+              "catalog_hash",
+              "claims"
+            ],
+            "type": "object",
+            "properties": {
+              "catalog_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "claims": {
+                "description": "Aggregate every requested capability actually read, across lookup batches of at most four. Never interpret a batch limit as lack of application support.",
+                "items": {
+                  "$ref": "#/$defs/Claim"
+                },
+                "maxItems": 16,
+                "minItems": 1,
+                "type": "array"
+              },
+              "finish": {
+                "default": false,
+                "type": "boolean"
+              }
+            }
+          },
+          "Claim": {
+            "additionalProperties": false,
+            "required": [
+              "capability_id",
+              "assessment",
+              "reason_code"
+            ],
+            "type": "object",
+            "properties": {
+              "capability_id": {
+                "enum": [
+                  "thermal_resistance",
+                  "energy_simulation",
+                  "lifecycle_inventory",
+                  "beam_analysis",
+                  "material_cost",
+                  "schedule_cpm",
+                  "operations_rules",
+                  "standards_retrieval",
+                  "cad_bim_read",
+                  "drawing_ocr",
+                  "structural_safety_certification",
+                  "carbon_credit_issuance",
+                  "energy_compliance_certification",
+                  "drawing_structural_reconstruction",
+                  "equipment_fault_diagnosis",
+                  "site_safety_approval"
+                ],
+                "type": "string"
+              },
+              "assessment": {
+                "enum": [
+                  "supported_with_limits",
+                  "not_supported"
+                ],
+                "type": "string"
+              },
+              "reason_code": {
+                "enum": [
+                  "implemented_bounded_method",
+                  "outside_application_scope"
+                ],
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculation_execute",
+      "description": "选择本轮用户明确提交的plan_key，按已锁定参数调用热工/阶段碳/材料成本/梁/进度/设备规则计算器并保存新记录。不能修改工程输入或CSV；随后按返回的next_tool读取并核验交付；不重复创建。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "plan_key": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9_-]{1,40}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "requested_defer",
+      "description": "当前请求所需指标不明确时，提交未完成的request_keys等待用户澄清；没有声明读取范围时省略request_keys，标记整个自由问题需澄清。只表明模型不确定，不证明资料缺失或应用不支持，不产生数值、不计完成。不能用于用户已明确勾选的指标。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "request_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 6,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "professional_deliver",
+      "description": "先读取delivery.kind对应记录，再提交statements及当前hash，核对值、单位、期间和面积。明确无定义字段保留null及来源原因；整条记录不完整、不适用或stale时改用professional_limit。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "delivery": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/NumericDelivery"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "NumericDelivery": {
+            "additionalProperties": false,
+            "description": "The model-facing numeric contract matches server validation exactly.",
+            "required": [
+              "kind",
+              "record_id",
+              "record_hash",
+              "statements"
+            ],
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "thermal",
+                  "lifecycle",
+                  "cost",
+                  "engineering",
+                  "schedule",
+                  "operation",
+                  "scenario",
+                  "enduse",
+                  "utility"
+                ],
+                "type": "string"
+              },
+              "record_id": {
+                "pattern": "^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              "record_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "statements": {
+                "items": {
+                  "$ref": "#/$defs/Statement"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              "finish": {
+                "default": false,
+                "description": "仅最后一份计划交付的专业记录设true；验证成功后结束模型调用，无需追加文本轮次。",
+                "type": "boolean"
+              }
+            }
+          },
+          "Statement": {
+            "additionalProperties": false,
+            "required": [
+              "fact",
+              "value",
+              "unit",
+              "period",
+              "study_years",
+              "area_m2"
+            ],
+            "type": "object",
+            "properties": {
+              "energy_context": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/EnergyContext"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "能耗事实逐项复制来源energy_context（年份、期间、载体、边界、数据性质、口径）；非能耗用null。"
+              },
+              "fact": {
+                "description": "逐字复制explanation_facts.fact，不用译名或label。",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "maxLength": 80,
+                    "pattern": "^-?([0-9]+(\\.[0-9]*)?|\\.[0-9]+)([eE][+-]?[0-9]{1,4})?$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "复制来源数值字符串；null须source_undefined及unavailable_reason；缺证/失效用professional_limit，禁止编数。"
+              },
+              "unit": {
+                "maxLength": 40,
+                "minLength": 1,
+                "type": "string"
+              },
+              "period": {
+                "enum": [
+                  "steady_state",
+                  "study_period",
+                  "quote_date",
+                  "static_load_case",
+                  "elapsed_days",
+                  "observed_window",
+                  "native_annual",
+                  "utility_periods"
+                ],
+                "type": "string"
+              },
+              "study_years": {
+                "anyOf": [
+                  {
+                    "maximum": 200,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "必填：复制事实study_years；无期间为null。"
+              },
+              "area_m2": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "必填：复制事实area_m2；null表示无明确面积分母，参见area_basis。R/U为固有面密度性质，不是总量。"
+              }
+            }
+          },
+          "EnergyContext": {
+            "additionalProperties": false,
+            "required": [
+              "run_id",
+              "native_year",
+              "native_start",
+              "native_end",
+              "bill_start",
+              "bill_end",
+              "alignment",
+              "clock_basis",
+              "uses_daylight_saving",
+              "weather_calendar_matches_native",
+              "carrier",
+              "boundary",
+              "data_nature",
+              "basis"
+            ],
+            "type": "object",
+            "properties": {
+              "run_id": {
+                "pattern": "^run_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              "native_year": {
+                "anyOf": [
+                  {
+                    "maximum": 2100,
+                    "minimum": 1900,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "native_start": {
+                "anyOf": [
+                  {
+                    "maxLength": 40,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "native_end": {
+                "anyOf": [
+                  {
+                    "maxLength": 40,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "bill_start": {
+                "anyOf": [
+                  {
+                    "maxLength": 40,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "bill_end": {
+                "anyOf": [
+                  {
+                    "maxLength": 40,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "alignment": {
+                "enum": [
+                  "native_annual",
+                  "exact_calendar",
+                  "calendar_pattern"
+                ],
+                "type": "string"
+              },
+              "clock_basis": {
+                "enum": [
+                  "native_simulation_clock",
+                  "local_standard_time"
+                ],
+                "type": "string"
+              },
+              "uses_daylight_saving": {
+                "type": "boolean"
+              },
+              "weather_calendar_matches_native": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "carrier": {
+                "maxLength": 80,
+                "minLength": 1,
+                "type": "string"
+              },
+              "boundary": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "data_nature": {
+                "enum": [
+                  "model_scenario",
+                  "measured",
+                  "published_reference",
+                  "synthetic"
+                ],
+                "type": "string"
+              },
+              "basis": {
+                "enum": [
+                  "hourly_meter_integral",
+                  "native_table_rounded",
+                  "bill_interval_statistics",
+                  "native_clock_count"
+                ],
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "professional_limit",
+      "description": "交付限制说明：先实际读取当前记录，再提交limitation含kind、record_id、record_hash、status（复制当前状态，包括stale）及finish。只允许当前结果不完整、不适用或已失效；不填数值或statements。核验说明不改变原记录状态，不恢复旧数值，也不等于完成工程计算。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "limitation": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Limitation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "Limitation": {
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "record_id",
+              "record_hash",
+              "status"
+            ],
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "thermal",
+                  "lifecycle",
+                  "cost",
+                  "engineering",
+                  "schedule",
+                  "operation",
+                  "scenario",
+                  "enduse",
+                  "utility"
+                ],
+                "type": "string"
+              },
+              "record_id": {
+                "pattern": "^(?:thermal|lifecycle|cost|engineering|schedule|operation|scenario|enduse|utility)_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              "record_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "incomplete",
+                  "outside_model_screen",
+                  "constraints_unresolved",
+                  "incomplete_progress",
+                  "insufficient_evidence",
+                  "events_detected",
+                  "stale"
+                ],
+                "type": "string"
+              },
+              "finish": {
+                "default": false,
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "material_scenarios_list",
+      "description": "只读列出当前项目最近6份材料两方案对照；不创建计算，不认证等效或碳资产",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "material_scenarios_read",
+      "description": "按scenario_id读取两套材料方案的金额、声明边界/阶段碳与比较，保留数量来源和评估期；金额差为替换减基准，碳减少为基准减替换，不签发信用",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "scenario_id": {
+            "anyOf": [
+              {
+                "pattern": "^scenario_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "thermal_list",
+      "description": "只读列出最近6个热工构造的ID和当前状态，不生成材料参数",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "thermal_read",
+      "description": "按thermal_id读取当前一维稳态热阻/U及单位、表面热阻、材料修正依据；U降低不是全年节能率，不判合规",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "thermal_id": {
+            "anyOf": [
+              {
+                "pattern": "^thermal_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "lifecycle_list",
+      "description": "建筑碳账/碳清单/生命周期阶段排放：只读列出最近6份阶段CO2e清单的ID和当前状态。阶段总量、每平方米量及期间通过lifecycle_read读取；不是运行碳重算或碳信用账户",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "lifecycle_read",
+      "description": "按lifecycle_id读取当前声明边界、阶段量、因子来源/版本及评估年限；不签发信用，不把排除阶段当零排放",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "lifecycle_id": {
+            "anyOf": [
+              {
+                "pattern": "^lifecycle_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "operations_list",
+      "description": "只读列出最近6份设备运行规则核查记录，不推断设备健康或控制设备",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "operations_read",
+      "description": "按operation_id读取当前运行异常事件、缺测、阈值来源及检查建议，不能把规则事件当作已确认故障根因",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "schedule_list",
+      "description": "只读列出最近6份施工进度记录及状态，不生成工期或施工安全结论",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "schedule_read",
+      "description": "按schedule_id读取当前关键路径、显式剩余工期情景、缺参及资源冲突；未资源调平，不保证现场可施工",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "schedule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "material_cost_list",
+      "description": "只读列出最近6份材料成本清单和当前状态；不创建价格、数量或税率",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "material_cost_read",
+      "description": "按material_cost_id读取当前来源核验后的成本清单；材料成本不等于工程总价或报价认证",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "material_cost_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "beam_analysis_list",
+      "description": "只读列出项目最近6条梁分析记录及当前状态；不创建荷载或判断结构安全",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "beam_analysis_read",
+      "description": "读取来源及版本核验后的梁分析；需 engineering_id；不得把计算值当作安全或合规结论",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "engineering_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fact_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "standards_search",
+      "description": "检索已复核规范。多条精确查询用targets，各自指定编号、版次、条款；text留空。需as_of。不判定合规。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "standards_query": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Query"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "Query": {
+            "additionalProperties": false,
+            "oneOf": [
+              {
+                "properties": {
+                  "targets": {
+                    "maxItems": 0
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "targets": {
+                    "minItems": 1
+                  },
+                  "text": {
+                    "const": ""
+                  },
+                  "standard_code": {
+                    "type": "null"
+                  },
+                  "edition": {
+                    "type": "null"
+                  },
+                  "clause_id": {
+                    "type": "null"
+                  },
+                  "retrieval": {
+                    "const": "lexical"
+                  }
+                },
+                "required": [
+                  "targets"
+                ]
+              }
+            ],
+            "required": [
+              "as_of"
+            ],
+            "type": "object",
+            "properties": {
+              "text": {
+                "default": "",
+                "maxLength": 1000,
+                "type": "string"
+              },
+              "standard_code": {
+                "anyOf": [
+                  {
+                    "maxLength": 80,
+                    "minLength": 2,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "edition": {
+                "anyOf": [
+                  {
+                    "maxLength": 40,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "clause_id": {
+                "anyOf": [
+                  {
+                    "maxLength": 60,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "retrieval": {
+                "default": "lexical",
+                "enum": [
+                  "lexical",
+                  "semantic"
+                ],
+                "type": "string"
+              },
+              "as_of": {
+                "format": "date",
+                "type": "string"
+              },
+              "limit": {
+                "default": 10,
+                "maximum": 20,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "targets": {
+                "description": "Exact batch; leave text and single-query fields empty. Each target is resolved separately.",
+                "items": {
+                  "$ref": "#/$defs/ExactTarget"
+                },
+                "maxItems": 8,
+                "type": "array"
+              }
+            }
+          },
+          "ExactTarget": {
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "standard_code",
+              "clause_id"
+            ],
+            "type": "object",
+            "properties": {
+              "key": {
+                "pattern": "^[A-Za-z0-9_-]{1,40}$",
+                "type": "string"
+              },
+              "standard_code": {
+                "maxLength": 80,
+                "minLength": 2,
+                "type": "string"
+              },
+              "edition": {
+                "anyOf": [
+                  {
+                    "maxLength": 40,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "clause_id": {
+                "maxLength": 60,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9.()-]+$",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "project_get",
+      "description": "读取当前项目建筑声明",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "evidence_list",
+      "description": "读取证据清单及来源定位",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "evidence_validate",
+      "description": "运行 Evidence Gate，检查缺口与准入",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "scheme_id": {
+            "default": "baseline",
+            "enum": [
+              "baseline",
+              "R1",
+              "R2"
+            ],
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "building_get",
+      "description": "读取建筑结构化输入",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "simulation_create",
+      "description": "排队真实 EnergyPlus；仅用户允许计算后可用",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "scheme_id": {
+            "default": "baseline",
+            "enum": [
+              "baseline",
+              "R1",
+              "R2"
+            ],
+            "type": "string"
+          },
+          "factor_profile_id": {
+            "default": "none",
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "simulation_list",
+      "description": "只读列出本项目最近6次仿真的run_id和状态；项目ID不是运行ID，空列表表示没有运行，不编造ID",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "simulation_status",
+      "description": "读取运行状态；需 run_id",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "anyOf": [
+              {
+                "pattern": "^run_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "simulation_result",
+      "description": "读取当前结果摘要；分区显热明细用run_id、zone_offset和摘要receipt_hash作为zone_hash，每页5行。按next_offset续读；最后所需页可finish=true，全部行已读才结束。未读页不算交付，不合计为全楼峰值。",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "anyOf": [
+              {
+                "pattern": "^run_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "zone_offset": {
+            "anyOf": [
+              {
+                "maximum": 9999,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "zone_hash": {
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "finish": {
+            "default": false,
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "carbon_calculate",
+      "description": "仅重算碳排，不调用 EnergyPlus；需 run_id 和允许计算",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "anyOf": [
+              {
+                "pattern": "^run_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "claim_trace",
+      "description": "读取节点依赖与失效状态；需 run_id",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "anyOf": [
+              {
+                "pattern": "^run_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "evidence_gap_rank",
+      "description": "列出当前确定存在的证据缺口，尚无补证成本时不虚构性价比",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "scheme_id": {
+            "default": "baseline",
+            "enum": [
+              "baseline",
+              "R1",
+              "R2"
+            ],
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "certificate_generate",
+      "description": "读取同源未签署决策证书；需 run_id",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "anyOf": [
+              {
+                "pattern": "^run_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "scheme_compare",
+      "description": "比较同项目有效方案；需 run_ids，含 baseline",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "run_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 3,
+                "minItems": 2,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "counterexample_search",
+      "description": "在用户给定离散导热系数域和预算内实际运行 EnergyPlus；需 search 与允许计算，禁止自编参数域",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "search": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Search"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "Search": {
+            "additionalProperties": false,
+            "required": [
+              "run_ids",
+              "axes",
+              "budget"
+            ],
+            "type": "object",
+            "properties": {
+              "run_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 3,
+                "minItems": 2,
+                "type": "array"
+              },
+              "axes": {
+                "items": {
+                  "$ref": "#/$defs/Axis"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "type": "array"
+              },
+              "budget": {
+                "maximum": 24,
+                "minimum": 2,
+                "type": "integer"
+              },
+              "ranking_tolerance_kwh": {
+                "default": 0.01,
+                "exclusiveMinimum": 0,
+                "maximum": 1000,
+                "type": "number"
+              }
+            }
+          },
+          "Axis": {
+            "additionalProperties": false,
+            "required": [
+              "material",
+              "values",
+              "source"
+            ],
+            "type": "object",
+            "properties": {
+              "material": {
+                "maxLength": 160,
+                "minLength": 1,
+                "type": "string"
+              },
+              "values": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 6,
+                "minItems": 2,
+                "type": "array"
+              },
+              "source": {
+                "maxLength": 1000,
+                "minLength": 5,
+                "type": "string"
+              },
+              "evidence_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "counterexample_status",
+      "description": "读取反例搜索状态、范围、预算和证据；需 search_id",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "search_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "evidence_action_rank",
+      "description": "仅对已搜索反例做条件补证成本分析；需 search_id 与 actions，费用不得由模型编造",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "search_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "actions": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Actions"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "$defs": {
+          "Actions": {
+            "additionalProperties": false,
+            "required": [
+              "actions"
+            ],
+            "type": "object",
+            "properties": {
+              "actions": {
+                "items": {
+                  "$ref": "#/$defs/Acquisition"
+                },
+                "maxItems": 20,
+                "minItems": 1,
+                "type": "array"
+              }
+            }
+          },
+          "Acquisition": {
+            "additionalProperties": false,
+            "required": [
+              "material",
+              "confirmed_value",
+              "cost_cny",
+              "duration_hours",
+              "method"
+            ],
+            "type": "object",
+            "properties": {
+              "material": {
+                "type": "string"
+              },
+              "confirmed_value": {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              },
+              "cost_cny": {
+                "maximum": 1000000,
+                "minimum": 0,
+                "type": "number"
+              },
+              "duration_hours": {
+                "maximum": 10000,
+                "minimum": 0,
+                "type": "number"
+              },
+              "method": {
+                "maxLength": 1000,
+                "minLength": 3,
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "report_generate",
+      "description": "读取同源报告快照与证书，需 run_id",
+      "parameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "anyOf": [
+              {
+                "pattern": "^run_[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        }
+      }
+    }
+  }
+]
